@@ -29,36 +29,61 @@ public class FileUtils {
         Bukkit.getConsoleSender().sendMessage(msg);
     }
 
-    private FileConfiguration custom;
-    private File customFile;
+    private FileConfiguration lang;
+    private FileConfiguration messages;
+    private File langFile;
+    private File messagesFile;
 
-    public void reloadFile(String file) {
-        if (customFile == null) customFile = new File(main.getDataFolder(), file + ".yml");
-        custom = YamlConfiguration.loadConfiguration(customFile);
+    public void reloadLang() {
+        if (langFile == null) langFile = get("lang");
+        lang = YamlConfiguration.loadConfiguration(langFile);
 
         Reader defConfigStream;
-        InputStream resource = main.getResource(file + ".yml");
+        InputStream resource = main.getResource("lang.yml");
         if (resource != null) {
             defConfigStream = new InputStreamReader(resource, StandardCharsets.UTF_8);
             YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
-            custom.setDefaults(defConfig);
+            lang.setDefaults(defConfig);
         }
     }
 
-    public FileConfiguration getFile(String file) {
-        if (custom == null) reloadFile(file);
-        return custom;
+    public FileConfiguration getLang() {
+        if (lang == null) reloadLang();
+        return lang;
     }
 
-    public void saveDefaultFile(String file) {
-        if (customFile == null) customFile = file(file);
-        if (!customFile.exists()) main.saveResource(file + ".yml", false);
+    public void saveDefaultLang() {
+        if (langFile == null) langFile = get("lang");
+        if (!langFile.exists()) main.saveResource("lang.yml", false);
+    }
+
+    public void reloadMessages() {
+        if (messagesFile == null) messagesFile = get("lang");
+        messages = YamlConfiguration.loadConfiguration(messagesFile);
+
+        Reader defConfigStream;
+        InputStream resource = main.getResource("messages.yml");
+        if (resource != null) {
+            defConfigStream = new InputStreamReader(resource, StandardCharsets.UTF_8);
+            YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
+            messages.setDefaults(defConfig);
+        }
+    }
+
+    public FileConfiguration getMessages() {
+        if (messages == null) reloadMessages();
+        return messages;
+    }
+
+    public void saveDefaultMessages() {
+        if (messagesFile == null) messagesFile = get("messages");
+        if (!messagesFile.exists()) main.saveResource("messages.yml", false);
     }
 
     private void updateFile(String file) {
         String name = file + ".yml";
         try {
-            ConfigUpdater.update(main, name, file(name), Collections.emptyList());
+            ConfigUpdater.update(main, name, get(file), Collections.emptyList());
         } catch (IOException e) {
             consoleMsg("&7The " + file + ".yml file could not be updated...");
             e.printStackTrace();
@@ -66,14 +91,14 @@ public class FileUtils {
         main.reloadConfig();
     }
 
-    private File file(String file) {
-        return new File(main.getDataFolder(), file + ".yml");
+    private File get(String fileName) {
+        return new File(main.getDataFolder(), fileName + ".yml");
     }
 
     public void registerFiles() {
 
         // For config.yml file
-        if (!file("config").exists()) {
+        if (!get("config").exists()) {
             consoleMsg("&cFile config.yml missing... &fGenerating!");
             main.getConfig().options().copyDefaults(true); main.saveDefaultConfig();
         }
@@ -83,19 +108,19 @@ public class FileUtils {
         if (updateConfig) updateFile("config");
 
         // For lang.yml file
-        if (!file("lang").exists()) {
+        if (!get("lang").exists()) {
             consoleMsg("&cFile lang.yml missing... &fGenerating!");
-            main.getMessages().options().copyDefaults(true); saveDefaultFile("lang");
+            main.getLang().options().copyDefaults(true); saveDefaultLang();
         }
         if (main.getConfig().contains("update.lang")) {
             updateLang = main.getConfig().getBoolean("update.lang");
         }
-        if (updateLang) updateFile("messages");
+        if (updateLang) updateFile("lang");
 
         // For messages.yml file
-        if (!file("messages").exists()) {
+        if (!get("messages").exists()) {
             consoleMsg("&cFile messages.yml missing... &fGenerating!");
-            main.getMessages().options().copyDefaults(true); saveDefaultFile("messages");
+            saveDefaultMessages();
         }
     }
 }

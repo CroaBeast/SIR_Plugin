@@ -6,31 +6,31 @@
 
 first-join:
   1:
-    sound: "ENTITY_PLAYER_LEVELUP"
+    sound: 'ENTITY_PLAYER_LEVELUP'
     send:
-      - "<C>Welcome {PLAYER} to this server for the first time."
-      - "[ACTION-BAR] I'm a cat lmao"
-      - "[TITLE] u r fat<n>&7gimme some money"
+      - '<C>Welcome {PLAYER} to this server for the first time.'
+      - '[ACTION-BAR] I''m a cat lmao'
+      - '[TITLE] u r fat<n>&7gimme some money'
     motd:
-      - "<C>&7&m                     &r"
-      - "<C>Welcome, {PLAYER}. u r gae"
-      - "<C>&7&m                     &r"
+      - '<C>&7&m                     &r'
+      - '<C>Welcome, {PLAYER}. u r gae'
+      - '<C>&7&m                     &r'
   2:
     permission: mypermission.vip
-    send: "[ACTION-BAR] Hello VIP {PLAYER} from world {WORLD}."
-    motd: "Please be a bitch."
+    send: '[ACTION-BAR] Hello VIP {PLAYER} from world {WORLD}.'
+    motd: 'Please be a bitch.'
 join:
   1:
-    sound: "ENTITY_PLAYER_LEVELUP"
+    sound: 'ENTITY_PLAYER_LEVELUP'
     send:
-      - "<C><G:2C08BA>Welcome {PLAYER} to this server.</G:028A97>"
-      - "[ACTION-BAR] <R:1>I'm a cat lmao</R>"
-      - "[TITLE] u r fat\n&7gimme some money"
+      - '<C><G:2C08BA>Welcome {PLAYER} to this server.</G:028A97>'
+      - '[ACTION-BAR] <R:1>I''m a cat lmao</R>'
+      - '[TITLE] u r fat\n&7gimme some money'
     commands:
-      - "say Hello {PLAYER} from {WORLD}"
+      - 'say Hello {PLAYER} from {WORLD}'
 quit:
   1:
     send:
-      - "<C>Welcome {PLAYER} to this server."
-      - "[ACTION-BAR] I'm a cat lmao"
-      - "[TITLE] u r fat\n&7gimme some money"
+      - '<C>Welcome {PLAYER} to this server.'
+      - '[ACTION-BAR] I''m a cat lmao'
+      - '[TITLE] u r fat\n&7gimme some money'

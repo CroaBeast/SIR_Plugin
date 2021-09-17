@@ -19,10 +19,10 @@ options:
   after-login: true
   # Every message in lang.yml that start with this string,
   # will have the main-prefix first.
-  prefix-in-config: "<P>"
+  prefix-in-config: '<P>'
   # FOR lang.yml, messages.yml files AND FOR CHAT TYPE!!
   # Put this first on those chat messages you want to center.
-  center-prefix: "<C>"
+  center-prefix: '<C>'
   # ONLY FOR messages.yml file AND FOR TITLE TYPE!!
   # If you want title AND subtitle, use it to split the message.
-  line-splitter: "<n>"
+  line-splitter: '<n>'

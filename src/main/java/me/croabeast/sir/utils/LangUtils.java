@@ -93,15 +93,22 @@ public class LangUtils {
     }
 
     public void send(CommandSender sender, String path, String... values) {
-        String key = main.getConfig().getString("values.messages-prefix");
-        String prefix = main.getLang().getString("messages.main-prefix");
+        String key = main.getConfig().getString("options.prefix-in-config");
+        String prefix = main.getLang().getString("main-prefix");
+        String center = main.getConfig().getString("options.center-prefix");
+        String[] keys = {"{ARG}", "{PERM}", "{PLAYER}", "{VERSION}"};
         if (key == null) key = ""; if (prefix == null) prefix = "";
+
         for (String msg : toList(path)) {
             if (msg == null || msg.equals("")) continue;
             msg = msg.startsWith(key) ? msg.replace(key, prefix) : msg;
-            String[] keys = {"{ARG}", "{PERM}", "{PLAYER}", "{VERSION}"};
             msg = StringUtils.replaceEach(msg, keys, values);
-            sendMixed((Player) sender, msg);
+            if (sender instanceof Player) sendMixed((Player) sender, msg);
+            else {
+                if (center == null) center = "";
+                if (msg.startsWith(center)) msg = msg.replace(center,"");
+                sender.sendMessage(parseColor(msg));
+            }
         }
     }
 

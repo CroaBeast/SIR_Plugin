@@ -1,6 +1,7 @@
 package me.croabeast.sir;
 
 import me.croabeast.sir.events.OnJoin;
+import me.croabeast.sir.events.OnLogin;
 import me.croabeast.sir.events.OnQuit;
 import me.croabeast.sir.utils.CmdUtils;
 import me.croabeast.sir.utils.FileUtils;
@@ -39,6 +40,7 @@ public final class SIR extends JavaPlugin {
 
         fileUtils.registerFiles();
         new OldMessages(main);
+        if (langUtils.hasUserLogin) new OnLogin(main);
         new OnJoin(main);
         new OnQuit(main);
 
@@ -60,20 +62,20 @@ public final class SIR extends JavaPlugin {
 
     private String showPluginInfo(String pluginName) {
         Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginName);
-        String version = plugin != null ? plugin.getDescription().getVersion() + " " : null;
+        String version = plugin != null ? plugin.getDescription().getVersion() + " " : "";
         String isPlugin = plugin != null ? "&aenabled. &7Hooking..." : "&cnot found. &7Hook disabled.";
         return version + isPlugin;
     }
 
     public LangUtils getLangUtils() { return langUtils; }
 
-    public FileConfiguration getLang() { return fileUtils.getFile("lang"); }
-    public FileConfiguration getMessages() { return fileUtils.getFile("messages"); }
+    public FileConfiguration getLang() { return fileUtils.getLang(); }
+    public FileConfiguration getMessages() { return fileUtils.getMessages(); }
 
     public void reloadFiles() {
         main.reloadConfig();
-        fileUtils.reloadFile("lang");
-        fileUtils.reloadFile("messages");
+        fileUtils.reloadLang();
+        fileUtils.reloadMessages();
     }
 
     private static class OldMessages implements Listener {
