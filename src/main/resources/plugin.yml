@@ -1,0 +1,23 @@
+name: SIR
+version: '${project.version}'
+main: me.croabeast.sir.SIR
+api-version: 1.16
+prefix: SIR
+softdepend: [ PlaceholderAPI, UserLogin ]
+loadafter: [ PlaceholderAPI, UserLogin ]
+authors: [ CroaBeast ]
+
+commands:
+  sir:
+    description: Main command lmao
+
+permissions:
+  sir.*:
+    default: op
+    children:
+      sir.main: true
+      sir.reload: true
+  sir.main:
+    default: op
+  sir.reload:
+    default: op

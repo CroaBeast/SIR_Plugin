@@ -1,0 +1,28 @@
+########################
+#   SIR by CroaBeast   #
+# Depressed since 2004 #
+########################
+# Want to use unicode characters? Check this site: https://coolsymbol.com
+
+# If enabled, those files will be updated automatically.
+# Doesn't delete comments.
+update:
+  config: true
+  lang: true
+
+# Some useful options for this plugin.
+options:
+  # It will send the join/quit messages to the console.
+  send-console: true
+  # If UserLogin is installed and this option is enabled (true),
+  # it will send the messages after the player log-in/register.
+  after-login: true
+  # Every message in lang.yml that start with this string,
+  # will have the main-prefix first.
+  prefix-in-config: "<P>"
+  # FOR lang.yml, messages.yml files AND FOR CHAT TYPE!!
+  # Put this first on those chat messages you want to center.
+  center-prefix: "<C>"
+  # ONLY FOR messages.yml file AND FOR TITLE TYPE!!
+  # If you want title AND subtitle, use it to split the message.
+  line-splitter: "<n>"
