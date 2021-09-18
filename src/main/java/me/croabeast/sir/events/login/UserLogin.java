@@ -1,27 +1,27 @@
-package me.croabeast.sir.events;
+package me.croabeast.sir.events.login;
 
+import com.elchologamer.userlogin.api.event.AuthenticationEvent;
 import me.croabeast.sir.SIR;
 import me.croabeast.sir.utils.EventUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
 
-public class OnJoin implements Listener {
+public class UserLogin implements Listener {
 
     private final SIR main;
     private final EventUtils eventUtils;
 
-    public OnJoin(SIR main) {
+    public UserLogin(SIR main) {
         this.main = main;
         this.eventUtils = main.getEventUtils();
         main.getServer().getPluginManager().registerEvents(this, main);
     }
 
     @EventHandler
-    private void onJoin(PlayerJoinEvent event) {
-        if (main.hasLogin && main.afterLogin) return;
+    private void onLogin(AuthenticationEvent event) {
+        if (!main.hasLogin || !main.afterLogin) return;
 
         Player player = event.getPlayer();
         ConfigurationSection section = eventUtils.joinSection(player);

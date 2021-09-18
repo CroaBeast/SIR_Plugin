@@ -11,34 +11,30 @@ import me.croabeast.sir.interfaces.ActionBar;
 import me.croabeast.sir.interfaces.TitleMain;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.regex.Pattern;
+import java.util.*;
 
 public class LangUtils {
 
     private final SIR main;
 
-    public boolean hasPAPI;
-    public boolean hasUserLogin;
     public int getVersion;
     public String serverName;
 
-    private final ActionBar actionBar;
-    private final TitleMain titleMain;
+    private ActionBar actionBar;
+    private TitleMain titleMain;
+
 
     public LangUtils(SIR main) {
         this.main = main;
         String version = Bukkit.getBukkitVersion().split("-")[0];
-        this.hasPAPI = Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
-        this.hasUserLogin = Bukkit.getPluginManager().isPluginEnabled("UserLogin");
         this.getVersion = Integer.parseInt(version.split("\\.")[1]);
         this.serverName = Bukkit.getVersion().split("-")[1] + " " + version;
+    }
+
+    public void loadLangClasses() {
         actionBar = this.getVersion < 11 ? new ActBarOld(main) : new ActBarNew(main);
         titleMain = this.getVersion < 10 ? new TitleOld(main) : new TitleNew(main);
     }
@@ -49,7 +45,7 @@ public class LangUtils {
 
     public String parsePAPI(Player player, String message) {
         String papi = PlaceholderAPI.setPlaceholders(player, message);
-        return parseColor((hasPAPI && player != null) ? papi : message);
+        return parseColor((main.hasPAPI && player != null) ? papi : message);
     }
 
     public void sendCentered(Player player, String message) {
@@ -120,65 +116,5 @@ public class LangUtils {
         if (message.length == 0 || message.length > 2) return;
         String subtitle = message.length == 1 ? null : message[1];
         titleMain.send(player, message[0], subtitle);
-    }
-
-    public <E extends Enum<E>> boolean isEnum(Class<E> enumClass, String enumName) {
-        if (enumName == null) return false;
-        try {
-            Enum.valueOf(enumClass, enumName);
-            return true;
-        } catch (IllegalArgumentException ex) {
-            return false;
-        }
-    }
-
-    public void sound(Player player, String sound) {
-        if (!isEnum(Sound.class, sound)) return;
-        player.playSound(player.getLocation(), Sound.valueOf(sound), 1, 1);
-    }
-
-    public void eventSend(Player player, String path) {
-        String[] keys = {"{PLAYER}", "{WORLD}"};
-        String[] values = {player.getName(), player.getWorld() + ""};
-        String split = main.getConfig().getString("options.line-splitter");
-        for (String message : toList(path)) {
-            if (message == null || message.equals("")) continue;
-            message = StringUtils.replaceEach(message, keys, values);
-            if (message.startsWith(" ")) message = message.substring(1);
-            if (main.getConfig().getBoolean("options.send-console")) {
-                if (path.contains("motd")) continue;
-                message = parsePAPI(player, message);
-                Bukkit.getConsoleSender().sendMessage("&e&lSIR &8> &f" + message);
-            }
-            if (message.startsWith("[ACTION-BAR]")) {
-                message = message.substring(12);
-                if (message.startsWith(" ")) message = message.substring(1);
-                for (Player p : Bukkit.getOnlinePlayers()) actionBar(p, message);
-            }
-            else if (message.startsWith("[TITLE]")) {
-                message = message.substring(7);
-                if (message.startsWith(" ")) message = message.substring(1);
-                if (split == null) split = ""; String sp = split;
-                for (Player p : Bukkit.getOnlinePlayers())
-                    title(p, message.split(Pattern.quote(sp)));
-            }
-            else for (Player p : Bukkit.getOnlinePlayers()) sendMixed(p, message);
-        }
-    }
-
-    public void eventCommand(Player player, String path) {
-        String[] keys = {"{PLAYER}", "{WORLD}"};
-        String[] values = {player.getName(), player.getWorld() + ""};
-        for (String command : toList(path)) {
-            if (command == null || command.equals("")) continue;
-            command = StringUtils.replaceEach(command, keys, values);
-            if (command.startsWith(" ")) command = command.substring(1);
-            if (command.startsWith("[PLAYER]")) {
-                command = command.substring(8);
-                if (command.startsWith(" ")) command = command.substring(1);
-                player.performCommand(command);
-            }
-            else Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
-        }
     }
 }

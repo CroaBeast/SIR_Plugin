@@ -5,14 +5,14 @@
 # Want to use unicode characters? Check this site: https://coolsymbol.com
 
 # This will be inserted in those lines with <P> or prefix-in-lang string.
-main-prefix: ' &e&lSIR &8>&#AAAAAA'
+main-prefix: ' &e&lSIR &8\u00BB&#AAAAAA'
 reload: '<P> All the .yml files was reloaded successfully.'
 no-permission: '<P> You don''t have the permission &c{PERM} &7to use this.'
 wrong-arg: '<P> The argument &c{ARG} &7is invalid or does not exist.'
 
 # The help menu of the /sir command, maybe in a future will be more args...
 main-help:
-  - '<C>&8&m           &r &e&lSIR &7v {VERSION} &8&m           &r'
-  - '  &7- &b/sir&7: The main command of the plugin.'
-  - '  &7- &b/sir &3reload&7: Reloads all the files.'
-  - '<C>&8&m                                 &r'
+  - '<C>&8----------&r &e&lSIR &7v {VERSION} &8----------&r'
+  - '  &7\u2022 &b/sir&7: The main command of the plugin.'
+  - '  &7\u2022 &b/sir &3reload&7: Reloads all the files.'
+  - '<C>&8----------------------------------------&r'

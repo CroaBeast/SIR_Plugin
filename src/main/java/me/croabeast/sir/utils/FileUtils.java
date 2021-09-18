@@ -100,22 +100,24 @@ public class FileUtils {
         // For config.yml file
         if (!get("config").exists()) {
             consoleMsg("&cFile config.yml missing... &fGenerating!");
-            main.getConfig().options().copyDefaults(true); main.saveDefaultConfig();
+            main.saveDefaultConfig();
         }
         if (main.getConfig().contains("update.config")) {
             updateConfig = main.getConfig().getBoolean("update.config");
         }
         if (updateConfig) updateFile("config");
+        main.reloadConfig();
 
         // For lang.yml file
         if (!get("lang").exists()) {
             consoleMsg("&cFile lang.yml missing... &fGenerating!");
-            main.getLang().options().copyDefaults(true); saveDefaultLang();
+            saveDefaultLang();
         }
         if (main.getConfig().contains("update.lang")) {
             updateLang = main.getConfig().getBoolean("update.lang");
         }
         if (updateLang) updateFile("lang");
+        reloadLang();
 
         // For messages.yml file
         if (!get("messages").exists()) {

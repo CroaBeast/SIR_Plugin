@@ -6,31 +6,52 @@
 
 first-join:
   1:
+    permission: DEFAULT
     sound: 'ENTITY_PLAYER_LEVELUP'
-    send:
+    messages:
       - '<C>Welcome {PLAYER} to this server for the first time.'
       - '[ACTION-BAR] I''m a cat lmao'
       - '[TITLE] u r fat<n>&7gimme some money'
     motd:
-      - '<C>&7&m                     &r'
       - '<C>Welcome, {PLAYER}. u r gae'
-      - '<C>&7&m                     &r'
   2:
     permission: mypermission.vip
-    send: '[ACTION-BAR] Hello VIP {PLAYER} from world {WORLD}.'
-    motd: 'Please be a bitch.'
+    messages:
+      - '[ACTION-BAR] Hello VIP {PLAYER} from world {WORLD}.'
+    motd:
+      - 'Please be a bitch.'
 join:
   1:
+    permission: DEFAULT
     sound: 'ENTITY_PLAYER_LEVELUP'
-    send:
-      - '<C><G:2C08BA>Welcome {PLAYER} to this server.</G:028A97>'
+    messages:
+      - '&7[+] <G:af1231>Welcome {PLAYER} to this server.</G:909872>'
+    motd:
+      - '<C><R:1>Please be a bitch.</R>'
+  2:
+    permission: OP
+    sound: 'ENTITY_PLAYER_LEVELUP'
+    messages:
+      - '&7[+] <G:2145aa>Welcome OP {PLAYER} to this server.</G:d231da>'
       - '[ACTION-BAR] <R:1>I''m a cat lmao</R>'
-      - '[TITLE] u r fat\n&7gimme some money'
-    commands:
-      - 'say Hello {PLAYER} from {WORLD}'
+      - '[TITLE] u r fat<n>&7gimme some money'
+    motd:
+      - '<C><R:2>Please be a bitch.</R>'
+  3:
+    permission: vip.super.lol
+    messages:
+      - '[ACTION-BAR] <G:2C08BA>Hello VIP {PLAYER} from world {WORLD}.</G:028A97>'
+    motd:
+      - 'Please be a bitch.'
+  4:
+    permission: vip.omega.lambda
+    priority: 2
+    messages:
+      - '[ACTION-BAR] <G:2C08BA>Hello VIP {PLAYER} from world {WORLD}.</G:028A97>'
+    motd:
+      - 'Please be a mega bitch.'
 quit:
   1:
-    send:
+    permission: DEFAULT
+    messages:
       - '<C>Welcome {PLAYER} to this server.'
-      - '[ACTION-BAR] I''m a cat lmao'
-      - '[TITLE] u r fat\n&7gimme some money'
