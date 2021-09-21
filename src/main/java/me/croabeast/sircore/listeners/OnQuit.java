@@ -1,7 +1,7 @@
-package me.croabeast.sir.events;
+package me.croabeast.sircore.listeners;
 
-import me.croabeast.sir.SIR;
-import me.croabeast.sir.utils.EventUtils;
+import me.croabeast.sircore.MainClass;
+import me.croabeast.sircore.utils.EventUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -10,10 +10,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class OnQuit implements Listener {
 
-    private final SIR main;
+    private final MainClass main;
     private final EventUtils eventUtils;
 
-    public OnQuit(SIR main) {
+    public OnQuit(MainClass main) {
         this.main = main;
         this.eventUtils = main.getEventUtils();
         main.getServer().getPluginManager().registerEvents(this, main);
@@ -25,7 +25,6 @@ public class OnQuit implements Listener {
         ConfigurationSection section = main.getMessages().getConfigurationSection("quit");
         if (section == null) return;
 
-        eventUtils.addPerms(section);
-        eventUtils.checkSections(section, player, false);
+        eventUtils.getSections(section, player, false);
     }
 }

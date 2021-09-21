@@ -4,54 +4,94 @@
 ########################
 # Want to use unicode characters? Check this site: https://coolsymbol.com
 
+##### Different sections:
+# This .yml file has 3 main sections: first-join, join and quit.
+# If one of those sections is missing, it won't send any message of that type.
+# - "first-join" section: Send messages when a player joins for the first time.
+# - "join" section: Send messages when a player joins normally.
+# - "quit" section: Send messages when a player leaves the server unu.
+
+##### Inside a Group Section:
+# You can add a lot of custom groups with a different number OR custom name.
+# Example:
+# join: # "join" section, you can add groups in every section tho
+#   1: # custom group
+#   ------- # we'll see the nodes of every group later
+#   myGroup: # custom group with a name lol
+#   ------- # we'll see the nodes of every group later
+
+##### A lot of Group nodes:
+# Each node represents a different functionality. These nodes can be:
+# - "permission:" Defines the permission of that group. Deleting this will
+#                 categorize that group for all people in the server.
+#                 You can choose between DEFAULT or a custom permission.
+# - "priority:" Defines the priority between different custom permissions, if the
+#               permission is DEFAULT, it won't take any effect on priority.
+#               Deleting this will set the priority 0 or 1 (if DEFAULT or custom)
+# - "sound:" Plays a sound defined by this node. Deleting this won't play a sound.
+#            Keep in mind that sounds are different in most of the major version
+#            of Minecraft. Check these links for more info:
+#            1.8: https://helpch.at/docs/1.8.8/index.html?org/bukkit/Sound.html
+#            1.12: https://helpch.at/docs/1.12.2/index.html?org/bukkit/Sound.html
+#            1.16: https://helpch.at/docs/1.16.5/index.html?org/bukkit/Sound.html
+#            1.17: https://helpch.at/docs/1.17.1/index.html?org/bukkit/Sound.html
+#            WARNING!!: You can't put this node on the "quit" section.
+# - "public:" Sends messages to all online players on the server. You can select
+#             between 3 types of messages. [SEE BELOW]
+#             Deleting this won't send any public messages.
+# - "private:" Sends messages to the same player. [SEE BELOW FOR MESSAGE TYPES]
+#              Deleting this won't send any private messages.
+#              WARNING!!: You can't put this node on the "quit" section.
+
+##### Types of messages:
+# - Action Bar: Sends a message to the action bar. For some reason RGB colors
+#               doesn't work in this type of message, rlly don't know why
+#               WARNING!!: This type should only be 1 per group, more of that
+#               it will replace the one before.
+#               Put "[ACTION-BAR]" first on the message to select this type.
+# - Title: Send a message like a title with/without subtitle using a line
+#          separator for it (located in config.yml)
+#          WARNING!!: This type should only be 1 per group, more of that it will
+#          replace the one before.
+#          Put "[TITLE]" first on the message to select this type.
+# - Chat: Default one, send message to the chat. You can add all the lines you
+#         want to send multiple chat messages.
+# REMINDER: Using Action Bar and Title in public and private messages in the same
+#           group, the private ones will override the public ones for that player.
+
+##### Internal Placeholders:
+# - {PLAYER}: gets the player's name [can be different in public or private]
+# - {WORLD}: gets the player's world [can be different in public or private]
+
 first-join:
   1:
-    permission: DEFAULT
-    sound: 'ENTITY_PLAYER_LEVELUP'
-    messages:
-      - '<C>Welcome {PLAYER} to this server for the first time.'
-      - '[ACTION-BAR] I''m a cat lmao'
-      - '[TITLE] u r fat<n>&7gimme some money'
-    motd:
-      - '<C>Welcome, {PLAYER}. u r gae'
-  2:
-    permission: mypermission.vip
-    messages:
-      - '[ACTION-BAR] Hello VIP {PLAYER} from world {WORLD}.'
-    motd:
-      - 'Please be a bitch.'
+    sound: 'ENTITY_PLAYER_LEVELUP' # 1.17 sound, check above for more sounds.
+    public:
+      - '&7[+] &#652155Welcome {PLAYER} to this server for the first time.'
+    private:
+      - '<C>Welcome, {PLAYER}. u r butiful'
 join:
   1:
     permission: DEFAULT
-    sound: 'ENTITY_PLAYER_LEVELUP'
-    messages:
+    sound: 'ENTITY_PLAYER_LEVELUP' # 1.17 sound, check above for more sounds.
+    public:
       - '&7[+] <G:af1231>Welcome {PLAYER} to this server.</G:909872>'
-    motd:
-      - '<C><R:1>Please be a bitch.</R>'
+    private:
+      - '<C><R:1>Check out my OnlyFans B)</R>'
   2:
-    permission: OP
-    sound: 'ENTITY_PLAYER_LEVELUP'
-    messages:
-      - '&7[+] <G:2145aa>Welcome OP {PLAYER} to this server.</G:d231da>'
-      - '[ACTION-BAR] <R:1>I''m a cat lmao</R>'
-      - '[TITLE] u r fat<n>&7gimme some money'
-    motd:
-      - '<C><R:2>Please be a bitch.</R>'
-  3:
     permission: vip.super.lol
-    messages:
-      - '[ACTION-BAR] <G:2C08BA>Hello VIP {PLAYER} from world {WORLD}.</G:028A97>'
-    motd:
-      - 'Please be a bitch.'
-  4:
+    public:
+      - '[ACTION-BAR] &7Hello VIP {PLAYER} from world {WORLD}.'
+    private:
+      - '&7Please be a good person.'
+  3:
     permission: vip.omega.lambda
     priority: 2
-    messages:
-      - '[ACTION-BAR] <G:2C08BA>Hello VIP {PLAYER} from world {WORLD}.</G:028A97>'
-    motd:
-      - 'Please be a mega bitch.'
+    public:
+      - '[TITLE] <G:2C08BA>Hello NEPE {PLAYER}</G:028A97><n><G:2C08BA>from world {WORLD}.</G:028A97>'
+    private:
+      - '&7You are extraordinary, please continue.'
 quit:
   1:
-    permission: DEFAULT
-    messages:
-      - '<C>Welcome {PLAYER} to this server.'
+    public:
+      - '&7[-] {#AFF66A}The player {PLAYER} has left the server :c'

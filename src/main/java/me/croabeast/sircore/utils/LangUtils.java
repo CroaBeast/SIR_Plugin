@@ -1,14 +1,14 @@
-package me.croabeast.sir.utils;
+package me.croabeast.sircore.utils;
 
 import me.clip.placeholderapi.*;
 import me.croabeast.iridiumapi.IridiumAPI;
-import me.croabeast.sir.SIR;
-import me.croabeast.sir.handlers.ActBarNew;
-import me.croabeast.sir.handlers.ActBarOld;
-import me.croabeast.sir.handlers.TitleNew;
-import me.croabeast.sir.handlers.TitleOld;
-import me.croabeast.sir.interfaces.ActionBar;
-import me.croabeast.sir.interfaces.TitleMain;
+import me.croabeast.sircore.MainClass;
+import me.croabeast.sircore.handlers.ActBarNew;
+import me.croabeast.sircore.handlers.ActBarOld;
+import me.croabeast.sircore.handlers.TitleNew;
+import me.croabeast.sircore.handlers.TitleOld;
+import me.croabeast.sircore.interfaces.ActionBar;
+import me.croabeast.sircore.interfaces.TitleMain;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -18,7 +18,7 @@ import java.util.*;
 
 public class LangUtils {
 
-    private final SIR main;
+    private final MainClass main;
 
     public int getVersion;
     public String serverName;
@@ -27,7 +27,7 @@ public class LangUtils {
     private TitleMain titleMain;
 
 
-    public LangUtils(SIR main) {
+    public LangUtils(MainClass main) {
         this.main = main;
         String version = Bukkit.getBukkitVersion().split("-")[0];
         this.getVersion = Integer.parseInt(version.split("\\.")[1]);
@@ -35,8 +35,8 @@ public class LangUtils {
     }
 
     public void loadLangClasses() {
-        actionBar = this.getVersion < 11 ? new ActBarOld(main) : new ActBarNew(main);
-        titleMain = this.getVersion < 10 ? new TitleOld(main) : new TitleNew(main);
+        actionBar = this.getVersion < 11 ? new ActBarOld() : new ActBarNew();
+        titleMain = this.getVersion < 10 ? new TitleOld() : new TitleNew();
     }
 
     public String parseColor(String message) {
@@ -115,6 +115,6 @@ public class LangUtils {
     public void title(Player player, String[] message) {
         if (message.length == 0 || message.length > 2) return;
         String subtitle = message.length == 1 ? null : message[1];
-        titleMain.send(player, message[0], subtitle);
+        titleMain.send(player, message[0] + "&r", subtitle);
     }
 }

@@ -1,4 +1,4 @@
-package me.croabeast.sir.interfaces;
+package me.croabeast.sircore.interfaces;
 
 import org.bukkit.entity.Player;
 

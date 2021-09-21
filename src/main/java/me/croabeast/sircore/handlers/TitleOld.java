@@ -1,20 +1,14 @@
-package me.croabeast.sir.handlers;
+package me.croabeast.sircore.handlers;
 
-import me.croabeast.sir.SIR;
-import me.croabeast.sir.interfaces.Reflection;
-import me.croabeast.sir.interfaces.TitleMain;
-import me.croabeast.sir.utils.LangUtils;
+import me.croabeast.sircore.MainClass;
+import me.croabeast.sircore.interfaces.Reflection;
+import me.croabeast.sircore.interfaces.TitleMain;
+import me.croabeast.sircore.utils.LangUtils;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Constructor;
 
 public class TitleOld implements TitleMain, Reflection {
-
-    private final LangUtils langUtils;
-
-    public TitleOld(SIR main) {
-        this.langUtils = main.getLangUtils();
-    }
 
     private void title(Player player, String title) {
         try {
@@ -58,7 +52,6 @@ public class TitleOld implements TitleMain, Reflection {
 
     @Override
     public void send(Player player, String title, String subtitle) {
-        title(player, langUtils.parsePAPI(player, title));
-        subtitle(player, langUtils.parsePAPI(player, subtitle));
+        title(player, title); subtitle(player, subtitle);
     }
 }

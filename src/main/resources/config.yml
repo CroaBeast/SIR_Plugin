@@ -14,9 +14,19 @@ update:
 options:
   # It will send the join/quit messages to the console.
   send-console: true
-  # If UserLogin is installed and this option is enabled (true),
-  # it will send the messages after the player log-in/register.
-  after-login: true
+  # If a login plugin is installed and this option is enabled,
+  # this section will be activated.
+  # Compatible login plugins: [ AuthMe, UserLogin ]
+  # If you want support for another login plugin, you can
+  # suggest it in the Spigot resource page.
+  login:
+    # it will send the messages after the player log-in/register.
+    # Disabling this, messages will send like no compatible login
+    # plugin is installed in the server.
+    send-after: true
+    # This will send messages after some in-game ticks.
+    # You can set this to 0 if you don't want this option.
+    ticks-after: 10
   # Every message in lang.yml that start with this string,
   # will have the main-prefix first.
   prefix-in-config: '<P>'
@@ -25,4 +35,4 @@ options:
   center-prefix: '<C>'
   # ONLY FOR messages.yml file AND FOR TITLE TYPE!!
   # If you want title AND subtitle, use it to split the message.
-  line-splitter: '<n>'
+  line-separator: '<n>'

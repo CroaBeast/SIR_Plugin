@@ -14,6 +14,7 @@ import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class IridiumAPI {
 
@@ -45,11 +46,19 @@ public class IridiumAPI {
 
     @NotNull
     public static String process(@NotNull String string) {
-        for (Patterns patterns : PATTERNS) {
-            string = patterns.process(string);
-        }
+        for (Patterns patterns : PATTERNS) string = patterns.process(string);
         string = ChatColor.translateAlternateColorCodes('&', string);
         return string;
+    }
+
+    @NotNull
+    public static List<String> process(@NotNull List<String> strings) {
+        return strings.stream().map(IridiumAPI::process).collect(Collectors.toList());
+    }
+
+    @NotNull
+    public static String color(@NotNull String string, @NotNull Color color) {
+        return (SUPPORTS_RGB ? ChatColor.of(color) : getClosestColor(color)) + string;
     }
 
     @NotNull
@@ -64,9 +73,7 @@ public class IridiumAPI {
         StringBuilder stringBuilder = new StringBuilder();
         ChatColor[] colors = createGradient(start, end, string.length());
         String[] characters = string.split("");
-        for (int i = 0; i < string.length(); i++) {
-            stringBuilder.append(colors[i]).append(specialColors).append(characters[i]);
-        }
+        for (int i = 0; i < string.length(); i++) stringBuilder.append(colors[i]).append(specialColors).append(characters[i]);
         return stringBuilder.toString();
     }
 
@@ -82,9 +89,7 @@ public class IridiumAPI {
         StringBuilder stringBuilder = new StringBuilder();
         ChatColor[] colors = createRainbow(string.length(), saturation);
         String[] characters = string.split("");
-        for (int i = 0; i < string.length(); i++) {
-            stringBuilder.append(colors[i]).append(specialColors).append(characters[i]);
-        }
+        for (int i = 0; i < string.length(); i++) stringBuilder.append(colors[i]).append(specialColors).append(characters[i]);
         return stringBuilder.toString();
     }
 
@@ -94,16 +99,18 @@ public class IridiumAPI {
     }
 
     @NotNull
+    public static String stripColorFormatting(@NotNull String string) {
+        return string.replaceAll("[&§][a-f0-9lnokm]|<[/]?\\w{5,8}(:[0-9A-F]{6})?>", "");
+    }
+
+    @NotNull
     private static ChatColor[] createRainbow(int step, float saturation) {
         ChatColor[] colors = new ChatColor[step];
         double colorStep = (1.00 / step);
         for (int i = 0; i < step; i++) {
             Color color = Color.getHSBColor((float) (colorStep * i), saturation, saturation);
-            if (SUPPORTS_RGB) {
-                colors[i] = ChatColor.of(color);
-            } else {
-                colors[i] = getClosestColor(color);
-            }
+            if (SUPPORTS_RGB) colors[i] = ChatColor.of(color);
+            else colors[i] = getClosestColor(color);
         }
         return colors;
     }
@@ -122,11 +129,8 @@ public class IridiumAPI {
 
         for (int i = 0; i < step; i++) {
             Color color = new Color(start.getRed() + ((stepR * i) * direction[0]), start.getGreen() + ((stepG * i) * direction[1]), start.getBlue() + ((stepB * i) * direction[2]));
-            if (SUPPORTS_RGB) {
-                colors[i] = ChatColor.of(color);
-            } else {
-                colors[i] = getClosestColor(color);
-            }
+            if (SUPPORTS_RGB) colors[i] = ChatColor.of(color);
+            else colors[i] = getClosestColor(color);
         }
         return colors;
     }
@@ -150,17 +154,13 @@ public class IridiumAPI {
     private static String getMajorVersion(@NotNull String version) {
         Validate.notEmpty(version, "Cannot get major Minecraft version from null or empty string");
 
-        // getVersion()
         int index = version.lastIndexOf("MC:");
-        if (index != -1) {
-            version = version.substring(index + 4, version.length() - 1);
-        } else if (version.endsWith("SNAPSHOT")) {
-            // getBukkitVersion()
+        if (index != -1) version = version.substring(index + 4, version.length() - 1);
+        else if (version.endsWith("SNAPSHOT")) {
             index = version.indexOf('-');
             version = version.substring(0, index);
         }
 
-        // 1.13.2, 1.14.4, etc...
         int lastDot = version.lastIndexOf('.');
         if (version.indexOf('.') != lastDot) version = version.substring(0, lastDot);
 

@@ -1,20 +1,14 @@
-package me.croabeast.sir.handlers;
+package me.croabeast.sircore.handlers;
 
-import me.croabeast.sir.SIR;
-import me.croabeast.sir.interfaces.ActionBar;
-import me.croabeast.sir.interfaces.Reflection;
-import me.croabeast.sir.utils.LangUtils;
+import me.croabeast.sircore.MainClass;
+import me.croabeast.sircore.interfaces.ActionBar;
+import me.croabeast.sircore.interfaces.Reflection;
+import me.croabeast.sircore.utils.LangUtils;
 import org.bukkit.entity.Player;
 
 import java.lang.reflect.Constructor;
 
 public class ActBarOld implements ActionBar, Reflection {
-
-    private final LangUtils langUtils;
-
-    public ActBarOld(SIR main) {
-        this.langUtils = main.getLangUtils();
-    }
 
     private void actionBar(Player player, String text) {
         try {
@@ -31,6 +25,6 @@ public class ActBarOld implements ActionBar, Reflection {
 
     @Override
     public void send(Player player, String message) {
-        actionBar(player, langUtils.parsePAPI(player, message));
+        actionBar(player, message);
     }
 }

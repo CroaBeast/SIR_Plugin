@@ -1,10 +1,10 @@
-name: SIR
+name: SIR # Simple In-game Receptionist
 version: '${project.version}'
-main: me.croabeast.sir.SIR
+main: me.croabeast.sircore.MainClass
 api-version: 1.16
 prefix: SIR
-softdepend: [ PlaceholderAPI, UserLogin ]
-loadafter: [ PlaceholderAPI, UserLogin ]
+softdepend: [ PlaceholderAPI, AuthMe, Vault, UserLogin ]
+loadafter: [ PlaceholderAPI, AuthMe, Vault, UserLogin ]
 authors: [ CroaBeast ]
 
 commands:
@@ -12,12 +12,12 @@ commands:
     description: Main command lmao
 
 permissions:
-  sir.*:
+  sir.main:
     default: op
     children:
-      sir.main: true
+      sir.print: true
       sir.reload: true
-  sir.main:
+  sir.print:
     default: op
   sir.reload:
     default: op
