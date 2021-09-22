@@ -59,7 +59,7 @@ public final class MainClass extends JavaPlugin {
 
         registerAllFiles();
 
-        consoleMsg("&6[SIR] "); consoleMsg("&6[SIR] &bModule 2: &3PlaceholderAPI");
+        moduleHeader(2, "PlaceholderAPI");
         showPluginInfo("PlaceholderAPI");
 
         setupPermissions(); setLoginHook(); registerEvents();
@@ -90,8 +90,13 @@ public final class MainClass extends JavaPlugin {
         Bukkit.getConsoleSender().sendMessage(msg);
     }
 
+    private void moduleHeader(int i, String moduleName) {
+        consoleMsg("&6[SIR] ");
+        consoleMsg("&6[SIR] &bModule " + i + ": &3" + moduleName);
+    }
+
     private void registerAllFiles() {
-        consoleMsg("&6[SIR] "); consoleMsg("&6[SIR] &bModule 1: &3Plugin Files");
+        moduleHeader(1, "Plugin Files");
         config = new PluginFile(main, "config");
         lang = new PluginFile(main, "lang");
         messages = new PluginFile(main, "messages");
@@ -120,15 +125,15 @@ public final class MainClass extends JavaPlugin {
         ServicesManager servMngr = getServer().getServicesManager();
         RegisteredServiceProvider<Permission> rsp = servMngr.getRegistration(Permission.class);
 
-        consoleMsg("&6[SIR] ");
-        consoleMsg("&6[SIR] &bModule 3: &3Permissions");
+        moduleHeader(3, "Permissions");
         consoleMsg("&6[SIR] &7Checking if Vault Permission System is integrated...");
         this.hasVault = pMngr.isPluginEnabled("Vault") && rsp != null;
 
         if (rsp == null) {
-            consoleMsg("&6[SIR] &cVault isn't installed, &7using the default permission system.");
+            consoleMsg("&6[SIR] &cVault isn't installed, &7using the default system.");
         } else {
             perms = rsp.getProvider();
+            consoleMsg("&6[SIR] &7Vault installed, &7hooking in a permission plugin...");
             showPluginInfo("Vault");
         }
     }
@@ -138,8 +143,7 @@ public final class MainClass extends JavaPlugin {
         if (authMe) { i++; loginPlugin = "AuthMe"; }
         if (userLogin) { i++; loginPlugin = "UserLogin"; }
 
-        consoleMsg("&6[SIR] ");
-        consoleMsg("&6[SIR] &bModule 4: &3Login Hook");
+        moduleHeader(4, "Login Plugin Hook");
         consoleMsg("&6[SIR] &7Checking if a compatible login plugin installed...");
 
         if (i > 1) { hasLogin = false;

@@ -22,7 +22,7 @@ public class EventUtils {
     }
 
     private final String[] keys = {"{PLAYER}", "{WORLD}"};
-    private String prefix() { return langUtils.parseColor("&e&lSIR &8> &f"); }
+    private final String prefix = "&e&lSIR &8> &f";
 
     private boolean isSound(String enumName) {
         if (enumName == null) return false;
@@ -56,13 +56,12 @@ public class EventUtils {
             if (message.startsWith(" ")) message = message.substring(1);
             message = langUtils.parsePAPI(player, message);
 
-            if (main.getConfig().getBoolean("options.send-console"))
-                main.consoleMsg(prefix() + message);
+            if (main.getConfig().getBoolean("options.send-console", true))
+                main.consoleMsg(prefix + message);
 
-            if (message.startsWith("[ACTION-BAR]")) {
+            if (message.startsWith("[ACTION-BAR]"))
                 for (Player p : players)
                     langUtils.actionBar(p, setUp("[ACTION-BAR]", message));
-            }
 
             else if (message.startsWith("[TITLE]")) {
                 String sp = Pattern.quote(split);
@@ -84,12 +83,11 @@ public class EventUtils {
             if (message.startsWith(" ")) message = message.substring(1);
             message = langUtils.parsePAPI(player, message);
 
-            if (main.getConfig().getBoolean("options.send-console"))
-                main.consoleMsg(prefix() + message);
+            if (main.getConfig().getBoolean("options.send-console",true))
+                main.consoleMsg(prefix + message);
 
-            if (message.startsWith("[ACTION-BAR]")) {
+            if (message.startsWith("[ACTION-BAR]"))
                 langUtils.actionBar(player, setUp("[ACTION-BAR]", message));
-            }
 
             else if (message.startsWith("[TITLE]")) {
                 String sp = Pattern.quote(split);
@@ -97,6 +95,21 @@ public class EventUtils {
             }
 
             else langUtils.sendMixed(player, message);
+        }
+    }
+
+    private void eventCommand(Player player, List<String> list, boolean isJoin) {
+        String[] values = {player.getName(), player.getWorld().getName()};
+
+        for (String message : list) {
+            if (message == null || message.equals("")) continue;
+            message = StringUtils.replaceEach(message, keys, values);
+            if (message.startsWith(" ")) message = message.substring(1);
+
+            if (message.startsWith("[PLAYER]") && isJoin)
+                Bukkit.dispatchCommand(player, setUp("[PLAYER]", message));
+
+            else Bukkit.dispatchCommand(Bukkit.getConsoleSender(), message);
         }
     }
 
@@ -111,6 +124,7 @@ public class EventUtils {
 
         eventPublic(player, id.getStringList("public"));
         if (isJoin) eventPrivate(player, id.getStringList("private"));
+        eventCommand(player, id.getStringList("commands"), isJoin);
     }
 
     private boolean hasPerm(Player player, String perm) {
@@ -144,6 +158,14 @@ public class EventUtils {
             else if (perm.matches("(?i)DEFAULT")) finalId = id;
         }
 
-        if (finalId != null) doAllEvent(finalId, player, isJoin);
+        if (finalId == null) {
+            String prefix = "&7 &4&lSIR-DEBUG &8> ";
+            langUtils.sendMixed(player, prefix + "&cA valid message group isn't found...");
+            langUtils.sendMixed(player, prefix + "&7Please check your &messages.yml file.");
+            main.consoleMsg(prefix + "&cA valid message group isn't found...");
+            main.consoleMsg(prefix + "&7Please check your &messages.yml file.");
+        }
+
+        else doAllEvent(finalId, player, isJoin);
     }
 }

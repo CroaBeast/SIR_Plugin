@@ -33,8 +33,12 @@ public class PluginFile {
 
     private void saveFile() {
         if (custom == null || customFile == null) return;
-        try { this.getFile().save(this.customFile);
-        } catch (IOException e) { e.printStackTrace(); }
+        try {
+            this.getFile().save(this.customFile);
+        } catch (IOException e) {
+            main.consoleMsg("&6[SIR] &7The " + location + " file couldn't be saved...");
+            e.printStackTrace();
+        }
     }
 
     public void reloadFile() {
@@ -42,11 +46,11 @@ public class PluginFile {
         if (customFile == null) customFile = catchFile();
         custom = YamlConfiguration.loadConfiguration(customFile);
 
-        Reader defConfigStream; InputStream resource = main.getResource("messages.yml");
-        if (resource != null) {
-            defConfigStream = new InputStreamReader(resource, StandardCharsets.UTF_8);
-            YamlConfiguration defConfig = YamlConfiguration.loadConfiguration(defConfigStream);
-            custom.setDefaults(defConfig);
+        Reader stream; InputStream mainResource = main.getResource(location);
+        if (mainResource != null) {
+            stream = new InputStreamReader(mainResource, StandardCharsets.UTF_8);
+            YamlConfiguration file = YamlConfiguration.loadConfiguration(stream);
+            custom.setDefaults(file);
         }
     }
 
