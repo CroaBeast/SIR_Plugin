@@ -42,6 +42,11 @@
 # - "private:" Sends messages to the same player. [SEE BELOW FOR MESSAGE TYPES]
 #              Deleting this won't send any private messages.
 #              WARNING!!: You can't put this node on the "quit" section.
+# - "commands:" Execute commands when a player joins/leaves the server.
+#               Deleting this won't execute any commands.
+#               Using [PLAYER] first will execute a command as the player.
+#               Else will execute the command as the console.
+#               WARNING!!: You can't use [PLAYER] prefix on the quit section.
 
 ##### Types of messages:
 # - Action Bar: Sends a message to the action bar. For some reason RGB colors
@@ -78,6 +83,9 @@ join:
       - '&7[+] <G:af1231>Welcome {PLAYER} to this server.</G:909872>'
     private:
       - '<C><R:1>Check out my OnlyFans B)</R>'
+    commands:
+      - '[PLAYER] say hi me, I''m {PLAYER}'
+      - 'minecraft:time set day'
   2:
     permission: vip.super.lol
     public:
