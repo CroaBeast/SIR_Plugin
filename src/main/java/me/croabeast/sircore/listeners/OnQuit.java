@@ -14,7 +14,7 @@ public class OnQuit implements Listener {
     private final EventUtils eventUtils;
 
     public OnQuit(MainClass main) {
-        this.main = main;
+        this.main = main; main.events++;
         this.eventUtils = main.getEventUtils();
         main.getServer().getPluginManager().registerEvents(this, main);
     }

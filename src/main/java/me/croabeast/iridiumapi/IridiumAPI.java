@@ -5,6 +5,7 @@ import me.croabeast.iridiumapi.patterns.Gradient;
 import me.croabeast.iridiumapi.patterns.Patterns;
 import me.croabeast.iridiumapi.patterns.Rainbow;
 import me.croabeast.iridiumapi.patterns.SolidColor;
+import me.croabeast.sircore.utils.LangUtils;
 import net.md_5.bungee.api.ChatColor;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
@@ -18,9 +19,10 @@ import java.util.stream.Collectors;
 
 public class IridiumAPI {
 
-    private static final int VERSION = Integer.parseInt(getMajorVersion(Bukkit.getVersion()).substring(2));
+    private static final int VERSION = Integer.parseInt(Bukkit.getBukkitVersion()
+            .split("-")[0].split("\\.")[1]);
 
-    private static final boolean SUPPORTS_RGB = VERSION >= 16;
+    private static final boolean SUPPORTS_RGB = VERSION > 15;
 
     private static final List<String> SPECIAL_COLORS = Arrays.asList("&l", "&n", "&o", "&k", "&m");
 
@@ -73,7 +75,8 @@ public class IridiumAPI {
         StringBuilder stringBuilder = new StringBuilder();
         ChatColor[] colors = createGradient(start, end, string.length());
         String[] characters = string.split("");
-        for (int i = 0; i < string.length(); i++) stringBuilder.append(colors[i]).append(specialColors).append(characters[i]);
+        for (int i = 0; i < string.length(); i++) stringBuilder.append(colors[i])
+                .append(specialColors).append(characters[i]);
         return stringBuilder.toString();
     }
 
@@ -89,13 +92,15 @@ public class IridiumAPI {
         StringBuilder stringBuilder = new StringBuilder();
         ChatColor[] colors = createRainbow(string.length(), saturation);
         String[] characters = string.split("");
-        for (int i = 0; i < string.length(); i++) stringBuilder.append(colors[i]).append(specialColors).append(characters[i]);
+        for (int i = 0; i < string.length(); i++) stringBuilder.append(colors[i])
+                .append(specialColors).append(characters[i]);
         return stringBuilder.toString();
     }
 
     @NotNull
     public static ChatColor getColor(@NotNull String string) {
-        return SUPPORTS_RGB ? ChatColor.of(new Color(Integer.parseInt(string, 16))) : getClosestColor(new Color(Integer.parseInt(string, 16)));
+        return SUPPORTS_RGB ? ChatColor.of(new Color(Integer.parseInt(string, 16)))
+                : getClosestColor(new Color(Integer.parseInt(string, 16)));
     }
 
     @NotNull
@@ -109,8 +114,7 @@ public class IridiumAPI {
         double colorStep = (1.00 / step);
         for (int i = 0; i < step; i++) {
             Color color = Color.getHSBColor((float) (colorStep * i), saturation, saturation);
-            if (SUPPORTS_RGB) colors[i] = ChatColor.of(color);
-            else colors[i] = getClosestColor(color);
+            colors[i] = SUPPORTS_RGB ? ChatColor.of(color) : getClosestColor(color);
         }
         return colors;
     }
@@ -128,9 +132,10 @@ public class IridiumAPI {
         };
 
         for (int i = 0; i < step; i++) {
-            Color color = new Color(start.getRed() + ((stepR * i) * direction[0]), start.getGreen() + ((stepG * i) * direction[1]), start.getBlue() + ((stepB * i) * direction[2]));
-            if (SUPPORTS_RGB) colors[i] = ChatColor.of(color);
-            else colors[i] = getClosestColor(color);
+            Color color = new Color(start.getRed() + ((stepR * i) * direction[0]),
+                    start.getGreen() + ((stepG * i) * direction[1]),
+                    start.getBlue() + ((stepB * i) * direction[2]));
+            colors[i] = SUPPORTS_RGB ? ChatColor.of(color) : getClosestColor(color);
         }
         return colors;
     }
@@ -141,7 +146,9 @@ public class IridiumAPI {
         double nearestDistance = Integer.MAX_VALUE;
 
         for (Color constantColor : COLORS.keySet()) {
-            double distance = Math.pow(color.getRed() - constantColor.getRed(), 2) + Math.pow(color.getGreen() - constantColor.getGreen(), 2) + Math.pow(color.getBlue() - constantColor.getBlue(), 2);
+            double distance = Math.pow(color.getRed() - constantColor.getRed(), 2)
+                    + Math.pow(color.getGreen() - constantColor.getGreen(), 2)
+                    + Math.pow(color.getBlue() - constantColor.getBlue(), 2);
             if (nearestDistance > distance) {
                 nearestColor = constantColor;
                 nearestDistance = distance;
@@ -149,22 +156,4 @@ public class IridiumAPI {
         }
         return COLORS.get(nearestColor);
     }
-
-    @NotNull
-    private static String getMajorVersion(@NotNull String version) {
-        Validate.notEmpty(version, "Cannot get major Minecraft version from null or empty string");
-
-        int index = version.lastIndexOf("MC:");
-        if (index != -1) version = version.substring(index + 4, version.length() - 1);
-        else if (version.endsWith("SNAPSHOT")) {
-            index = version.indexOf('-');
-            version = version.substring(0, index);
-        }
-
-        int lastDot = version.lastIndexOf('.');
-        if (version.indexOf('.') != lastDot) version = version.substring(0, lastDot);
-
-        return version;
-    }
-
 }

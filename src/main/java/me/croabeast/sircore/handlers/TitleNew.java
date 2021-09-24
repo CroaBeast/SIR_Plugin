@@ -1,8 +1,6 @@
 package me.croabeast.sircore.handlers;
 
-import me.croabeast.sircore.MainClass;
 import me.croabeast.sircore.interfaces.TitleMain;
-import me.croabeast.sircore.utils.LangUtils;
 import org.bukkit.entity.Player;
 
 public class TitleNew implements TitleMain {

@@ -17,6 +17,8 @@ public class AuthMe implements Listener {
     public AuthMe(MainClass main) {
         this.main = main;
         this.eventUtils = main.getEventUtils();
+        if (!main.authMe) return;
+        main.events++;
         main.getServer().getPluginManager().registerEvents(this, main);
     }
 

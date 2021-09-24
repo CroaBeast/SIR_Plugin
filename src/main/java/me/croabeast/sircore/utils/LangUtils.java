@@ -26,7 +26,6 @@ public class LangUtils {
     private ActionBar actionBar;
     private TitleMain titleMain;
 
-
     public LangUtils(MainClass main) {
         this.main = main;
         String version = Bukkit.getBukkitVersion().split("-")[0];
@@ -77,8 +76,7 @@ public class LangUtils {
     }
 
     public void sendMixed(Player player, String message) {
-        String center = main.getConfig().getString("options.center-prefix");
-        if (center == null) center = "";
+        String center = main.getConfig().getString("options.center-prefix", "");
         if (message.startsWith(center)) sendCentered(player, message.replace(center, ""));
         else player.sendMessage(parsePAPI(player, message));
     }
@@ -89,11 +87,10 @@ public class LangUtils {
     }
 
     public void send(CommandSender sender, String path, String... values) {
-        String key = main.getConfig().getString("options.prefix-in-config");
-        String prefix = main.getLang().getString("main-prefix");
-        String center = main.getConfig().getString("options.center-prefix");
+        String key = main.getConfig().getString("options.prefix-in-config", "");
+        String prefix = main.getLang().getString("main-prefix", "");
+        String center = main.getConfig().getString("options.center-prefix", "");
         String[] keys = {"{ARG}", "{PERM}", "{PLAYER}", "{VERSION}"};
-        if (key == null) key = ""; if (prefix == null) prefix = "";
 
         for (String msg : toList(path)) {
             if (msg == null || msg.equals("")) continue;
@@ -101,7 +98,6 @@ public class LangUtils {
             msg = StringUtils.replaceEach(msg, keys, values);
             if (sender instanceof Player) sendMixed((Player) sender, msg);
             else {
-                if (center == null) center = "";
                 if (msg.startsWith(center)) msg = msg.replace(center,"");
                 sender.sendMessage(parseColor(msg));
             }

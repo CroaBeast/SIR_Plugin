@@ -1,11 +1,12 @@
 name: SIR # Simple In-game Receptionist
 version: '${project.version}'
-main: me.croabeast.sircore.MainClass
 api-version: 1.16
 prefix: SIR
-softdepend: [ PlaceholderAPI, AuthMe, Vault, UserLogin ]
-loadafter: [ PlaceholderAPI, AuthMe, Vault, UserLogin ]
 authors: [ CroaBeast ]
+
+softdepend: [ AuthMe, PlaceholderAPI, UserLogin, Vault ]
+
+main: me.croabeast.sircore.MainClass
 
 commands:
   sir:

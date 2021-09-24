@@ -1,8 +1,6 @@
 package me.croabeast.sircore.handlers;
 
-import me.croabeast.sircore.MainClass;
 import me.croabeast.sircore.interfaces.ActionBar;
-import me.croabeast.sircore.utils.LangUtils;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
