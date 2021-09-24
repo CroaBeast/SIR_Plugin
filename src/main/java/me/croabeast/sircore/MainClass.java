@@ -88,7 +88,7 @@ public final class MainClass extends JavaPlugin {
             consoleMsg("&6[SIR] &7Vault&c isn't installed&7, using the default system.");
         } else {
             perms = rsp.getProvider();
-            String vault = "Vault " + vaultPlugin.getDescription().getVersion() + " ";
+            String vault = "Vault " + vaultPlugin.getDescription().getVersion();
             consoleMsg("&6[SIR] &7" + vault + "&a installed&7, hooking in a permission plugin...");
         }
 
