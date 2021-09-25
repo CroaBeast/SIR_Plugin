@@ -27,6 +27,9 @@ options:
     # This will send messages after some in-game ticks.
     # You can set this to 0 if you don't want this option.
     ticks-after: 10
+    # Enabling this will teleport the player before logs in /register.
+    # Disabling it will teleport AFTER the player does it.
+    spawn-before: true
   # Every message in lang.yml that start with this string,
   # will have the main-prefix first.
   prefix-in-config: '<P>'

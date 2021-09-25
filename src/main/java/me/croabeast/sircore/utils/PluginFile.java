@@ -36,7 +36,7 @@ public class PluginFile {
         try {
             this.getFile().save(this.customFile);
         } catch (IOException e) {
-            main.consoleMsg("&6[SIR] &7The " + location + " file couldn't be saved...");
+            main.logger("&6[SIR] &7The " + location + " file couldn't be saved...");
             e.printStackTrace();
         }
     }
@@ -58,7 +58,7 @@ public class PluginFile {
         try {
             ConfigUpdater.update(main, location, catchFile(), Collections.emptyList());
         } catch (IOException e) {
-            main.consoleMsg("&6[SIR] &7The " + location + " file could not be updated...");
+            main.logger("&6[SIR] &7The " + location + " file could not be updated...");
             e.printStackTrace();
         }
     }
@@ -71,7 +71,7 @@ public class PluginFile {
 
     private void registerFile() {
         if (catchFile().exists()) return;
-        main.consoleMsg("&6[SIR] &cFile " + location + " missing... &fGenerating!");
+        main.logger("&6[SIR] &cFile " + location + " missing... &fGenerating!");
         saveDefaultFile(); reloadFile();
     }
 

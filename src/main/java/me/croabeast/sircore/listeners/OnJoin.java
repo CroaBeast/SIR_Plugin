@@ -2,6 +2,7 @@ package me.croabeast.sircore.listeners;
 
 import me.croabeast.sircore.MainClass;
 import me.croabeast.sircore.utils.EventUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -21,12 +22,16 @@ public class OnJoin implements Listener {
 
     @EventHandler
     private void onJoin(PlayerJoinEvent event) {
-        if (main.hasLogin && main.getConfig().getBoolean("options.login.send-after")) return;
-
         Player player = event.getPlayer();
-        ConfigurationSection section = eventUtils.joinSection(player);
-        if (section == null) return;
+        ConfigurationSection id = eventUtils.lastSection(player, true);
+        boolean doSpawn = main.getConfig().getBoolean("options.login.spawn-before");
+        if (id == null) return;
 
-        eventUtils.getSections(section, player, true);
+        if (main.hasLogin && main.getConfig().getBoolean("options.login.send-after")) {
+            if (doSpawn) eventUtils.eventSpawn(id, player); return;
+        }
+
+        Bukkit.getScheduler().runTaskLater(main, () ->
+                eventUtils.doAllEvent(id, player, true, !doSpawn), 2);
     }
 }

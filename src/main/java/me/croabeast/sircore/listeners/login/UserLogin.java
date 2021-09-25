@@ -24,14 +24,15 @@ public class UserLogin implements Listener {
 
     @EventHandler
     private void onLogin(AuthenticationEvent event) {
-        if (!main.hasLogin || !main.getConfig().getBoolean("options.login.send-after")) return;
-
         Player player = event.getPlayer();
-        ConfigurationSection section = eventUtils.joinSection(player);
-        if (section == null) return;
+        ConfigurationSection id = eventUtils.lastSection(player, true);
+        boolean doSpawn = main.getConfig().getBoolean("options.login.spawn-before");
+        if (id == null) return;
+
+        if (!main.hasLogin || !main.getConfig().getBoolean("options.login.send-after")) return;
 
         int ticks = main.getConfig().getInt("options.login.ticks-after", 0);
         Bukkit.getScheduler().runTaskLater(main, () ->
-                eventUtils.getSections(section, player, true), ticks);
+                eventUtils.doAllEvent(id, player, true, !doSpawn), ticks);
     }
 }

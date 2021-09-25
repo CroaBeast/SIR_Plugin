@@ -22,9 +22,9 @@ public class OnQuit implements Listener {
     @EventHandler
     private void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        ConfigurationSection section = main.getMessages().getConfigurationSection("quit");
-        if (section == null) return;
+        ConfigurationSection id = eventUtils.lastSection(player, false);
+        if (id == null) return;
 
-        eventUtils.getSections(section, player, false);
+        eventUtils.doAllEvent(id, player, false, false);
     }
 }

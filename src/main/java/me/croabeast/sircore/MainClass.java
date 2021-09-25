@@ -52,16 +52,17 @@ public final class MainClass extends JavaPlugin {
 
         langUtils = new LangUtils(main);
         eventUtils = new EventUtils(main);
-        langUtils.loadLangClasses();
+        langUtils.loadLangClasses(); // Loading Title and Action Bar
 
         new Metrics(main, 12806); // The bStats class.
-        new CmdUtils(main); // Register the main command.
+        new CmdUtils(main); // Register the main command for the plugin
 
-        consoleMsg(" &7---- > Simple In-game Receptionist by CroaBeast < ---- ");
-        consoleMsg("&6[SIR] ");
-        consoleMsg("&6[SIR] &7Checking &e"+ Bukkit.getVersion()+"&7...");
-        consoleMsg("&6[SIR] &e" + langUtils.serverName + " &7detected.");
+        logger(" &7---- > Simple In-game Receptionist by CroaBeast < ---- ");
+        logger("&6[SIR] ");
+        logger("&6[SIR] &7Checking &e"+ Bukkit.getVersion()+"&7...");
+        logger("&6[SIR] &e" + langUtils.serverName + " &7detected.");
 
+        // All files related module.
         moduleHeader(1, "Plugin Files");
         config = new PluginFile(main, "config");
         lang = new PluginFile(main, "lang");
@@ -70,44 +71,47 @@ public final class MainClass extends JavaPlugin {
         config.updateRegisteredFile();
         lang.updateRegisteredFile();
         messages.updateRegisteredFile();
-        consoleMsg("&6[SIR] &7Loaded 3 files in the plugin directory.");
+        logger("&6[SIR] &7Loaded 3 files in the plugin directory.");
 
+        // PlaceholderAPI module
         moduleHeader(2, "PlaceholderAPI");
         showPluginInfo("PlaceholderAPI");
 
-
+        // Permission related module
         moduleHeader(3, "Permissions");
-        consoleMsg("&6[SIR] &7Checking if Vault Permission System is integrated...");
+        logger("&6[SIR] &7Checking if Vault Permission System is integrated...");
 
         ServicesManager servMngr = getServer().getServicesManager();
         RegisteredServiceProvider<Permission> rsp = servMngr.getRegistration(Permission.class);
         this.hasVault = pMngr.isPluginEnabled("Vault") && rsp != null;
         Plugin vaultPlugin = pMngr.getPlugin("Vault");
 
-        if (rsp == null || vaultPlugin == null) {
-            consoleMsg("&6[SIR] &7Vault&c isn't installed&7, using the default system.");
+        if (vaultPlugin == null || rsp == null) {
+            logger("&6[SIR] &7Vault&c isn't installed&7, using the default system.");
         } else {
             perms = rsp.getProvider();
             String vault = "Vault " + vaultPlugin.getDescription().getVersion();
-            consoleMsg("&6[SIR] &7" + vault + "&a installed&7, hooking in a permission plugin...");
+            logger("&6[SIR] &7" + vault + "&a installed&7, hooking in a permission plugin...");
         }
 
+        // Login Plugin Hook module
         int i = 0; String loginPlugin = "No login plugin enabled";
         if (authMe) { i++; loginPlugin = "AuthMe"; }
         if (userLogin) { i++; loginPlugin = "UserLogin"; }
 
         moduleHeader(4, "Login Plugin Hook");
-        consoleMsg("&6[SIR] &7Checking if a compatible login plugin installed...");
+        logger("&6[SIR] &7Checking if a compatible login plugin installed...");
 
         if (i > 1) { hasLogin = false;
-            consoleMsg("&6[SIR] &cTwo or more compatible login plugins are installed.");
-            consoleMsg("&6[SIR] &cPlease delete the extra ones and leave one of them.");
+            logger("&6[SIR] &cTwo or more compatible login plugins are installed.");
+            logger("&6[SIR] &cPlease delete the extra ones and leave one of them.");
         } else if (i == 1) { hasLogin = true;
             showPluginInfo(loginPlugin);
         } else { hasLogin = false;
-            consoleMsg("&6[SIR] &cThere is no login plugin installed. &7Unhooking...");
+            logger("&6[SIR] &cThere is no login plugin installed. &7Unhooking...");
         }
 
+        // Events loading module
         moduleHeader(5, "Events Registering");
         new OldMessages(main);
         new OnJoin(main);
@@ -116,17 +120,17 @@ public final class MainClass extends JavaPlugin {
             new AuthMe(main);
             new UserLogin(main);
         }
-        consoleMsg("&6[SIR] &7Registered &e" + events + "&7 plugin events.");
+        logger("&6[SIR] &7Registered &e" + events + "&7 plugin events.");
 
-        consoleMsg("&6[SIR] ");
-        consoleMsg("&6[SIR] &fSIR " + version + "&7 was&a loaded&7 successfully&7.");
-        consoleMsg("&6[SIR] ");
-        consoleMsg(" &7---- > Simple In-game Receptionist by CroaBeast < ---- ");
+        logger("&6[SIR] ");
+        logger("&6[SIR] &fSIR " + version + "&7 was&a loaded&7 successfully&7.");
+        logger("&6[SIR] ");
+        logger(" &7---- > Simple In-game Receptionist by CroaBeast < ---- ");
     }
 
     public void onDisable() {
         main = null; // This will prevent any memory leaks.
-        consoleMsg("&4[SIR] &7SIR &f" + version + "&7 was totally disabled &cu-u");
+        logger("&4[SIR] &7SIR &f" + version + "&7 was totally disabled &cu-u");
     }
 
     PluginManager pMngr = Bukkit.getPluginManager();
@@ -139,7 +143,7 @@ public final class MainClass extends JavaPlugin {
 
     public Permission getPerms() { return perms; }
 
-    public void consoleMsg(String msg) {
+    public void logger(String msg) {
         msg = ChatColor.translateAlternateColorCodes('&', msg);
         Bukkit.getConsoleSender().sendMessage(msg);
     }
@@ -148,12 +152,12 @@ public final class MainClass extends JavaPlugin {
         Plugin plugin = pMngr.getPlugin(name);
         String version = plugin != null ? plugin.getDescription().getVersion() + " " : "";
         String hook = plugin != null ? "&aenabled&7. Hooking..." : "&cnot found&7. Unhooking...";
-        consoleMsg("&6[SIR] &7" + name + " " + version + hook);
+        logger("&6[SIR] &7" + name + " " + version + hook);
     }
 
     private void moduleHeader(int i, String moduleName) {
-        consoleMsg("&6[SIR] ");
-        consoleMsg("&6[SIR] &bModule " + i + ": &3" + moduleName);
+        logger("&6[SIR] ");
+        logger("&6[SIR] &bModule " + i + ": &3" + moduleName);
     }
 
     public void reloadAllFiles() {
