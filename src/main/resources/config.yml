@@ -35,7 +35,7 @@ login:
   send-after: true
   # This will send messages after some in-game ticks.
   # You can set this to 0 if you don't want this option or deleting
-    # this path completely.
+  # this path completely.
   ticks-after: 10
   # Enabling this will teleport the player before log-in/register.
   # Disabling it will teleport AFTER the player does it.

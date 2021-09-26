@@ -208,6 +208,12 @@ public class EventUtils {
             if (join && soundString != null) sound(player, soundString);
             if (join && spawn) spawn(id, player);
 
+            int godTime = id.getInt("invulnerable", 0) ;
+            if (main.getLangUtils().getVersion > 8 && godTime > 0) {
+                godTime = godTime * 20; player.setInvulnerable(true);
+                Bukkit.getScheduler().runTaskLater(main, () -> player.setInvulnerable(false), godTime);
+            }
+
             forAll(player, id.getStringList("public"));
             if (join) toOne(player, id.getStringList("private"));
             command(player, id.getStringList("commands"), join);                

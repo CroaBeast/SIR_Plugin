@@ -42,6 +42,9 @@
 # - "private:" Sends messages to the same player. [SEE BELOW FOR MESSAGE TYPES]
 #              Deleting this won't send any private messages.
 #              WARNING!!: You can't put this node on the "quit" section.
+# - "invulnerable:" Gives invulnerability for X seconds to the player when joins.
+#                   Deleting this or setting it to 0 will disable this option.
+#                   WARNING!!: You can't put this node on the "quit" section.
 # - "spawn:" Teleports the player to the world and respective locations.
 #            Deleting this or the world set isn't a valid loaded world, it will
 #            not teleport the player to any place.
@@ -79,6 +82,7 @@ first-join:
       - '&7[+] &#652155Welcome {PLAYER} to this server for the first time.'
     private:
       - '<C>Welcome, {PLAYER}. u r butiful'
+    invulnerable: 3
     spawn:
       world: world
       x-y-z: 0,80,0
@@ -93,6 +97,7 @@ join:
     commands:
       - '[PLAYER] say hi me, I''m {PLAYER}'
       - 'minecraft:time set day'
+    invulnerable: 3
     spawn:
       world: world
       x-y-z: 0,80,0
