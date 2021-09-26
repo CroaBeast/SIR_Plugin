@@ -4,7 +4,14 @@ api-version: 1.16
 prefix: SIR
 authors: [ CroaBeast ]
 
-softdepend: [ AuthMe, PlaceholderAPI, UserLogin, Vault ]
+softdepend:
+  - AuthMe
+  - PlaceholderAPI
+  - CMI
+  - UserLogin
+  - Vault
+  - Essentials
+  - EssentialsX
 
 main: me.croabeast.sircore.MainClass
 

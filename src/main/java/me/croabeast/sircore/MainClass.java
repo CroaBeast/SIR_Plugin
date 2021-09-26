@@ -4,6 +4,8 @@ import me.croabeast.sircore.listeners.OnJoin;
 import me.croabeast.sircore.listeners.login.AuthMe;
 import me.croabeast.sircore.listeners.login.UserLogin;
 import me.croabeast.sircore.listeners.OnQuit;
+import me.croabeast.sircore.listeners.vanish.CMI;
+import me.croabeast.sircore.listeners.vanish.Essentials;
 import me.croabeast.sircore.utils.*;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
@@ -41,6 +43,10 @@ public final class MainClass extends JavaPlugin {
     public boolean authMe;
     public boolean userLogin;
 
+    public boolean hasVanish;
+    public boolean hasCMI;
+    public boolean essentials;
+
     @Override
     public void onEnable() {
         main = this; // The plugin instance initializing...
@@ -49,6 +55,8 @@ public final class MainClass extends JavaPlugin {
         this.hasPAPI = pMngr.isPluginEnabled("PlaceholderAPI");
         this.authMe = pMngr.isPluginEnabled("AuthMe");
         this.userLogin = pMngr.isPluginEnabled("UserLogin");
+        this.hasCMI = pMngr.isPluginEnabled("CMI");
+        this.essentials = pMngr.isPluginEnabled("Essentials");
 
         langUtils = new LangUtils(main);
         eventUtils = new EventUtils(main);
@@ -94,13 +102,13 @@ public final class MainClass extends JavaPlugin {
             logger("&6[SIR] &7" + vault + "&a installed&7, hooking in a permission plugin...");
         }
 
-        // Login Plugin Hook module
+        // Login plugin Hook module
         int i = 0; String loginPlugin = "No login plugin enabled";
         if (authMe) { i++; loginPlugin = "AuthMe"; }
         if (userLogin) { i++; loginPlugin = "UserLogin"; }
 
         moduleHeader(4, "Login Plugin Hook");
-        logger("&6[SIR] &7Checking if a compatible login plugin installed...");
+        logger("&6[SIR] &7Checking if a compatible login plugin is installed...");
 
         if (i > 1) { hasLogin = false;
             logger("&6[SIR] &cTwo or more compatible login plugins are installed.");
@@ -111,14 +119,35 @@ public final class MainClass extends JavaPlugin {
             logger("&6[SIR] &cThere is no login plugin installed. &7Unhooking...");
         }
 
+        // Vanish plugin Hook module
+        int x = 0; String vanishPlugin = "No vanish plugin enabled";
+        if (hasCMI) { x++; vanishPlugin = "CMI"; }
+        if (essentials) { x++; vanishPlugin = "Essentials"; }
+
+        moduleHeader(5, "Vanish Plugin Hook");
+        logger("&6[SIR] &7Checking if a compatible vanish plugin is installed...");
+
+        if (x > 1) { hasVanish = false;
+            logger("&6[SIR] &cTwo or more compatible vanish plugins are installed.");
+            logger("&6[SIR] &cPlease delete the extra ones and leave one of them.");
+        } else if (x == 1) { hasVanish = true;
+            showPluginInfo(vanishPlugin);
+        } else { hasVanish = false;
+            logger("&6[SIR] &cThere is no vanish plugin installed. &7Unhooking...");
+        }
+
         // Events loading module
-        moduleHeader(5, "Events Registering");
+        moduleHeader(6, "Events Registering");
         new OldMessages(main);
         new OnJoin(main);
         new OnQuit(main);
         if (hasLogin) {
             new AuthMe(main);
             new UserLogin(main);
+        }
+        if (hasVanish) {
+            new CMI(main);
+            new Essentials(main);
         }
         logger("&6[SIR] &7Registered &e" + events + "&7 plugin events.");
 

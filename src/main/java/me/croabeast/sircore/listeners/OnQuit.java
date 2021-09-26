@@ -25,6 +25,9 @@ public class OnQuit implements Listener {
         ConfigurationSection id = eventUtils.lastSection(player, false);
         if (id == null) return;
 
-        eventUtils.doAllEvent(id, player, false, false);
+        boolean vanish = eventUtils.isVanished(player, false);
+        if (vanish && main.getConfig().getBoolean("vanish.silent")) return;
+
+        eventUtils.runEvent(id, player, false, false, false);
     }
 }
