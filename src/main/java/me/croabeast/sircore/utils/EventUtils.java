@@ -10,7 +10,6 @@ import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.PluginManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,8 +35,7 @@ public class EventUtils {
     }
 
     private boolean essVanish(Player player, boolean join) {
-        PluginManager pMgr = Bukkit.getPluginManager();
-        Essentials ess = (Essentials) pMgr.getPlugin("Essentials");
+        Essentials ess = (Essentials) main.plugin("Essentials");
         if (ess == null) return false;
 
         boolean isJoin = join && hasPerm(player, "essentials.silentjoin.vanish");
@@ -45,8 +43,7 @@ public class EventUtils {
     }
 
     private boolean cmiVanish(Player player) {
-        PluginManager pMgr = Bukkit.getPluginManager();
-        if (pMgr.getPlugin("CMI") == null) return false;
+        if (main.plugin("CMI") == null) return false;
         return CMIUser.getUser(player).isVanished();
     }
 
@@ -114,18 +111,15 @@ public class EventUtils {
             message = langUtils.parsePAPI(player, message);
 
             if (main.getConfig().getBoolean("options.send-console", true))
-                main.logger(prefix + message);
+                main.logger(prefix + message.replace(split, "&r" + split));
 
             if (message.startsWith("[ACTION-BAR]"))
                 for (Player p : players)
                     langUtils.actionBar(p, setUp("[ACTION-BAR]", message));
 
             else if (message.startsWith("[TITLE]")) {
-                String sp = Pattern.quote(split);
-                for (Player p : players) {
-                    message = message.replace(split, "&r" + split);
-                    langUtils.title(p, setUp("[TITLE]", message).split(sp));
-                }
+                for (Player p : players)
+                    langUtils.title(p, setUp("[TITLE]", message).split(Pattern.quote(split)));
             }
 
             else for (Player p : players) langUtils.sendMixed(p, message);
@@ -143,16 +137,13 @@ public class EventUtils {
             message = langUtils.parsePAPI(player, message);
 
             if (main.getConfig().getBoolean("options.send-console",true))
-                main.logger(prefix + message);
+                main.logger(prefix + message.replace(split, "&r" + split));
 
             if (message.startsWith("[ACTION-BAR]"))
                 langUtils.actionBar(player, setUp("[ACTION-BAR]", message));
 
-            else if (message.startsWith("[TITLE]")) {
-                String sp = Pattern.quote(split);
-                message = message.replace(split, "&r" + split);
-                langUtils.title(player, setUp("[TITLE]", message).split(sp));
-            }
+            else if (message.startsWith("[TITLE]"))
+                langUtils.title(player, setUp("[TITLE]", message).split(Pattern.quote(split)));
 
             else langUtils.sendMixed(player, message);
         }

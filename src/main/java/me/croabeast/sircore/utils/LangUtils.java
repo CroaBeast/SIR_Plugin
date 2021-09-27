@@ -111,6 +111,6 @@ public class LangUtils {
     public void title(Player player, String[] message) {
         if (message.length == 0 || message.length > 2) return;
         String subtitle = message.length == 1 ? null : message[1];
-        titleMain.send(player, message[0] + "&r", subtitle);
+        titleMain.send(player, message[0], subtitle);
     }
 }

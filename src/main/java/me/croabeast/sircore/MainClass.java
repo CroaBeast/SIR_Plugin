@@ -16,7 +16,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicesManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -52,11 +51,11 @@ public final class MainClass extends JavaPlugin {
         main = this; // The plugin instance initializing...
 
         this.version = main.getDescription().getVersion();
-        this.hasPAPI = pMngr.isPluginEnabled("PlaceholderAPI");
-        this.authMe = pMngr.isPluginEnabled("AuthMe");
-        this.userLogin = pMngr.isPluginEnabled("UserLogin");
-        this.hasCMI = pMngr.isPluginEnabled("CMI");
-        this.essentials = pMngr.isPluginEnabled("Essentials");
+        this.hasPAPI = plugin("PlaceholderAPI") != null;
+        this.authMe = plugin("AuthMe") != null;
+        this.userLogin = plugin("UserLogin") != null;
+        this.hasCMI = plugin("CMI") != null;
+        this.essentials = plugin("Essentials") != null;
 
         langUtils = new LangUtils(main);
         eventUtils = new EventUtils(main);
@@ -91,8 +90,8 @@ public final class MainClass extends JavaPlugin {
 
         ServicesManager servMngr = getServer().getServicesManager();
         RegisteredServiceProvider<Permission> rsp = servMngr.getRegistration(Permission.class);
-        this.hasVault = pMngr.isPluginEnabled("Vault") && rsp != null;
-        Plugin vaultPlugin = pMngr.getPlugin("Vault");
+        Plugin vaultPlugin = plugin("Vault");
+        this.hasVault = vaultPlugin != null && rsp != null;
 
         if (vaultPlugin == null || rsp == null) {
             logger("&6[SIR] &7Vault&c isn't installed&7, using the default system.");
@@ -162,8 +161,6 @@ public final class MainClass extends JavaPlugin {
         logger("&4[SIR] &7SIR &f" + version + "&7 was totally disabled &cu-u");
     }
 
-    PluginManager pMngr = Bukkit.getPluginManager();
-
     public FileConfiguration getLang() { return lang.getFile(); }
     public FileConfiguration getMessages() { return messages.getFile(); }
 
@@ -178,7 +175,7 @@ public final class MainClass extends JavaPlugin {
     }
 
     private void showPluginInfo(String name) {
-        Plugin plugin = pMngr.getPlugin(name);
+        Plugin plugin = plugin(name);
         String version = plugin != null ? plugin.getDescription().getVersion() + " " : "";
         String hook = plugin != null ? "&aenabled&7. Hooking..." : "&cnot found&7. Unhooking...";
         logger("&6[SIR] &7" + name + " " + version + hook);
@@ -187,6 +184,10 @@ public final class MainClass extends JavaPlugin {
     private void moduleHeader(int i, String moduleName) {
         logger("&6[SIR] ");
         logger("&6[SIR] &bModule " + i + ": &3" + moduleName);
+    }
+
+    public Plugin plugin(String name) {
+        return Bukkit.getPluginManager().getPlugin(name);
     }
 
     public void reloadAllFiles() {
