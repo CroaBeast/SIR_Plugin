@@ -32,6 +32,6 @@ public class OnJoin implements Listener {
         boolean vanish = eventUtils.isVanished(player, true);
         if (vanish && main.getConfig().getBoolean("vanish.silent")) return;
 
-        eventUtils.runEvent(id, player, true, !doSpawn, false);
+        eventUtils.runEvent(id, player, true, true, false);
     }
 }

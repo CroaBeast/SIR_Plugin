@@ -5,7 +5,7 @@ import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
 
-public class ActBarNew implements ActionBar {
+public class ActBar17 implements ActionBar {
 
     @Override
     public void send(Player player, String message) {

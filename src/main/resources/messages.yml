@@ -85,7 +85,6 @@ first-join:
     invulnerable: 3
     spawn:
       world: world
-      x-y-z: 0,80,0
 join:
   1:
     permission: DEFAULT
@@ -95,8 +94,8 @@ join:
     private:
       - '<C><R:1>Check out my OnlyFans B)</R>'
     commands:
-      - '[PLAYER] say hi me, I''m {PLAYER}'
-      - 'minecraft:time set day'
+      - '[PLAYER] me hi me, I''m {PLAYER}'
+      - 'say hello {PLAYER} from {WORLD}'
     invulnerable: 3
     spawn:
       world: world
@@ -111,7 +110,7 @@ join:
     permission: vip.omega.lambda
     priority: 2
     public:
-      - '[TITLE] <G:2C08BA>Hello NEPE {PLAYER}</G:028A97><n><G:2C08BA>from world {WORLD}.</G:028A97>'
+      - '[TITLE] <G:2C08BA>Hello PRO {PLAYER}</G:028A97><n><G:2C08BA>from world {WORLD}.</G:028A97>'
     private:
       - '&7You are extraordinary, please continue.'
 quit:

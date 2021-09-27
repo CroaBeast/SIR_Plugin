@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 
 import java.lang.reflect.Constructor;
 
-public class ActBarOld implements ActionBar, Reflection {
+public class ActBar10 implements ActionBar, Reflection {
 
     private void actionBar(Player player, String text) {
         try {

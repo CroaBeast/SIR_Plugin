@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 
 import java.lang.reflect.Constructor;
 
-public class TitleOld implements TitleMain, Reflection {
+public class Title9 implements TitleMain, Reflection {
 
     private void title(Player player, String title) {
         try {

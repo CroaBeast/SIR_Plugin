@@ -3,10 +3,10 @@ package me.croabeast.sircore.utils;
 import me.clip.placeholderapi.*;
 import me.croabeast.iridiumapi.IridiumAPI;
 import me.croabeast.sircore.MainClass;
-import me.croabeast.sircore.handlers.ActBarNew;
-import me.croabeast.sircore.handlers.ActBarOld;
-import me.croabeast.sircore.handlers.TitleNew;
-import me.croabeast.sircore.handlers.TitleOld;
+import me.croabeast.sircore.handlers.ActBar17;
+import me.croabeast.sircore.handlers.ActBar10;
+import me.croabeast.sircore.handlers.Title17;
+import me.croabeast.sircore.handlers.Title9;
 import me.croabeast.sircore.interfaces.ActionBar;
 import me.croabeast.sircore.interfaces.TitleMain;
 import org.apache.commons.lang.StringUtils;
@@ -34,8 +34,8 @@ public class LangUtils {
     }
 
     public void loadLangClasses() {
-        actionBar = this.getVersion < 11 ? new ActBarOld() : new ActBarNew();
-        titleMain = this.getVersion < 10 ? new TitleOld() : new TitleNew();
+        actionBar = this.getVersion < 11 ? new ActBar10() : new ActBar17();
+        titleMain = this.getVersion < 10 ? new Title9() : new Title17();
     }
 
     public String parseColor(String message) {
@@ -96,11 +96,12 @@ public class LangUtils {
             if (msg == null || msg.equals("")) continue;
             msg = msg.startsWith(key) ? msg.replace(key, prefix) : msg;
             msg = StringUtils.replaceEach(msg, keys, values);
-            if (sender instanceof Player) sendMixed((Player) sender, msg);
-            else {
+
+            if (!(sender instanceof Player)) {
                 if (msg.startsWith(center)) msg = msg.replace(center,"");
                 sender.sendMessage(parseColor(msg));
             }
+            else sendMixed((Player) sender, msg);
         }
     }
 
@@ -110,7 +111,7 @@ public class LangUtils {
 
     public void title(Player player, String[] message) {
         if (message.length == 0 || message.length > 2) return;
-        String subtitle = message.length == 1 ? null : message[1];
+        String subtitle = message.length == 1 ? "" : message[1];
         titleMain.send(player, message[0], subtitle);
     }
 }

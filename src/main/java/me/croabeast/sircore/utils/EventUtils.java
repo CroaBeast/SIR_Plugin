@@ -25,8 +25,13 @@ public class EventUtils {
         this.langUtils = main.getLangUtils();
     }
 
-    private final String[] keys = {"{PLAYER}", "{WORLD}"};
-    private final String prefix = "&e&lSIR &8> &f";
+    private String color(String msg, Player player, boolean isColor) {
+        String[] keys = {"{PLAYER}", "{WORLD}"};
+        String[] v = {player.getName(), player.getWorld().getName()};
+
+        String message = StringUtils.replaceEach(msg, keys, v);
+        return isColor ? langUtils.parsePAPI(player, message) : message;
+    }
 
     private String setUp(String type, String message) {
         message = message.substring(type.length());
@@ -52,9 +57,10 @@ public class EventUtils {
     }
 
     private boolean hasPerm(Player player, String perm) {
-        boolean vault = main.getPerms().playerHas(null, player, perm);
-        boolean perms = player.isPermissionSet(perm) && player.hasPermission(perm);
-        return !perm.matches("(?i)DEFAULT") && (main.hasVault ? vault : perms);
+        return !perm.matches("(?i)DEFAULT") &&
+                (main.hasVault ?
+                        main.getPerms().playerHas(null, player, perm) :
+                        player.hasPermission(perm));
     }
 
     public ConfigurationSection lastSection(Player player, String path) {
@@ -94,74 +100,64 @@ public class EventUtils {
 
     private void sound(Player player, String sound) {
         if (sound == null) return;
-        try { Enum.valueOf(Sound.class, sound);
-        } catch (IllegalArgumentException ex) { return; }
+        try {
+            Enum.valueOf(Sound.class, sound);
+        } catch (IllegalArgumentException ex) {
+            return;
+        }
         player.playSound(player.getLocation(), Sound.valueOf(sound), 1, 1);
     }
 
-    private void forAll(Player player, List<String> list) {
+    private void send(Player player, List<String> list, boolean priv) {
         String split = main.getConfig().getString("options.line-separator", "<n>");
-        String[] values = {player.getName(), player.getWorld().getName()};
         List<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
 
         for (String message : list) {
             if (message == null || message.equals("")) continue;
-            message = StringUtils.replaceEach(message, keys, values);
             if (message.startsWith(" ")) message = message.substring(1);
-            message = langUtils.parsePAPI(player, message);
+            message = color(message, player, true);
 
+            String prefix = "&e&lSIR &8> &f";
             if (main.getConfig().getBoolean("options.send-console", true))
                 main.logger(prefix + message.replace(split, "&r" + split));
 
-            if (message.startsWith("[ACTION-BAR]"))
-                for (Player p : players)
-                    langUtils.actionBar(p, setUp("[ACTION-BAR]", message));
-
-            else if (message.startsWith("[TITLE]")) {
-                for (Player p : players)
-                    langUtils.title(p, setUp("[TITLE]", message).split(Pattern.quote(split)));
+            if (message.startsWith("[ACTION-BAR]")) {
+                message = setUp("[ACTION-BAR]", message);
+                if (priv) langUtils.actionBar(player, message);
+                else for (Player p : players) langUtils.actionBar(p, message);
             }
 
-            else for (Player p : players) langUtils.sendMixed(p, message);
-        }
-    }
+            else if (message.startsWith("[TITLE]")) {
+                String[] array = setUp("[TITLE]", message).split(Pattern.quote(split));
+                if (priv) langUtils.title(player, array);
+                else for (Player p : players) langUtils.title(p, array);
+            }
 
-    private void toOne(Player player, List<String> list) {
-        String split = main.getConfig().getString("options.line-separator", "<n>");
-        String[] values = {player.getName(), player.getWorld().getName()};
-
-        for (String message : list) {
-            if (message == null || message.equals("")) continue;
-            message = StringUtils.replaceEach(message, keys, values);
-            if (message.startsWith(" ")) message = message.substring(1);
-            message = langUtils.parsePAPI(player, message);
-
-            if (main.getConfig().getBoolean("options.send-console",true))
-                main.logger(prefix + message.replace(split, "&r" + split));
-
-            if (message.startsWith("[ACTION-BAR]"))
-                langUtils.actionBar(player, setUp("[ACTION-BAR]", message));
-
-            else if (message.startsWith("[TITLE]"))
-                langUtils.title(player, setUp("[TITLE]", message).split(Pattern.quote(split)));
-
-            else langUtils.sendMixed(player, message);
+            else {
+                if (priv) langUtils.sendMixed(player, message);
+                else for (Player p : players) langUtils.sendMixed(p, message);
+            }
         }
     }
 
     private void command(Player player, List<String> list, boolean join) {
-        String[] values = {player.getName(), player.getWorld().getName()};
-
         for (String message : list) {
             if (message == null || message.equals("")) continue;
-            message = StringUtils.replaceEach(message, keys, values);
             if (message.startsWith(" ")) message = message.substring(1);
+            message = color(message, player, false);
 
             if (message.startsWith("[PLAYER]") && join)
                 Bukkit.dispatchCommand(player, setUp("[PLAYER]", message));
 
             else Bukkit.dispatchCommand(Bukkit.getConsoleSender(), message);
         }
+    }
+
+    private void god(ConfigurationSection id, Player player) {
+        int godTime = id.getInt("invulnerable", 0) ;
+        if (main.getLangUtils().getVersion <= 8 || godTime <= 0) return;
+        godTime = godTime * 20; player.setInvulnerable(true);
+        Bukkit.getScheduler().runTaskLater(main, () -> player.setInvulnerable(false), godTime);
     }
 
     public void spawn(ConfigurationSection id, Player player) {
@@ -197,17 +193,11 @@ public class EventUtils {
 
             String soundString = id.getString("sound");
             if (join && soundString != null) sound(player, soundString);
-            if (join && spawn) spawn(id, player);
+            if (join) god(id, player); if (join && spawn) spawn(id, player);
 
-            int godTime = id.getInt("invulnerable", 0) ;
-            if (main.getLangUtils().getVersion > 8 && godTime > 0) {
-                godTime = godTime * 20; player.setInvulnerable(true);
-                Bukkit.getScheduler().runTaskLater(main, () -> player.setInvulnerable(false), godTime);
-            }
-
-            forAll(player, id.getStringList("public"));
-            if (join) toOne(player, id.getStringList("private"));
-            command(player, id.getStringList("commands"), join);                
+            send(player, id.getStringList("public"), false);
+            if (join) send(player, id.getStringList("private"), true);
+            command(player, id.getStringList("commands"), join);
         };
         
         int delay = main.getConfig().getInt("login.ticks-after", 0);

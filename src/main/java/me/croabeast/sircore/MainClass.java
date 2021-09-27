@@ -1,24 +1,16 @@
 package me.croabeast.sircore;
 
-import me.croabeast.sircore.listeners.OnJoin;
-import me.croabeast.sircore.listeners.login.AuthMe;
-import me.croabeast.sircore.listeners.login.UserLogin;
-import me.croabeast.sircore.listeners.OnQuit;
-import me.croabeast.sircore.listeners.vanish.CMI;
-import me.croabeast.sircore.listeners.vanish.Essentials;
+import me.croabeast.sircore.listeners.*;
+import me.croabeast.sircore.listeners.login.*;
+import me.croabeast.sircore.listeners.vanish.*;
 import me.croabeast.sircore.utils.*;
-import net.milkbowl.vault.permission.Permission;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.ServicesManager;
-import org.bukkit.plugin.java.JavaPlugin;
+import net.milkbowl.vault.permission.*;
+import org.bukkit.*;
+import org.bukkit.configuration.file.*;
+import org.bukkit.event.*;
+import org.bukkit.event.player.*;
+import org.bukkit.plugin.*;
+import org.bukkit.plugin.java.*;
 
 public final class MainClass extends JavaPlugin {
 
@@ -50,12 +42,12 @@ public final class MainClass extends JavaPlugin {
     public void onEnable() {
         main = this; // The plugin instance initializing...
 
-        this.version = main.getDescription().getVersion();
-        this.hasPAPI = plugin("PlaceholderAPI") != null;
-        this.authMe = plugin("AuthMe") != null;
-        this.userLogin = plugin("UserLogin") != null;
-        this.hasCMI = plugin("CMI") != null;
-        this.essentials = plugin("Essentials") != null;
+        version = main.getDescription().getVersion();
+        hasPAPI = plugin("PlaceholderAPI") != null;
+        authMe = plugin("AuthMe") != null;
+        userLogin = plugin("UserLogin") != null;
+        hasCMI = plugin("CMI") != null;
+        essentials = plugin("Essentials") != null;
 
         langUtils = new LangUtils(main);
         eventUtils = new EventUtils(main);
@@ -91,9 +83,9 @@ public final class MainClass extends JavaPlugin {
         ServicesManager servMngr = getServer().getServicesManager();
         RegisteredServiceProvider<Permission> rsp = servMngr.getRegistration(Permission.class);
         Plugin vaultPlugin = plugin("Vault");
-        this.hasVault = vaultPlugin != null && rsp != null;
+        hasVault = vaultPlugin != null && rsp != null;
 
-        if (vaultPlugin == null || rsp == null) {
+        if (!hasVault) {
             logger("&6[SIR] &7Vault&c isn't installed&7, using the default system.");
         } else {
             perms = rsp.getProvider();
@@ -158,7 +150,8 @@ public final class MainClass extends JavaPlugin {
 
     public void onDisable() {
         main = null; // This will prevent any memory leaks.
-        logger("&4[SIR] &7SIR &f" + version + "&7 was totally disabled &cu-u");
+        logger("&4[SIR] &7SIR &f" + version + "&7 was disabled.");
+        logger("&4[SIR] &7Hope we can see you again&c nwn");
     }
 
     public FileConfiguration getLang() { return lang.getFile(); }
@@ -175,9 +168,8 @@ public final class MainClass extends JavaPlugin {
     }
 
     private void showPluginInfo(String name) {
-        Plugin plugin = plugin(name);
-        String version = plugin != null ? plugin.getDescription().getVersion() + " " : "";
-        String hook = plugin != null ? "&aenabled&7. Hooking..." : "&cnot found&7. Unhooking...";
+        String version = plugin(name) != null ? plugin(name).getDescription().getVersion() + " " : "";
+        String hook = plugin(name) != null ? "&aenabled&7. Hooking..." : "&cnot found&7. Unhooking...";
         logger("&6[SIR] &7" + name + " " + version + hook);
     }
 
