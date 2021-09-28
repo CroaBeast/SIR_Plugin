@@ -150,7 +150,7 @@ public final class MainClass extends JavaPlugin {
 
     public void onDisable() {
         main = null; // This will prevent any memory leaks.
-        logger("&4[SIR] &7SIR &f" + version + "&7 was disabled.");
+        logger("&4[SIR] &7SIR &f" + version + "&7 was totally disabled.");
         logger("&4[SIR] &7Hope we can see you again&c nwn");
     }
 
@@ -178,9 +178,7 @@ public final class MainClass extends JavaPlugin {
         logger("&6[SIR] &bModule " + i + ": &3" + moduleName);
     }
 
-    public Plugin plugin(String name) {
-        return Bukkit.getPluginManager().getPlugin(name);
-    }
+    public Plugin plugin(String name) { return Bukkit.getPluginManager().getPlugin(name); }
 
     public void reloadAllFiles() {
         config.reloadFile();

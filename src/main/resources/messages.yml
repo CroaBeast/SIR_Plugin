@@ -68,6 +68,10 @@
 #          Put "[TITLE]" first on the message to select this type.
 # - Chat: Default one, send message to the chat. You can add all the lines you
 #         want to send multiple chat messages.
+# - JSON Msg: Use this type of message for Hover and Click events. Do not forget
+#             that this type of message has its own format. Generate a JSON msg
+#             with this link: https://minecraft.tools/en/json_text.php
+#             Put "[JSON]" first on the message to select this type.
 # REMINDER: Using Action Bar and Title in public and private messages in the same
 #           group, the private ones will override the public ones for that player.
 
@@ -91,8 +95,10 @@ join:
     sound: 'ENTITY_PLAYER_LEVELUP' # 1.17 sound, check above for more sounds.
     public:
       - '&7[+] <G:af1231>Welcome {PLAYER} to this server.</G:909872>'
+      - '[JSON] ["",{"text":"This is my "},{"text":"JSON message","clickEvent":{"action":"suggest_command","value":"/say hi"},"hoverEvent":{"action":"show_text","contents":"Hover Me"}}]'
     private:
       - '<C><R:1>Check out my OnlyFans B)</R>'
+      - '[JSON] ["",{"text":"This is my "},{"text":"public","color":"aqua"},{"text":" "},{"text":"JSON message","clickEvent":{"action":"suggest_command","value":"/say hi"},"hoverEvent":{"action":"show_text","contents":"Hover Me"}}]'
     commands:
       - '[PLAYER] me hi me, I''m {PLAYER}'
       - 'say hello {PLAYER} from {WORLD}'

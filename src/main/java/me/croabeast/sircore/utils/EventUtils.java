@@ -25,7 +25,7 @@ public class EventUtils {
         this.langUtils = main.getLangUtils();
     }
 
-    private String color(String msg, Player player, boolean isColor) {
+    private String format(String msg, Player player, boolean isColor) {
         String[] keys = {"{PLAYER}", "{WORLD}"};
         String[] v = {player.getName(), player.getWorld().getName()};
 
@@ -60,7 +60,8 @@ public class EventUtils {
         return !perm.matches("(?i)DEFAULT") &&
                 (main.hasVault ?
                         main.getPerms().playerHas(null, player, perm) :
-                        player.hasPermission(perm));
+                        player.hasPermission(perm)
+                );
     }
 
     public ConfigurationSection lastSection(Player player, String path) {
@@ -115,7 +116,7 @@ public class EventUtils {
         for (String message : list) {
             if (message == null || message.equals("")) continue;
             if (message.startsWith(" ")) message = message.substring(1);
-            message = color(message, player, true);
+            message = format(message, player, true);
 
             String prefix = "&e&lSIR &8> &f";
             if (main.getConfig().getBoolean("options.send-console", true))
@@ -124,18 +125,32 @@ public class EventUtils {
             if (message.startsWith("[ACTION-BAR]")) {
                 message = setUp("[ACTION-BAR]", message);
                 if (priv) langUtils.actionBar(player, message);
-                else for (Player p : players) langUtils.actionBar(p, message);
+                else {
+                    for (Player p : players) langUtils.actionBar(p, message);
+                }
             }
 
             else if (message.startsWith("[TITLE]")) {
                 String[] array = setUp("[TITLE]", message).split(Pattern.quote(split));
                 if (priv) langUtils.title(player, array);
-                else for (Player p : players) langUtils.title(p, array);
+                else {
+                    for (Player p : players) langUtils.title(p, array);
+                }
+            }
+
+            else if (message.startsWith("[JSON]")) {
+                message = setUp("[JSON]", message);
+                String one = "tellraw " + player.getName() + " " + message;
+                String all = "tellraw @a " + message;
+                if (priv) Bukkit.dispatchCommand(Bukkit.getConsoleSender(), one);
+                else Bukkit.dispatchCommand(Bukkit.getConsoleSender(), all);
             }
 
             else {
-                if (priv) langUtils.sendMixed(player, message);
-                else for (Player p : players) langUtils.sendMixed(p, message);
+                if (!priv) {
+                    for (Player p : players) langUtils.sendMixed(p, message);
+                }
+                else langUtils.sendMixed(player, message);
             }
         }
     }
@@ -144,7 +159,7 @@ public class EventUtils {
         for (String message : list) {
             if (message == null || message.equals("")) continue;
             if (message.startsWith(" ")) message = message.substring(1);
-            message = color(message, player, false);
+            message = format(message, player, false);
 
             if (message.startsWith("[PLAYER]") && join)
                 Bukkit.dispatchCommand(player, setUp("[PLAYER]", message));
@@ -156,7 +171,9 @@ public class EventUtils {
     private void god(ConfigurationSection id, Player player) {
         int godTime = id.getInt("invulnerable", 0) ;
         if (main.getLangUtils().getVersion <= 8 || godTime <= 0) return;
-        godTime = godTime * 20; player.setInvulnerable(true);
+        godTime = godTime * 20;
+
+        player.setInvulnerable(true);
         Bukkit.getScheduler().runTaskLater(main, () -> player.setInvulnerable(false), godTime);
     }
 
@@ -166,7 +183,7 @@ public class EventUtils {
         World world = Bukkit.getWorld(id.getString("spawn.world",""));
         if (world == null) return;
 
-        if (path.trim().equals("")) location = world.getSpawnLocation();
+        if (path.equals("")) location = world.getSpawnLocation();
         else {
             coordinates = path.split(",");
             if (coordinates.length == 3) {
@@ -193,7 +210,8 @@ public class EventUtils {
 
             String soundString = id.getString("sound");
             if (join && soundString != null) sound(player, soundString);
-            if (join) god(id, player); if (join && spawn) spawn(id, player);
+            if (join) god(id, player);
+            if (join && spawn) spawn(id, player);
 
             send(player, id.getStringList("public"), false);
             if (join) send(player, id.getStringList("private"), true);

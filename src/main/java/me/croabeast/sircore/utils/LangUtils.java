@@ -105,9 +105,7 @@ public class LangUtils {
         }
     }
 
-    public void actionBar(Player player, String message) {
-        actionBar.send(player, message);
-    }
+    public void actionBar(Player player, String message) { actionBar.send(player, message); }
 
     public void title(Player player, String[] message) {
         if (message.length == 0 || message.length > 2) return;
