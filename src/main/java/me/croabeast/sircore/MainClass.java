@@ -6,6 +6,7 @@ import me.croabeast.sircore.listeners.vanish.*;
 import me.croabeast.sircore.utils.*;
 import net.milkbowl.vault.permission.*;
 import org.bukkit.*;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.*;
 import org.bukkit.event.*;
 import org.bukkit.event.player.*;
@@ -70,6 +71,7 @@ public final class MainClass extends JavaPlugin {
         config.updateRegisteredFile();
         lang.updateRegisteredFile();
         messages.updateRegisteredFile();
+        sendLoadedSections("first-join", "join", "quit");
         logger("&6[SIR] &7Loaded 3 files in the plugin directory.");
 
         // PlaceholderAPI module
@@ -184,6 +186,23 @@ public final class MainClass extends JavaPlugin {
         config.reloadFile();
         lang.reloadFile();
         messages.reloadFile();
+    }
+
+    public int sections(String path) {
+        int messages = 0;
+        ConfigurationSection ids = main.getMessages().getConfigurationSection(path);
+        if (ids == null) return 0;
+
+        for (String key : ids.getKeys(false)) {
+            ConfigurationSection id = ids.getConfigurationSection(key);
+            if (id != null) messages++;
+        }
+        return messages;
+    }
+
+    private void sendLoadedSections(String... sections) {
+        for (String id : sections)
+            logger("&6[SIR] &7Loaded &b" + sections(id) + "&7 groups in the &b" + id + "&7 section.");
     }
 
     private static class OldMessages implements Listener {

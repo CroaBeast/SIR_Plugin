@@ -29,6 +29,15 @@ public class CmdUtils implements TabExecutor {
 
     private void sendMessage(String path, String... values) { langUtils.send(sender, path, values); }
 
+    private void sendLoadedSections() {
+        String[] sections = {"first-join", "join", "quit"};
+        String[] keys = {"{TOTAL}", "{SECTION}"};
+
+        for (String id : sections) {
+            langUtils.send(sender, "get-sections", keys, main.sections(id) + "", id);
+        }
+    }
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
@@ -65,6 +74,7 @@ public class CmdUtils implements TabExecutor {
                 }
 
                 main.reloadAllFiles();
+                sendLoadedSections();
                 sendMessage("reload");
                 return true;
 

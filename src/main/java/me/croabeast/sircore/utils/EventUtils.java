@@ -168,7 +168,7 @@ public class EventUtils {
         }
     }
 
-    private void god(ConfigurationSection id, Player player) {
+    private void invulnerable(ConfigurationSection id, Player player) {
         int godTime = id.getInt("invulnerable", 0) ;
         if (main.getLangUtils().getVersion <= 8 || godTime <= 0) return;
         godTime = godTime * 20;
@@ -210,7 +210,7 @@ public class EventUtils {
 
             String soundString = id.getString("sound");
             if (join && soundString != null) sound(player, soundString);
-            if (join) god(id, player);
+            if (join) invulnerable(id, player);
             if (join && spawn) spawn(id, player);
 
             send(player, id.getStringList("public"), false);

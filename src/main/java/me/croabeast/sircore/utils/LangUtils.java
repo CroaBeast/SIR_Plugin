@@ -86,11 +86,10 @@ public class LangUtils {
         return new ArrayList<>(Collections.singletonList(main.getLang().getString(path)));
     }
 
-    public void send(CommandSender sender, String path, String... values) {
+    public void send(CommandSender sender, String path, String[] keys, String... values) {
         String key = main.getConfig().getString("options.prefix-in-config", "");
         String prefix = main.getLang().getString("main-prefix", "");
         String center = main.getConfig().getString("options.center-prefix", "");
-        String[] keys = {"{ARG}", "{PERM}", "{PLAYER}", "{VERSION}"};
 
         for (String msg : toList(path)) {
             if (msg == null || msg.equals("")) continue;
@@ -103,6 +102,11 @@ public class LangUtils {
             }
             else sendMixed((Player) sender, msg);
         }
+    }
+
+    public void send(CommandSender sender, String path, String... values) {
+        String[] keys = {"{ARG}", "{PERM}", "{PLAYER}", "{VERSION}"};
+        send(sender, path, keys, values);
     }
 
     public void actionBar(Player player, String message) { actionBar.send(player, message); }

@@ -11,8 +11,9 @@
 # Using the center prefix in this .yml file, will ONLY work on a player
 # using a command, not when the console is using a command.
 
-# This will be inserted in those lines with <P> or prefix-in-lang string.
-main-prefix: ' &e&lSIR &8>&#AAAAAA'
+# The main prefix will be inserted in those lines with <P> or "prefix-in-lang" string.
+main-prefix: ' &e&lSIR &8>&7'
+get-sections: '<P> Loaded &b{TOTAL} &7messages groups in &b{SECTION} &7section.'
 reload: '<P> All the .yml files was reloaded successfully.'
 no-permission: '<P> You don''t have the permission &c{PERM} &7to use this.'
 wrong-arg: '<P> The argument &c{ARG} &7is invalid or does not exist.'

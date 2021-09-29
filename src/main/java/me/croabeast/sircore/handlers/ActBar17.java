@@ -9,6 +9,6 @@ public class ActBar17 implements ActionBar {
 
     @Override
     public void send(Player player, String message) {
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(message));
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
     }
 }
