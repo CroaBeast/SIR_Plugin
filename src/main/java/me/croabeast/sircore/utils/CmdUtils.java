@@ -27,7 +27,9 @@ public class CmdUtils implements TabExecutor {
 
     private CommandSender sender;
 
-    private void sendMessage(String path, String... values) { langUtils.send(sender, path, values); }
+    private void sendMessage(String path, String key, String value) {
+        langUtils.send(sender, path, new String[]{key}, value);
+    }
 
     private void sendLoadedSections() {
         String[] sections = {"first-join", "join", "quit"};
@@ -43,44 +45,44 @@ public class CmdUtils implements TabExecutor {
 
         this.sender = sender;
         if (!sender.hasPermission("sir.main")) {
-            sendMessage("no-permission", null, "sir.main", null, null);
+            sendMessage("no-permission", "{PERM}", "sir.main");
             return true;
         }
 
         if (args.length == 0) {
-            sendMessage("main-help", null, null, null, main.getDescription().getVersion());
+            sendMessage("main-help", "{VERSION}", main.getDescription().getVersion());
             return true;
         }
 
         if (args.length > 3) {
-            sendMessage("wrong-arg", args[1], null, null, null);
+            sendMessage("wrong-arg", "{ARG}", args[1]);
             return true;
         }
 
         switch (args[0].toLowerCase()) {
             default:
-                sendMessage("wrong-arg", args[0], null, null, null);
+                sendMessage("wrong-arg", "{ARG}", args[0]);
                 return true;
 
             case "reload": case "r":
                 if (!sender.hasPermission("sir.reload")) {
-                    sendMessage("no-permission", null, "sir.reload", null, null);
+                    sendMessage("no-permission", "{PERM}", "sir.reload");
                     return true;
                 }
 
                 if (args.length > 1) {
-                    sendMessage("wrong-arg", args[1], null, null, null);
+                    sendMessage("wrong-arg", "{ARG}", args[1]);
                     return true;
                 }
 
                 main.reloadAllFiles();
                 sendLoadedSections();
-                sendMessage("reload");
+                sendMessage("reload", null, null);
                 return true;
 
             case "print": case "p":
                 if (!sender.hasPermission("sir.print")) {
-                    sendMessage("no-permission", null, "sir.print", null, null);
+                    sendMessage("no-permission", "{PERM}", "sir.print");
                     return true;
                 }
 

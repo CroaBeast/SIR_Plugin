@@ -104,11 +104,6 @@ public class LangUtils {
         }
     }
 
-    public void send(CommandSender sender, String path, String... values) {
-        String[] keys = {"{ARG}", "{PERM}", "{PLAYER}", "{VERSION}"};
-        send(sender, path, keys, values);
-    }
-
     public void actionBar(Player player, String message) { actionBar.send(player, message); }
 
     public void title(Player player, String[] message) {
