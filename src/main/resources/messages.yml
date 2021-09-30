@@ -34,7 +34,7 @@
 #            1.8: https://helpch.at/docs/1.8.8/index.html?org/bukkit/Sound.html
 #            1.12: https://helpch.at/docs/1.12.2/index.html?org/bukkit/Sound.html
 #            1.16: https://helpch.at/docs/1.16.5/index.html?org/bukkit/Sound.html
-#            1.17: https://helpch.at/docs/1.17.1/index.html?org/bukkit/Sound.html
+#            1.17: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html
 #            WARNING!!: You can't put this node on the "quit" section.
 # - "public:" Sends messages to all online players on the server. You can select
 #             between 3 types of messages. [SEE BELOW]
@@ -95,10 +95,10 @@ join:
     sound: 'ENTITY_PLAYER_LEVELUP' # 1.17 sound, check above for more sounds.
     public:
       - '&7[+] <G:af1231>Welcome {PLAYER} to this server.</G:909872>'
-      - '[JSON] ["",{"text":"This is my "},{"text":"JSON message","clickEvent":{"action":"suggest_command","value":"/say hi"},"hoverEvent":{"action":"show_text","contents":"Hover Me"}}]'
+      - '[JSON] ["",{"text":"This is my "},{"text":"public","color":"aqua"},{"text":"JSON message","clickEvent":{"action":"suggest_command","value":"/say hi"},"hoverEvent":{"action":"show_text","contents":"Hover Me"}}]'
     private:
       - '<C><R:1>Check out my OnlyFans B)</R>'
-      - '[JSON] ["",{"text":"This is my "},{"text":"public","color":"aqua"},{"text":" "},{"text":"JSON message","clickEvent":{"action":"suggest_command","value":"/say hi"},"hoverEvent":{"action":"show_text","contents":"Hover Me"}}]'
+      - '[JSON] ["",{"text":"This is my "},{"text":" "},{"text":"JSON message","clickEvent":{"action":"suggest_command","value":"/say hi"},"hoverEvent":{"action":"show_text","contents":"Hover Me"}}]'
     commands:
       - '[PLAYER] me hi me, I''m {PLAYER}'
       - 'say hello {PLAYER} from {WORLD}'

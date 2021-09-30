@@ -9,6 +9,8 @@
 update:
   config: true
   lang: true
+  # I DO NOT recommend update your messages file. But if you want to...
+  messages: false
 
 # Some useful options for this plugin if you want to change something.
 options:

@@ -83,7 +83,7 @@ public class LangUtils {
 
     private List<String> toList(String path) {
         if(main.getLang().isList(path)) return main.getLang().getStringList(path);
-        return new ArrayList<>(Collections.singletonList(main.getLang().getString(path)));
+        return Collections.singletonList(main.getLang().getString(path));
     }
 
     public void send(CommandSender sender, String path, String[] keys, String... values) {

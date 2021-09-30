@@ -68,9 +68,9 @@ public final class MainClass extends JavaPlugin {
         lang = new PluginFile(main, "lang");
         messages = new PluginFile(main, "messages");
 
-        config.updateRegisteredFile();
-        lang.updateRegisteredFile();
-        messages.updateRegisteredFile();
+        config.updateInitFile();
+        lang.updateInitFile();
+        messages.updateInitFile();
         sendLoadedSections("first-join", "join", "quit");
         logger("&6[SIR] &7Loaded 3 files in the plugin directory.");
 

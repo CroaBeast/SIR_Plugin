@@ -99,7 +99,8 @@ public class EventUtils {
         return lastSection(player, path);
     }
 
-    private void sound(Player player, String sound) {
+    private void playsound(ConfigurationSection id, Player player) {
+        String sound = id.getString("sound");
         if (sound == null) return;
         try {
             Enum.valueOf(Sound.class, sound);
@@ -109,11 +110,11 @@ public class EventUtils {
         player.playSound(player.getLocation(), Sound.valueOf(sound), 1, 1);
     }
 
-    private void send(Player player, List<String> list, boolean priv) {
+    private void send(ConfigurationSection id, Player player, boolean priv) {
         String split = main.getConfig().getString("options.line-separator", "<n>");
         List<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
 
-        for (String message : list) {
+        for (String message : id.getStringList(!priv ? "public" : "private")) {
             if (message == null || message.equals("")) continue;
             if (message.startsWith(" ")) message = message.substring(1);
             message = format(message, player, true);
@@ -155,8 +156,8 @@ public class EventUtils {
         }
     }
 
-    private void command(Player player, List<String> list, boolean join) {
-        for (String message : list) {
+    private void command(ConfigurationSection id, Player player, boolean join) {
+        for (String message : id.getStringList("commands")) {
             if (message == null || message.equals("")) continue;
             if (message.startsWith(" ")) message = message.substring(1);
             message = format(message, player, false);
@@ -208,17 +209,16 @@ public class EventUtils {
                 return;
             }
 
-            String soundString = id.getString("sound");
-            if (join && soundString != null) sound(player, soundString);
+            if (join) playsound(id, player);
             if (join) invulnerable(id, player);
             if (join && spawn) spawn(id, player);
 
-            send(player, id.getStringList("public"), false);
-            if (join) send(player, id.getStringList("private"), true);
-            command(player, id.getStringList("commands"), join);
+            send(id, player, false);
+            if (join) send(id, player, true);
+            command(id, player, join);
         };
         
         int delay = main.getConfig().getInt("login.ticks-after", 0);
-        Bukkit.getScheduler().runTaskLater(main, event, login ? delay : 4);
+        Bukkit.getScheduler().runTaskLater(main, event, login ? delay : 3);
     }
 }
