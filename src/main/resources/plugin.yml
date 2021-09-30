@@ -13,7 +13,7 @@ softdepend:
   - Essentials
   - EssentialsX
 
-main: me.croabeast.sircore.MainClass
+main: me.croabeast.sircore.SIRPlugin
 
 commands:
   sir:

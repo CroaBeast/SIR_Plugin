@@ -1,7 +1,7 @@
 package me.croabeast.sircore.listeners.login;
 
 import com.elchologamer.userlogin.api.event.AuthenticationEvent;
-import me.croabeast.sircore.MainClass;
+import me.croabeast.sircore.SIRPlugin;
 import me.croabeast.sircore.utils.EventUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -10,14 +10,14 @@ import org.bukkit.event.Listener;
 
 public class UserLogin implements Listener {
 
-    private final MainClass main;
+    private final SIRPlugin main;
     private final EventUtils eventUtils;
 
-    public UserLogin(MainClass main) {
+    public UserLogin(SIRPlugin main) {
         this.main = main;
         this.eventUtils = main.getEventUtils();
-        if (!main.userLogin) return;
-        main.events++;
+        if (!main.getMainCore().userLogin) return;
+        main.getMainCore().events++;
         main.getServer().getPluginManager().registerEvents(this, main);
     }
 
@@ -27,7 +27,8 @@ public class UserLogin implements Listener {
         ConfigurationSection id = eventUtils.lastSection(player, true);
         boolean doSpawn = main.getConfig().getBoolean("login.spawn-before");
 
-        if (!main.hasLogin || !main.getConfig().getBoolean("login.send-after")) return;
+        if (!main.getMainCore().hasLogin ||
+                !main.getConfig().getBoolean("login.send-after")) return;
 
         boolean vanish = eventUtils.isVanished(player, true);
         if (vanish && main.getConfig().getBoolean("vanish.silent")) return;

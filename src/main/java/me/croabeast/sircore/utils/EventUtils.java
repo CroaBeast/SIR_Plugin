@@ -2,7 +2,8 @@ package me.croabeast.sircore.utils;
 
 import com.Zrips.CMI.Containers.CMIUser;
 import com.earth2me.essentials.Essentials;
-import me.croabeast.sircore.MainClass;
+import me.croabeast.sircore.MainCore;
+import me.croabeast.sircore.SIRPlugin;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -17,12 +18,14 @@ import java.util.regex.Pattern;
 
 public class EventUtils {
 
-    private final MainClass main;
-    private final LangUtils langUtils;
+    private final SIRPlugin main;
+    private final MainCore mainCore;
+    private final TextUtils textUtils;
 
-    public EventUtils(MainClass main) {
+    public EventUtils(SIRPlugin main) {
         this.main = main;
-        this.langUtils = main.getLangUtils();
+        this.mainCore = main.getMainCore();
+        this.textUtils = main.getLangUtils();
     }
 
     private String format(String msg, Player player, boolean isColor) {
@@ -30,7 +33,7 @@ public class EventUtils {
         String[] v = {player.getName(), player.getWorld().getName()};
 
         String message = StringUtils.replaceEach(msg, keys, v);
-        return isColor ? langUtils.parsePAPI(player, message) : message;
+        return isColor ? textUtils.parsePAPI(player, message) : message;
     }
 
     private String setUp(String type, String message) {
@@ -40,7 +43,7 @@ public class EventUtils {
     }
 
     private boolean essVanish(Player player, boolean join) {
-        Essentials ess = (Essentials) main.plugin("Essentials");
+        Essentials ess = (Essentials) mainCore.plugin("Essentials");
         if (ess == null) return false;
 
         boolean isJoin = join && hasPerm(player, "essentials.silentjoin.vanish");
@@ -48,7 +51,7 @@ public class EventUtils {
     }
 
     private boolean cmiVanish(Player player) {
-        if (main.plugin("CMI") == null) return false;
+        if (mainCore.plugin("CMI") == null) return false;
         return CMIUser.getUser(player).isVanished();
     }
 
@@ -58,8 +61,8 @@ public class EventUtils {
 
     private boolean hasPerm(Player player, String perm) {
         return !perm.matches("(?i)DEFAULT") &&
-                (main.hasVault ?
-                        main.getPerms().playerHas(null, player, perm) :
+                (mainCore.hasVault ?
+                        mainCore.getPerms().playerHas(null, player, perm) :
                         player.hasPermission(perm)
                 );
     }
@@ -121,21 +124,21 @@ public class EventUtils {
 
             String prefix = "&e&lSIR &8> &f";
             if (main.getConfig().getBoolean("options.send-console", true))
-                main.logger(prefix + message.replace(split, "&r" + split));
+                mainCore.logger(prefix + message.replace(split, "&r" + split));
 
             if (message.startsWith("[ACTION-BAR]")) {
                 message = setUp("[ACTION-BAR]", message);
-                if (priv) langUtils.actionBar(player, message);
+                if (priv) textUtils.actionBar(player, message);
                 else {
-                    for (Player p : players) langUtils.actionBar(p, message);
+                    for (Player p : players) textUtils.actionBar(p, message);
                 }
             }
 
             else if (message.startsWith("[TITLE]")) {
                 String[] array = setUp("[TITLE]", message).split(Pattern.quote(split));
-                if (priv) langUtils.title(player, array);
+                if (priv) textUtils.title(player, array);
                 else {
-                    for (Player p : players) langUtils.title(p, array);
+                    for (Player p : players) textUtils.title(p, array);
                 }
             }
 
@@ -149,9 +152,9 @@ public class EventUtils {
 
             else {
                 if (!priv) {
-                    for (Player p : players) langUtils.sendMixed(p, message);
+                    for (Player p : players) textUtils.sendMixed(p, message);
                 }
-                else langUtils.sendMixed(player, message);
+                else textUtils.sendMixed(player, message);
             }
         }
     }
@@ -202,10 +205,10 @@ public class EventUtils {
         Runnable event = () -> {
             if (id == null) {
                 String prefix = "&7 &4&lSIR-DEBUG &8> ";
-                langUtils.sendMixed(player, prefix + "&cA valid message group isn't found...");
-                langUtils.sendMixed(player, prefix + "&7Please check your &messages.yml &7file.");
-                main.logger(prefix + "&cA valid message group isn't found...");
-                main.logger(prefix + "&7Please check your &messages.yml &7file.");
+                textUtils.sendMixed(player, prefix + "&cA valid message group isn't found...");
+                textUtils.sendMixed(player, prefix + "&7Please check your &messages.yml &7file.");
+                mainCore.logger(prefix + "&cA valid message group isn't found...");
+                mainCore.logger(prefix + "&7Please check your &messages.yml &7file.");
                 return;
             }
 

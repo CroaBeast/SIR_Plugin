@@ -1,23 +1,26 @@
 package me.croabeast.sircore.utils;
 
 import me.croabeast.cupdater.ConfigUpdater;
-import me.croabeast.sircore.MainClass;
+import me.croabeast.sircore.MainCore;
+import me.croabeast.sircore.SIRPlugin;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.*;
 import java.util.Collections;
 
-public class PluginFile {
+public class SavedFile {
 
-    private final MainClass main;
+    private final SIRPlugin main;
+    private final MainCore mainCore;
     private final String name;
     private final String location;
     private FileConfiguration file;
     private File rawYmlFile;
 
-    public PluginFile(MainClass main, String name) {
+    public SavedFile(SIRPlugin main, String name) {
         this.main = main;
+        this.mainCore = main.getMainCore();
         this.name = name;
         this.location = name + ".yml";
         registerFile();
@@ -27,25 +30,23 @@ public class PluginFile {
 
     public FileConfiguration getFile() { return file; }
 
+    public void reloadFile() { file = YamlConfiguration.loadConfiguration(catchFile()); }
+
     private void saveFile() {
         if (file == null || rawYmlFile == null) return;
         try {
             this.getFile().save(this.rawYmlFile);
         } catch (IOException e) {
-            main.logger("&6[SIR] &7The " + location + " file couldn't be saved...");
+            mainCore.logger("&6[SIR] &7The " + location + " file couldn't be saved...");
             e.printStackTrace();
         }
-    }
-
-    public void reloadFile() {
-        file = YamlConfiguration.loadConfiguration(catchFile());
     }
 
     private void updatingFile() {
         try {
             ConfigUpdater.update(main, location, catchFile(), Collections.emptyList());
         } catch (IOException e) {
-            main.logger("&6[SIR] &7The " + location + " file could not be updated...");
+            mainCore.logger("&6[SIR] &7The " + location + " file could not be updated...");
             e.printStackTrace();
         }
     }
@@ -58,7 +59,7 @@ public class PluginFile {
 
     private void registerFile() {
         if (catchFile().exists()) return;
-        main.logger("&6[SIR] &cFile " + location + " missing... &fGenerating!");
+        mainCore.logger("&6[SIR] &cFile " + location + " missing... &fGenerating!");
         saveDefaultFile();
     }
 

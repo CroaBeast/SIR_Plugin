@@ -1,29 +1,32 @@
 package me.croabeast.sircore;
 
-import me.croabeast.sircore.listeners.*;
-import me.croabeast.sircore.listeners.login.*;
-import me.croabeast.sircore.listeners.vanish.*;
-import me.croabeast.sircore.utils.*;
-import net.milkbowl.vault.permission.*;
-import org.bukkit.*;
+import me.croabeast.sircore.listeners.PlayerListener;
+import me.croabeast.sircore.listeners.login.AuthMe;
+import me.croabeast.sircore.listeners.login.UserLogin;
+import me.croabeast.sircore.listeners.vanish.CMI;
+import me.croabeast.sircore.listeners.vanish.Essentials;
+import me.croabeast.sircore.utils.SavedFile;
+import net.milkbowl.vault.permission.Permission;
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.*;
-import org.bukkit.event.*;
-import org.bukkit.event.player.*;
-import org.bukkit.plugin.*;
-import org.bukkit.plugin.java.*;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.ServicesManager;
 
-public final class MainClass extends JavaPlugin {
+public class MainCore {
 
-    private MainClass main;
-    private LangUtils langUtils;
-    private EventUtils eventUtils;
-
-    private PluginFile config;
-    private PluginFile lang;
-    private PluginFile messages;
-
+    private final SIRPlugin main;
     private Permission perms = null;
+
+    public MainCore(SIRPlugin main) {
+        this.main = main;
+    }
+
+    private SavedFile config;
+    private SavedFile lang;
+    private SavedFile messages;
+
     private String version;
 
     public int events = 0;
@@ -39,50 +42,45 @@ public final class MainClass extends JavaPlugin {
     public boolean hasCMI;
     public boolean essentials;
 
-    @Override
-    public void onEnable() {
-        main = this; // The plugin instance initializing...
-
+    public void setBooleans() {
         version = main.getDescription().getVersion();
         hasPAPI = plugin("PlaceholderAPI") != null;
         authMe = plugin("AuthMe") != null;
         userLogin = plugin("UserLogin") != null;
         hasCMI = plugin("CMI") != null;
         essentials = plugin("Essentials") != null;
+    }
 
-        langUtils = new LangUtils(main);
-        eventUtils = new EventUtils(main);
-        langUtils.loadLangClasses(); // Loading Title and Action Bar
-
-        new Metrics(main, 12806); // The bStats class.
-        new CmdUtils(main); // Register the main command for the plugin
-
+    public void enablingHeader(String server) {
         logger(" &7---- > Simple In-game Receptionist by CroaBeast < ---- ");
         logger("&6[SIR] ");
         logger("&6[SIR] &7Checking &e"+ Bukkit.getVersion()+"&7...");
-        logger("&6[SIR] &e" + langUtils.serverName + " &7detected.");
+        logger("&6[SIR] &e" + server + " &7detected.");
+    }
 
-        // All files related module.
+    public void setSavedFiles() {
         moduleHeader(1, "Plugin Files");
-        config = new PluginFile(main, "config");
-        lang = new PluginFile(main, "lang");
-        messages = new PluginFile(main, "messages");
+        config = new SavedFile(main, "config");
+        lang = new SavedFile(main, "lang");
+        messages = new SavedFile(main, "messages");
 
         config.updateInitFile();
         lang.updateInitFile();
         messages.updateInitFile();
-        sendLoadedSections("first-join", "join", "quit");
+        sendSectionsLog("first-join", "join", "quit");
         logger("&6[SIR] &7Loaded 3 files in the plugin directory.");
+    }
 
-        // PlaceholderAPI module
+    public void setPAPI() {
         moduleHeader(2, "PlaceholderAPI");
         showPluginInfo("PlaceholderAPI");
+    }
 
-        // Permission related module
+    public void setPermissions() {
         moduleHeader(3, "Permissions");
         logger("&6[SIR] &7Checking if Vault Permission System is integrated...");
 
-        ServicesManager servMngr = getServer().getServicesManager();
+        ServicesManager servMngr = main.getServer().getServicesManager();
         RegisteredServiceProvider<Permission> rsp = servMngr.getRegistration(Permission.class);
         Plugin vaultPlugin = plugin("Vault");
         hasVault = vaultPlugin != null && rsp != null;
@@ -94,8 +92,9 @@ public final class MainClass extends JavaPlugin {
             String vault = "Vault " + vaultPlugin.getDescription().getVersion();
             logger("&6[SIR] &7" + vault + "&a installed&7, hooking in a permission plugin...");
         }
+    }
 
-        // Login plugin Hook module
+    public void setLoginHook() {
         int i = 0; String loginPlugin = "No login plugin enabled";
         if (authMe) { i++; loginPlugin = "AuthMe"; }
         if (userLogin) { i++; loginPlugin = "UserLogin"; }
@@ -111,8 +110,9 @@ public final class MainClass extends JavaPlugin {
         } else { hasLogin = false;
             logger("&6[SIR] &cThere is no login plugin installed. &7Unhooking...");
         }
+    }
 
-        // Vanish plugin Hook module
+    public void setVanishHook() {
         int x = 0; String vanishPlugin = "No vanish plugin enabled";
         if (hasCMI) { x++; vanishPlugin = "CMI"; }
         if (essentials) { x++; vanishPlugin = "Essentials"; }
@@ -128,12 +128,11 @@ public final class MainClass extends JavaPlugin {
         } else { hasVanish = false;
             logger("&6[SIR] &cThere is no vanish plugin installed. &7Unhooking...");
         }
+    }
 
-        // Events loading module
+    public void registerEvents() {
         moduleHeader(6, "Events Registering");
-        new OldMessages(main);
-        new OnJoin(main);
-        new OnQuit(main);
+        new PlayerListener(main);
         if (hasLogin) {
             new AuthMe(main);
             new UserLogin(main);
@@ -143,26 +142,19 @@ public final class MainClass extends JavaPlugin {
             new Essentials(main);
         }
         logger("&6[SIR] &7Registered &e" + events + "&7 plugin events.");
+    }
 
+    public void enablingFooter() {
         logger("&6[SIR] ");
         logger("&6[SIR] &fSIR " + version + "&7 was&a loaded&7 successfully&7.");
         logger("&6[SIR] ");
         logger(" &7---- > Simple In-game Receptionist by CroaBeast < ---- ");
     }
 
-    public void onDisable() {
-        main = null; // This will prevent any memory leaks.
+    public void disableMessage() {
         logger("&4[SIR] &7SIR &f" + version + "&7 was totally disabled.");
         logger("&4[SIR] &7Hope we can see you again&c nwn");
     }
-
-    public FileConfiguration getLang() { return lang.getFile(); }
-    public FileConfiguration getMessages() { return messages.getFile(); }
-
-    public LangUtils getLangUtils() { return langUtils; }
-    public EventUtils getEventUtils() { return eventUtils; }
-
-    public Permission getPerms() { return perms; }
 
     public void logger(String msg) {
         msg = ChatColor.translateAlternateColorCodes('&', msg);
@@ -182,12 +174,6 @@ public final class MainClass extends JavaPlugin {
 
     public Plugin plugin(String name) { return Bukkit.getPluginManager().getPlugin(name); }
 
-    public void reloadAllFiles() {
-        config.reloadFile();
-        lang.reloadFile();
-        messages.reloadFile();
-    }
-
     public int sections(String path) {
         int messages = 0;
         ConfigurationSection ids = main.getMessages().getConfigurationSection(path);
@@ -200,22 +186,13 @@ public final class MainClass extends JavaPlugin {
         return messages;
     }
 
-    private void sendLoadedSections(String... sections) {
+    private void sendSectionsLog(String... sections) {
         for (String id : sections)
             logger("&6[SIR] &7Loaded &b" + sections(id) + "&7 groups in the &b" + id + "&7 section.");
     }
 
-    private static class OldMessages implements Listener {
-
-        public OldMessages(MainClass main) {
-            main.events++;
-            main.getServer().getPluginManager().registerEvents(this, main);
-        }
-
-        @EventHandler
-        public void onJoin(PlayerJoinEvent e) { e.setJoinMessage(""); }
-
-        @EventHandler
-        public void onQuit(PlayerQuitEvent e) { e.setQuitMessage(""); }
-    }
+    public Permission getPerms() { return perms; }
+    public SavedFile getConfig() { return config; }
+    public SavedFile getLang() { return lang; }
+    public SavedFile getMessages() { return messages; }
 }

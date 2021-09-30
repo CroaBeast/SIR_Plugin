@@ -1,6 +1,7 @@
 package me.croabeast.sircore.utils;
 
-import me.croabeast.sircore.MainClass;
+import me.croabeast.sircore.MainCore;
+import me.croabeast.sircore.SIRPlugin;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -14,12 +15,14 @@ import java.util.List;
 
 public class CmdUtils implements TabExecutor {
 
-    private final MainClass main;
-    private final LangUtils langUtils;
+    private final SIRPlugin main;
+    private final MainCore mainCore;
+    private final TextUtils textUtils;
 
-    public CmdUtils(MainClass main) {
+    public CmdUtils(SIRPlugin main) {
         this.main = main;
-        this.langUtils = main.getLangUtils();
+        this.mainCore = main.getMainCore();
+        this.textUtils = main.getLangUtils();
         PluginCommand cmd = main.getCommand("sir");
         if (cmd == null) return;
         cmd.setExecutor(this); cmd.setTabCompleter(this);
@@ -28,7 +31,7 @@ public class CmdUtils implements TabExecutor {
     private CommandSender sender;
 
     private void sendMessage(String path, String key, String value) {
-        langUtils.send(sender, path, new String[]{key}, value);
+        textUtils.send(sender, path, new String[]{key}, value);
     }
 
     private void sendLoadedSections() {
@@ -36,7 +39,7 @@ public class CmdUtils implements TabExecutor {
         String[] keys = {"{TOTAL}", "{SECTION}"};
 
         for (String id : sections) {
-            langUtils.send(sender, "get-sections", keys, main.sections(id) + "", id);
+            textUtils.send(sender, "get-sections", keys, mainCore.sections(id) + "", id);
         }
     }
 
@@ -75,7 +78,7 @@ public class CmdUtils implements TabExecutor {
                     return true;
                 }
 
-                main.reloadAllFiles();
+                main.reloadFiles();
                 sendLoadedSections();
                 sendMessage("reload", null, null);
                 return true;
@@ -97,7 +100,7 @@ public class CmdUtils implements TabExecutor {
     }
 
     private void debugMessage(String message) {
-        sender.sendMessage(langUtils.parseColor("&7 &4&lDEBUG &8>&7 " + message));
+        sender.sendMessage(textUtils.parseColor("&7 &4&lDEBUG &8>&7 " + message));
     }
 
     private void printPaths(String file, String path) {

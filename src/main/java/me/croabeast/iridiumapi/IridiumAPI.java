@@ -5,9 +5,7 @@ import me.croabeast.iridiumapi.patterns.Gradient;
 import me.croabeast.iridiumapi.patterns.Patterns;
 import me.croabeast.iridiumapi.patterns.Rainbow;
 import me.croabeast.iridiumapi.patterns.SolidColor;
-import me.croabeast.sircore.utils.LangUtils;
 import net.md_5.bungee.api.ChatColor;
-import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.*;
 
