@@ -28,17 +28,12 @@ public class PlayerListener implements Listener {
         Player player = event.getPlayer();
         ConfigurationSection id = eventUtils.lastSection(player, true);
 
-        boolean doSpawn = main.getConfig().getBoolean("login.spawn-before");
-        boolean sendAfter = main.getConfig().getBoolean("login.send-after");
-        boolean vanish = eventUtils.isVanished(player, true);
-        boolean silent = main.getConfig().getBoolean("vanish.silent");
-
-        if (main.getInitializer().hasLogin && sendAfter) {
-            if (doSpawn) eventUtils.spawn(id, player);
+        if (main.getInitializer().hasLogin && main.choice("after")) {
+            if (main.choice("lSpawn")) eventUtils.spawn(id, player);
             return;
         }
 
-        if (vanish && silent) return;
+        if (eventUtils.isVanished(player, true) && main.choice("silent")) return;
 
         eventUtils.runEvent(id, player, true, true, false);
     }
@@ -51,8 +46,7 @@ public class PlayerListener implements Listener {
         ConfigurationSection id = eventUtils.lastSection(player, false);
         if (id == null) return;
 
-        boolean vanish = eventUtils.isVanished(player, false);
-        if (vanish && main.getConfig().getBoolean("vanish.silent")) return;
+        if (eventUtils.isVanished(player, false) && main.choice("silent")) return;
 
         eventUtils.runEvent(id, player, false, false, false);
     }

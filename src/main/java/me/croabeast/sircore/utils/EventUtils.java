@@ -55,7 +55,9 @@ public class EventUtils {
         return CMIUser.getUser(player).isVanished();
     }
 
-    public boolean isVanished(Player p, boolean join) { return essVanish(p, join) || cmiVanish(p); }
+    public boolean isVanished(Player p, boolean join) {
+        return essVanish(p, join) || cmiVanish(p);
+    }
 
     private boolean hasPerm(Player player, String perm) {
         return !perm.matches("(?i)DEFAULT") &&
@@ -118,18 +120,21 @@ public class EventUtils {
         player.playSound(player.getLocation(), Sound.valueOf(sound), 1, 1);
     }
 
+    private void sendToConsole(String message, String split) {
+        if (!main.choice("console")) return;
+        main.logger("&e&lSIR &7> &f" + message.replace(split, "&r" + split));
+    }
+
     private void send(ConfigurationSection id, Player player, boolean isPublic) {
         String split = main.getConfig().getString("options.line-separator", "<n>");
         List<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
 
-        for (String message : id.getStringList(!isPublic ? "public" : "private")) {
+        for (String message : id.getStringList(isPublic ? "public" : "private")) {
             if (message == null || message.equals("")) continue;
             if (message.startsWith(" ")) message = message.substring(1);
             message = format(message, player, true);
 
-            String prefix = "&e&lSIR &7> &f";
-            if (main.getConfig().getBoolean("options.send-console", true))
-                main.logger(prefix + message.replace(split, "&r" + split));
+            sendToConsole(message, split);
 
             if (message.startsWith("[ACTION-BAR]")) {
                 message = setUp("[ACTION-BAR]", message);

@@ -26,14 +26,9 @@ public class UserLogin implements Listener {
         Player player = event.getPlayer();
         ConfigurationSection id = eventUtils.lastSection(player, true);
 
-        boolean doSpawn = main.getConfig().getBoolean("login.spawn-before");
-        boolean sendAfter = main.getConfig().getBoolean("login.send-after");
-        boolean vanish = eventUtils.isVanished(player, true);
-        boolean silent = main.getConfig().getBoolean("vanish.silent");
+        if (!main.getInitializer().hasLogin || !main.choice("after")) return;
+        if (eventUtils.isVanished(player, true) && main.choice("silent")) return;
 
-        if (!main.getInitializer().hasLogin || !sendAfter) return;
-        if (vanish && silent) return;
-
-        eventUtils.runEvent(id, player, true, !doSpawn, true);
+        eventUtils.runEvent(id, player, true, !main.choice("lSpawn"), true);
     }
 }

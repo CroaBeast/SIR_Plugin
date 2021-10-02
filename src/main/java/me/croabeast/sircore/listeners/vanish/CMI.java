@@ -27,12 +27,9 @@ public class CMI implements Listener {
         Player player = event.getPlayer();
         ConfigurationSection id = eventUtils.lastSection(player, "join");
 
-        boolean trigger = main.getConfig().getBoolean("vanish.trigger");
-        boolean spawn = main.getConfig().getBoolean("vanish.do-spawn");
+        if (!main.getInitializer().hasVanish || !main.choice("trigger")) return;
 
-        if (!main.getInitializer().hasVanish || !trigger) return;
-
-        eventUtils.runEvent(id, player, true, spawn, false);
+        eventUtils.runEvent(id, player, true, main.choice("vSpawn"), false);
     }
 
     @EventHandler
@@ -40,11 +37,8 @@ public class CMI implements Listener {
         Player player = event.getPlayer();
         ConfigurationSection id = eventUtils.lastSection(player, "quit");
 
-        boolean trigger = main.getConfig().getBoolean("vanish.trigger");
-        boolean spawn = main.getConfig().getBoolean("vanish.do-spawn");
+        if (!main.getInitializer().hasVanish || !main.choice("trigger")) return;
 
-        if (!main.getInitializer().hasVanish || !trigger) return;
-
-        eventUtils.runEvent(id, player, false, spawn, false);
+        eventUtils.runEvent(id, player, false, main.choice("vSpawn"), false);
     }
 }

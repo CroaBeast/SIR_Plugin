@@ -85,7 +85,8 @@ public class Initializer {
         }
 
         // Login hook
-        int i = 0; String loginPlugin = "No login plugin enabled";
+        String loginPlugin = "No login plugin enabled";
+        int i = 0;
         if (authMe) {
             i++;
             loginPlugin = "AuthMe";
@@ -111,7 +112,8 @@ public class Initializer {
         }
 
         // Vanish hook
-        int x = 0; String vanishPlugin = "No vanish plugin enabled";
+        String vanishPlugin = "No vanish plugin enabled";
+        int x = 0;
         if (hasCMI) {
             x++;
             vanishPlugin = "CMI";

@@ -24,18 +24,15 @@ public class Essentials implements Listener {
 
     @EventHandler
     private void onVanish(VanishStatusChangeEvent event) {
-        IUser affected = event.getAffected();
-        Player player = affected.getBase();
+        IUser user = event.getAffected();
+        Player player = user.getBase();
 
-        String path = affected.isVanished() ? "join" : "quit";
+        String path = user.isVanished() ? "join" : "quit";
         ConfigurationSection id = eventUtils.lastSection(player, path);
         if (id == null) return;
 
-        boolean trigger = main.getConfig().getBoolean("vanish.trigger");
-        boolean spawn = main.getConfig().getBoolean("vanish.do-spawn");
+        if (!main.getInitializer().hasVanish || !main.choice("trigger")) return;
 
-        if (!main.getInitializer().hasVanish || !trigger) return;
-
-        eventUtils.runEvent(id, player, affected.isVanished(), spawn, false);
+        eventUtils.runEvent(id, player, user.isVanished(), main.choice("vSpawn"), false);
     }
 }

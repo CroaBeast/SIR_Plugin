@@ -86,4 +86,23 @@ public final class Application extends JavaPlugin {
         }
         return messages;
     }
+
+    public boolean choice(String key) {
+        switch (key) {
+            case "console":
+                return main.getConfig().getBoolean("options.send-console");
+            case "after":
+                return main.getConfig().getBoolean("login.send-after");
+            case "lSpawn":
+                return main.getConfig().getBoolean("login.spawn-before");
+            case "trigger":
+                return main.getConfig().getBoolean("vanish.trigger");
+            case "silent":
+                return main.getConfig().getBoolean("vanish.silent");
+            case "vSpawn":
+                return main.getConfig().getBoolean("vanish.do-spawn");
+            default:
+                return false;
+        }
+    }
 }

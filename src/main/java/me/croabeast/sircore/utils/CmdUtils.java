@@ -59,10 +59,6 @@ public class CmdUtils implements TabExecutor {
         }
 
         switch (args[0].toLowerCase()) {
-            default:
-                sendMessage("wrong-arg", "{ARG}", args[0]);
-                return true;
-
             case "reload": case "r":
                 if (!sender.hasPermission("sir.reload")) {
                     sendMessage("no-permission", "{PERM}", "sir.reload");
@@ -91,6 +87,10 @@ public class CmdUtils implements TabExecutor {
                 }
 
                 printPaths(args[1], args[2]);
+                return true;
+
+            default:
+                sendMessage("wrong-arg", "{ARG}", args[0]);
                 return true;
         }
     }
