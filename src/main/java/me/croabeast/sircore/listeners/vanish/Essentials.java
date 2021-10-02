@@ -1,6 +1,6 @@
 package me.croabeast.sircore.listeners.vanish;
 
-import me.croabeast.sircore.SIRPlugin;
+import me.croabeast.sircore.Application;
 import me.croabeast.sircore.utils.EventUtils;
 import net.ess3.api.IUser;
 import net.ess3.api.events.VanishStatusChangeEvent;
@@ -11,14 +11,14 @@ import org.bukkit.event.Listener;
 
 public class Essentials implements Listener {
 
-    private final SIRPlugin main;
+    private final Application main;
     private final EventUtils eventUtils;
 
-    public Essentials(SIRPlugin main){
+    public Essentials(Application main){
         this.main = main;
         this.eventUtils = main.getEventUtils();
-        if (!main.getMainCore().essentials) return;
-        main.getMainCore().events++;
+        if (!main.getInitializer().essentials) return;
+        main.getInitializer().events++;
         main.getServer().getPluginManager().registerEvents(this, main);
     }
 
@@ -34,7 +34,7 @@ public class Essentials implements Listener {
         boolean trigger = main.getConfig().getBoolean("vanish.trigger");
         boolean spawn = main.getConfig().getBoolean("vanish.do-spawn");
 
-        if (!main.getMainCore().hasVanish || !trigger) return;
+        if (!main.getInitializer().hasVanish || !trigger) return;
 
         eventUtils.runEvent(id, player, affected.isVanished(), spawn, false);
     }

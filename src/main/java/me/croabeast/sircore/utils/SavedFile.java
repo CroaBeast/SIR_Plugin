@@ -1,8 +1,7 @@
 package me.croabeast.sircore.utils;
 
 import me.croabeast.cupdater.ConfigUpdater;
-import me.croabeast.sircore.MainCore;
-import me.croabeast.sircore.SIRPlugin;
+import me.croabeast.sircore.Application;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -11,16 +10,14 @@ import java.util.Collections;
 
 public class SavedFile {
 
-    private final SIRPlugin main;
-    private final MainCore mainCore;
+    private final Application main;
     private final String name;
     private final String location;
     private FileConfiguration file;
     private File rawYmlFile;
 
-    public SavedFile(SIRPlugin main, String name) {
+    public SavedFile(Application main, String name) {
         this.main = main;
-        this.mainCore = main.getMainCore();
         this.name = name;
         this.location = name + ".yml";
         registerFile();
@@ -37,7 +34,7 @@ public class SavedFile {
         try {
             this.getFile().save(this.rawYmlFile);
         } catch (IOException e) {
-            mainCore.logger("&6[SIR] &7The " + location + " file couldn't be saved...");
+            main.logger("&6[SIR] &7The " + location + " file couldn't be saved...");
             e.printStackTrace();
         }
     }
@@ -46,20 +43,23 @@ public class SavedFile {
         try {
             ConfigUpdater.update(main, location, catchFile(), Collections.emptyList());
         } catch (IOException e) {
-            mainCore.logger("&6[SIR] &7The " + location + " file could not be updated...");
+            main.logger("&6[SIR] &7The " + location + " file could not be updated...");
             e.printStackTrace();
         }
     }
 
     private void saveDefaultFile() {
-        if (name.equals("config")) { main.saveDefaultConfig(); return; }
+        if (name.equals("config")) {
+            main.saveDefaultConfig();
+            return;
+        }
         if (rawYmlFile == null) rawYmlFile = catchFile();
         if (!rawYmlFile.exists()) main.saveResource(location, false);
     }
 
     private void registerFile() {
         if (catchFile().exists()) return;
-        mainCore.logger("&6[SIR] &cFile " + location + " missing... &fGenerating!");
+        main.logger("&6[SIR] &cFile " + location + " missing... &fGenerating!");
         saveDefaultFile();
     }
 

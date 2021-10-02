@@ -2,7 +2,7 @@ package me.croabeast.sircore.utils;
 
 import me.clip.placeholderapi.*;
 import me.croabeast.iridiumapi.IridiumAPI;
-import me.croabeast.sircore.SIRPlugin;
+import me.croabeast.sircore.Application;
 import me.croabeast.sircore.handlers.ActBar17;
 import me.croabeast.sircore.handlers.ActBar10;
 import me.croabeast.sircore.handlers.Title17;
@@ -18,7 +18,7 @@ import java.util.*;
 
 public class TextUtils {
 
-    private final SIRPlugin main;
+    private final Application main;
 
     public int getVersion;
     public String serverName;
@@ -26,7 +26,7 @@ public class TextUtils {
     private ActionBar actionBar;
     private TitleMain titleMain;
 
-    public TextUtils(SIRPlugin main) {
+    public TextUtils(Application main) {
         this.main = main;
         String version = Bukkit.getBukkitVersion().split("-")[0];
         this.getVersion = Integer.parseInt(version.split("\\.")[1]);
@@ -44,7 +44,7 @@ public class TextUtils {
 
     public String parsePAPI(Player player, String message) {
         String papi = PlaceholderAPI.setPlaceholders(player, message);
-        return parseColor((main.getMainCore().hasPAPI && player != null) ? papi : message);
+        return parseColor((main.getInitializer().hasPAPI && player != null) ? papi : message);
     }
 
     public void sendCentered(Player player, String message) {

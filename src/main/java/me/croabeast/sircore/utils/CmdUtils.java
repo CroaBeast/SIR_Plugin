@@ -1,7 +1,6 @@
 package me.croabeast.sircore.utils;
 
-import me.croabeast.sircore.MainCore;
-import me.croabeast.sircore.SIRPlugin;
+import me.croabeast.sircore.Application;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.PluginCommand;
@@ -15,17 +14,16 @@ import java.util.List;
 
 public class CmdUtils implements TabExecutor {
 
-    private final SIRPlugin main;
-    private final MainCore mainCore;
+    private final Application main;
     private final TextUtils textUtils;
 
-    public CmdUtils(SIRPlugin main) {
+    public CmdUtils(Application main) {
         this.main = main;
-        this.mainCore = main.getMainCore();
-        this.textUtils = main.getLangUtils();
+        this.textUtils = main.getTextUtils();
         PluginCommand cmd = main.getCommand("sir");
         if (cmd == null) return;
-        cmd.setExecutor(this); cmd.setTabCompleter(this);
+        cmd.setExecutor(this);
+        cmd.setTabCompleter(this);
     }
 
     private CommandSender sender;
@@ -35,11 +33,9 @@ public class CmdUtils implements TabExecutor {
     }
 
     private void sendLoadedSections() {
-        String[] sections = {"first-join", "join", "quit"};
         String[] keys = {"{TOTAL}", "{SECTION}"};
-
-        for (String id : sections) {
-            textUtils.send(sender, "get-sections", keys, mainCore.sections(id) + "", id);
+        for (String id : main.getMessages().getKeys(false)) {
+            textUtils.send(sender, "get-sections", keys, main.sections(id) + "", id);
         }
     }
 
