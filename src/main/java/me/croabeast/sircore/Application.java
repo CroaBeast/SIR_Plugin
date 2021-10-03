@@ -1,11 +1,10 @@
 package me.croabeast.sircore;
 
 import me.croabeast.sircore.utils.*;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.*;
+import org.bukkit.configuration.*;
 import org.bukkit.configuration.file.*;
-import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.*;
 
 public final class Application extends JavaPlugin {
@@ -35,8 +34,6 @@ public final class Application extends JavaPlugin {
         main.logger("&6[SIR] ");
         main.logger("&6[SIR] &7Checking &e"+ Bukkit.getVersion()+"&7...");
         main.logger("&6[SIR] &e" + textUtils.serverName + " &7detected.");
-
-        initializer.setBooleans();
 
         initializer.savedFiles();
         initializer.setPluginHooks();
@@ -73,7 +70,9 @@ public final class Application extends JavaPlugin {
         initializer.getMessages().reloadFile();
     }
 
-    public Plugin plugin(String name) { return Bukkit.getPluginManager().getPlugin(name); }
+    public Plugin plugin(String name) {
+        return Bukkit.getPluginManager().getPlugin(name);
+    }
 
     public int sections(String path) {
         int messages = 0;

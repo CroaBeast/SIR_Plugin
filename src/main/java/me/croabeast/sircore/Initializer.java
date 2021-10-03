@@ -1,18 +1,11 @@
 package me.croabeast.sircore;
 
-import me.croabeast.sircore.listeners.PlayerListener;
-import me.croabeast.sircore.listeners.login.AuthMe;
-import me.croabeast.sircore.listeners.login.UserLogin;
-import me.croabeast.sircore.listeners.vanish.CMI;
-import me.croabeast.sircore.listeners.vanish.Essentials;
-import me.croabeast.sircore.utils.SavedFile;
-import net.milkbowl.vault.permission.Permission;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.ServicesManager;
+import me.croabeast.sircore.listeners.*;
+import me.croabeast.sircore.listeners.login.*;
+import me.croabeast.sircore.listeners.vanish.*;
+import me.croabeast.sircore.utils.*;
+import net.milkbowl.vault.permission.*;
+import org.bukkit.plugin.*;
 
 public class Initializer {
 
@@ -21,6 +14,11 @@ public class Initializer {
 
     public Initializer(Application main) {
         this.main = main;
+        hasPAPI = main.plugin("PlaceholderAPI") != null;
+        authMe = main.plugin("AuthMe") != null;
+        userLogin = main.plugin("UserLogin") != null;
+        hasCMI = main.plugin("CMI") != null;
+        essentials = main.plugin("Essentials") != null;
     }
 
     private SavedFile config;
@@ -40,14 +38,6 @@ public class Initializer {
     public boolean hasVanish;
     public boolean hasCMI;
     public boolean essentials;
-
-    public void setBooleans() {
-        hasPAPI = main.plugin("PlaceholderAPI") != null;
-        authMe = main.plugin("AuthMe") != null;
-        userLogin = main.plugin("UserLogin") != null;
-        hasCMI = main.plugin("CMI") != null;
-        essentials = main.plugin("Essentials") != null;
-    }
 
     public void savedFiles() {
         moduleHeader("Plugin Files");
@@ -154,8 +144,11 @@ public class Initializer {
     }
 
     private void showPluginInfo(String name) {
-        String version = main.plugin(name) != null ? main.plugin(name).getDescription().getVersion() + " " : "";
-        String hook = main.plugin(name) != null ? "&aenabled&7. Hooking..." : "&cnot found&7. Unhooking...";
+        boolean isPlugin = main.plugin(name) != null;
+
+        String version = isPlugin ? main.plugin(name).getDescription().getVersion() + " " : "";
+        String hook = isPlugin ? "&aenabled&7. Hooking..." : "&cnot found&7. Unhooking...";
+
         main.logger("&6[SIR] &7" + name + " " + version + hook);
     }
 
@@ -171,6 +164,7 @@ public class Initializer {
     }
 
     public Permission getPerms() { return perms; }
+
     public SavedFile getConfig() { return config; }
     public SavedFile getLang() { return lang; }
     public SavedFile getMessages() { return messages; }

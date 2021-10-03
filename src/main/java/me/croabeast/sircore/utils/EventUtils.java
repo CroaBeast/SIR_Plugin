@@ -1,20 +1,16 @@
 package me.croabeast.sircore.utils;
 
-import com.Zrips.CMI.Containers.CMIUser;
-import com.earth2me.essentials.Essentials;
-import me.croabeast.sircore.Initializer;
-import me.croabeast.sircore.Application;
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Sound;
-import org.bukkit.World;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
+import com.Zrips.CMI.Containers.*;
+import com.earth2me.essentials.*;
+import me.croabeast.sircore.*;
+import org.apache.commons.lang.*;
+import org.bukkit.*;
+import org.bukkit.configuration.*;
+import org.bukkit.entity.*;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.regex.Pattern;
+import java.util.*;
+import java.util.regex.*;
 
 public class EventUtils {
 
@@ -34,12 +30,6 @@ public class EventUtils {
 
         String message = StringUtils.replaceEach(msg, keys, v);
         return isColor ? textUtils.parsePAPI(player, message) : message;
-    }
-
-    private String setUp(String type, String message) {
-        message = message.substring(type.length());
-        if (message.startsWith(" ")) message = message.substring(1);
-        return message;
     }
 
     private boolean essVanish(Player player, boolean join) {
@@ -125,6 +115,27 @@ public class EventUtils {
         main.logger("&e&lSIR &7> &f" + message.replace(split, "&r" + split));
     }
 
+    private String setUp(@NotNull String type, String message) {
+        message = message.substring(type.length());
+        if (message.startsWith(" ")) message = message.substring(1);
+        return message;
+    }
+
+    private void typeMessage(Player player, String message) {
+        if (message.startsWith("[ACTION-BAR]")) {
+            textUtils.actionBar(player, setUp("[ACTION-BAR]", message));
+        }
+        else if (message.startsWith("[TITLE]")) {
+            String split = main.getConfig().getString("options.line-separator", "<n>");
+            textUtils.title(player, setUp("[TITLE]", message).split(Pattern.quote(split)));
+        }
+        else if (message.startsWith("[JSON]")) {
+            String command = player.getName() + " " + setUp("[JSON]", message);
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + command);
+        }
+        else textUtils.sendMixed(player, message);
+    }
+
     private void send(ConfigurationSection id, Player player, boolean isPublic) {
         String split = main.getConfig().getString("options.line-separator", "<n>");
         List<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
@@ -136,33 +147,8 @@ public class EventUtils {
 
             sendToConsole(message, split);
 
-            if (message.startsWith("[ACTION-BAR]")) {
-                message = setUp("[ACTION-BAR]", message);
-                if (isPublic) {
-                    for (Player p : players) textUtils.actionBar(p, message);
-                }
-                else textUtils.actionBar(player, message);
-            }
-
-            else if (message.startsWith("[TITLE]")) {
-                String[] array = setUp("[TITLE]", message).split(Pattern.quote(split));
-                if (isPublic) {
-                    for (Player p : players) textUtils.title(p, array);
-                }
-                else textUtils.title(player, array);
-            }
-
-            else if (message.startsWith("[JSON]")) {
-                String command = (isPublic ? "@a " : player.getName() + " ") + setUp("[JSON]", message);
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + command);
-            }
-
-            else {
-                if (isPublic) {
-                    for (Player p : players) textUtils.sendMixed(p, message);
-                }
-                else textUtils.sendMixed(player, message);
-            }
+            if (isPublic) for (Player p : players) typeMessage(p, message);
+            else typeMessage(player, message);
         }
     }
 
