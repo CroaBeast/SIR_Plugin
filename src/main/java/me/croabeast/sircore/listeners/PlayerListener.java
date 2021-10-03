@@ -47,6 +47,8 @@ public class PlayerListener implements Listener {
         if (id == null) return;
 
         if (eventUtils.isVanished(player, false) && main.choice("silent")) return;
+        if (!eventUtils.loggedPlayers.contains(player)) return;
+        eventUtils.loggedPlayers.remove(player);
 
         eventUtils.runEvent(id, player, false, false, false);
     }

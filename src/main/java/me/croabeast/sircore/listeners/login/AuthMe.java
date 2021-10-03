@@ -29,6 +29,7 @@ public class AuthMe implements Listener {
         if (!main.getInitializer().hasLogin || !main.choice("after")) return;
         if (eventUtils.isVanished(player, true) && main.choice("silent")) return;
 
+        eventUtils.loggedPlayers.add(player);
         eventUtils.runEvent(id, player, true, !main.choice("lSpawn"), true);
     }
 }

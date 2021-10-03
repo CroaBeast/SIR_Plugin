@@ -7,7 +7,7 @@ import org.apache.commons.lang.*;
 import org.bukkit.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
-import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 import java.util.regex.*;
@@ -23,6 +23,8 @@ public class EventUtils {
         this.initializer = main.getInitializer();
         this.textUtils = main.getTextUtils();
     }
+
+    public List<Player> loggedPlayers = new ArrayList<>();
 
     private String format(String msg, Player player, boolean isColor) {
         String[] keys = {"{PLAYER}", "{WORLD}"};

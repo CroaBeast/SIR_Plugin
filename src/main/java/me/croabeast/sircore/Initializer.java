@@ -160,7 +160,7 @@ public class Initializer {
 
     private void sendSectionsLog() {
         for (String id : main.getMessages().getKeys(false))
-            main.logger("&6[SIR] &7Loaded &b" + main.sections(id) + "&7 groups in the &b" + id + "&7 section.");
+            main.logger("&6[SIR] &7Loaded &c" + main.sections(id) + "&7 groups in the &c" + id + "&7 section.");
     }
 
     public Permission getPerms() { return perms; }
