@@ -6,7 +6,7 @@
 
     <groupId>me.croabeast</groupId>
     <artifactId>SIR_Plugin</artifactId>
-    <version>1.8.0-BETA</version>
+    <version>1.8.0</version>
     <packaging>jar</packaging>
 
     <name>SIR_Plugin</name> <!--Simple In-game Receptionist-->
