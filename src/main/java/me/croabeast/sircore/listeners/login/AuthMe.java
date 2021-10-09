@@ -1,35 +1,20 @@
 package me.croabeast.sircore.listeners.login;
 
-import fr.xephi.authme.events.LoginEvent;
-import me.croabeast.sircore.Application;
-import me.croabeast.sircore.utils.EventUtils;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
+import fr.xephi.authme.events.*;
+import me.croabeast.sircore.*;
+import org.bukkit.*;
+import org.bukkit.event.*;
 
 public class AuthMe implements Listener {
 
-    private final Application main;
-    private final EventUtils eventUtils;
-
     public AuthMe(Application main) {
-        this.main = main;
-        this.eventUtils = main.getEventUtils();
         if (!main.getInitializer().authMe) return;
-        main.getInitializer().events++;
         main.getServer().getPluginManager().registerEvents(this, main);
+        main.getInitializer().events++;
     }
 
     @EventHandler
-    private void onLogin(LoginEvent event) {
-        Player player = event.getPlayer();
-        ConfigurationSection id = eventUtils.lastSection(player, true);
-
-        if (!main.getInitializer().hasLogin || !main.choice("after")) return;
-        if (eventUtils.isVanished(player, true) && main.choice("silent")) return;
-
-        eventUtils.loggedPlayers.add(player);
-        eventUtils.runEvent(id, player, true, !main.choice("lSpawn"), true);
+    public void onLogin(LoginEvent event){
+        Bukkit.getPluginManager().callEvent(new me.croabeast.sircore.events.LoginEvent(event.getPlayer()));
     }
 }

@@ -1,4 +1,4 @@
-package me.croabeast.sircore.utils;
+package me.croabeast.sircore.others;
 
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;

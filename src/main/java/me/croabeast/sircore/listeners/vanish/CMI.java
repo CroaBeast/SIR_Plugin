@@ -1,22 +1,14 @@
 package me.croabeast.sircore.listeners.vanish;
 
-import com.Zrips.CMI.events.CMIPlayerUnVanishEvent;
-import com.Zrips.CMI.events.CMIPlayerVanishEvent;
-import me.croabeast.sircore.Application;
-import me.croabeast.sircore.utils.EventUtils;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
+import com.Zrips.CMI.events.*;
+import me.croabeast.sircore.*;
+import me.croabeast.sircore.events.*;
+import org.bukkit.*;
+import org.bukkit.event.*;
 
 public class CMI implements Listener {
 
-    private final Application main;
-    private final EventUtils eventUtils;
-
     public CMI(Application main) {
-        this.main = main;
-        this.eventUtils = main.getEventUtils();
         if (!main.getInitializer().hasCMI) return;
         main.getInitializer().events++;
         main.getServer().getPluginManager().registerEvents(this, main);
@@ -24,21 +16,11 @@ public class CMI implements Listener {
 
     @EventHandler
     private void onUnVanish(CMIPlayerUnVanishEvent event) {
-        Player player = event.getPlayer();
-        ConfigurationSection id = eventUtils.lastSection(player, "join");
-
-        if (!main.getInitializer().hasVanish || !main.choice("trigger")) return;
-
-        eventUtils.runEvent(id, player, true, main.choice("vSpawn"), false);
+        Bukkit.getPluginManager().callEvent(new VanishEvent(event.getPlayer(), true));
     }
 
     @EventHandler
     private void onVanish(CMIPlayerVanishEvent event) {
-        Player player = event.getPlayer();
-        ConfigurationSection id = eventUtils.lastSection(player, "quit");
-
-        if (!main.getInitializer().hasVanish || !main.choice("trigger")) return;
-
-        eventUtils.runEvent(id, player, false, main.choice("vSpawn"), false);
+        Bukkit.getPluginManager().callEvent(new VanishEvent(event.getPlayer(), false));
     }
 }

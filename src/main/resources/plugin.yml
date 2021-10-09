@@ -6,12 +6,13 @@ authors: [ CroaBeast ]
 
 softdepend:
   - AuthMe
-  - PlaceholderAPI
   - CMI
   - UserLogin
   - Vault
-  - Essentials
+  - PlaceholderAPI
   - EssentialsX
+  - SuperVanish
+  - PremiumVanish
 
 main: me.croabeast.sircore.Application
 

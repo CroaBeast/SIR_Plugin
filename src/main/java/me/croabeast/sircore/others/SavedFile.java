@@ -1,12 +1,11 @@
-package me.croabeast.sircore.utils;
+package me.croabeast.sircore.others;
 
-import me.croabeast.cupdater.ConfigUpdater;
-import me.croabeast.sircore.Application;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
+import me.croabeast.cupdater.*;
+import me.croabeast.sircore.*;
+import org.bukkit.configuration.file.*;
 
 import java.io.*;
-import java.util.Collections;
+import java.util.*;
 
 public class SavedFile {
 
@@ -21,6 +20,7 @@ public class SavedFile {
         this.name = name;
         this.location = name + ".yml";
         registerFile();
+        main.getInitializer().files++;
     }
 
     private File catchFile() { return new File(main.getDataFolder(), location); }
@@ -34,18 +34,20 @@ public class SavedFile {
         try {
             this.getFile().save(this.rawYmlFile);
         } catch (IOException e) {
-            main.logger("&6[SIR] &7The " + location + " file couldn't be saved...");
+            main.logger("&7The &e" + location + "&7 file&c couldn't be saved&7.");
             e.printStackTrace();
         }
+        main.logger("&7The &e" + location + "&7 file has been&a saved&7.");
     }
 
     private void updatingFile() {
         try {
             ConfigUpdater.update(main, location, catchFile(), Collections.emptyList());
         } catch (IOException e) {
-            main.logger("&6[SIR] &7The " + location + " file could not be updated...");
+            main.logger("&7The &e" + location + "&7 file&c couldn't be updated&7.");
             e.printStackTrace();
         }
+        main.logger("&7The &e" + location + "&7 file has been&a updated&7.");
     }
 
     private void saveDefaultFile() {
@@ -59,7 +61,7 @@ public class SavedFile {
 
     private void registerFile() {
         if (catchFile().exists()) return;
-        main.logger("&6[SIR] &cFile " + location + " missing... &fGenerating!");
+        main.logger("&6[SIR] &cFile " + location + " missing... &7Generating!");
         saveDefaultFile();
     }
 

@@ -1,11 +1,8 @@
 package me.croabeast.sircore.utils;
 
-import me.croabeast.sircore.Application;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.PluginCommand;
-import org.bukkit.command.TabExecutor;
-import org.bukkit.util.StringUtil;
+import me.croabeast.sircore.*;
+import org.bukkit.command.*;
+import org.bukkit.util.*;
 import org.jetbrains.annotations.*;
 
 import java.util.ArrayList;
@@ -90,7 +87,7 @@ public class CmdUtils implements TabExecutor {
                 return true;
 
             default:
-                sendMessage("wrong-arg", "{ARG}", args[0]);
+                sendMessage("wrong-arg", "{ARG}", args.length == 2 ? args[1] : args[0]);
                 return true;
         }
     }

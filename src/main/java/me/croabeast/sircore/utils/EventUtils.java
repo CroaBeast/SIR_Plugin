@@ -7,6 +7,7 @@ import org.apache.commons.lang.*;
 import org.bukkit.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
+import org.bukkit.metadata.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -15,12 +16,10 @@ import java.util.regex.*;
 public class EventUtils {
 
     private final Application main;
-    private final Initializer initializer;
     private final TextUtils textUtils;
 
     public EventUtils(Application main) {
         this.main = main;
-        this.initializer = main.getInitializer();
         this.textUtils = main.getTextUtils();
     }
 
@@ -39,7 +38,7 @@ public class EventUtils {
         if (ess == null) return false;
 
         boolean isJoin = join && hasPerm(player, "essentials.silentjoin.vanish");
-        return (ess.getUser(player).isVanished()) || isJoin;
+        return ess.getUser(player).isVanished() || isJoin;
     }
 
     private boolean cmiVanish(Player player) {
@@ -47,14 +46,21 @@ public class EventUtils {
         return CMIUser.getUser(player).isVanished();
     }
 
+    private boolean normalVanish(Player player) {
+        for (MetadataValue meta : player.getMetadata("vanished")) {
+            if (meta.asBoolean()) return true;
+        }
+        return false;
+    }
+
     public boolean isVanished(Player p, boolean join) {
-        return essVanish(p, join) || cmiVanish(p);
+        return essVanish(p, join) || cmiVanish(p) || normalVanish(p);
     }
 
     private boolean hasPerm(Player player, String perm) {
         return !perm.matches("(?i)DEFAULT") &&
-                (initializer.hasVault ?
-                        initializer.getPerms().playerHas(null, player, perm) :
+                (main.getInitializer().hasVault ?
+                        main.getInitializer().getPerms().playerHas(null, player, perm) :
                         player.hasPermission(perm)
                 );
     }
@@ -109,6 +115,7 @@ public class EventUtils {
         } catch (IllegalArgumentException ex) {
             return;
         }
+
         player.playSound(player.getLocation(), Sound.valueOf(sound), 1, 1);
     }
 
@@ -201,11 +208,8 @@ public class EventUtils {
     public void runEvent(ConfigurationSection id, Player player, boolean join, boolean spawn, boolean login) {
         Runnable event = () -> {
             if (id == null) {
-                String prefix = "&7 &4&lSIR-DEBUG &8> ";
-                textUtils.sendMixed(player, prefix + "&cA valid message group isn't found...");
-                textUtils.sendMixed(player, prefix + "&7Please check your &messages.yml &7file.");
-                main.logger(prefix + "&cA valid message group isn't found...");
-                main.logger(prefix + "&7Please check your &messages.yml &7file.");
+                main.logger(player, "&cA valid message group isn't found...");
+                main.logger(player, "&7Please check your&e messages.yml &7file.");
                 return;
             }
 

@@ -1,13 +1,11 @@
 package me.croabeast.sircore.listeners;
 
-import me.croabeast.sircore.Application;
-import me.croabeast.sircore.utils.EventUtils;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
+import me.croabeast.sircore.*;
+import me.croabeast.sircore.utils.*;
+import org.bukkit.configuration.*;
+import org.bukkit.entity.*;
+import org.bukkit.event.*;
+import org.bukkit.event.player.*;
 
 public class PlayerListener implements Listener {
 
@@ -23,7 +21,7 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     private void onJoin(PlayerJoinEvent event) {
-        event.setJoinMessage(""); //Message initializer
+        event.setJoinMessage(null); //Message initializer
 
         Player player = event.getPlayer();
         ConfigurationSection id = eventUtils.lastSection(player, true);
@@ -40,11 +38,10 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     private void onQuit(PlayerQuitEvent event) {
-        event.setQuitMessage(""); //Message initializer
+        event.setQuitMessage(null); //Message initializer
 
         Player player = event.getPlayer();
         ConfigurationSection id = eventUtils.lastSection(player, false);
-        if (id == null) return;
 
         if (eventUtils.isVanished(player, false) && main.choice("silent")) return;
         if (main.getInitializer().hasLogin) {

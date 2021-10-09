@@ -1,9 +1,11 @@
 package me.croabeast.sircore;
 
+import me.croabeast.sircore.others.*;
 import me.croabeast.sircore.utils.*;
 import org.bukkit.*;
 import org.bukkit.configuration.*;
 import org.bukkit.configuration.file.*;
+import org.bukkit.entity.*;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.*;
 
@@ -30,26 +32,25 @@ public final class Application extends JavaPlugin {
 
         version = main.getDescription().getVersion();
 
-        main.logger(" &7---- > Simple In-game Receptionist by CroaBeast < ---- ");
-        main.logger("&6[SIR] ");
-        main.logger("&6[SIR] &7Checking &e"+ Bukkit.getVersion()+"&7...");
-        main.logger("&6[SIR] &e" + textUtils.serverName + " &7detected.");
+        sendLimiter();
+        logger("");
+        logger("&7Server Software: &e"+ textUtils.serverName);
 
         initializer.savedFiles();
         initializer.setPluginHooks();
         initializer.registerEvents();
 
-        logger("&6[SIR] ");
-        logger("&6[SIR] &fSIR " + version + "&7 was&a loaded&7 successfully&7.");
-        logger("&6[SIR] ");
-        logger(" &7---- > Simple In-game Receptionist by CroaBeast < ---- ");
+        logger("");
+        logger("&7SIR " + version + " was&a loaded successfully&7.");
+        logger("");
+        sendLimiter();
     }
 
     @Override
     public void onDisable() {
+        logger("&7SIR &c" + version + "&7 was totally disabled.");
+        logger("&7Hope we can see you again&c nwn");
         main = null; // This will prevent any memory leaks.
-        logger("&4[SIR] &7SIR &f" + version + "&7 was totally disabled.");
-        logger("&4[SIR] &7Hope we can see you again&c nwn");
     }
 
     public FileConfiguration getLang() { return initializer.getLang().getFile(); }
@@ -59,9 +60,20 @@ public final class Application extends JavaPlugin {
     public TextUtils getTextUtils() { return textUtils; }
     public EventUtils getEventUtils() { return eventUtils; }
 
-    public void logger(String msg) {
-        msg = ChatColor.translateAlternateColorCodes('&', msg);
-        Bukkit.getConsoleSender().sendMessage(msg);
+    private String color(String msg) {
+        return ChatColor.translateAlternateColorCodes('&', msg);
+    }
+
+    public void logger(Player player, String msg) {
+        getLogger().info(color(msg));
+        if (player != null) player.sendMessage(color("&6[SIR] " + msg));
+    }
+
+    public void logger(String msg) { logger(null, msg); }
+
+    private void sendLimiter() {
+        String limiter = " &7---- > Simple In-game Receptionist by CroaBeast < ---- ";
+        Bukkit.getConsoleSender().sendMessage(color(limiter));
     }
 
     public void reloadFiles() {

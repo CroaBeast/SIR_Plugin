@@ -1,18 +1,16 @@
 package me.croabeast.sircore.utils;
 
 import me.clip.placeholderapi.*;
-import me.croabeast.iridiumapi.IridiumAPI;
-import me.croabeast.sircore.Application;
-import me.croabeast.sircore.handlers.ActBar17;
-import me.croabeast.sircore.handlers.ActBar10;
-import me.croabeast.sircore.handlers.Title17;
-import me.croabeast.sircore.handlers.Title9;
-import me.croabeast.sircore.interfaces.ActionBar;
-import me.croabeast.sircore.interfaces.TitleMain;
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
+import me.croabeast.iridiumapi.*;
+import me.croabeast.sircore.*;
+import me.croabeast.sircore.handlers.*;
+import me.croabeast.sircore.interfaces.*;
+import me.croabeast.sircore.others.*;
+import org.apache.commons.lang.*;
+import org.bukkit.*;
+import org.bukkit.command.*;
+import org.bukkit.configuration.file.*;
+import org.bukkit.entity.*;
 
 import java.util.*;
 
@@ -81,9 +79,13 @@ public class TextUtils {
         else player.sendMessage(parsePAPI(player, message));
     }
 
+    public List<String> fileList(FileConfiguration file, String path) {
+        if (file != main.getConfig() && file.isList(path)) return file.getStringList(path);
+        return Collections.singletonList(file.getString(path));
+    }
+
     private List<String> toList(String path) {
-        if(main.getLang().isList(path)) return main.getLang().getStringList(path);
-        return Collections.singletonList(main.getLang().getString(path));
+        return fileList(main.getLang(), path);
     }
 
     public void send(CommandSender sender, String path, String[] keys, String... values) {
