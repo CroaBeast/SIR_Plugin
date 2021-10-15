@@ -121,7 +121,7 @@ public class EventUtils {
 
     private void sendToConsole(String message, String split) {
         if (!main.choice("console")) return;
-        main.logger("&e&lSIR &7> &f" + message.replace(split, "&r" + split));
+        main.logger("&7> &f" + message.replace(split, "&r" + split));
     }
 
     private String setUp(@NotNull String type, String message) {

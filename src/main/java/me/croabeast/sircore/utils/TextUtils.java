@@ -41,8 +41,8 @@ public class TextUtils {
     }
 
     public String parsePAPI(Player player, String message) {
-        String papi = PlaceholderAPI.setPlaceholders(player, message);
-        return parseColor((main.getInitializer().hasPAPI && player != null) ? papi : message);
+        boolean playerPAPI = main.getInitializer().hasPAPI && player != null;
+        return parseColor(playerPAPI ? PlaceholderAPI.setPlaceholders(player, message) : message);
     }
 
     public void sendCentered(Player player, String message) {

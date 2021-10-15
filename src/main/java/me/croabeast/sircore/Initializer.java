@@ -35,6 +35,7 @@ public class Initializer {
         this.main = main;
 
         hasPAPI = main.plugin("PlaceholderAPI") != null;
+        hasVault = main.plugin("Vault") != null;
         authMe = main.plugin("AuthMe") != null;
         userLogin = main.plugin("UserLogin") != null;
 
@@ -57,7 +58,7 @@ public class Initializer {
             main.logger("&7Loaded &e" + main.sections(id) +
                     "&7 groups in the &e" + id + "&7 section.");
         }
-        main.logger("&7Loaded &e" + files + " files in plugin's folder.");
+        main.logger("&7Loaded &e" + files + "&7 files in plugin's folder.");
     }
 
     public void setPluginHooks() {
@@ -67,23 +68,21 @@ public class Initializer {
 
         // Permissions
         moduleHeader("Permissions");
-        main.logger("&7Checking if Vault System is integrated...");
+        main.logger("&7Checking if Vault is enabled...");
 
-        ServicesManager servMngr = main.getServer().getServicesManager();
-        RegisteredServiceProvider<Permission> rsp = servMngr.getRegistration(Permission.class);
-        Plugin vaultPlugin = main.plugin("Vault");
-        hasVault = vaultPlugin != null && rsp != null;
-
-        if (!hasVault) {
-            main.logger("&7Vault&c isn't installed&7, using the default system.");
-        } else {
-            perms = rsp.getProvider();
-            String vault = "Vault " + vaultPlugin.getDescription().getVersion();
-            main.logger("&7" + vault + "&a installed&7, hooking in a perm plugin...");
+        if (!hasVault) main.logger("&7Vault&c isn't installed&7, using default system.");
+        else {
+            ServicesManager servMngr = main.getServer().getServicesManager();
+            RegisteredServiceProvider<Permission> rsp = servMngr.getRegistration(Permission.class);
+            if (rsp != null) {
+                perms = rsp.getProvider();
+                main.logger("&7Vault&a installed&7, hooking in a perm plugin...");
+            }
+            else main.logger("&7Unknown perm provider&7, using default system.");
         }
 
         // Login hook
-        String loginPlugin = "No login plugin enabled";
+        String loginPlugin = "";
         int i = 0;
         if (authMe) {
             i++;
@@ -110,7 +109,7 @@ public class Initializer {
         }
 
         // Vanish hook
-        String vanishPlugin = "No vanish plugin enabled";
+        String vanishPlugin = "";
         int x = 0;
         if (hasCMI) {
             x++;
@@ -155,11 +154,9 @@ public class Initializer {
 
     private void showPluginInfo(String name) {
         boolean isPlugin = main.plugin(name) != null;
-
-        String version = isPlugin ? main.plugin(name).getDescription().getVersion() + " " : "";
-        String hook = isPlugin ? "&aenabled&7. Hooking..." : "&cnot found&7. Unhooking...";
-
-        main.logger("&7" + name + " " + version + hook);
+        main.logger("&7" + name + " " +
+                (isPlugin ? main.plugin(name).getDescription().getVersion() + " " : "") +
+                (isPlugin ? "&aenabled&7. Hooking..." : "&cnot found&7. Unhooking..."));
     }
 
     private void moduleHeader(String moduleName) {

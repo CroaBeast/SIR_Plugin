@@ -82,9 +82,7 @@ public final class Application extends JavaPlugin {
         initializer.getMessages().reloadFile();
     }
 
-    public Plugin plugin(String name) {
-        return Bukkit.getPluginManager().getPlugin(name);
-    }
+    public Plugin plugin(String name) { return Bukkit.getPluginManager().getPlugin(name); }
 
     public int sections(String path) {
         int messages = 0;
