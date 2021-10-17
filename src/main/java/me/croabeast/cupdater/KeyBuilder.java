@@ -47,7 +47,7 @@ public class KeyBuilder implements Cloneable {
 
     public static boolean isSubKeyOf(String parentKey, String subKey, char separator) {
         if (parentKey.isEmpty()) return false;
-        return subKey.startsWith(parentKey) && subKey.substring(parentKey.length()).startsWith(String.valueOf(separator));
+        return subKey.startsWith(parentKey) && subKey.startsWith(String.valueOf(separator), parentKey.length());
     }
 
     public static String getIndents(String key, char separator) {
