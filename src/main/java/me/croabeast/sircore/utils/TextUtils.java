@@ -5,7 +5,6 @@ import me.croabeast.iridiumapi.*;
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.handlers.*;
 import me.croabeast.sircore.interfaces.*;
-import me.croabeast.sircore.others.*;
 import org.apache.commons.lang.*;
 import org.bukkit.*;
 import org.bukkit.command.*;
@@ -21,28 +20,22 @@ public class TextUtils {
     public int getVersion;
     public String serverName;
 
-    private ActionBar actionBar;
-    private TitleMain titleMain;
+    private final PAPI papi;
+    private final ActionBar actionBar;
+    private final TitleMain titleMain;
 
     public TextUtils(Application main) {
         this.main = main;
         String version = Bukkit.getBukkitVersion().split("-")[0];
-        this.getVersion = Integer.parseInt(version.split("\\.")[1]);
-        this.serverName = Bukkit.getVersion().split("-")[1] + " " + version;
-    }
-
-    public void loadLangClasses() {
+        getVersion = Integer.parseInt(version.split("\\.")[1]);
+        serverName = Bukkit.getVersion().split("-")[1] + " " + version;
+        papi = main.getInitializer().hasPAPI ? new HasPAPI() : new NotPAPI();
         actionBar = this.getVersion < 11 ? new ActBar10() : new ActBar17();
         titleMain = this.getVersion < 10 ? new Title9() : new Title17();
     }
 
-    public String parseColor(String message) {
-        return IridiumAPI.process(message);
-    }
-
     public String parsePAPI(Player player, String message) {
-        boolean playerPAPI = main.getInitializer().hasPAPI && player != null;
-        return parseColor(playerPAPI ? PlaceholderAPI.setPlaceholders(player, message) : message);
+        return IridiumAPI.process(papi.parsePAPI(player, message));
     }
 
     public void sendCentered(Player player, String message) {
@@ -84,14 +77,12 @@ public class TextUtils {
         return Collections.singletonList(file.getString(path));
     }
 
-    private List<String> toList(String path) {
-        return fileList(main.getLang(), path);
-    }
+    private List<String> toList(String path) { return fileList(main.getLang(), path); }
 
     public void send(CommandSender sender, String path, String[] keys, String... values) {
-        String key = main.getConfig().getString("options.prefix-in-config", "");
-        String prefix = main.getLang().getString("main-prefix", "");
-        String center = main.getConfig().getString("options.center-prefix", "");
+        String key = main.getConfig().getString("options.prefix-in-config", ""),
+                prefix = main.getLang().getString("main-prefix", ""),
+                center = main.getConfig().getString("options.center-prefix", "");
 
         for (String msg : toList(path)) {
             if (msg == null || msg.equals("")) continue;
@@ -100,7 +91,7 @@ public class TextUtils {
 
             if (!(sender instanceof Player)) {
                 if (msg.startsWith(center)) msg = msg.replace(center,"");
-                sender.sendMessage(parseColor(msg));
+                sender.sendMessage(IridiumAPI.process(msg));
             }
             else sendMixed((Player) sender, msg);
         }
@@ -108,9 +99,43 @@ public class TextUtils {
 
     public void actionBar(Player player, String message) { actionBar.send(player, message); }
 
-    public void title(Player player, String[] message) {
+    private boolean checkInts(String[] array) {
+        for (String integer : array)
+            if (!integer.matches("-?\\d+")) return false;
+        return true;
+    }
+
+    private int[] intArray(String[] array) {
+        int[] ints = new int[array.length];
+        for (int i = 0; i < array.length; i++)
+            ints[i] = Integer.parseInt(array[i]);
+        return ints;
+    }
+
+    public void title(Player player, String[] message, String[] times) {
         if (message.length == 0 || message.length > 2) return;
         String subtitle = message.length == 1 ? "" : message[1];
-        titleMain.send(player, message[0], subtitle);
+        if (!checkInts(times)) return;
+        int[] ints = intArray(times);
+        titleMain.send(player, message[0], subtitle, ints[0], ints[1], ints[2]);
+    }
+
+    // Initializer for PAPI
+    public interface PAPI {
+        String parsePAPI(Player player, String message);
+    }
+
+    public static class NotPAPI implements PAPI{
+        @Override
+        public String parsePAPI(Player player, String message) {
+            return message;
+        }
+    }
+
+    public static class HasPAPI implements PAPI{
+        @Override
+        public String parsePAPI(Player player, String message) {
+            return player != null ? PlaceholderAPI.setPlaceholders(player, message) : message;
+        }
     }
 }

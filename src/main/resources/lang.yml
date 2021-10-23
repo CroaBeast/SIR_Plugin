@@ -4,23 +4,83 @@
 ########################
 # Want to use unicode characters? Check this site: https://coolsymbol.com
 
-##### Internal Placeholders:
-# - {ARG}: gets the wrong argument when using a command in "wrong-arg"
-# - {PERM}: gets the missing permission node in "no-permission"
+# Using the center prefix in this .yml and messages.yml file, will ONLY
+# work on a player using a command, not when the console is using it.
 
-# Using the center prefix in this .yml file, will ONLY work on a player
-# using a command, not when the console is using a command.
-
-# The main prefix will be inserted in those lines with <P> or "prefix-in-lang" string.
+# The main prefix will be inserted in lines with <P> or "prefix-in-lang" string.
 main-prefix: ' &e&lSIR &8>&7'
+
+# IF YOU WANT TO DISABLE ANY OF THESE MESSAGES, JUST LEAVE IT BLANK >> ''
 get-sections: '<P> Loaded &b{TOTAL} &7messages groups in &b{SECTION} &7section.'
-reload: '<P> All the .yml files was reloaded successfully.'
+reload-files: '<P> All the .yml files was reloaded successfully.'
 no-permission: '<P> You don''t have the permission &c{PERM} &7to use this.'
 wrong-arg: '<P> The argument &c{ARG} &7is invalid or does not exist.'
+empty-message: '<P> You can''t send an empty message, type something.'
+for-support: '<P> Enter our Discord server: &b{LINK}'
 
-# The help menu of the /sir command, maybe in a future I'll add more args...
+# The help menu of the /sir command, very helpful for new players.
 main-help:
-  - '<C>&8----------&r &e&lSIR &7v {VERSION} &8----------&r'
+  - '&8---------------&r &e&lSIR &7v {VERSION} &8---------------&r'
   - '  &7- &b/sir&7: The main command of the plugin.'
+  - '  &7- &b/sir &3help&7: Shows this help menu.'
   - '  &7- &b/sir &3reload&7: Reloads all the files.'
-  - '<C>&8----------------------------------------&r'
+  - '  &7- &b/sir &support&7: Sends a link to our Discord.'
+  - '  &7- &b/print&7: Prints a raw message to a target.'
+  - '&8------------------------------------------&r'
+
+# For logging all messages types sent by the /print command.
+logger:
+  for-player: '<P> Check the console to see the logged message.'
+  # If you want to disable the logger, just leave this path blank: ''.
+  header: '&7Logged Message:'
+
+# To remind if the sender sends a message via /print command.
+reminder:
+  empty: '<P> This target or group of targets is/are invalid or empty.'
+  success: '<P> The message was send correctly to {TARGET}!'
+
+# The help menus of the /print command, still very helpful tho
+# I know that the help menus are terrible, but hope you will
+# understand it.
+print-help:
+  main:
+    - '&8----------&r &e/print &6Help Menu &8----------&r'
+    - ' &7- &b/print&7: Shows this help menu.'
+    - ' &7- &b/print targets&7: Shows the targets info.'
+    - ' &7- &b/print ACTION-BAR&7: Help for Action Bar.'
+    - ' &7- &b/print CHAT&7: Help for Chat messages.'
+    - ' &7- &b/print TITLE&7: Help for titles messages.'
+    - '&8------------------------------------&r'
+  targets:
+    - '&8----------&r &eTargets &6Help Menu &8----------&r'
+    - ' &7- &b<PLAYER>&7: Selects one player'
+    - ' &7- &b@a&7: Selects all online players'
+    - ' &7- &bWORLD:myWorld&7: Selects all players'
+    - '   &7in a valid and existing world'
+    - ' &7- &bPERM:my.perm&7: Selects all players'
+    - '   &7that has that permission'
+    - ' &7- &bGROUP:myGroup&7: Selects all players'
+    - '   &7in a perms group (Only with Vault)'
+    - '&8------------------------------------&r'
+  action-bar:
+    - '&8--------&r &eACTION-BAR &6Help Menu &8--------&r'
+    - ' &7USE: &b/print ACTION-BAR <TARGET> <my message>'
+    - '  &7- &3<TARGET>&7: Selects the respective target'
+    - '    &7See &b/print targets &7for more information'
+    - '&8------------------------------------&r'
+  chat:
+    - '&8----------&r &eCHAT &6Help Menu &8----------&r'
+    - ' &7USE: &b/print CHAT <TARGET> <TYPE> <my message>'
+    - '  &7- &3<TARGET>&7: Selects the respective target'
+    - '    &7See &b/print targets &7for more information'
+    - '  &7- &3<TYPE>&7: Use a chat type for the text'
+    - '    &7between CENTERED, DEFAULT and MIXED'
+    - '&8------------------------------------&r'
+  title:
+    - '&8----------&r &eTITLE &6Help Menu &8----------&r'
+    - ' &7USE: &b/print TITLE <TARGET> <TIMES> <my message>'
+    - '  &7- &3<TARGET>&7: Selects the respective target'
+    - '    &7See &b/print targets &7for more information'
+    - '  &7- &3<TIMES>&7: Use custom fade times for titles'
+    - '    &7Times are always in ticks (20 ticks = 1 sec)'
+    - '&8------------------------------------&r'

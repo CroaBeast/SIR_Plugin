@@ -10,7 +10,7 @@ public class CMI implements Listener {
 
     public CMI(Application main) {
         if (!main.getInitializer().hasCMI) return;
-        main.getInitializer().events++;
+        main.getInitializer().listeners++;
         main.getServer().getPluginManager().registerEvents(this, main);
     }
 

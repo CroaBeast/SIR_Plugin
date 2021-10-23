@@ -11,7 +11,7 @@ public class UserLogin implements Listener {
     public UserLogin(Application main) {
         if (!main.getInitializer().userLogin) return;
         main.getServer().getPluginManager().registerEvents(this, main);
-        main.getInitializer().events++;
+        main.getInitializer().listeners++;
     }
 
     @EventHandler

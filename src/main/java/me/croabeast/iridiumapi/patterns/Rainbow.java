@@ -3,13 +3,12 @@ package me.croabeast.iridiumapi.patterns;
 import me.croabeast.iridiumapi.IridiumAPI;
 
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Rainbow implements Patterns {
 
-    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("<R:([0-9]{1,3})>(.*?)</R>");
-
     public String process(String string) {
-        Matcher matcher = pattern.matcher(string);
+        Matcher matcher = Pattern.compile("<R:([0-9]{1,3})>(.*?)</R>").matcher(string);
         while (matcher.find()) {
             String saturation = matcher.group(1);
             String content = matcher.group(2);

@@ -10,7 +10,7 @@ public class AuthMe implements Listener {
     public AuthMe(Application main) {
         if (!main.getInitializer().authMe) return;
         main.getServer().getPluginManager().registerEvents(this, main);
-        main.getInitializer().events++;
+        main.getInitializer().listeners++;
     }
 
     @EventHandler

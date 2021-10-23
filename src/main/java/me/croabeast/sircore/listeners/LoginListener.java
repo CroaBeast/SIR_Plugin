@@ -31,6 +31,6 @@ public class LoginListener implements Listener {
         if (eventUtils.isVanished(player, true) && main.choice("silent")) return;
 
         eventUtils.loggedPlayers.add(player);
-        eventUtils.runEvent(id, player, true, !main.choice("lSpawn"), true);
+        eventUtils.runEvent(id, player, true, !main.choice("login"), true);
     }
 }

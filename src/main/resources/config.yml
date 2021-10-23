@@ -4,32 +4,46 @@
 ########################
 # Want to use unicode characters? Check this site: https://coolsymbol.com
 
-# If enabled, those files will be updated automatically.
-# Don't worry, it doesn't delete any comments at all.
-update:
-  config: true
-  lang: true
-  # I DO NOT recommend update your messages file. But if you want to...
-  messages: false
+# The Updater Checker for new plugin updates and new file settings.
+updater:
+  # Check for new plugin updates.
+  plugin:
+    # Sends a reminder when the plugin is completely enabled.
+    # Disabling won't send any reminder.
+    on-enabling: true
+    # Sends a reminder to OP's or players with 'sir.admin.update'
+    # permission. Disabling won't send any reminder.
+    send-to-op: true
+  # If enabled, the selected files will be updated automatically.
+  # Don't worry, it doesn't delete any default comments at all.
+  files:
+    config: true
+    lang: true
+    # I DO NOT recommend update your messages file. But if you want to...
+    messages: false
 
-# Some useful options for this plugin if you want to change something.
+# Some useful options for this plugin if you want to change them.
 options:
-  # It will send the join/quit messages to the server's console.
+  # It will log the join/quit messages to the server's console.
   send-console: true
-  # Every message in lang.yml that start with this string,
-  # will have the main-prefix first.
+  # This option is ONLY for the /print command.
+  # Enabling this will parse color and placeholders in the logger.
+  format-logger: false
+  # ONLY FOR lang.yml file!!
+  # Every message that start with this string, will have the main-prefix.
   prefix-in-config: '<P>'
-  # FOR lang.yml, messages.yml files AND FOR CHAT TYPE!!
+  # ONLY FOR lang.yml, messages.yml files AND FOR CHAT TYPE!!
   # Put this first on those chat messages you want to center.
   center-prefix: '<C>'
-  # ONLY FOR messages.yml file AND FOR TITLE TYPE!!
-  # If you want title AND subtitle, use it to split the message.
+  # ONLY FOR messages.yml file AND /print command!!
+  # If you want to add more than one line in your CHAT type message,
+  # or you want title AND subtitle, use it to split the message.
   line-separator: '<n>'
 
 # If a login plugin is installed, this section will be activated.
 # Compatible login plugins: [ AuthMe, UserLogin ]
-# If you want support for another login plugin, you can
-# suggest it in the Spigot resource page.
+# If you want support for another login plugin, you can suggest it
+# in our Discord (use /sir support) or via Spigot DM.
 login:
   # it will send the messages after the player logs-in/register.
   # Disabling this, messages will send like no compatible login
@@ -39,18 +53,19 @@ login:
   # You can set this to 0 if you don't want this option or deleting
   # this path completely.
   ticks-after: 10
-  # Enabling this will teleport the player before log-in/register.
+  # Enabling this will teleport the player before log-in/register if
+  # a message group has a "spawn:" section.
   # Disabling it will teleport AFTER the player does it.
   spawn-before: true
 
 # If a vanish plugin is installed, this section will be activated.
 # Compatible vanish plugins: [ CMI, EssentialsX ]
-# If you want support for another vanish plugin, you can
-# suggest it in the Spigot resource page.
+# If you want support for another vanish plugin, you can suggest it
+# in our Discord (use /sir support) or via Spigot DM.
 vanish:
-  # It will send a join/quit message when a player changes its vanish
-  # status. Disabling this won't send any messages when the vanish
-  # status of a player changes.
+  # This option send a join/quit section when a player changes its
+  # vanish status. Disabling this won't send any messages when a player
+  # changes its vanish status.
   trigger: true
   # If a player is vanished and this option is enabled, won't send
   # any join/quit message to that player.

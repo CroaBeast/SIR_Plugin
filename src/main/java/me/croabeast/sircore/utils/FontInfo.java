@@ -1,4 +1,4 @@
-package me.croabeast.sircore.others;
+package me.croabeast.sircore.utils;
 
 public enum FontInfo {
 

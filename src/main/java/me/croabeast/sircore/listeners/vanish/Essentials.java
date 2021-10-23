@@ -11,7 +11,7 @@ public class Essentials implements Listener {
 
     public Essentials(Application main){
         if (!main.getInitializer().essentials) return;
-        main.getInitializer().events++;
+        main.getInitializer().listeners++;
         main.getServer().getPluginManager().registerEvents(this, main);
     }
 

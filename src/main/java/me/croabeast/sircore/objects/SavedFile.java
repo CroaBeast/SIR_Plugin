@@ -1,4 +1,4 @@
-package me.croabeast.sircore.others;
+package me.croabeast.sircore.objects;
 
 import me.croabeast.cupdater.*;
 import me.croabeast.sircore.*;
@@ -27,27 +27,30 @@ public class SavedFile {
 
     public FileConfiguration getFile() { return file; }
 
-    public void reloadFile() { file = YamlConfiguration.loadConfiguration(catchFile()); }
+    public void reloadFile() {
+        if (name.equals("config")) main.reloadConfig();
+        file = YamlConfiguration.loadConfiguration(catchFile());
+    }
 
     private void saveFile() {
         if (file == null || rawYmlFile == null) return;
         try {
             this.getFile().save(this.rawYmlFile);
         } catch (IOException e) {
-            main.logger("&7The &e" + location + "&7 file&c couldn't be saved&7.");
+            main.doLogger("&7The &e" + location + "&7 file&c couldn't be saved&7.");
             e.printStackTrace();
         }
-        main.logger("&7The &e" + location + "&7 file has been&a saved&7.");
+        main.doLogger("&7The &e" + location + "&7 file has been&a saved&7.");
     }
 
     private void updatingFile() {
         try {
             ConfigUpdater.update(main, location, catchFile(), Collections.emptyList());
         } catch (IOException e) {
-            main.logger("&7The &e" + location + "&7 file&c couldn't be updated&7.");
+            main.doLogger("&7The &e" + location + "&7 file&c couldn't be updated&7.");
             e.printStackTrace();
         }
-        main.logger("&7The &e" + location + "&7 file has been&a updated&7.");
+        main.doLogger("&7The &e" + location + "&7 file has been&a updated&7.");
     }
 
     private void saveDefaultFile() {
@@ -61,12 +64,12 @@ public class SavedFile {
 
     private void registerFile() {
         if (catchFile().exists()) return;
-        main.logger("&6[SIR] &cFile " + location + " missing... &7Generating!");
+        main.doLogger("&6[SIR] &cFile " + location + " missing... &7Generating!");
         saveDefaultFile();
     }
 
     public void updateInitFile() {
-        if (main.getConfig().getBoolean("update." + name, true)) updatingFile();
+        if (main.getConfig().getBoolean("updater.files." + name)) updatingFile();
         reloadFile();
     }
 }

@@ -5,6 +5,7 @@ import com.earth2me.essentials.*;
 import me.croabeast.sircore.*;
 import org.apache.commons.lang.*;
 import org.bukkit.*;
+import org.bukkit.command.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
 import org.bukkit.metadata.*;
@@ -37,7 +38,7 @@ public class EventUtils {
         Essentials ess = (Essentials) main.plugin("Essentials");
         if (ess == null) return false;
 
-        boolean isJoin = join && hasPerm(player, "essentials.silentjoin.vanish");
+        boolean isJoin = join && certainPerm(player, "essentials.silentjoin.vanish");
         return ess.getUser(player).isVanished() || isJoin;
     }
 
@@ -57,12 +58,16 @@ public class EventUtils {
         return essVanish(p, join) || cmiVanish(p) || normalVanish(p);
     }
 
-    private boolean hasPerm(Player player, String perm) {
-        return !perm.matches("(?i)DEFAULT") &&
-                (main.getInitializer().hasVault ?
-                        main.getInitializer().getPerms().playerHas(null, player, perm) :
-                        player.hasPermission(perm)
-                );
+    public boolean hasPerm(CommandSender sender, String perm) {
+        if (sender instanceof ConsoleCommandSender) return true;
+        Player senderPlayer = (Player) sender;
+        return  main.getInitializer().hasVault ?
+                Initializer.Perms.playerHas(null, senderPlayer, perm) :
+                senderPlayer.hasPermission(perm);
+    }
+
+    private boolean certainPerm(Player player, String perm) {
+        return !perm.matches("(?i)DEFAULT") && hasPerm(player, perm);
     }
 
     public ConfigurationSection lastSection(Player player, String path) {
@@ -93,8 +98,8 @@ public class EventUtils {
 
             String perm = id.getString("permission", "DEFAULT");
 
-            if (hasPerm(player, maxPerm)) finalId = id;
-            else if (hasPerm(player, perm)) finalId = id;
+            if (certainPerm(player, maxPerm)) finalId = id;
+            else if (certainPerm(player, perm)) finalId = id;
             else if (perm.matches("(?i)DEFAULT")) finalId = id;
         }
 
@@ -121,7 +126,7 @@ public class EventUtils {
 
     private void sendToConsole(String message, String split) {
         if (!main.choice("console")) return;
-        main.logger("&7> &f" + message.replace(split, "&r" + split));
+        main.doLogger("&7> &f" + message.replace(split, "&r" + split));
     }
 
     private String setUp(@NotNull String type, String message) {
@@ -136,7 +141,8 @@ public class EventUtils {
         }
         else if (message.startsWith("[TITLE]")) {
             String split = main.getConfig().getString("options.line-separator", "<n>");
-            textUtils.title(player, setUp("[TITLE]", message).split(Pattern.quote(split)));
+            String[] title = setUp("[TITLE]", message).split(Pattern.quote(split));
+            textUtils.title(player, title, new String[] {"20", "60", "20"});
         }
         else if (message.startsWith("[JSON]")) {
             String command = player.getName() + " " + setUp("[JSON]", message);
@@ -167,9 +173,9 @@ public class EventUtils {
             if (message.startsWith(" ")) message = message.substring(1);
             message = format(message, player, false);
 
-            if (message.startsWith("[PLAYER]") && join)
+            if (message.startsWith("[PLAYER]") && join) {
                 Bukkit.dispatchCommand(player, setUp("[PLAYER]", message));
-
+            }
             else Bukkit.dispatchCommand(Bukkit.getConsoleSender(), message);
         }
     }
@@ -177,18 +183,19 @@ public class EventUtils {
     private void invulnerable(ConfigurationSection id, Player player) {
         int godTime = id.getInt("invulnerable", 0) ;
         if (main.getTextUtils().getVersion <= 8 || godTime <= 0) return;
-        godTime = godTime * 20;
 
+        Runnable god = () -> player.setInvulnerable(false);
         player.setInvulnerable(true);
-        Bukkit.getScheduler().runTaskLater(main, () -> player.setInvulnerable(false), godTime);
+        Bukkit.getScheduler().runTaskLater(main, god, godTime);
     }
 
     public void spawn(ConfigurationSection id, Player player) {
         String[] coordinates;
         Location location;
         String path = id.getString("spawn.x-y-z", "");
+        String name = id.getString("spawn.world", "");
 
-        World world = Bukkit.getWorld(id.getString("spawn.world",""));
+        World world = Bukkit.getWorld(name);
         if (world == null) return;
 
         if (path.equals("")) location = world.getSpawnLocation();
@@ -202,14 +209,17 @@ public class EventUtils {
             }
             else location = world.getSpawnLocation();
         }
+
         player.teleport(location);
     }
 
     public void runEvent(ConfigurationSection id, Player player, boolean join, boolean spawn, boolean login) {
         Runnable event = () -> {
             if (id == null) {
-                main.logger(player, "&cA valid message group isn't found...");
-                main.logger(player, "&7Please check your&e messages.yml &7file.");
+                main.doLogger(player,
+                        "&cA valid message group isn't found...",
+                        "&7Please check your&e messages.yml &7file."
+                );
                 return;
             }
 

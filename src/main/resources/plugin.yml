@@ -19,14 +19,46 @@ main: me.croabeast.sircore.Application
 commands:
   sir:
     description: Main command lmao
+  print:
+    description: Print raw messages
 
 permissions:
-  sir.main:
+  sir.*:
     default: op
     children:
-      sir.print: true
-      sir.reload: true
-  sir.print:
+      sir.admin.*: true
+      sir.print.*: true
+
+  sir.admin.*:
     default: op
-  sir.reload:
+    children:
+      sir.admin.about: true
+      sir.admin.help: true
+      sir.admin.reload: true
+      sir.admin.updater: true
+
+  sir.print.*:
+    default: op
+    children:
+      sir.print.targets: true
+      sir.print.action-bar: true
+      sir.print.chat: true
+      sir.print.title: true
+
+  sir.admin.about:
+    default: op
+  sir.admin.help:
+    default: op
+  sir.admin.reload:
+    default: op
+  sir.admin.updater:
+    default: op
+
+  sir.print.targets:
+    default: op
+  sir.print.action-bar:
+    default: op
+  sir.print.chat:
+    default: op
+  sir.print.title:
     default: op

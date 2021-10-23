@@ -4,16 +4,15 @@ import me.croabeast.iridiumapi.IridiumAPI;
 
 import java.awt.*;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Represents a gradient color pattern which can be applied to a String.
  */
 public class Gradient implements Patterns {
 
-    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("<G:([0-9A-Fa-f]{6})>(.*?)</G:([0-9A-Fa-f]{6})>");
-
     public String process(String string) {
-        Matcher matcher = pattern.matcher(string);
+        Matcher matcher = Pattern.compile("<G:([0-9A-Fa-f]{6})>(.*?)</G:([0-9A-Fa-f]{6})>").matcher(string);
         while (matcher.find()) {
             String start = matcher.group(1);
             String end = matcher.group(3);

@@ -8,6 +8,8 @@ import org.bukkit.plugin.Plugin;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -17,38 +19,52 @@ public class ConfigUpdater {
 
     private static final char SEPARATOR = '.';
 
-    public static void update(Plugin plugin, String resourceName, File toUpdate, List<String> ignoredSections) throws IOException {
+    public static void update(Plugin plugin, String resourceName, File toUpdate, List<String> ignoredSections)
+            throws IOException {
         Preconditions.checkArgument(toUpdate.exists(), "The toUpdate file doesn't exist!");
 
-        FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(plugin.getResource(resourceName), StandardCharsets.UTF_8));
+        InputStream resource = plugin.getResource(resourceName);
+        assert resource != null;
+        FileConfiguration defaultConfig = YamlConfiguration.loadConfiguration(
+                new InputStreamReader(resource, StandardCharsets.UTF_8)
+        );
         FileConfiguration currentConfig = YamlConfiguration.loadConfiguration(toUpdate);
         Map<String, String> comments = parseComments(plugin, resourceName, defaultConfig);
-        Map<String, String> ignoredSectionsValues = parseIgnoredSections(toUpdate, currentConfig, comments, ignoredSections == null ? Collections.emptyList() : ignoredSections);
-        write(defaultConfig, currentConfig, toUpdate, comments, ignoredSectionsValues);
+        Map<String, String> ignoredSectionsValues = parseIgnoredSections(toUpdate, currentConfig,
+                comments, ignoredSections == null ? Collections.emptyList() : ignoredSections
+        );
+
+        StringWriter writer = new StringWriter();
+        write(defaultConfig, currentConfig, new BufferedWriter(writer), comments, ignoredSectionsValues);
+        String value = writer.toString();
+
+        Path toUpdatePath = toUpdate.toPath();
+        if (!value.equals(new String(Files.readAllBytes(toUpdatePath), StandardCharsets.UTF_8))) {
+            Files.write(toUpdatePath, value.getBytes(StandardCharsets.UTF_8));
+        }
     }
 
-    private static void write(FileConfiguration defaultConfig, FileConfiguration currentConfig, File toUpdate, Map<String, String> comments, Map<String, String> ignoredSectionsValues) throws IOException {
-        BufferedWriter writer = new BufferedWriter(new FileWriter(toUpdate));
+    private static void write(FileConfiguration defaultConfig, FileConfiguration currentConfig, BufferedWriter writer,
+                              Map<String, String> comments, Map<String, String> ignoredSectionsValues) throws IOException {
 
         FileConfiguration parserConfig = new YamlConfiguration();
 
         keyLoop: for (String fullKey : defaultConfig.getKeys(true)) {
             String indents = KeyBuilder.getIndents(fullKey, SEPARATOR);
 
-            if (ignoredSectionsValues.isEmpty()) writeCommentIfExists(comments, writer, fullKey, indents);
-            else {
+            if (!ignoredSectionsValues.isEmpty()) {
                 for (Map.Entry<String, String> entry : ignoredSectionsValues.entrySet()) {
                     if (entry.getKey().equals(fullKey)) {
-                        writer.write(entry.getValue());
+                        writer.write(entry.getValue() + "\n");
                         continue keyLoop;
                     }
                     else if (KeyBuilder.isSubKeyOf(entry.getKey(), fullKey, SEPARATOR)) continue keyLoop;
                     else writeCommentIfExists(comments, writer, fullKey, indents);
                 }
             }
+            else writeCommentIfExists(comments, writer, fullKey, indents);
 
             Object currentValue = currentConfig.get(fullKey);
-
             if (currentValue == null) currentValue = defaultConfig.get(fullKey);
 
             String[] splitFullKey = fullKey.split("[" + SEPARATOR + "]");
@@ -75,7 +91,10 @@ public class ConfigUpdater {
     }
 
     private static Map<String, String> parseComments(Plugin plugin, String resourceName, FileConfiguration defaultConfig) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(plugin.getResource(resourceName)));
+
+        InputStream resource = plugin.getResource(resourceName);
+        assert resource != null;
+        BufferedReader reader = new BufferedReader(new InputStreamReader(resource));
         Map<String, String> comments = new LinkedHashMap<>();
         StringBuilder commentBuilder = new StringBuilder();
         KeyBuilder keyBuilder = new KeyBuilder(defaultConfig, SEPARATOR);
@@ -83,11 +102,11 @@ public class ConfigUpdater {
         String line;
         while ((line = reader.readLine()) != null) {
             String trimmedLine = line.trim();
+
             if (trimmedLine.startsWith("-")) continue;
 
-            if (trimmedLine.isEmpty() || trimmedLine.startsWith("#")) {
-                commentBuilder.append(trimmedLine).append("\n");
-            } else {//is a valid yaml key
+            if (trimmedLine.isEmpty() || trimmedLine.startsWith("#")) commentBuilder.append(trimmedLine).append("\n");
+            else {
                 keyBuilder.parseLine(trimmedLine);
                 String key = keyBuilder.toString();
 
@@ -152,8 +171,8 @@ public class ConfigUpdater {
 
     private static void writeCommentIfExists(Map<String, String> comments, BufferedWriter writer, String fullKey, String indents) throws IOException {
         String comment = comments.get(fullKey);
-
-        if (comment != null) writer.write(indents + comment.substring(0, comment.length() - 1).replace("\n", "\n" + indents) + "\n");
+        if (comment != null)
+            writer.write(indents + comment.substring(0, comment.length() - 1).replace("\n", "\n" + indents) + "\n");
     }
 
     private static void removeLastKey(StringBuilder keyBuilder) {
@@ -163,6 +182,7 @@ public class ConfigUpdater {
         int minIndex = Math.max(0, keyBuilder.length() - split[split.length - 1].length() - 1);
         keyBuilder.replace(minIndex, keyBuilder.length(), "");
     }
+
     private static void appendNewLine(StringBuilder builder) {
         if (builder.length() > 0) builder.append("\n");
     }

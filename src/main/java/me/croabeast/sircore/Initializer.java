@@ -1,22 +1,23 @@
 package me.croabeast.sircore;
 
 import me.croabeast.sircore.listeners.*;
-import me.croabeast.sircore.others.*;
+import me.croabeast.sircore.objects.*;
 import net.milkbowl.vault.permission.*;
 import org.bukkit.plugin.*;
+
+import java.util.*;
 
 public class Initializer {
 
     private final Application main;
-    private Permission perms = null;
+    public static Permission Perms = null;
 
-    private SavedFile config;
-    private SavedFile lang;
-    private SavedFile messages;
+    public SavedFile config;
+    public SavedFile lang;
+    public SavedFile messages;
 
-    public int events = 0;
+    public int listeners = 0;
     public int files = 0;
-    private int modules = 0;
 
     public boolean hasPAPI;
     public boolean hasVault;
@@ -46,7 +47,7 @@ public class Initializer {
     }
 
     public void savedFiles() {
-        moduleHeader("Plugin Files");
+        main.doLogger("&bLoading plugin's files...");
         config = new SavedFile(main, "config");
         lang = new SavedFile(main, "lang");
         messages = new SavedFile(main, "messages");
@@ -54,31 +55,69 @@ public class Initializer {
         config.updateInitFile();
         lang.updateInitFile();
         messages.updateInitFile();
-        for (String id : main.getMessages().getKeys(false)) {
-            main.logger("&7Loaded &e" + main.sections(id) +
-                    "&7 groups in the &e" + id + "&7 section.");
+        for (String s : main.getMessages().getKeys(false)) {
+            if (main.sections(s) == 0) continue;
+            String section = main.sections(s) + "&7 groups in the &e'" + s;
+            main.doLogger("&7Found &e" + section + "'&7 section.");
         }
-        main.logger("&7Loaded &e" + files + "&7 files in plugin's folder.");
+        main.doLogger("&7Loaded &e" + files + "&7 files in the plugin's folder.");
+    }
+
+    public void startMetrics() {
+        Metrics metrics = new Metrics(main, 12806);
+
+        metrics.addCustomChart(new Metrics.SimplePie("listeners", () -> listeners + ""));
+        metrics.addCustomChart(new Metrics.SimplePie("hasPAPI", () -> hasPAPI + ""));
+        metrics.addCustomChart(new Metrics.SimplePie("hasVault", () -> hasVault + ""));
+
+        metrics.addCustomChart(new Metrics.DrilldownPie("loginPlugins", () -> {
+            Map<String, Map<String, Integer>> map = new HashMap<>();
+            Map<String, Integer> entry = new HashMap<>();
+
+            entry.put("Login Plugins", 1);
+
+            if (hasLogin) {
+                if (userLogin) map.put("UserLogin", entry);
+                else if (authMe) map.put("AuthMe", entry);
+            }
+            else map.put("None / Other", entry);
+
+            return map;
+        }));
+
+        metrics.addCustomChart(new Metrics.DrilldownPie("vanishPlugins", () -> {
+            Map<String, Map<String, Integer>> map = new HashMap<>();
+            Map<String, Integer> entry = new HashMap<>();
+
+            entry.put("Vanish Plugins", 1);
+
+            if (hasVault) {
+                if (userLogin) map.put("CMI", entry);
+                else if (authMe) map.put("EssentialsX", entry);
+                else if (superVanish) map.put("SuperVanish", entry);
+                else if (prVanish) map.put("PremiumVanish", entry);
+            }
+            else map.put("None / Other", entry);
+
+            return map;
+        }));
     }
 
     public void setPluginHooks() {
         // PlaceholderAPI
-        moduleHeader("PlaceholderAPI");
+        main.doLogger("", "&bChecking all the available hooks...");
         showPluginInfo("PlaceholderAPI");
 
         // Permissions
-        moduleHeader("Permissions");
-        main.logger("&7Checking if Vault is enabled...");
-
-        if (!hasVault) main.logger("&7Vault&c isn't installed&7, using default system.");
+        if (!hasVault) main.doLogger("&7Vault&c isn't installed&7, using default system.");
         else {
             ServicesManager servMngr = main.getServer().getServicesManager();
             RegisteredServiceProvider<Permission> rsp = servMngr.getRegistration(Permission.class);
             if (rsp != null) {
-                perms = rsp.getProvider();
-                main.logger("&7Vault&a installed&7, hooking in a perm plugin...");
+                Perms = rsp.getProvider();
+                main.doLogger("&7Vault&a installed&7, hooking in a perm plugin...");
             }
-            else main.logger("&7Unknown perm provider&7, using default system.");
+            else main.doLogger("&7Unknown perm provider&7, using default system.");
         }
 
         // Login hook
@@ -93,8 +132,7 @@ public class Initializer {
             loginPlugin = "UserLogin";
         }
 
-        moduleHeader("Login Plugin Hook");
-        main.logger("&7Checking if a login plugin is enabled...");
+        main.doLogger("> &7Checking if a login plugin is enabled...");
 
         if (i == 1) {
             hasLogin = true;
@@ -102,22 +140,24 @@ public class Initializer {
         } else {
             hasLogin = false;
             if (i > 1) {
-                main.logger("&cTwo or more compatible login plugins are installed.");
-                main.logger("&cPlease leave one of them installed.");
+                main.doLogger(
+                        "&cTwo or more compatible login plugins are installed.",
+                        "&cPlease leave one of them installed."
+                );
             }
-            else main.logger("&cThere is no login plugin installed. &7Unhooking...");
+            else main.doLogger("&cThere is no login plugin installed. &7Unhooking...");
         }
 
         // Vanish hook
         String vanishPlugin = "";
         int x = 0;
-        if (hasCMI) {
-            x++;
-            vanishPlugin = "CMI";
-        }
         if (essentials) {
             x++;
             vanishPlugin = "Essentials";
+        }
+        if (hasCMI) {
+            x++;
+            vanishPlugin = "CMI";
         }
         if (superVanish) {
             x++;
@@ -128,8 +168,7 @@ public class Initializer {
             vanishPlugin = "PremiumVanish";
         }
 
-        moduleHeader("Vanish Plugin Hook");
-        main.logger("&7Checking if a vanish plugin is enabled...");
+        main.doLogger("> &7Checking if a vanish plugin is enabled...");
 
         if (x == 1) {
             hasVanish = true;
@@ -137,37 +176,52 @@ public class Initializer {
         } else {
             hasVanish = false;
             if (x > 1) {
-                main.logger("&cTwo or more compatible vanish plugins are installed.");
-                main.logger("&cPlease leave one of them installed.");
+                main.doLogger(
+                        "&cTwo or more compatible vanish plugins are installed.",
+                        "&cPlease leave one of them installed."
+                );
             }
-            else main.logger("&cThere is no vanish plugin installed. &7Unhooking...");
+            else main.doLogger("&cThere is no vanish plugin installed. &7Unhooking...");
         }
     }
 
-    public void registerEvents() {
-        moduleHeader("Events Registering");
+    public void startUpdater() {
+        new Updater(main, 96378).getVersion(latest -> {
+            if (!main.choice("logger")) return;
+            if (main.version.equals(latest)) {
+                main.rawLogger("");
+                main.doLogger(
+                        "&eYou have the latest version of S.I.R. &7(" + main.version + ")",
+                        "&7I would appreciate if you keep updating &c<3"
+                );
+                main.rawLogger("");
+            } else {
+                main.rawLogger("");
+                main.doLogger(
+                        "&4BIG WARNING!",
+                        "&cYou don't have the latest version of S.I.R. installed.",
+                        "&cRemember, older versions won't receive any support.",
+                        "&7New Version: &e" + latest + "&7 - Your Version: &e" + main.version,
+                        "&7Link:&b https://www.spigotmc.org/resources/96378/"
+                );
+                main.rawLogger("");
+            }
+        });
+    }
+
+    public void registerListeners() {
+        main.doLogger("", "&bLoading all the listeners...");
         new PlayerListener(main);
         new LoginListener(main);
         new VanishListener(main);
-        main.logger("&7Registered &e" + events + "&7 plugin events.");
+        main.doLogger("&7Registered &e" + listeners + "&7 plugin's listeners.");
     }
 
     private void showPluginInfo(String name) {
-        boolean isPlugin = main.plugin(name) != null;
-        main.logger("&7" + name + " " +
-                (isPlugin ? main.plugin(name).getDescription().getVersion() + " " : "") +
-                (isPlugin ? "&aenabled&7. Hooking..." : "&cnot found&7. Unhooking..."));
+        boolean isPlugin = main.plugin(name).isEnabled();
+        main.doLogger("&7" + name + " " +
+                (isPlugin ? main.plugin(name).getDescription().getVersion() +
+                        " &aenabled&7. Hooking..." : "&cnot found&7. Unhooking...")
+        );
     }
-
-    private void moduleHeader(String moduleName) {
-        modules++;
-        main.logger("");
-        main.logger("&bModule " + modules + ": &3" + moduleName);
-    }
-
-    public Permission getPerms() { return perms; }
-
-    public SavedFile getConfig() { return config; }
-    public SavedFile getLang() { return lang; }
-    public SavedFile getMessages() { return messages; }
 }

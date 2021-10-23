@@ -26,10 +26,13 @@ public class VanishListener implements Listener {
     @EventHandler
     private void onVanish(VanishEvent event) {
         Player player = event.getPlayer();
-        String path = event.isVanished() ? "join" : "quit";
-        ConfigurationSection id = eventUtils.lastSection(player, path);
+        boolean vanish = event.isVanished();
+        ConfigurationSection id = eventUtils.lastSection(player, vanish ? "join" : "quit");
 
         if (!main.getInitializer().hasVanish || !main.choice("trigger")) return;
-        eventUtils.runEvent(id, player, event.isVanished(), main.choice("vSpawn"), false);
+        if(main.getInitializer().hasLogin && !eventUtils.loggedPlayers.contains(player))
+            eventUtils.loggedPlayers.add(player);
+
+        eventUtils.runEvent(id, player, vanish, main.choice("vanish"), false);
     }
 }
