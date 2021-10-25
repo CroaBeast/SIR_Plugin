@@ -10,6 +10,7 @@ import java.util.*;
 public class SavedFile {
 
     private final Application main;
+    private final Records records;
     private final String name;
     private final String location;
     private FileConfiguration file;
@@ -17,6 +18,7 @@ public class SavedFile {
 
     public SavedFile(Application main, String name) {
         this.main = main;
+        this.records = main.getRecords();
         this.name = name;
         this.location = name + ".yml";
         registerFile();
@@ -37,20 +39,20 @@ public class SavedFile {
         try {
             this.getFile().save(this.rawYmlFile);
         } catch (IOException e) {
-            main.doLogger("&7The &e" + location + "&7 file&c couldn't be saved&7.");
+            records.doRecord("&7The &e" + location + "&7 file&c couldn't be saved&7.");
             e.printStackTrace();
         }
-        main.doLogger("&7The &e" + location + "&7 file has been&a saved&7.");
+        records.doRecord("&7The &e" + location + "&7 file has been&a saved&7.");
     }
 
     private void updatingFile() {
         try {
             ConfigUpdater.update(main, location, catchFile(), Collections.emptyList());
         } catch (IOException e) {
-            main.doLogger("&7The &e" + location + "&7 file&c couldn't be updated&7.");
+            records.doRecord("&7The &e" + location + "&7 file&c couldn't be updated&7.");
             e.printStackTrace();
         }
-        main.doLogger("&7The &e" + location + "&7 file has been&a updated&7.");
+        records.doRecord("&7The &e" + location + "&7 file has been&a updated&7.");
     }
 
     private void saveDefaultFile() {
@@ -64,7 +66,7 @@ public class SavedFile {
 
     private void registerFile() {
         if (catchFile().exists()) return;
-        main.doLogger("&6[SIR] &cFile " + location + " missing... &7Generating!");
+        records.doRecord("&6[SIR] &cFile " + location + " missing... &7Generating!");
         saveDefaultFile();
     }
 

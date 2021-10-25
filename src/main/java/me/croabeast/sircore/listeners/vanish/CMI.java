@@ -9,9 +9,10 @@ import org.bukkit.event.*;
 public class CMI implements Listener {
 
     public CMI(Application main) {
-        if (!main.getInitializer().hasCMI) return;
-        main.getInitializer().listeners++;
+        Initializer init = main.getInitializer();
+        if (!init.hasCMI) return;
         main.getServer().getPluginManager().registerEvents(this, main);
+        init.listeners++;
     }
 
     @EventHandler

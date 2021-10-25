@@ -17,11 +17,11 @@ import java.util.regex.*;
 public class EventUtils {
 
     private final Application main;
-    private final TextUtils textUtils;
+    private final TextUtils text;
 
     public EventUtils(Application main) {
         this.main = main;
-        this.textUtils = main.getTextUtils();
+        this.text = main.getTextUtils();
     }
 
     public List<Player> loggedPlayers = new ArrayList<>();
@@ -31,31 +31,7 @@ public class EventUtils {
         String[] v = {player.getName(), player.getWorld().getName()};
 
         String message = StringUtils.replaceEach(msg, keys, v);
-        return isColor ? textUtils.parsePAPI(player, message) : message;
-    }
-
-    private boolean essVanish(Player player, boolean join) {
-        Essentials ess = (Essentials) main.plugin("Essentials");
-        if (ess == null) return false;
-
-        boolean isJoin = join && certainPerm(player, "essentials.silentjoin.vanish");
-        return ess.getUser(player).isVanished() || isJoin;
-    }
-
-    private boolean cmiVanish(Player player) {
-        if (main.plugin("CMI") == null) return false;
-        return CMIUser.getUser(player).isVanished();
-    }
-
-    private boolean normalVanish(Player player) {
-        for (MetadataValue meta : player.getMetadata("vanished")) {
-            if (meta.asBoolean()) return true;
-        }
-        return false;
-    }
-
-    public boolean isVanished(Player p, boolean join) {
-        return essVanish(p, join) || cmiVanish(p) || normalVanish(p);
+        return isColor ? text.parsePAPI(player, message) : message;
     }
 
     public boolean hasPerm(CommandSender sender, String perm) {
@@ -68,6 +44,30 @@ public class EventUtils {
 
     private boolean certainPerm(Player player, String perm) {
         return !perm.matches("(?i)DEFAULT") && hasPerm(player, perm);
+    }
+
+    private boolean essVanish(Player player, boolean join) {
+        Essentials ess = (Essentials) main.getPlugin("Essentials");
+        if (ess == null) return false;
+
+        boolean isJoin = join && certainPerm(player, "essentials.silentjoin.vanish");
+        return ess.getUser(player).isVanished() || isJoin;
+    }
+
+    private boolean cmiVanish(Player player) {
+        if (main.getPlugin("CMI") == null) return false;
+        return CMIUser.getUser(player).isVanished();
+    }
+
+    private boolean normalVanish(Player player) {
+        for (MetadataValue meta : player.getMetadata("vanished")) {
+            if (meta.asBoolean()) return true;
+        }
+        return false;
+    }
+
+    public boolean isVanished(Player p, boolean join) {
+        return essVanish(p, join) || cmiVanish(p) || normalVanish(p);
     }
 
     public ConfigurationSection lastSection(Player player, String path) {
@@ -125,8 +125,10 @@ public class EventUtils {
     }
 
     private void sendToConsole(String message, String split) {
-        if (!main.choice("console")) return;
-        main.doLogger("&7> &f" + message.replace(split, "&r" + split));
+        if (!text.fileValue("console")) return;
+
+        message = message.replace(split, "&r" + split);
+        main.getRecords().doRecord("&7> &f" + message);
     }
 
     private String setUp(@NotNull String type, String message) {
@@ -137,22 +139,22 @@ public class EventUtils {
 
     private void typeMessage(Player player, String message) {
         if (message.startsWith("[ACTION-BAR]")) {
-            textUtils.actionBar(player, setUp("[ACTION-BAR]", message));
+            text.actionBar(player, setUp("[ACTION-BAR]", message));
         }
         else if (message.startsWith("[TITLE]")) {
-            String split = main.getConfig().getString("options.line-separator", "<n>");
+            String split = text.fileString("split");
             String[] title = setUp("[TITLE]", message).split(Pattern.quote(split));
-            textUtils.title(player, title, new String[] {"20", "60", "20"});
+            text.title(player, title, new String[] {"20", "60", "20"});
         }
         else if (message.startsWith("[JSON]")) {
             String command = player.getName() + " " + setUp("[JSON]", message);
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + command);
         }
-        else textUtils.sendMixed(player, message);
+        else text.sendMixed(player, message);
     }
 
     private void send(ConfigurationSection id, Player player, boolean isPublic) {
-        String split = main.getConfig().getString("options.line-separator", "<n>");
+        String split = text.fileString("split");
         List<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
 
         for (String message : id.getStringList(isPublic ? "public" : "private")) {
@@ -182,7 +184,7 @@ public class EventUtils {
 
     private void invulnerable(ConfigurationSection id, Player player) {
         int godTime = id.getInt("invulnerable", 0) ;
-        if (main.getTextUtils().getVersion <= 8 || godTime <= 0) return;
+        if (text.getVersion <= 8 || godTime <= 0) return;
 
         Runnable god = () -> player.setInvulnerable(false);
         player.setInvulnerable(true);
@@ -216,7 +218,7 @@ public class EventUtils {
     public void runEvent(ConfigurationSection id, Player player, boolean join, boolean spawn, boolean login) {
         Runnable event = () -> {
             if (id == null) {
-                main.doLogger(player,
+                main.getRecords().doRecord(player,
                         "&cA valid message group isn't found...",
                         "&7Please check your&e messages.yml &7file."
                 );

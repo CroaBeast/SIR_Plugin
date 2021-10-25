@@ -10,10 +10,10 @@ import org.bukkit.event.*;
 public class Vanish implements Listener {
 
     public Vanish(Application main) {
-        if (!main.getInitializer().superVanish &&
-                !main.getInitializer().prVanish) return;
-        main.getInitializer().listeners++;
+        Initializer init = main.getInitializer();
+        if (!init.superVanish && !init.prVanish) return;
         main.getServer().getPluginManager().registerEvents(this, main);
+        init.listeners++;
     }
 
     @EventHandler

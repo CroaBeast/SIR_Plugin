@@ -1,15 +1,11 @@
 package me.croabeast.sircore.command;
 
-import me.croabeast.sircore.Application;
-import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.PluginCommand;
-import org.bukkit.command.TabCompleter;
-import org.bukkit.entity.Player;
-import org.bukkit.util.StringUtil;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import me.croabeast.sircore.*;
+import org.bukkit.*;
+import org.bukkit.command.*;
+import org.bukkit.entity.*;
+import org.bukkit.util.*;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 import java.util.stream.Collectors;

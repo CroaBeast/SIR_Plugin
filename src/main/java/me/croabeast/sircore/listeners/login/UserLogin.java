@@ -9,9 +9,10 @@ import org.bukkit.event.*;
 public class UserLogin implements Listener {
 
     public UserLogin(Application main) {
-        if (!main.getInitializer().userLogin) return;
+        Initializer init = main.getInitializer();
+        if (!init.userLogin) return;
         main.getServer().getPluginManager().registerEvents(this, main);
-        main.getInitializer().listeners++;
+        init.listeners++;
     }
 
     @EventHandler

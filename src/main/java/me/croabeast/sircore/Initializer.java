@@ -10,7 +10,8 @@ import java.util.*;
 public class Initializer {
 
     private final Application main;
-    public static Permission Perms = null;
+    private final Records records;
+    public static Permission Perms;
 
     public SavedFile config;
     public SavedFile lang;
@@ -34,20 +35,21 @@ public class Initializer {
 
     public Initializer(Application main) {
         this.main = main;
+        records = main.getRecords();
 
-        hasPAPI = main.plugin("PlaceholderAPI") != null;
-        hasVault = main.plugin("Vault") != null;
-        authMe = main.plugin("AuthMe") != null;
-        userLogin = main.plugin("UserLogin") != null;
+        hasPAPI = main.getPlugin("PlaceholderAPI") != null;
+        hasVault = main.getPlugin("Vault") != null;
+        authMe = main.getPlugin("AuthMe") != null;
+        userLogin = main.getPlugin("UserLogin") != null;
 
-        hasCMI = main.plugin("CMI") != null;
-        essentials = main.plugin("Essentials") != null;
-        superVanish = main.plugin("SuperVanish") != null;
-        prVanish = main.plugin("PremiumVanish") != null;
+        hasCMI = main.getPlugin("CMI") != null;
+        essentials = main.getPlugin("Essentials") != null;
+        superVanish = main.getPlugin("SuperVanish") != null;
+        prVanish = main.getPlugin("PremiumVanish") != null;
     }
 
-    public void savedFiles() {
-        main.doLogger("&bLoading plugin's files...");
+    public void loadSavedFiles() {
+        records.doRecord("&bLoading plugin's files...");
         config = new SavedFile(main, "config");
         lang = new SavedFile(main, "lang");
         messages = new SavedFile(main, "messages");
@@ -55,18 +57,18 @@ public class Initializer {
         config.updateInitFile();
         lang.updateInitFile();
         messages.updateInitFile();
-        for (String s : main.getMessages().getKeys(false)) {
-            if (main.sections(s) == 0) continue;
-            String section = main.sections(s) + "&7 groups in the &e'" + s;
-            main.doLogger("&7Found &e" + section + "'&7 section.");
+        for (String key : main.getMessages().getKeys(false)) {
+            int sections = main.getTextUtils().getSections(key);
+            if (sections == 0) continue;
+            String section = sections + "&7 groups in the &e'" + key;
+            records.doRecord("&7Found &e" + section + "'&7 section.");
         }
-        main.doLogger("&7Loaded &e" + files + "&7 files in the plugin's folder.");
+        records.doRecord("&7Loaded &e" + files + "&7 files in the plugin's folder.");
     }
 
     public void startMetrics() {
         Metrics metrics = new Metrics(main, 12806);
 
-        metrics.addCustomChart(new Metrics.SimplePie("listeners", () -> listeners + ""));
         metrics.addCustomChart(new Metrics.SimplePie("hasPAPI", () -> hasPAPI + ""));
         metrics.addCustomChart(new Metrics.SimplePie("hasVault", () -> hasVault + ""));
 
@@ -92,8 +94,8 @@ public class Initializer {
             entry.put("Vanish Plugins", 1);
 
             if (hasVault) {
-                if (userLogin) map.put("CMI", entry);
-                else if (authMe) map.put("EssentialsX", entry);
+                if (hasCMI) map.put("CMI", entry);
+                else if (essentials) map.put("EssentialsX", entry);
                 else if (superVanish) map.put("SuperVanish", entry);
                 else if (prVanish) map.put("PremiumVanish", entry);
             }
@@ -105,24 +107,26 @@ public class Initializer {
 
     public void setPluginHooks() {
         // PlaceholderAPI
-        main.doLogger("", "&bChecking all the available hooks...");
+        records.doRecord("", "&bChecking all the available hooks...");
         showPluginInfo("PlaceholderAPI");
 
         // Permissions
-        if (!hasVault) main.doLogger("&7Vault&c isn't installed&7, using default system.");
+        if (!hasVault)
+            records.doRecord("&7Vault&c isn't installed&7, using default system.");
         else {
             ServicesManager servMngr = main.getServer().getServicesManager();
             RegisteredServiceProvider<Permission> rsp = servMngr.getRegistration(Permission.class);
             if (rsp != null) {
                 Perms = rsp.getProvider();
-                main.doLogger("&7Vault&a installed&7, hooking in a perm plugin...");
+                records.doRecord("&7Vault&a installed&7, hooking in a perm plugin...");
             }
-            else main.doLogger("&7Unknown perm provider&7, using default system.");
+            else records.doRecord("&7Unknown perm provider&7, using default system.");
         }
 
         // Login hook
-        String loginPlugin = "";
+        String loginPlugin = "Login Plugin";
         int i = 0;
+
         if (authMe) {
             i++;
             loginPlugin = "AuthMe";
@@ -132,7 +136,7 @@ public class Initializer {
             loginPlugin = "UserLogin";
         }
 
-        main.doLogger("> &7Checking if a login plugin is enabled...");
+        records.doRecord("> &7Checking if a login plugin is enabled...");
 
         if (i == 1) {
             hasLogin = true;
@@ -140,17 +144,18 @@ public class Initializer {
         } else {
             hasLogin = false;
             if (i > 1) {
-                main.doLogger(
+                records.doRecord(
                         "&cTwo or more compatible login plugins are installed.",
                         "&cPlease leave one of them installed."
                 );
             }
-            else main.doLogger("&cThere is no login plugin installed. &7Unhooking...");
+            else records.doRecord("&cNo login plugin installed. &7Unhooking...");
         }
 
         // Vanish hook
-        String vanishPlugin = "";
+        String vanishPlugin = "Vanish Plugin";
         int x = 0;
+
         if (essentials) {
             x++;
             vanishPlugin = "Essentials";
@@ -168,7 +173,7 @@ public class Initializer {
             vanishPlugin = "PremiumVanish";
         }
 
-        main.doLogger("> &7Checking if a vanish plugin is enabled...");
+        records.doRecord("> &7Checking if a vanish plugin is enabled...");
 
         if (x == 1) {
             hasVanish = true;
@@ -176,52 +181,86 @@ public class Initializer {
         } else {
             hasVanish = false;
             if (x > 1) {
-                main.doLogger(
+                records.doRecord(
                         "&cTwo or more compatible vanish plugins are installed.",
                         "&cPlease leave one of them installed."
                 );
             }
-            else main.doLogger("&cThere is no vanish plugin installed. &7Unhooking...");
+            else records.doRecord("&cNo vanish plugin installed. &7Unhooking...");
         }
     }
 
     public void startUpdater() {
-        new Updater(main, 96378).getVersion(latest -> {
-            if (!main.choice("logger")) return;
-            if (main.version.equals(latest)) {
-                main.rawLogger("");
-                main.doLogger(
-                        "&eYou have the latest version of S.I.R. &7(" + main.version + ")",
-                        "&7I would appreciate if you keep updating &c<3"
-                );
-                main.rawLogger("");
-            } else {
-                main.rawLogger("");
-                main.doLogger(
-                        "&4BIG WARNING!",
-                        "&cYou don't have the latest version of S.I.R. installed.",
-                        "&cRemember, older versions won't receive any support.",
-                        "&7New Version: &e" + latest + "&7 - Your Version: &e" + main.version,
-                        "&7Link:&b https://www.spigotmc.org/resources/96378/"
-                );
-                main.rawLogger("");
+        Updater.init(main, 96378).updateCheck().whenComplete(((updateResult, throwable) -> {
+            if (!main.getTextUtils().fileValue("logger")) return;
+            String latest = updateResult.getNewestVersion();
+
+            records.rawRecord("");
+            switch (updateResult.getReason()) {
+                case NEW_UPDATE:
+                    records.doRecord(
+                            "&4BIG WARNING!",
+                            "&cYou don't have the latest version of S.I.R. installed.",
+                            "&cRemember, older versions won't receive any support.",
+                            "&7New Version: &a" + latest + "&7 - Your Version: &e" + main.version,
+                            "&7Link:&b https://www.spigotmc.org/resources/96378/"
+                    );
+                    break;
+                case UP_TO_DATE:
+                    records.doRecord(
+                            "&eYou have the latest version of S.I.R. &7(" + latest + ")",
+                            "&7I would appreciate if you keep updating &c<3"
+                    );
+                    break;
+                case UNRELEASED_VERSION:
+                    records.doRecord(
+                            "&4DEVELOPMENT BUILD:",
+                            "&cYou have a newer version of S.I.R. installed.",
+                            "&cErrors might occur in this build.",
+                            "Spigot Version: &a" + updateResult.getSpigotVersion()
+                                    + "&7 - Your Version: &e" + main.version,
+                            "&7Link:&b https://www.spigotmc.org/resources/96378/"
+                    );
+                    break;
+                default:
+                    records.rawRecord(
+                            "&4WARNING!",
+                            "&cCould not check for a new version of S.I.R.",
+                            "&7Please check your connection and restart the server.",
+                            "&7Possible reason: &e" + updateResult.getReason()
+                    );
+                    break;
             }
-        });
+            records.rawRecord("");
+        }));
     }
 
     public void registerListeners() {
-        main.doLogger("", "&bLoading all the listeners...");
+        records.doRecord("", "&bLoading all the listeners...");
         new PlayerListener(main);
         new LoginListener(main);
         new VanishListener(main);
-        main.doLogger("&7Registered &e" + listeners + "&7 plugin's listeners.");
+        records.doRecord("&7Registered &e" + listeners + "&7 plugin's listeners.");
+    }
+
+    public void reloadFiles() {
+        config.reloadFile();
+        lang.reloadFile();
+        messages.reloadFile();
     }
 
     private void showPluginInfo(String name) {
-        boolean isPlugin = main.plugin(name).isEnabled();
-        main.doLogger("&7" + name + " " +
-                (isPlugin ? main.plugin(name).getDescription().getVersion() +
-                        " &aenabled&7. Hooking..." : "&cnot found&7. Unhooking...")
-        );
+        String pluginVersion;
+        String isHooked;
+
+        if (main.getPlugin(name) != null) {
+            pluginVersion = main.getPlugin(name).getDescription().getVersion();
+            isHooked = " &aenabled&7. Hooking...";
+        } else {
+            pluginVersion = "";
+            isHooked = "&cnot found&7. Unhooking...";
+        }
+
+        records.doRecord("&7" + name + " " + pluginVersion + isHooked);
     }
 }

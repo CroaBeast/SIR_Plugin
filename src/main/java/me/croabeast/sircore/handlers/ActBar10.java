@@ -1,8 +1,7 @@
 package me.croabeast.sircore.handlers;
 
-import me.croabeast.sircore.interfaces.ActionBar;
-import me.croabeast.sircore.interfaces.Reflection;
-import org.bukkit.entity.Player;
+import me.croabeast.sircore.interfaces.*;
+import org.bukkit.entity.*;
 
 import java.lang.reflect.Constructor;
 

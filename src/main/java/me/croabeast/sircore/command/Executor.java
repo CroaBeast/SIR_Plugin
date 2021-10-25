@@ -1,13 +1,12 @@
 package me.croabeast.sircore.command;
 
-import me.croabeast.iridiumapi.IridiumAPI;
-import me.croabeast.sircore.Application;
-import me.croabeast.sircore.Initializer;
-import me.croabeast.sircore.utils.TextUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.World;
+import me.croabeast.iridiumapi.*;
+import me.croabeast.sircore.*;
+import me.croabeast.sircore.objects.Records;
+import me.croabeast.sircore.utils.*;
+import org.bukkit.*;
 import org.bukkit.command.*;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -15,13 +14,16 @@ import java.util.*;
 public class Executor implements CommandExecutor {
 
     private final Application main;
+    private final Records records;
     private final TextUtils text;
 
+    private String[] args;
     private CommandSender sender;
     private Command command;
 
     public Executor(Application main) {
         this.main = main;
+        this.records = main.getRecords();
         this.text = main.getTextUtils();
         Arrays.asList("sir", "print").forEach(s -> {
             PluginCommand cmd = main.getCommand(s);
@@ -47,8 +49,10 @@ public class Executor implements CommandExecutor {
 
     private void loadedSections() {
         String[] keys = {"{TOTAL}", "{SECTION}"};
-        for (String id : main.getMessages().getKeys(false))
-            text.send(sender, "get-sections", keys, main.sections(id) + "", id);
+        for (String id : main.getMessages().getKeys(false)) {
+            String sect = text.getSections(id) + "";
+            text.send(sender, "get-sections", keys, sect, id);
+        }
     }
 
     private Set<Player> targets(String input) {
@@ -98,7 +102,8 @@ public class Executor implements CommandExecutor {
 
     private void sendReminder(String input) {
         Set<Player> set = targets(input);
-        if (sender instanceof Player && (set.size() == 1 && set.contains((Player) sender))) return;
+        if (sender instanceof Player && set.size() == 1 &&
+                set.contains((Player) sender)) return;
 
         if (set.isEmpty()) sendMessage("reminder.empty", "TARGET", input);
         else if (set.size() == 1) {
@@ -111,16 +116,27 @@ public class Executor implements CommandExecutor {
     private void messageLogger(String type, String message) {
         String start = main.getLang().getString("logger.header");
         if (start == null || start.equals("")) return;
-        if (main.choice("format")) message = IridiumAPI.process(message);
+        if (text.fileValue("format")) message = IridiumAPI.process(message);
 
-        main.doLogger(IridiumAPI.process(start));
-        main.doLogger("&7[" + type + "] " + message);
+        records.doRecord(start);
+        main.getLogger().info("[" + type + "] " + message);
+    }
+
+    private String rawMessage(int size) {
+        StringBuilder builder = new StringBuilder();
+        String[] args = this.args;
+
+        for (int i = size; i < args.length; i++)
+            builder.append(args[i]).append(" ");
+
+        return builder.substring(0, builder.toString().length() - 1);
     }
 
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         this.sender = sender;
         this.command = command;
+        this.args = args;
 
         if (isCommand("sir")) {
             if (hasNoPerm("admin.*")) return true;
@@ -145,7 +161,7 @@ public class Executor implements CommandExecutor {
                 case "reload":
                     if (hasNoPerm("admin.reload")) return true;
 
-                    main.reloadFiles();
+                    main.getInitializer().reloadFiles();
                     loadedSections();
                     sendMessage("reload-files", null, null);
                     return true;
@@ -163,8 +179,7 @@ public class Executor implements CommandExecutor {
         }
 
         if (isCommand("print")) {
-            StringBuilder builder = new StringBuilder();
-            String split = main.getConfig().getString("options.line-separator", "<n>");
+            String split = text.fileString("split");
 
             if (hasNoPerm("print.*")) return true;
 
@@ -185,6 +200,17 @@ public class Executor implements CommandExecutor {
                 return true;
             }
 
+            else if (args[0].matches("(?i)-CONSOLE")) {
+                if (hasNoPerm("print.logger")) return true;
+
+                if (args.length < 2) {
+                    records.doRecord((Player) sender, "&7Use my secret command wisely...");
+                    return true;
+                }
+
+                records.doRecord(rawMessage(1));
+            }
+
             else if (args[0].matches("(?i)ACTION-BAR")) {
                 if (hasNoPerm("print.action-bar")) return true;
 
@@ -198,8 +224,7 @@ public class Executor implements CommandExecutor {
                     return true;
                 }
 
-                for (int i = 2; i < args.length; i++) builder.append(args[i]).append(" ");
-                String message = builder.substring(0, builder.toString().length() - 1);
+                String message = rawMessage(2);
 
                 sendReminder(args[1]);
                 if (!targets(args[1]).isEmpty()) {
@@ -229,8 +254,7 @@ public class Executor implements CommandExecutor {
                     return true;
                 }
 
-                for (int i = 3; i < args.length; i++) builder.append(args[i]).append(" ");
-                String unformatted = builder.substring(0, builder.toString().length() - 1);
+                String unformatted = rawMessage(3);
                 List<String> message = Arrays.asList(unformatted.split(split));
 
                 sendReminder(args[1]);
@@ -264,8 +288,7 @@ public class Executor implements CommandExecutor {
                     return true;
                 }
 
-                for (int i = 3; i < args.length; i++) builder.append(args[i]).append(" ");
-                String unformatted = builder.substring(0, builder.toString().length() - 1);
+                String unformatted = rawMessage(3);
 
                 sendReminder(args[1]);
                 if (!targets(args[1]).isEmpty()) {
@@ -275,7 +298,8 @@ public class Executor implements CommandExecutor {
                             text.title(p, message, new String[] {"20", "60", "20"});
                         else text.title(p, message, args[2].split(","));
                     });
-                    messageLogger("TITLE", unformatted.replace(split, "&r" + split));
+                    String colorSplit = IridiumAPI.process("&r" + split);
+                    messageLogger("TITLE", unformatted.replace(split, colorSplit));
                 }
             }
 

@@ -1,7 +1,7 @@
 package me.croabeast.sircore.handlers;
 
-import me.croabeast.sircore.interfaces.TitleMain;
-import org.bukkit.entity.Player;
+import me.croabeast.sircore.interfaces.*;
+import org.bukkit.entity.*;
 
 public class Title17 implements TitleMain {
 

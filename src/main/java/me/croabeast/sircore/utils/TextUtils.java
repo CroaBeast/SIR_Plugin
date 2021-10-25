@@ -8,6 +8,7 @@ import me.croabeast.sircore.interfaces.*;
 import org.apache.commons.lang.*;
 import org.bukkit.*;
 import org.bukkit.command.*;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.*;
 import org.bukkit.entity.*;
 
@@ -26,12 +27,43 @@ public class TextUtils {
 
     public TextUtils(Application main) {
         this.main = main;
+
         String version = Bukkit.getBukkitVersion().split("-")[0];
         getVersion = Integer.parseInt(version.split("\\.")[1]);
         serverName = Bukkit.getVersion().split("-")[1] + " " + version;
+
         papi = main.getInitializer().hasPAPI ? new HasPAPI() : new NotPAPI();
-        actionBar = this.getVersion < 11 ? new ActBar10() : new ActBar17();
-        titleMain = this.getVersion < 10 ? new Title9() : new Title17();
+        actionBar = getVersion < 11 ? new ActBar10() : new ActBar17();
+        titleMain = getVersion < 10 ? new Title9() : new Title17();
+    }
+
+    private boolean choice(String path) {
+        return main.getConfig().getBoolean(path);
+    }
+
+    public boolean fileValue(String key) {
+        switch (key) {
+            case "console": return choice("options.send-console");
+            case "format": return choice("options.format-logger");
+            case "after": return choice("login.send-after");
+            case "login": return choice("login.spawn-before");
+            case "trigger": return choice("vanish.trigger");
+            case "silent": return choice("vanish.silent");
+            case "vanish": return choice("vanish.do-spawn");
+            case "logger" : return choice("updater.plugin.on-enabling");
+            case "toOp" : return choice("updater.plugin.send-to-op");
+            default: return false;
+        }
+    }
+
+    public String fileString(String key) {
+        switch (key) {
+            case "prefix": return main.getLang().getString("main-prefix", "");
+            case "split": return main.getConfig().getString("options.line-separator");
+            case "config": return main.getConfig().getString("options.prefix-in-config");
+            case "center": return main.getConfig().getString("options.center-prefix");
+            default: return "";
+        }
     }
 
     public String parsePAPI(Player player, String message) {
@@ -40,9 +72,11 @@ public class TextUtils {
 
     public void sendCentered(Player player, String message) {
         message = parsePAPI(player, message);
+
         int messagePxSize = 0;
         boolean previousCode = false;
         boolean isBold = false;
+
         for (char c : message.toCharArray()) {
             if (c == '\u00A7') previousCode = true;
             else if (previousCode) {
@@ -54,44 +88,61 @@ public class TextUtils {
                 messagePxSize++;
             }
         }
+
         int halvedMessageSize = messagePxSize / 2;
         int toCompensate = 154 - halvedMessageSize;
         int spaceLength = FontInfo.SPACE.getLength() + 1;
         int compensated = 0;
+
         StringBuilder sb = new StringBuilder();
         while (compensated < toCompensate) {
             sb.append(" ");
             compensated += spaceLength;
         }
+
         player.sendMessage(sb + message);
     }
 
     public void sendMixed(Player player, String message) {
-        String center = main.getConfig().getString("options.center-prefix", "");
-        if (message.startsWith(center)) sendCentered(player, message.replace(center, ""));
+        String center = fileString("prefix");
+
+        if (message.startsWith(center)) {
+            sendCentered(player, message.replace(center, ""));
+        }
         else player.sendMessage(parsePAPI(player, message));
     }
 
+    public int getSections(String path) {
+        int messages = 0;
+        ConfigurationSection ids = main.getMessages().getConfigurationSection(path);
+        if (ids == null) return 0;
+
+        for (String key : ids.getKeys(false)) {
+            ConfigurationSection id = ids.getConfigurationSection(key);
+            if (id != null) messages++;
+        }
+        return messages;
+    }
+
     public List<String> fileList(FileConfiguration file, String path) {
-        if (file != main.getConfig() && file.isList(path)) return file.getStringList(path);
-        return Collections.singletonList(file.getString(path));
+        return  !file.isList(path) ?
+                Collections.singletonList(file.getString(path)) :
+                file.getStringList(path);
     }
 
     private List<String> toList(String path) { return fileList(main.getLang(), path); }
 
     public void send(CommandSender sender, String path, String[] keys, String... values) {
-        String key = main.getConfig().getString("options.prefix-in-config", ""),
-                prefix = main.getLang().getString("main-prefix", ""),
-                center = main.getConfig().getString("options.center-prefix", "");
+        String key = fileString("config"), center = fileString("center");
 
         for (String msg : toList(path)) {
             if (msg == null || msg.equals("")) continue;
-            msg = msg.startsWith(key) ? msg.replace(key, prefix) : msg;
+            msg = msg.startsWith(key) ? msg.replace(key, fileString("prefix")) : msg;
             msg = StringUtils.replaceEach(msg, keys, values);
 
             if (!(sender instanceof Player)) {
                 if (msg.startsWith(center)) msg = msg.replace(center,"");
-                sender.sendMessage(IridiumAPI.process(msg));
+                main.getRecords().rawRecord(msg);
             }
             else sendMixed((Player) sender, msg);
         }

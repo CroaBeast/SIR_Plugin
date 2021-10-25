@@ -8,9 +8,10 @@ import org.bukkit.event.*;
 public class AuthMe implements Listener {
 
     public AuthMe(Application main) {
-        if (!main.getInitializer().authMe) return;
+        Initializer init = main.getInitializer();
+        if (!init.authMe) return;
         main.getServer().getPluginManager().registerEvents(this, main);
-        main.getInitializer().listeners++;
+        init.listeners++;
     }
 
     @EventHandler

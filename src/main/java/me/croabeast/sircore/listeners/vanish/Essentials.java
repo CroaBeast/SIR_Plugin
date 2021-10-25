@@ -10,9 +10,10 @@ import org.bukkit.event.*;
 public class Essentials implements Listener {
 
     public Essentials(Application main){
-        if (!main.getInitializer().essentials) return;
-        main.getInitializer().listeners++;
+        Initializer init = main.getInitializer();
+        if (!init.essentials) return;
         main.getServer().getPluginManager().registerEvents(this, main);
+        init.listeners++;
     }
 
     @EventHandler

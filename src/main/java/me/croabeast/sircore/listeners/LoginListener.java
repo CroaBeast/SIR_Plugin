@@ -10,12 +10,12 @@ import org.bukkit.event.*;
 
 public class LoginListener implements Listener {
 
-    private final Application main;
-    private final EventUtils eventUtils;
+    private final TextUtils text;
+    private final EventUtils utils;
 
     public LoginListener(Application main) {
-        this.main = main;
-        this.eventUtils = main.getEventUtils();
+        this.text = main.getTextUtils();
+        this.utils = main.getEventUtils();
         if (!main.getInitializer().hasLogin) return;
         new AuthMe(main);
         new UserLogin(main);
@@ -25,12 +25,12 @@ public class LoginListener implements Listener {
     @EventHandler
     private void onLogin(LoginEvent event) {
         Player player = event.getPlayer();
-        ConfigurationSection id = eventUtils.lastSection(player, true);
+        ConfigurationSection id = utils.lastSection(player, true);
 
-        if (!main.choice("after")) return;
-        if (eventUtils.isVanished(player, true) && main.choice("silent")) return;
+        if (!text.fileValue("after")) return;
+        if (utils.isVanished(player, true) && text.fileValue("silent")) return;
 
-        eventUtils.loggedPlayers.add(player);
-        eventUtils.runEvent(id, player, true, !main.choice("login"), true);
+        utils.loggedPlayers.add(player);
+        utils.runEvent(id, player, true, !text.fileValue("login"), true);
     }
 }

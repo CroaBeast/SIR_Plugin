@@ -10,13 +10,15 @@ import org.bukkit.event.*;
 
 public class VanishListener implements Listener {
 
-    private final Application main;
-    private final EventUtils eventUtils;
+    private final Initializer init;
+    private final TextUtils text;
+    private final EventUtils utils;
 
     public VanishListener(Application main) {
-        this.main = main;
-        this.eventUtils = main.getEventUtils();
-        if (!main.getInitializer().hasVanish) return;
+        this.init = main.getInitializer();
+        this.text = main.getTextUtils();
+        this.utils = main.getEventUtils();
+        if (!init.hasVanish) return;
         new CMI(main);
         new Essentials(main);
         new Vanish(main);
@@ -27,12 +29,12 @@ public class VanishListener implements Listener {
     private void onVanish(VanishEvent event) {
         Player player = event.getPlayer();
         boolean vanish = event.isVanished();
-        ConfigurationSection id = eventUtils.lastSection(player, vanish ? "join" : "quit");
+        ConfigurationSection id = utils.lastSection(player, vanish ? "join" : "quit");
 
-        if (!main.getInitializer().hasVanish || !main.choice("trigger")) return;
-        if(main.getInitializer().hasLogin && !eventUtils.loggedPlayers.contains(player))
-            eventUtils.loggedPlayers.add(player);
+        if (!init.hasVanish || !text.fileValue("trigger")) return;
+        if(init.hasLogin && !utils.loggedPlayers.contains(player))
+            utils.loggedPlayers.add(player);
 
-        eventUtils.runEvent(id, player, vanish, main.choice("vanish"), false);
+        utils.runEvent(id, player, vanish, text.fileValue("vanish"), false);
     }
 }
