@@ -1,8 +1,9 @@
 package me.croabeast.sircore.objects;
 
-import me.croabeast.iridiumapi.IridiumAPI;
-import me.croabeast.sircore.Application;
-import org.bukkit.entity.Player;
+import me.croabeast.iridiumapi.*;
+import me.croabeast.sircore.*;
+import org.bukkit.command.*;
+import org.bukkit.entity.*;
 
 public class Records {
 
@@ -13,19 +14,23 @@ public class Records {
     }
 
     public void rawRecord(String... lines) {
-        for (String s : lines)
-            main.getServer().getLogger().info(IridiumAPI.process(s));
+        for (String line : lines)
+            main.getServer().getLogger().info(IridiumAPI.process(line));
     }
 
     public void playerRecord(Player player, String... lines) {
-        for (String line : lines) player.sendMessage(IridiumAPI.process(line));
+        for (String line : lines)
+            player.sendMessage(IridiumAPI.process(line));
     }
 
-    public void doRecord(Player player, String... lines) {
+    public void doRecord(CommandSender sender, String... lines) {
         for (String line : lines) {
+            if (sender instanceof Player){
+                String a = "<P> ", b = "&e SIR &8> &7";
+                sender.sendMessage(IridiumAPI.process(line.replace(a, b)));
+            }
+            line = line.startsWith("<P> ") ? line.substring(4) : line;
             main.getLogger().info(IridiumAPI.process(line));
-            if (player != null)
-                playerRecord(player, "[SIR] " + line);
         }
     }
 

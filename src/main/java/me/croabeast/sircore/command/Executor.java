@@ -2,10 +2,11 @@ package me.croabeast.sircore.command;
 
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sircore.*;
-import me.croabeast.sircore.objects.Records;
-import me.croabeast.sircore.utils.*;
+import me.croabeast.sircore.objects.*;
+import me.croabeast.sircore.utilities.*;
 import org.bukkit.*;
 import org.bukkit.command.*;
+import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
 import org.jetbrains.annotations.*;
 
@@ -16,6 +17,8 @@ public class Executor implements CommandExecutor {
     private final Application main;
     private final Records records;
     private final TextUtils text;
+    private final EventUtils utils;
+    private final Announcer announcer;
 
     private String[] args;
     private CommandSender sender;
@@ -25,10 +28,11 @@ public class Executor implements CommandExecutor {
         this.main = main;
         this.records = main.getRecords();
         this.text = main.getTextUtils();
-        Arrays.asList("sir", "print").forEach(s -> {
-            PluginCommand cmd = main.getCommand(s);
-            if (cmd == null) return;
-            cmd.setExecutor(this);
+        this.utils = main.getEventUtils();
+        this.announcer = main.getAnnouncer();
+        Arrays.asList("announcer", "sir", "print").forEach(s -> {
+            PluginCommand executor = main.getCommand(s);
+            if (executor != null) executor.setExecutor(this);
         });
         new Completer(main);
     }
@@ -37,22 +41,38 @@ public class Executor implements CommandExecutor {
         text.send(sender, path, new String[] {"{" + key + "}"}, value);
     }
 
+    private boolean oneMessage(String path, String key, String value) {
+        sendMessage(path, key, value);
+        return true;
+    }
+
     private boolean isCommand(String cmdName) {
         return command.getName().toLowerCase().equals(cmdName);
     }
 
     private boolean hasNoPerm(String perm) {
-        if (main.getEventUtils().hasPerm(sender, "sir." + perm)) return false;
+        if (utils.hasPerm(sender, "sir." + perm)) return false;
+
         sendMessage("no-permission", "PERM", "sir." + perm);
+        return true;
+    }
+
+    private boolean notArgument(String arg) {
+        sendMessage("wrong-arg", "ARG", arg);
+        return true;
+    }
+
+    private boolean sendPrintHelp(String name) {
+        sendMessage("print-help." + name, null, null);
         return true;
     }
 
     private void loadedSections() {
         String[] keys = {"{TOTAL}", "{SECTION}"};
-        for (String id : main.getMessages().getKeys(false)) {
-            String sect = text.getSections(id) + "";
-            text.send(sender, "get-sections", keys, sect, id);
-        }
+        main.getMessages().getKeys(false).forEach(s -> {
+            String sect = text.getSections(s) + "";
+            text.send(sender, "get-sections", keys, sect, s);
+        });
     }
 
     private Set<Player> targets(String input) {
@@ -72,9 +92,8 @@ public class Executor implements CommandExecutor {
 
         if (input.startsWith("PERM:")) {
             String perm = input.substring(5);
-            Bukkit.getOnlinePlayers().stream().filter(
-                    p -> main.getEventUtils().hasPerm(p, perm)
-            ).forEach(players::add);
+            Bukkit.getOnlinePlayers().stream().filter(p -> utils.hasPerm(p, perm))
+                    .forEach(players::add);
             return players;
         }
 
@@ -96,10 +115,6 @@ public class Executor implements CommandExecutor {
         return new HashSet<>();
     }
 
-    private void sendPrintHelp(String name) {
-        sendMessage("print-help." + name, null, null);
-    }
-
     private void sendReminder(String input) {
         Set<Player> set = targets(input);
         if (sender instanceof Player && set.size() == 1 &&
@@ -113,13 +128,15 @@ public class Executor implements CommandExecutor {
         else sendMessage("reminder.success", "TARGET", input);
     }
 
-    private void messageLogger(String type, String message) {
+    private void messageLogger(String type, String line) {
         String start = main.getLang().getString("logger.header");
+
         if (start == null || start.equals("")) return;
-        if (text.fileValue("format")) message = IridiumAPI.process(message);
+        if (text.getOption(1, "format-logger"))
+            line = IridiumAPI.process(line);
 
         records.doRecord(start);
-        main.getLogger().info("[" + type + "] " + message);
+        main.getLogger().info("[" + type + "] " + line);
     }
 
     private String rawMessage(int size) {
@@ -141,70 +158,57 @@ public class Executor implements CommandExecutor {
         if (isCommand("sir")) {
             if (hasNoPerm("admin.*")) return true;
 
-            if (args.length == 0) {
-                sendMessage("main-help", "VERSION", main.getDescription().getVersion());
-                return true;
-            }
+            if (args.length == 0)
+                return oneMessage("main-help", "VERSION", main.getDescription().getVersion());
 
-            if (args.length > 1) {
-                sendMessage("wrong-arg", "ARG", args[args.length - 1]);
-                return true;
-            }
+            if (args.length > 1) return notArgument(args[args.length - 1]);
 
             switch (args[0].toLowerCase()) {
                 case "help":
                     if (hasNoPerm("admin.help")) return true;
-
-                    sendMessage("main-help", "VERSION", main.getDescription().getVersion());
-                    return true;
+                    return oneMessage("main-help", "VERSION", main.getDescription().getVersion());
 
                 case "reload":
                     if (hasNoPerm("admin.reload")) return true;
 
                     main.getInitializer().reloadFiles();
                     loadedSections();
+                    if (!announcer.isRunning()) announcer.startTask();
                     sendMessage("reload-files", null, null);
+                    if (!text.getOption(1, "enabled") && main.getAnnouncer().getDelay() == 0)
+                        records.doRecord(sender,
+                                "", "<P> &7Both main features of &eS.I.R. &7are disabled.",
+                                "<P> &cIt's better to delete the plugin instead doing that...", ""
+                        );
                     return true;
 
                 case "support":
                     if (hasNoPerm("admin.support")) return true;
+                    return oneMessage("for-support", "LINK", "https://discord.gg/s9YFGMrjyF");
 
-                    sendMessage("for-support", "LINK", "https://discord.gg/s9YFGMrjyF");
-                    return true;
-
-                default:
-                    sendMessage("wrong-arg", "ARG", args[0]);
-                    return true;
+                default: return notArgument(args[0]);
             }
         }
 
         if (isCommand("print")) {
-            String split = text.fileString("split");
+            String split = text.getValue("split");
 
             if (hasNoPerm("print.*")) return true;
 
-            if (args.length == 0) {
-                sendPrintHelp("main");
-                return true;
-            }
+            if (args.length == 0) return sendPrintHelp("main");
 
             else if (args[0].matches("(?i)targets")) {
                 if (hasNoPerm("print.targets")) return true;
+                if (args.length > 1) return notArgument(args[args.length - 1]);
 
-                if (args.length > 1) {
-                    sendMessage("wrong-arg", "ARG", args[args.length - 1]);
-                    return true;
-                }
-
-                sendPrintHelp("targets");
-                return true;
+                return sendPrintHelp("targets");
             }
 
             else if (args[0].matches("(?i)-CONSOLE")) {
                 if (hasNoPerm("print.logger")) return true;
 
                 if (args.length < 2) {
-                    records.doRecord((Player) sender, "&7Use my secret command wisely...");
+                    records.doRecord(sender, "<P> &7Use my secret command wisely...");
                     return true;
                 }
 
@@ -214,15 +218,9 @@ public class Executor implements CommandExecutor {
             else if (args[0].matches("(?i)ACTION-BAR")) {
                 if (hasNoPerm("print.action-bar")) return true;
 
-                if (args.length == 1) {
-                    sendPrintHelp("action-bar");
-                    return true;
-                }
+                if (args.length == 1) return sendPrintHelp("action-bar");
 
-                if (args.length < 3) {
-                    sendMessage("empty-message", null, null);
-                    return true;
-                }
+                if (args.length < 3) return oneMessage("empty-message", null, null);
 
                 String message = rawMessage(2);
 
@@ -233,26 +231,16 @@ public class Executor implements CommandExecutor {
                     );
                     messageLogger("ACTION-BAR", message);
                 }
-                return true;
             }
 
             else if (args[0].matches("(?i)CHAT")) {
                 if (hasNoPerm("print.chat")) return true;
 
-                if (args.length == 1) {
-                    sendPrintHelp("chat");
-                    return true;
-                }
+                if (args.length == 1) return sendPrintHelp("chat");
 
-                if (args.length < 4) {
-                    sendMessage("empty-message", null, null);
-                    return true;
-                }
+                if (args.length < 4) return oneMessage("empty-message", null, null);
 
-                if (!args[2].matches("(?i)DEFAULT|CENTERED|MIXED")) {
-                    sendMessage("wrong-arg", "ARG", args[1]);
-                    return true;
-                }
+                if (!args[2].matches("(?i)DEFAULT|CENTERED|MIXED")) return notArgument(args[1]);
 
                 String unformatted = rawMessage(3);
                 List<String> message = Arrays.asList(unformatted.split(split));
@@ -278,15 +266,9 @@ public class Executor implements CommandExecutor {
             else if (args[0].matches("(?i)TITLE")) {
                 if (hasNoPerm("print.chat")) return true;
 
-                if (args.length == 1) {
-                    sendPrintHelp("title");
-                    return true;
-                }
+                if (args.length == 1) return sendPrintHelp("title");
 
-                if (args.length < 4) {
-                    sendMessage("empty-message", null, null);
-                    return true;
-                }
+                if (args.length < 4) return oneMessage("empty-message", null, null);
 
                 String unformatted = rawMessage(3);
 
@@ -303,9 +285,57 @@ public class Executor implements CommandExecutor {
                 }
             }
 
-            else {
-                sendMessage("wrong-arg", "ARG", args[0]);
-                return true;
+            else sendMessage("wrong-arg", "ARG", args[0]);
+        }
+
+        if (isCommand("announcer")) {
+            if (hasNoPerm("announcer.*")) return true;
+
+            if (args.length == 0) return oneMessage("announcer-help", null, null);
+
+            if (args.length > 2) return notArgument(args[args.length - 1]);
+
+            ConfigurationSection id = main.getAnnounces().getConfigurationSection("messages");
+
+            switch (args[0].toLowerCase()) {
+                case "start":
+                    if (args.length > 1) return notArgument(args[args.length - 1]);
+
+                    if (announcer.isRunning()) return oneMessage("cant-start", null, null);
+
+                    announcer.startTask();
+                    return oneMessage("started", null, null);
+
+                case "cancel":
+                    if (args.length > 1) return notArgument(args[args.length - 1]);
+
+                    if (!announcer.isRunning())  return oneMessage("cant-stop", null, null);
+
+                    announcer.cancelTask();
+                    return oneMessage("stopped", null, null);
+
+                case "reboot":
+                    if (args.length > 1) return notArgument(args[args.length - 1]);
+
+                    if (announcer.isRunning()) announcer.cancelTask();
+                    announcer.startTask();
+                    return oneMessage("rebooted", null, null);
+
+                case "preview":
+                    if (sender instanceof ConsoleCommandSender) {
+                        records.doRecord(
+                                "&cYou can't preview an announce if you are the console."
+                        );
+                        return true;
+                    }
+
+                    if (args.length == 1 || id == null || id.getConfigurationSection(args[1]) == null)
+                        return oneMessage("select-announce", null, null);
+
+                    announcer.runSection(Objects.requireNonNull(id.getConfigurationSection(args[1])));
+                    return true;
+
+                default: return notArgument(args[args.length - 1]);
             }
         }
 

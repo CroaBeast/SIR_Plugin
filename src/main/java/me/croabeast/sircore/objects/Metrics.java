@@ -301,6 +301,20 @@ public class Metrics {
         }
     }
 
+    public static JsonObjectBuilder.JsonObject getChartData(Callable<Map<String, Integer>> callable) throws Exception {
+        JsonObjectBuilder valuesBuilder = new JsonObjectBuilder();
+        Map<String, Integer> map = callable.call();
+        if (map == null || map.isEmpty()) return null;
+        boolean allSkipped = true;
+        for (Map.Entry<String, Integer> entry : map.entrySet()) {
+            if (entry.getValue() == 0) continue;
+            allSkipped = false;
+            valuesBuilder.appendField(entry.getKey(), entry.getValue());
+        }
+        if (allSkipped) return null;
+        return new JsonObjectBuilder().appendField("values", valuesBuilder.build()).build();
+    }
+
     public static class MultiLineChart extends CustomChart {
 
         private final Callable<Map<String, Integer>> callable;
@@ -312,17 +326,7 @@ public class Metrics {
 
         @Override
         protected JsonObjectBuilder.JsonObject getChartData() throws Exception {
-            JsonObjectBuilder valuesBuilder = new JsonObjectBuilder();
-            Map<String, Integer> map = callable.call();
-            if (map == null || map.isEmpty()) return null;
-            boolean allSkipped = true;
-            for (Map.Entry<String, Integer> entry : map.entrySet()) {
-                if (entry.getValue() == 0) continue;
-                allSkipped = false;
-                valuesBuilder.appendField(entry.getKey(), entry.getValue());
-            }
-            if (allSkipped) return null;
-            return new JsonObjectBuilder().appendField("values", valuesBuilder.build()).build();
+            return Metrics.getChartData(callable);
         }
     }
 
@@ -337,17 +341,7 @@ public class Metrics {
 
         @Override
         protected JsonObjectBuilder.JsonObject getChartData() throws Exception {
-            JsonObjectBuilder valuesBuilder = new JsonObjectBuilder();
-            Map<String, Integer> map = callable.call();
-            if (map == null || map.isEmpty()) return null;
-            boolean allSkipped = true;
-            for (Map.Entry<String, Integer> entry : map.entrySet()) {
-                if (entry.getValue() == 0) continue;
-                allSkipped = false;
-                valuesBuilder.appendField(entry.getKey(), entry.getValue());
-            }
-            if (allSkipped) return null;
-            return new JsonObjectBuilder().appendField("values", valuesBuilder.build()).build();
+            return Metrics.getChartData(callable);
         }
     }
 

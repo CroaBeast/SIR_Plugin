@@ -2,7 +2,7 @@ package me.croabeast.sircore.listeners;
 
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.objects.*;
-import me.croabeast.sircore.utils.*;
+import me.croabeast.sircore.utilities.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
@@ -26,77 +26,81 @@ public class PlayerListener implements Listener {
         init.listeners++;
     }
 
-    private void playerUpdater(Player player) {
+    private void adminUpdateChecker(Player player) {
         Updater.init(main, 96378).updateCheck().whenComplete(((updateResult, throwable) -> {
-            if (!text.fileValue("toOp") ||
+            if (!text.getOption(4, "send-op") ||
                     !utils.hasPerm(player, "sir.admin.updater")) return;
+
             String latest = updateResult.getNewestVersion();
 
-            records.playerRecord(player, "");
             switch (updateResult.getReason()) {
                 case NEW_UPDATE:
                     records.playerRecord(player,
-                            " &4BIG WARNING!",
+                            "", " &4BIG WARNING!",
                             " &cYou don't have the latest version of S.I.R. installed.",
                             " &cRemember, older versions won't receive any support.",
                             " &7New Version: &a" + latest + "&7 - Your Version: &e" + main.version,
-                            " &7Link:&b https://www.spigotmc.org/resources/96378/"
+                            " &7Link:&b https://www.spigotmc.org/resources/96378/", ""
                     );
                     break;
                 case UP_TO_DATE:
                     records.playerRecord(player,
-                            "&eYou have the latest version of S.I.R. &7(" + latest + ")",
-                            "&7I would appreciate if you keep updating &c<3"
+                            "", " &eYou have the latest version of S.I.R. &7(" + latest + ")",
+                            " &7I would appreciate if you keep updating &c<3", ""
                     );
                     break;
                 case UNRELEASED_VERSION:
                     records.playerRecord(player,
-                            "&4DEVELOPMENT BUILD:",
-                            "&cYou have a newer version of S.I.R. installed.",
-                            "&cErrors might occur in this build.",
-                            "Spigot Version: &a" + updateResult.getSpigotVersion()
-                                    + "&7 - Your Version: &e" + main.version,
-                            "&7Link:&b https://www.spigotmc.org/resources/96378/"
+                            "", " &4DEVELOPMENT BUILD:",
+                            " &cYou have a newer version of S.I.R. installed.",
+                            " &cErrors might occur in this build.",
+                            " Spigot Version: &a" + updateResult.getSpigotVersion()
+                                    + "&7 - Your Version: &e" + main.version, ""
                     );
                     break;
                 default:
                     records.playerRecord(player,
-                            "&4WARNING!",
-                            "&cCould not check for a new version of S.I.R.",
-                            "&7Please check your connection and restart the server.",
-                            "&7Possible reason: &e" + updateResult.getReason()
+                            "", " &4WARNING!",
+                            " &cCould not check for a new version of S.I.R.",
+                            " &7Please check your connection and restart the server.",
+                            " &7Possible reason: &e" + updateResult.getReason(), ""
                     );
                     break;
             }
-            records.playerRecord(player, "");
         }));
     }
 
     @EventHandler
     private void onJoin(PlayerJoinEvent event) {
+        if (!text.getOption(1, "enabled")) return;
+        
         event.setJoinMessage(null); //Message initializer
 
         Player player = event.getPlayer();
         ConfigurationSection id = utils.lastSection(player, true);
-        playerUpdater(player);
+        adminUpdateChecker(player);
 
-        if (init.hasLogin && text.fileValue("after")) {
-            if (text.fileValue("login")) utils.spawn(id, player);
+        if (init.hasLogin && text.getOption(2, "enabled")) {
+            if (text.getOption(2, "spawn-before")) utils.spawn(id, player);
             return;
         }
-        if (utils.isVanished(player, true) && text.fileValue("silent")) return;
+        if (utils.isVanished(player, true) &&
+                text.getOption(3, "silent")) return;
 
         utils.runEvent(id, player, true, true, false);
     }
 
     @EventHandler
     private void onQuit(PlayerQuitEvent event) {
+        if (!text.getOption(1, "enabled")) return;
+        
         event.setQuitMessage(null); //Message initializer
 
         Player player = event.getPlayer();
         ConfigurationSection id = utils.lastSection(player, false);
 
-        if (utils.isVanished(player, false) && text.fileValue("silent")) return;
+        if (utils.isVanished(player, false) &&
+                text.getOption(3, "silent")) return;
         if (init.hasLogin) utils.loggedPlayers.remove(player);
 
         utils.runEvent(id, player, false, false, false);

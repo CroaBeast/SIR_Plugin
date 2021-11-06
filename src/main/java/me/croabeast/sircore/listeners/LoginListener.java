@@ -3,7 +3,7 @@ package me.croabeast.sircore.listeners;
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.events.*;
 import me.croabeast.sircore.listeners.login.*;
-import me.croabeast.sircore.utils.*;
+import me.croabeast.sircore.utilities.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
@@ -27,10 +27,10 @@ public class LoginListener implements Listener {
         Player player = event.getPlayer();
         ConfigurationSection id = utils.lastSection(player, true);
 
-        if (!text.fileValue("after")) return;
-        if (utils.isVanished(player, true) && text.fileValue("silent")) return;
+        if (!text.getOption(2, "enabled")) return;
+        if (utils.isVanished(player, true) && text.getOption(3, "silent")) return;
 
         utils.loggedPlayers.add(player);
-        utils.runEvent(id, player, true, !text.fileValue("login"), true);
+        utils.runEvent(id, player, true, !text.getOption(2, "enabled"), true);
     }
 }

@@ -1,6 +1,6 @@
 package me.croabeast.sircore.handlers;
 
-import me.croabeast.sircore.interfaces.*;
+import me.croabeast.sircore.terminals.*;
 import net.md_5.bungee.api.*;
 import net.md_5.bungee.api.chat.*;
 import org.bukkit.entity.*;

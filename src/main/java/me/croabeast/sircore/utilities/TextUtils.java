@@ -1,14 +1,14 @@
-package me.croabeast.sircore.utils;
+package me.croabeast.sircore.utilities;
 
 import me.clip.placeholderapi.*;
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.handlers.*;
-import me.croabeast.sircore.interfaces.*;
+import me.croabeast.sircore.terminals.*;
 import org.apache.commons.lang.*;
 import org.bukkit.*;
 import org.bukkit.command.*;
-import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.*;
 import org.bukkit.configuration.file.*;
 import org.bukkit.entity.*;
 
@@ -37,31 +37,27 @@ public class TextUtils {
         titleMain = getVersion < 10 ? new Title9() : new Title17();
     }
 
-    private boolean choice(String path) {
-        return main.getConfig().getBoolean(path);
-    }
-
-    public boolean fileValue(String key) {
-        switch (key) {
-            case "console": return choice("options.send-console");
-            case "format": return choice("options.format-logger");
-            case "after": return choice("login.send-after");
-            case "login": return choice("login.spawn-before");
-            case "trigger": return choice("vanish.trigger");
-            case "silent": return choice("vanish.silent");
-            case "vanish": return choice("vanish.do-spawn");
-            case "logger" : return choice("updater.plugin.on-enabling");
-            case "toOp" : return choice("updater.plugin.send-to-op");
-            default: return false;
+    public boolean getOption(int i, String path) {
+        String P = "";
+        switch (i) {
+            case 1: P = "options."; break;
+            case 2: P = "login."; break;
+            case 3: P = "vanish."; break;
+            case 4: P = "updater.plugin."; break;
         }
+        return main.getConfig().getBoolean(P + path);
     }
 
-    public String fileString(String key) {
+    public String getValue(String key) {
         switch (key) {
-            case "prefix": return main.getLang().getString("main-prefix", "");
-            case "split": return main.getConfig().getString("options.line-separator");
-            case "config": return main.getConfig().getString("options.prefix-in-config");
-            case "center": return main.getConfig().getString("options.center-prefix");
+            case "prefix":
+                return main.getLang().getString("main-prefix", "");
+            case "split":
+                return main.getConfig().getString("values.line-separator");
+            case "config":
+                return main.getConfig().getString("values.config-prefix");
+            case "center":
+                return main.getConfig().getString("values.center-prefix");
             default: return "";
         }
     }
@@ -78,7 +74,7 @@ public class TextUtils {
         boolean isBold = false;
 
         for (char c : message.toCharArray()) {
-            if (c == '\u00A7') previousCode = true;
+            if (c == '§') previousCode = true;
             else if (previousCode) {
                 previousCode = false;
                 isBold = c == 'l' || c == 'L';
@@ -104,7 +100,7 @@ public class TextUtils {
     }
 
     public void sendMixed(Player player, String message) {
-        String center = fileString("prefix");
+        String center = getValue("center");
 
         if (message.startsWith(center)) {
             sendCentered(player, message.replace(center, ""));
@@ -133,11 +129,11 @@ public class TextUtils {
     private List<String> toList(String path) { return fileList(main.getLang(), path); }
 
     public void send(CommandSender sender, String path, String[] keys, String... values) {
-        String key = fileString("config"), center = fileString("center");
+        String key = getValue("config"), center = getValue("center");
 
         for (String msg : toList(path)) {
             if (msg == null || msg.equals("")) continue;
-            msg = msg.startsWith(key) ? msg.replace(key, fileString("prefix")) : msg;
+            msg = msg.startsWith(key) ? msg.replace(key, getValue("prefix")) : msg;
             msg = StringUtils.replaceEach(msg, keys, values);
 
             if (!(sender instanceof Player)) {

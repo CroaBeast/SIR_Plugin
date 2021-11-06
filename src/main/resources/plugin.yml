@@ -21,6 +21,8 @@ commands:
     description: Main command lmao
   print:
     description: Print raw messages
+  announcer:
+    description: Send announcements
 
 permissions:
   sir.*:
@@ -28,6 +30,7 @@ permissions:
     children:
       sir.admin.*: true
       sir.print.*: true
+      sir.announcer.*: true
 
   sir.admin.*:
     default: op
@@ -45,6 +48,14 @@ permissions:
       sir.print.chat: true
       sir.print.title: true
 
+  sir.announcer.*:
+    default: op
+    children:
+      sir.announcer.help: true
+      sir.announcer.start: true
+      sir.announcer.stop: true
+      sir.announcer.reboot: true
+
   sir.admin.about:
     default: op
   sir.admin.help:
@@ -61,4 +72,13 @@ permissions:
   sir.print.chat:
     default: op
   sir.print.title:
+    default: op
+
+  sir.announcer.help:
+    default: op
+  sir.announcer.start:
+    default: op
+  sir.announcer.stop:
+    default: op
+  sir.announcer.reboot:
     default: op

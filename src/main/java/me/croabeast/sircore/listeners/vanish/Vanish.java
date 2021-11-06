@@ -11,7 +11,7 @@ public class Vanish implements Listener {
 
     public Vanish(Application main) {
         Initializer init = main.getInitializer();
-        if (!init.superVanish && !init.prVanish) return;
+        if (!init.srVanish && !init.prVanish) return;
         main.getServer().getPluginManager().registerEvents(this, main);
         init.listeners++;
     }

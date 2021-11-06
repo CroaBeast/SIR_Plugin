@@ -10,28 +10,36 @@ updater:
   plugin:
     # Sends a reminder when the plugin is completely enabled.
     # Disabling won't send any reminder.
-    on-enabling: true
+    on-start: true
     # Sends a reminder to OP's or players with 'sir.admin.update'
     # permission. Disabling won't send any reminder.
-    send-to-op: true
+    send-op: true
   # If enabled, the selected files will be updated automatically.
   # Don't worry, it doesn't delete any default comments at all.
   files:
     config: true
     lang: true
-    # I DO NOT recommend update your messages file. But if you want to...
+    # I DO NOT recommend update those files. But if you want to...
     messages: false
+    announces: false
 
 # Some useful options for this plugin if you want to change them.
 options:
-  # It will log the join/quit messages to the server's console.
+  # Enables the custom join/quit messages features. If you want to
+  # disable it, set this to false.
+  enabled: true
+  # It will log the join/quit messages and the announcements from
+  # announces.yml to the server's console.
   send-console: true
   # This option is ONLY for the /print command.
   # Enabling this will parse color and placeholders in the logger.
   format-logger: false
+
+# Some values you might want to change in the plugin.
+values:
   # ONLY FOR lang.yml file!!
   # Every message that start with this string, will have the main-prefix.
-  prefix-in-config: '<P>'
+  config-prefix: '<P>'
   # ONLY FOR lang.yml, messages.yml files AND FOR CHAT TYPE!!
   # Put this first on those chat messages you want to center.
   center-prefix: '<C>'
@@ -42,13 +50,11 @@ options:
 
 # If a login plugin is installed, this section will be activated.
 # Compatible login plugins: [ AuthMe, UserLogin ]
-# If you want support for another login plugin, you can suggest it
-# in our Discord (use /sir support) or via Spigot DM.
 login:
   # it will send the messages after the player logs-in/register.
   # Disabling this, messages will send like no compatible login
   # plugin is installed in the server.
-  send-after: true
+  enabled: true
   # This will send messages after some in-game ticks.
   # You can set this to 0 if you don't want this option or deleting
   # this path completely.
@@ -60,16 +66,14 @@ login:
 
 # If a vanish plugin is installed, this section will be activated.
 # Compatible vanish plugins: [ CMI, EssentialsX ]
-# If you want support for another vanish plugin, you can suggest it
-# in our Discord (use /sir support) or via Spigot DM.
 vanish:
   # This option send a join/quit section when a player changes its
   # vanish status. Disabling this won't send any messages when a player
   # changes its vanish status.
-  trigger: true
+  enabled: true
   # If a player is vanished and this option is enabled, won't send
   # any join/quit message to that player.
   silent: true
   # If a message has a "spawn:" section, and this option is disabled,
   # that spawn section won't be executed.
-  do-spawn: false
+  use-spawn: false

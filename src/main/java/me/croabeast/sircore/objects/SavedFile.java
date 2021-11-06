@@ -61,12 +61,13 @@ public class SavedFile {
             return;
         }
         if (rawYmlFile == null) rawYmlFile = catchFile();
-        if (!rawYmlFile.exists()) main.saveResource(location, false);
+        if (!rawYmlFile.exists())
+            main.saveResource(location, false);
     }
 
     private void registerFile() {
         if (catchFile().exists()) return;
-        records.doRecord("&6[SIR] &cFile " + location + " missing... &7Generating!");
+        records.doRecord("&cFile " + location + " missing... &7Generating!");
         saveDefaultFile();
     }
 

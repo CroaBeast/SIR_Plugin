@@ -1,4 +1,4 @@
-package me.croabeast.sircore.utils;
+package me.croabeast.sircore.utilities;
 
 import com.Zrips.CMI.Containers.*;
 import com.earth2me.essentials.*;
@@ -26,7 +26,7 @@ public class EventUtils {
 
     public List<Player> loggedPlayers = new ArrayList<>();
 
-    private String format(String msg, Player player, boolean isColor) {
+    public String doFormat(String msg, Player player, boolean isColor) {
         String[] keys = {"{PLAYER}", "{WORLD}"};
         String[] v = {player.getName(), player.getWorld().getName()};
 
@@ -107,27 +107,20 @@ public class EventUtils {
     }
 
     public ConfigurationSection lastSection(Player player, boolean join) {
-        String path = join ? (!player.hasPlayedBefore() ? "first-join" : "join") : "quit";
-        return lastSection(player, path);
+        return lastSection(player, join ?
+                (!player.hasPlayedBefore() &&
+                        main.getMessages().isConfigurationSection("first-join") ?
+                        "first-join" : "join"
+                ) : "quit"
+        );
     }
 
-    private void playsound(ConfigurationSection id, Player player) {
-        String sound = id.getString("sound");
-        if (sound == null) return;
+    private void sendToConsole(String message) {
+        if (!text.getOption(1, "send-console")) return;
 
-        try {
-            Enum.valueOf(Sound.class, sound);
-        } catch (IllegalArgumentException ex) {
-            return;
-        }
-
-        player.playSound(player.getLocation(), Sound.valueOf(sound), 1, 1);
-    }
-
-    private void sendToConsole(String message, String split) {
-        if (!text.fileValue("console")) return;
-
+        String split = text.getValue("split");
         message = message.replace(split, "&r" + split);
+
         main.getRecords().doRecord("&7> &f" + message);
     }
 
@@ -137,12 +130,12 @@ public class EventUtils {
         return message;
     }
 
-    private void typeMessage(Player player, String message) {
+    public void typeMessage(Player player, String message) {
         if (message.startsWith("[ACTION-BAR]")) {
             text.actionBar(player, setUp("[ACTION-BAR]", message));
         }
         else if (message.startsWith("[TITLE]")) {
-            String split = text.fileString("split");
+            String split = text.getValue("split");
             String[] title = setUp("[TITLE]", message).split(Pattern.quote(split));
             text.title(player, title, new String[] {"20", "60", "20"});
         }
@@ -153,33 +146,17 @@ public class EventUtils {
         else text.sendMixed(player, message);
     }
 
-    private void send(ConfigurationSection id, Player player, boolean isPublic) {
-        String split = text.fileString("split");
-        List<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
+    public void playsound(ConfigurationSection id, Player player) {
+        String sound = id.getString("sound");
+        if (sound == null) return;
 
-        for (String message : id.getStringList(isPublic ? "public" : "private")) {
-            if (message == null || message.equals("")) continue;
-            if (message.startsWith(" ")) message = message.substring(1);
-            message = format(message, player, true);
-
-            sendToConsole(message, split);
-
-            if (isPublic) for (Player p : players) typeMessage(p, message);
-            else typeMessage(player, message);
+        try {
+            Enum.valueOf(Sound.class, sound);
+        } catch (IllegalArgumentException ex) {
+            return;
         }
-    }
 
-    private void command(ConfigurationSection id, Player player, boolean join) {
-        for (String message : id.getStringList("commands")) {
-            if (message == null || message.equals("")) continue;
-            if (message.startsWith(" ")) message = message.substring(1);
-            message = format(message, player, false);
-
-            if (message.startsWith("[PLAYER]") && join) {
-                Bukkit.dispatchCommand(player, setUp("[PLAYER]", message));
-            }
-            else Bukkit.dispatchCommand(Bukkit.getConsoleSender(), message);
-        }
+        player.playSound(player.getLocation(), Sound.valueOf(sound), 1, 1);
     }
 
     private void invulnerable(ConfigurationSection id, Player player) {
@@ -215,12 +192,40 @@ public class EventUtils {
         player.teleport(location);
     }
 
+    private void send(ConfigurationSection id, Player player, boolean isPublic) {
+        List<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
+
+        for (String message : id.getStringList(isPublic ? "public" : "private")) {
+            if (message == null || message.equals("")) continue;
+            if (message.startsWith(" ")) message = message.substring(1);
+            message = doFormat(message, player, true);
+
+            sendToConsole(message);
+
+            if (isPublic) for (Player p : players) typeMessage(p, message);
+            else typeMessage(player, message);
+        }
+    }
+
+    public void command(ConfigurationSection id, Player player, boolean join) {
+        for (String message : id.getStringList("commands")) {
+            if (message == null || message.equals("")) continue;
+            if (message.startsWith(" ")) message = message.substring(1);
+            message = doFormat(message, player, false);
+
+            if (message.startsWith("[PLAYER]") && join) {
+                Bukkit.dispatchCommand(player, setUp("[PLAYER]", message));
+            }
+            else Bukkit.dispatchCommand(Bukkit.getConsoleSender(), message);
+        }
+    }
+
     public void runEvent(ConfigurationSection id, Player player, boolean join, boolean spawn, boolean login) {
         Runnable event = () -> {
             if (id == null) {
                 main.getRecords().doRecord(player,
-                        "&cA valid message group isn't found...",
-                        "&7Please check your&e messages.yml &7file."
+                        "<P> &cA valid message group isn't found...",
+                        "<P> &7Please check your&e messages.yml &7file."
                 );
                 return;
             }

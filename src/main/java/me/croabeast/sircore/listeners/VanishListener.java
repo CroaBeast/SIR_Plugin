@@ -3,7 +3,7 @@ package me.croabeast.sircore.listeners;
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.events.*;
 import me.croabeast.sircore.listeners.vanish.*;
-import me.croabeast.sircore.utils.*;
+import me.croabeast.sircore.utilities.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
@@ -31,10 +31,9 @@ public class VanishListener implements Listener {
         boolean vanish = event.isVanished();
         ConfigurationSection id = utils.lastSection(player, vanish ? "join" : "quit");
 
-        if (!init.hasVanish || !text.fileValue("trigger")) return;
-        if(init.hasLogin && !utils.loggedPlayers.contains(player))
-            utils.loggedPlayers.add(player);
+        if (!init.hasVanish || !text.getOption(3, "enabled")) return;
+        if(init.hasLogin && !utils.loggedPlayers.contains(player)) utils.loggedPlayers.add(player);
 
-        utils.runEvent(id, player, vanish, text.fileValue("vanish"), false);
+        utils.runEvent(id, player, vanish, text.getOption(3, "use-spawn"), false);
     }
 }

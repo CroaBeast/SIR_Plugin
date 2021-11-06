@@ -14,6 +14,7 @@ public class Initializer {
     public static Permission Perms;
 
     public SavedFile config;
+    public SavedFile announces;
     public SavedFile lang;
     public SavedFile messages;
 
@@ -30,7 +31,7 @@ public class Initializer {
     public boolean hasVanish;
     public boolean hasCMI;
     public boolean essentials;
-    public boolean superVanish;
+    public boolean srVanish;
     public boolean prVanish;
 
     public Initializer(Application main) {
@@ -44,7 +45,7 @@ public class Initializer {
 
         hasCMI = main.getPlugin("CMI") != null;
         essentials = main.getPlugin("Essentials") != null;
-        superVanish = main.getPlugin("SuperVanish") != null;
+        srVanish = main.getPlugin("SuperVanish") != null;
         prVanish = main.getPlugin("PremiumVanish") != null;
     }
 
@@ -53,10 +54,13 @@ public class Initializer {
         config = new SavedFile(main, "config");
         lang = new SavedFile(main, "lang");
         messages = new SavedFile(main, "messages");
+        announces = new SavedFile(main, "announces");
 
         config.updateInitFile();
         lang.updateInitFile();
         messages.updateInitFile();
+        announces.updateInitFile();
+
         for (String key : main.getMessages().getKeys(false)) {
             int sections = main.getTextUtils().getSections(key);
             if (sections == 0) continue;
@@ -96,7 +100,7 @@ public class Initializer {
             if (hasVault) {
                 if (hasCMI) map.put("CMI", entry);
                 else if (essentials) map.put("EssentialsX", entry);
-                else if (superVanish) map.put("SuperVanish", entry);
+                else if (srVanish) map.put("SuperVanish", entry);
                 else if (prVanish) map.put("PremiumVanish", entry);
             }
             else map.put("None / Other", entry);
@@ -164,7 +168,7 @@ public class Initializer {
             x++;
             vanishPlugin = "CMI";
         }
-        if (superVanish) {
+        if (srVanish) {
             x++;
             vanishPlugin = "SuperVanish";
         }
@@ -192,7 +196,8 @@ public class Initializer {
 
     public void startUpdater() {
         Updater.init(main, 96378).updateCheck().whenComplete(((updateResult, throwable) -> {
-            if (!main.getTextUtils().fileValue("logger")) return;
+            if (!main.getTextUtils().getOption(4, "on-start")) return;
+
             String latest = updateResult.getNewestVersion();
 
             records.rawRecord("");
@@ -218,8 +223,7 @@ public class Initializer {
                             "&cYou have a newer version of S.I.R. installed.",
                             "&cErrors might occur in this build.",
                             "Spigot Version: &a" + updateResult.getSpigotVersion()
-                                    + "&7 - Your Version: &e" + main.version,
-                            "&7Link:&b https://www.spigotmc.org/resources/96378/"
+                                    + "&7 - Your Version: &e" + main.version
                     );
                     break;
                 default:
@@ -247,6 +251,7 @@ public class Initializer {
         config.reloadFile();
         lang.reloadFile();
         messages.reloadFile();
+        announces.reloadFile();
     }
 
     private void showPluginInfo(String name) {
