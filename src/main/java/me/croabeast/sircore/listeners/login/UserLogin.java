@@ -12,7 +12,7 @@ public class UserLogin implements Listener {
         Initializer init = main.getInitializer();
         if (!init.userLogin) return;
         main.getServer().getPluginManager().registerEvents(this, main);
-        init.listeners++;
+        init.LISTENERS++;
     }
 
     @EventHandler

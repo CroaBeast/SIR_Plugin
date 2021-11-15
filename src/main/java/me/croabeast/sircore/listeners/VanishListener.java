@@ -18,7 +18,7 @@ public class VanishListener implements Listener {
         this.init = main.getInitializer();
         this.text = main.getTextUtils();
         this.utils = main.getEventUtils();
-        if (!init.hasVanish) return;
+        if (!init.HAS_VANISH) return;
         new CMI(main);
         new Essentials(main);
         new Vanish(main);
@@ -31,8 +31,8 @@ public class VanishListener implements Listener {
         boolean vanish = event.isVanished();
         ConfigurationSection id = utils.lastSection(player, vanish ? "join" : "quit");
 
-        if (!init.hasVanish || !text.getOption(3, "enabled")) return;
-        if(init.hasLogin && !utils.loggedPlayers.contains(player)) utils.loggedPlayers.add(player);
+        if (!init.HAS_VANISH || !text.getOption(3, "enabled")) return;
+        if(init.HAS_LOGIN && !utils.loggedPlayers.contains(player)) utils.loggedPlayers.add(player);
 
         utils.runEvent(id, player, vanish, text.getOption(3, "use-spawn"), false);
     }

@@ -13,7 +13,7 @@ public class Essentials implements Listener {
         Initializer init = main.getInitializer();
         if (!init.essentials) return;
         main.getServer().getPluginManager().registerEvents(this, main);
-        init.listeners++;
+        init.LISTENERS++;
     }
 
     @EventHandler

@@ -8,11 +8,10 @@ import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
-import org.jetbrains.annotations.*;
 
 import java.util.*;
 
-public class Executor implements CommandExecutor {
+public class Executor {
 
     private final Application main;
     private final Records records;
@@ -22,23 +21,28 @@ public class Executor implements CommandExecutor {
 
     private String[] args;
     private CommandSender sender;
-    private Command command;
 
     public Executor(Application main) {
         this.main = main;
         this.records = main.getRecords();
+        this.announcer = main.getAnnouncer();
         this.text = main.getTextUtils();
         this.utils = main.getEventUtils();
-        this.announcer = main.getAnnouncer();
-        Arrays.asList("announcer", "sir", "print").forEach(s -> {
-            PluginCommand executor = main.getCommand(s);
-            if (executor != null) executor.setExecutor(this);
-        });
+
+        registerCmd("announcer", announcerCmd());
+        registerCmd("sir", mainCmd());
+        registerCmd("print", printCmd());
         new Completer(main);
     }
 
+    private void registerCmd(String name, CommandExecutor executor) {
+        PluginCommand cmd = main.getCommand(name);
+        if (cmd != null) cmd.setExecutor(executor);
+    }
+
     private void sendMessage(String path, String key, String value) {
-        text.send(sender, path, new String[] {"{" + key + "}"}, value);
+        if (key == null && value == null) text.send(sender, path);
+        else text.send(sender, path, new String[] {"{" + key + "}"}, value);
     }
 
     private boolean oneMessage(String path, String key, String value) {
@@ -46,8 +50,9 @@ public class Executor implements CommandExecutor {
         return true;
     }
 
-    private boolean isCommand(String cmdName) {
-        return command.getName().toLowerCase().equals(cmdName);
+    private boolean oneMessage(String path) {
+        text.send(sender, path);
+        return true;
     }
 
     private boolean hasNoPerm(String perm) {
@@ -65,14 +70,6 @@ public class Executor implements CommandExecutor {
     private boolean sendPrintHelp(String name) {
         sendMessage("print-help." + name, null, null);
         return true;
-    }
-
-    private void loadedSections() {
-        String[] keys = {"{TOTAL}", "{SECTION}"};
-        main.getMessages().getKeys(false).forEach(s -> {
-            String sect = text.getSections(s) + "";
-            text.send(sender, "get-sections", keys, sect, s);
-        });
     }
 
     private Set<Player> targets(String input) {
@@ -102,7 +99,7 @@ public class Executor implements CommandExecutor {
             Bukkit.getOnlinePlayers().stream().filter(
                     p -> {
                         boolean isGroup = false;
-                        if (main.getInitializer().hasVault) {
+                        if (main.getInitializer().HAS_VAULT) {
                             String first = Initializer.Perms.getPrimaryGroup(null, p);
                             isGroup = first.matches("(?i)" + group);
                         }
@@ -113,6 +110,16 @@ public class Executor implements CommandExecutor {
         }
 
         return new HashSet<>();
+    }
+
+    private String rawMessage(int size) {
+        StringBuilder builder = new StringBuilder();
+        String[] args = this.args;
+
+        for (int i = size; i < args.length; i++)
+            builder.append(args[i]).append(" ");
+
+        return builder.substring(0, builder.toString().length() - 1);
     }
 
     private void sendReminder(String input) {
@@ -130,32 +137,75 @@ public class Executor implements CommandExecutor {
 
     private void messageLogger(String type, String line) {
         String start = main.getLang().getString("logger.header");
+        boolean format = text.getOption(1, "format-logger");
 
         if (start == null || start.equals("")) return;
-        if (text.getOption(1, "format-logger"))
-            line = IridiumAPI.process(line);
+        if (format) line = IridiumAPI.process(line);
 
         records.doRecord(start);
         main.getLogger().info("[" + type + "] " + line);
     }
 
-    private String rawMessage(int size) {
-        StringBuilder builder = new StringBuilder();
-        String[] args = this.args;
+    private CommandExecutor announcerCmd() {
+        return (sender, command, label, args) -> {
+            this.sender = sender;
+            this.args = args;
 
-        for (int i = size; i < args.length; i++)
-            builder.append(args[i]).append(" ");
+            if (hasNoPerm("announcer.*")) return true;
 
-        return builder.substring(0, builder.toString().length() - 1);
+            if (args.length == 0) return oneMessage("announcer-help");
+
+            if (args.length > 2) return notArgument(args[args.length - 1]);
+
+            ConfigurationSection id = main.getAnnounces().getConfigurationSection("messages");
+
+            switch (args[0].toLowerCase()) {
+                case "start":
+                    if (args.length > 1) return notArgument(args[args.length - 1]);
+
+                    if (announcer.isRunning()) return oneMessage("cant-start");
+
+                    announcer.startTask();
+                    return oneMessage("started", null, null);
+
+                case "cancel":
+                    if (args.length > 1) return notArgument(args[args.length - 1]);
+
+                    if (!announcer.isRunning())  return oneMessage("cant-stop");
+
+                    announcer.cancelTask();
+                    return oneMessage("stopped", null, null);
+
+                case "reboot":
+                    if (args.length > 1) return notArgument(args[args.length - 1]);
+
+                    if (announcer.isRunning()) announcer.cancelTask();
+                    announcer.startTask();
+                    return oneMessage("rebooted");
+
+                case "preview":
+                    if (sender instanceof ConsoleCommandSender) {
+                        records.doRecord(
+                                "&cYou can't preview an announce if you are the console."
+                        );
+                        return true;
+                    }
+
+                    if (args.length == 1 || id == null || id.getConfigurationSection(args[1]) == null)
+                        return oneMessage("select-announce");
+
+                    announcer.runSection(Objects.requireNonNull(id.getConfigurationSection(args[1])));
+                    return true;
+
+                default: return notArgument(args[args.length - 1]);
+            }
+        };
     }
 
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        this.sender = sender;
-        this.command = command;
-        this.args = args;
-
-        if (isCommand("sir")) {
+    private CommandExecutor mainCmd() {
+        return (sender, command, label, args) -> {
+            this.sender = sender;
+            this.args = args;
             if (hasNoPerm("admin.*")) return true;
 
             if (args.length == 0)
@@ -172,9 +222,16 @@ public class Executor implements CommandExecutor {
                     if (hasNoPerm("admin.reload")) return true;
 
                     main.getInitializer().reloadFiles();
-                    loadedSections();
+
+                    String[] keys = {"{TOTAL}", "{SECTION}"};
+                    main.getMessages().getKeys(false).forEach(s -> {
+                        String sect = text.getSections(s) + "";
+                        text.send(sender, "get-sections", keys, sect, s);
+                    });
+
                     if (!announcer.isRunning()) announcer.startTask();
                     sendMessage("reload-files", null, null);
+
                     if (!text.getOption(1, "enabled") && main.getAnnouncer().getDelay() == 0)
                         records.doRecord(sender,
                                 "", "<P> &7Both main features of &eS.I.R. &7are disabled.",
@@ -188,10 +245,15 @@ public class Executor implements CommandExecutor {
 
                 default: return notArgument(args[0]);
             }
-        }
+        };
+    }
 
-        if (isCommand("print")) {
-            String split = text.getValue("split");
+    private CommandExecutor printCmd() {
+        return (sender, command, label, args) -> {
+            this.sender = sender;
+            this.args = args;
+
+            String split = text.getSplit();
 
             if (hasNoPerm("print.*")) return true;
 
@@ -220,7 +282,7 @@ public class Executor implements CommandExecutor {
 
                 if (args.length == 1) return sendPrintHelp("action-bar");
 
-                if (args.length < 3) return oneMessage("empty-message", null, null);
+                if (args.length < 3) return oneMessage("empty-message");
 
                 String message = rawMessage(2);
 
@@ -238,12 +300,12 @@ public class Executor implements CommandExecutor {
 
                 if (args.length == 1) return sendPrintHelp("chat");
 
-                if (args.length < 4) return oneMessage("empty-message", null, null);
+                if (args.length < 4) return oneMessage("empty-message");
 
                 if (!args[2].matches("(?i)DEFAULT|CENTERED|MIXED")) return notArgument(args[1]);
 
-                String unformatted = rawMessage(3);
-                List<String> message = Arrays.asList(unformatted.split(split));
+                String noFormat = rawMessage(3);
+                List<String> message = Arrays.asList(noFormat.split(split));
 
                 sendReminder(args[1]);
                 if (!targets(args[1]).isEmpty()) {
@@ -259,7 +321,7 @@ public class Executor implements CommandExecutor {
                         targets(args[1]).forEach(
                                 p -> message.forEach(s -> p.sendMessage(text.parsePAPI(p, s))));
                     }
-                    messageLogger("CHAT", unformatted.replace(split, "&r" + split));
+                    messageLogger("CHAT", noFormat.replace(split, "&r" + split));
                 }
             }
 
@@ -268,77 +330,24 @@ public class Executor implements CommandExecutor {
 
                 if (args.length == 1) return sendPrintHelp("title");
 
-                if (args.length < 4) return oneMessage("empty-message", null, null);
+                if (args.length < 4) return oneMessage("empty-message");
 
-                String unformatted = rawMessage(3);
+                String noFormat = rawMessage(3);
 
                 sendReminder(args[1]);
                 if (!targets(args[1]).isEmpty()) {
                     targets(args[1]).forEach(p -> {
-                        String[] message = text.parsePAPI(p, unformatted).split(split);
+                        String[] message = text.parsePAPI(p, noFormat).split(split);
                         if (args[2].matches("(?i)DEFAULT"))
-                            text.title(p, message, new String[] {"20", "60", "20"});
+                            text.title(p, message, new String[] {"10", "50", "10"});
                         else text.title(p, message, args[2].split(","));
                     });
-                    String colorSplit = IridiumAPI.process("&r" + split);
-                    messageLogger("TITLE", unformatted.replace(split, colorSplit));
+                    messageLogger("TITLE", noFormat.replace(split, "&r" + split));
                 }
             }
 
             else sendMessage("wrong-arg", "ARG", args[0]);
-        }
-
-        if (isCommand("announcer")) {
-            if (hasNoPerm("announcer.*")) return true;
-
-            if (args.length == 0) return oneMessage("announcer-help", null, null);
-
-            if (args.length > 2) return notArgument(args[args.length - 1]);
-
-            ConfigurationSection id = main.getAnnounces().getConfigurationSection("messages");
-
-            switch (args[0].toLowerCase()) {
-                case "start":
-                    if (args.length > 1) return notArgument(args[args.length - 1]);
-
-                    if (announcer.isRunning()) return oneMessage("cant-start", null, null);
-
-                    announcer.startTask();
-                    return oneMessage("started", null, null);
-
-                case "cancel":
-                    if (args.length > 1) return notArgument(args[args.length - 1]);
-
-                    if (!announcer.isRunning())  return oneMessage("cant-stop", null, null);
-
-                    announcer.cancelTask();
-                    return oneMessage("stopped", null, null);
-
-                case "reboot":
-                    if (args.length > 1) return notArgument(args[args.length - 1]);
-
-                    if (announcer.isRunning()) announcer.cancelTask();
-                    announcer.startTask();
-                    return oneMessage("rebooted", null, null);
-
-                case "preview":
-                    if (sender instanceof ConsoleCommandSender) {
-                        records.doRecord(
-                                "&cYou can't preview an announce if you are the console."
-                        );
-                        return true;
-                    }
-
-                    if (args.length == 1 || id == null || id.getConfigurationSection(args[1]) == null)
-                        return oneMessage("select-announce", null, null);
-
-                    announcer.runSection(Objects.requireNonNull(id.getConfigurationSection(args[1])));
-                    return true;
-
-                default: return notArgument(args[args.length - 1]);
-            }
-        }
-
-        return true;
+            return true;
+        };
     }
 }

@@ -22,7 +22,7 @@ public class SavedFile {
         this.name = name;
         this.location = name + ".yml";
         registerFile();
-        main.getInitializer().files++;
+        main.getInitializer().FILES++;
     }
 
     private File catchFile() { return new File(main.getDataFolder(), location); }

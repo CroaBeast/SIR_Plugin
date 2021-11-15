@@ -16,7 +16,7 @@ public class LoginListener implements Listener {
     public LoginListener(Application main) {
         this.text = main.getTextUtils();
         this.utils = main.getEventUtils();
-        if (!main.getInitializer().hasLogin) return;
+        if (!main.getInitializer().HAS_LOGIN) return;
         new AuthMe(main);
         new UserLogin(main);
         main.getServer().getPluginManager().registerEvents(this, main);

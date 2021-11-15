@@ -1,5 +1,6 @@
 package me.croabeast.cupdater;
 
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
 public class KeyBuilder implements Cloneable {
@@ -45,11 +46,6 @@ public class KeyBuilder implements Cloneable {
         return isSubKeyOf(builder.toString(), subKey, separator);
     }
 
-    public static boolean isSubKeyOf(String parentKey, String subKey, char separator) {
-        if (parentKey.isEmpty()) return false;
-        return subKey.startsWith(parentKey) && subKey.startsWith(String.valueOf(separator), parentKey.length());
-    }
-
     public static String getIndents(String key, char separator) {
         String[] splitKey = key.split("[" + separator + "]");
         StringBuilder builder = new StringBuilder();
@@ -64,7 +60,8 @@ public class KeyBuilder implements Cloneable {
 
     public boolean isConfigSectionWithKeys() {
         String key = builder.toString();
-        return config.isConfigurationSection(key) && !config.getConfigurationSection(key).getKeys(false).isEmpty();
+        ConfigurationSection id = config.getConfigurationSection(key);
+        return id != null && !id.getKeys(false).isEmpty();
     }
 
     public void removeLastKey() {
@@ -73,6 +70,11 @@ public class KeyBuilder implements Cloneable {
         String[] split = keyString.split("[" + separator + "]");
         int minIndex = Math.max(0, builder.length() - split[split.length - 1].length() - 1);
         builder.replace(minIndex, builder.length(), "");
+    }
+
+    public static boolean isSubKeyOf(String parentKey, String subKey, char separator) {
+        if (parentKey.isEmpty()) return false;
+        return subKey.startsWith(parentKey) && subKey.startsWith(String.valueOf(separator), parentKey.length());
     }
 
     @Override

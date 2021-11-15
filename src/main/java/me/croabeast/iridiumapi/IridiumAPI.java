@@ -1,19 +1,13 @@
 package me.croabeast.iridiumapi;
 
-import com.google.common.collect.ImmutableMap;
-import me.croabeast.iridiumapi.patterns.Gradient;
-import me.croabeast.iridiumapi.patterns.Patterns;
-import me.croabeast.iridiumapi.patterns.Rainbow;
-import me.croabeast.iridiumapi.patterns.SolidColor;
-import net.md_5.bungee.api.ChatColor;
+import com.google.common.collect.*;
+import me.croabeast.iridiumapi.patterns.*;
+import net.md_5.bungee.api.*;
 import org.bukkit.Bukkit;
 import org.jetbrains.annotations.*;
 
-import java.awt.*;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.awt.Color;
+import java.util.*;
 
 public class IridiumAPI {
 
@@ -46,14 +40,8 @@ public class IridiumAPI {
 
     @NotNull
     public static String process(@NotNull String string) {
-        for (Patterns patterns : PATTERNS) string = patterns.process(string);
-        string = ChatColor.translateAlternateColorCodes('&', string);
-        return string;
-    }
-
-    @NotNull
-    public static List<String> process(@NotNull List<String> strings) {
-        return strings.stream().map(IridiumAPI::process).collect(Collectors.toList());
+        for (Patterns pattern : PATTERNS) string = pattern.process(string);
+        return ChatColor.translateAlternateColorCodes('&', string);
     }
 
     @NotNull
@@ -65,16 +53,17 @@ public class IridiumAPI {
     public static String color(@NotNull String string, @NotNull Color start, @NotNull Color end) {
         StringBuilder specialColors = new StringBuilder();
         for (String color : SPECIAL_COLORS) {
-            if (string.contains(color)) {
-                specialColors.append(color);
-                string = string.replace(color, "");
-            }
+            if (!string.contains(color)) continue;
+            specialColors.append(color);
+            string = string.replace(color, "");
         }
+
         StringBuilder stringBuilder = new StringBuilder();
         ChatColor[] colors = createGradient(start, end, string.length());
         String[] characters = string.split("");
-        for (int i = 0; i < string.length(); i++) stringBuilder.append(colors[i])
-                .append(specialColors).append(characters[i]);
+
+        for (int i = 0; i < string.length(); i++)
+            stringBuilder.append(specialColors).append(colors[i]).append(characters[i]);
         return stringBuilder.toString();
     }
 
@@ -82,16 +71,17 @@ public class IridiumAPI {
     public static String rainbow(@NotNull String string, float saturation) {
         StringBuilder specialColors = new StringBuilder();
         for (String color : SPECIAL_COLORS) {
-            if (string.contains(color)) {
-                specialColors.append(color);
-                string = string.replace(color, "");
-            }
+            if (!string.contains(color)) continue;
+            specialColors.append(color);
+            string = string.replace(color, "");
         }
+
         StringBuilder stringBuilder = new StringBuilder();
         ChatColor[] colors = createRainbow(string.length(), saturation);
         String[] characters = string.split("");
-        for (int i = 0; i < string.length(); i++) stringBuilder.append(colors[i])
-                .append(specialColors).append(characters[i]);
+
+        for (int i = 0; i < string.length(); i++)
+            stringBuilder.append(specialColors).append(colors[i]).append(characters[i]);
         return stringBuilder.toString();
     }
 
@@ -102,8 +92,9 @@ public class IridiumAPI {
     }
 
     @NotNull
-    public static String stripColorFormatting(@NotNull String string) {
-        return string.replaceAll("[&§][a-f0-9lnokm]|<[/]?\\w{5,8}(:[0-9A-F]{6})?>", "");
+    public static String stripColor(@NotNull String string) {
+        return string.replaceAll("[&§][a-f0-9lnokm]|<[/]?\\w(:[0-9A-F]{6})?>|\\{#([0-9A-Fa-f]{6})}|" +
+                "<#([0-9A-Fa-f]{6})>|&#([0-9A-Fa-f]{6})|#([0-9A-Fa-f]{6})", "");
     }
 
     @NotNull

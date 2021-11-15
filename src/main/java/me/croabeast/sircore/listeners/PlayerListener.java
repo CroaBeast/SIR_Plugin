@@ -23,7 +23,7 @@ public class PlayerListener implements Listener {
         this.text = main.getTextUtils();
         this.utils = main.getEventUtils();
         main.getServer().getPluginManager().registerEvents(this, main);
-        init.listeners++;
+        init.LISTENERS++;
     }
 
     private void adminUpdateChecker(Player player) {
@@ -36,10 +36,10 @@ public class PlayerListener implements Listener {
             switch (updateResult.getReason()) {
                 case NEW_UPDATE:
                     records.playerRecord(player,
-                            "", " &4BIG WARNING!",
+                            "", " &4NEW UPDATE!",
                             " &cYou don't have the latest version of S.I.R. installed.",
                             " &cRemember, older versions won't receive any support.",
-                            " &7New Version: &a" + latest + "&7 - Your Version: &e" + main.version,
+                            " &7New Version: &a" + latest + "&7 - Your Version: &e" + main.PLUGIN_VERSION,
                             " &7Link:&b https://www.spigotmc.org/resources/96378/", ""
                     );
                     break;
@@ -55,7 +55,7 @@ public class PlayerListener implements Listener {
                             " &cYou have a newer version of S.I.R. installed.",
                             " &cErrors might occur in this build.",
                             " Spigot Version: &a" + updateResult.getSpigotVersion()
-                                    + "&7 - Your Version: &e" + main.version, ""
+                                    + "&7 - Your Version: &e" + main.PLUGIN_VERSION, ""
                     );
                     break;
                 default:
@@ -80,8 +80,8 @@ public class PlayerListener implements Listener {
         ConfigurationSection id = utils.lastSection(player, true);
         adminUpdateChecker(player);
 
-        if (init.hasLogin && text.getOption(2, "enabled")) {
-            if (text.getOption(2, "spawn-before")) utils.spawn(id, player);
+        if (init.HAS_LOGIN && text.getOption(2, "enabled")) {
+            if (text.getOption(2, "spawn-before")) utils.goSpawn(id, player);
             return;
         }
         if (utils.isVanished(player, true) &&
@@ -101,7 +101,7 @@ public class PlayerListener implements Listener {
 
         if (utils.isVanished(player, false) &&
                 text.getOption(3, "silent")) return;
-        if (init.hasLogin) utils.loggedPlayers.remove(player);
+        if (init.HAS_LOGIN) utils.loggedPlayers.remove(player);
 
         utils.runEvent(id, player, false, false, false);
     }

@@ -6,7 +6,6 @@ import me.croabeast.sircore.*;
 import me.croabeast.sircore.handlers.*;
 import me.croabeast.sircore.terminals.*;
 import org.apache.commons.lang.*;
-import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.configuration.*;
 import org.bukkit.configuration.file.*;
@@ -18,49 +17,41 @@ public class TextUtils {
 
     private final Application main;
 
-    public int getVersion;
-    public String serverName;
-
     private final PAPI papi;
     private final ActionBar actionBar;
     private final TitleMain titleMain;
 
+    // Initializer for PAPI
+    public interface PAPI {
+        String parsePAPI(Player player, String message);
+    }
+
     public TextUtils(Application main) {
         this.main = main;
 
-        String version = Bukkit.getBukkitVersion().split("-")[0];
-        getVersion = Integer.parseInt(version.split("\\.")[1]);
-        serverName = Bukkit.getVersion().split("-")[1] + " " + version;
-
-        papi = main.getInitializer().hasPAPI ? new HasPAPI() : new NotPAPI();
-        actionBar = getVersion < 11 ? new ActBar10() : new ActBar17();
-        titleMain = getVersion < 10 ? new Title9() : new Title17();
+        papi = (player, message) -> !main.getInitializer().HAS_PAPI || player == null ?
+                message : PlaceholderAPI.setPlaceholders(player, message);
+        actionBar = main.GET_VERSION < 11 ? new ActBar10() : new ActBar17();
+        titleMain = main.GET_VERSION < 10 ? new Title9() : new Title17();
     }
 
     public boolean getOption(int i, String path) {
-        String P = "";
-        switch (i) {
-            case 1: P = "options."; break;
-            case 2: P = "login."; break;
-            case 3: P = "vanish."; break;
-            case 4: P = "updater.plugin."; break;
-        }
+        String P;
+
+        if (i == 4) P = "updater.plugin.";
+        else if (i == 2) P = "login.";
+        else if (i == 3) P = "vanish.";
+        else if (i == 1) P = "options.";
+        else P = "";
+
         return main.getConfig().getBoolean(P + path);
     }
 
-    public String getValue(String key) {
-        switch (key) {
-            case "prefix":
-                return main.getLang().getString("main-prefix", "");
-            case "split":
-                return main.getConfig().getString("values.line-separator");
-            case "config":
-                return main.getConfig().getString("values.config-prefix");
-            case "center":
-                return main.getConfig().getString("values.center-prefix");
-            default: return "";
-        }
+    private String getValue(String key) {
+        return main.getConfig().getString("values." + key);
     }
+
+    public String getSplit() { return getValue("line-separator"); }
 
     public String parsePAPI(Player player, String message) {
         return IridiumAPI.process(papi.parsePAPI(player, message));
@@ -80,7 +71,8 @@ public class TextUtils {
                 isBold = c == 'l' || c == 'L';
             } else {
                 FontInfo dFI = FontInfo.getDefaultFontInfo(c);
-                messagePxSize += isBold ? dFI.getBoldLength() : dFI.getLength();
+                messagePxSize += isBold ?
+                        dFI.getBoldLength() : dFI.getLength();
                 messagePxSize++;
             }
         }
@@ -100,7 +92,7 @@ public class TextUtils {
     }
 
     public void sendMixed(Player player, String message) {
-        String center = getValue("center");
+        String center = getValue("center-prefix");
 
         if (message.startsWith(center)) {
             sendCentered(player, message.replace(center, ""));
@@ -113,10 +105,9 @@ public class TextUtils {
         ConfigurationSection ids = main.getMessages().getConfigurationSection(path);
         if (ids == null) return 0;
 
-        for (String key : ids.getKeys(false)) {
-            ConfigurationSection id = ids.getConfigurationSection(key);
-            if (id != null) messages++;
-        }
+        for (String key : ids.getKeys(false))
+            if (ids.getConfigurationSection(key) != null) messages++;
+
         return messages;
     }
 
@@ -129,19 +120,27 @@ public class TextUtils {
     private List<String> toList(String path) { return fileList(main.getLang(), path); }
 
     public void send(CommandSender sender, String path, String[] keys, String... values) {
-        String key = getValue("config"), center = getValue("center");
+        String prefix = main.getLang().getString("main-prefix", ""),
+                key = getValue("config-prefix"),
+                center = getValue("center-prefix");
 
-        for (String msg : toList(path)) {
-            if (msg == null || msg.equals("")) continue;
-            msg = msg.startsWith(key) ? msg.replace(key, getValue("prefix")) : msg;
-            msg = StringUtils.replaceEach(msg, keys, values);
+        for (String line : toList(path)) {
+            if (line == null || line.equals("")) continue;
+            line = StringUtils.replaceEach(
+                    line.startsWith(key) ? line.replace(key, prefix) : line,
+                    keys, values
+            );
 
             if (!(sender instanceof Player)) {
-                if (msg.startsWith(center)) msg = msg.replace(center,"");
-                main.getRecords().rawRecord(msg);
+                if (line.startsWith(center)) line = line.replace(center,"");
+                main.getRecords().rawRecord(line);
             }
-            else sendMixed((Player) sender, msg);
+            else sendMixed((Player) sender, line);
         }
+    }
+
+    public void send(CommandSender sender, String path) {
+        send(sender, path, null, (String[]) null);
     }
 
     public void actionBar(Player player, String message) { actionBar.send(player, message); }
@@ -165,24 +164,5 @@ public class TextUtils {
         if (!checkInts(times)) return;
         int[] ints = intArray(times);
         titleMain.send(player, message[0], subtitle, ints[0], ints[1], ints[2]);
-    }
-
-    // Initializer for PAPI
-    public interface PAPI {
-        String parsePAPI(Player player, String message);
-    }
-
-    public static class NotPAPI implements PAPI{
-        @Override
-        public String parsePAPI(Player player, String message) {
-            return message;
-        }
-    }
-
-    public static class HasPAPI implements PAPI{
-        @Override
-        public String parsePAPI(Player player, String message) {
-            return player != null ? PlaceholderAPI.setPlaceholders(player, message) : message;
-        }
     }
 }

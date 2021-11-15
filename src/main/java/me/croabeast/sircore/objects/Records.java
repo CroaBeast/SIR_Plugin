@@ -1,9 +1,11 @@
 package me.croabeast.sircore.objects;
 
-import me.croabeast.iridiumapi.*;
+import me.croabeast.iridiumapi.IridiumAPI;
 import me.croabeast.sircore.*;
 import org.bukkit.command.*;
 import org.bukkit.entity.*;
+
+import java.util.*;
 
 public class Records {
 
@@ -13,26 +15,29 @@ public class Records {
         this.main = main;
     }
 
-    public void rawRecord(String... lines) {
-        for (String line : lines)
-            main.getServer().getLogger().info(IridiumAPI.process(line));
+    private String parseColor(String line) {
+        return main.GET_VERSION < 12 ? IridiumAPI.stripColor(line) : IridiumAPI.process(line);
     }
 
     public void playerRecord(Player player, String... lines) {
-        for (String line : lines)
-            player.sendMessage(IridiumAPI.process(line));
+        Arrays.asList(lines).forEach(s -> player.sendMessage(IridiumAPI.process(s)));
+    }
+
+    public void rawRecord(String... lines) {
+        Arrays.asList(lines).forEach(s -> main.getServer().getLogger().info(parseColor(s)));
     }
 
     public void doRecord(CommandSender sender, String... lines) {
-        for (String line : lines) {
-            if (sender instanceof Player){
-                String a = "<P> ", b = "&e SIR &8> &7";
-                sender.sendMessage(IridiumAPI.process(line.replace(a, b)));
-            }
-            line = line.startsWith("<P> ") ? line.substring(4) : line;
-            main.getLogger().info(IridiumAPI.process(line));
-        }
+        Arrays.asList(lines).forEach(s -> {
+            if (sender instanceof Player)
+                playerRecord((Player) sender, s.replace("<P> ", "&e SIR &8> &7"));
+            main.getLogger().info(parseColor(
+                    s.startsWith("<P> ") ? s.substring(4) : s)
+            );
+        });
     }
 
-    public void doRecord(String... lines) { doRecord(null, lines); }
+    public void doRecord(String... lines) {
+        doRecord(null, lines);
+    }
 }

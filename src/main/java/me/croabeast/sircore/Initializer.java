@@ -18,17 +18,17 @@ public class Initializer {
     public SavedFile lang;
     public SavedFile messages;
 
-    public int listeners = 0;
-    public int files = 0;
+    public int LISTENERS = 0;
+    public int FILES = 0;
 
-    public boolean hasPAPI;
-    public boolean hasVault;
+    public boolean HAS_PAPI;
+    public boolean HAS_VAULT;
 
-    public boolean hasLogin;
+    public boolean HAS_LOGIN;
     public boolean authMe;
     public boolean userLogin;
 
-    public boolean hasVanish;
+    public boolean HAS_VANISH;
     public boolean hasCMI;
     public boolean essentials;
     public boolean srVanish;
@@ -38,8 +38,8 @@ public class Initializer {
         this.main = main;
         records = main.getRecords();
 
-        hasPAPI = main.getPlugin("PlaceholderAPI") != null;
-        hasVault = main.getPlugin("Vault") != null;
+        HAS_PAPI = main.getPlugin("PlaceholderAPI") != null;
+        HAS_VAULT = main.getPlugin("Vault") != null;
         authMe = main.getPlugin("AuthMe") != null;
         userLogin = main.getPlugin("UserLogin") != null;
 
@@ -67,14 +67,14 @@ public class Initializer {
             String section = sections + "&7 groups in the &e'" + key;
             records.doRecord("&7Found &e" + section + "'&7 section.");
         }
-        records.doRecord("&7Loaded &e" + files + "&7 files in the plugin's folder.");
+        records.doRecord("&7Loaded &e" + FILES + "&7 files in the plugin's folder.");
     }
 
     public void startMetrics() {
         Metrics metrics = new Metrics(main, 12806);
 
-        metrics.addCustomChart(new Metrics.SimplePie("hasPAPI", () -> hasPAPI + ""));
-        metrics.addCustomChart(new Metrics.SimplePie("hasVault", () -> hasVault + ""));
+        metrics.addCustomChart(new Metrics.SimplePie("hasPAPI", () -> HAS_PAPI + ""));
+        metrics.addCustomChart(new Metrics.SimplePie("hasVault", () -> HAS_VAULT + ""));
 
         metrics.addCustomChart(new Metrics.DrilldownPie("loginPlugins", () -> {
             Map<String, Map<String, Integer>> map = new HashMap<>();
@@ -82,7 +82,7 @@ public class Initializer {
 
             entry.put("Login Plugins", 1);
 
-            if (hasLogin) {
+            if (HAS_LOGIN) {
                 if (userLogin) map.put("UserLogin", entry);
                 else if (authMe) map.put("AuthMe", entry);
             }
@@ -97,7 +97,7 @@ public class Initializer {
 
             entry.put("Vanish Plugins", 1);
 
-            if (hasVault) {
+            if (HAS_VAULT) {
                 if (hasCMI) map.put("CMI", entry);
                 else if (essentials) map.put("EssentialsX", entry);
                 else if (srVanish) map.put("SuperVanish", entry);
@@ -115,7 +115,7 @@ public class Initializer {
         showPluginInfo("PlaceholderAPI");
 
         // Permissions
-        if (!hasVault)
+        if (!HAS_VAULT)
             records.doRecord("&7Vault&c isn't installed&7, using default system.");
         else {
             ServicesManager servMngr = main.getServer().getServicesManager();
@@ -143,10 +143,10 @@ public class Initializer {
         records.doRecord("> &7Checking if a login plugin is enabled...");
 
         if (i == 1) {
-            hasLogin = true;
+            HAS_LOGIN = true;
             showPluginInfo(loginPlugin);
         } else {
-            hasLogin = false;
+            HAS_LOGIN = false;
             if (i > 1) {
                 records.doRecord(
                         "&cTwo or more compatible login plugins are installed.",
@@ -180,10 +180,10 @@ public class Initializer {
         records.doRecord("> &7Checking if a vanish plugin is enabled...");
 
         if (x == 1) {
-            hasVanish = true;
+            HAS_VANISH = true;
             showPluginInfo(vanishPlugin);
         } else {
-            hasVanish = false;
+            HAS_VANISH = false;
             if (x > 1) {
                 records.doRecord(
                         "&cTwo or more compatible vanish plugins are installed.",
@@ -204,10 +204,10 @@ public class Initializer {
             switch (updateResult.getReason()) {
                 case NEW_UPDATE:
                     records.doRecord(
-                            "&4BIG WARNING!",
+                            "&4NEW UPDATE!",
                             "&cYou don't have the latest version of S.I.R. installed.",
                             "&cRemember, older versions won't receive any support.",
-                            "&7New Version: &a" + latest + "&7 - Your Version: &e" + main.version,
+                            "&7New Version: &a" + latest + "&7 - Your Version: &e" + main.PLUGIN_VERSION,
                             "&7Link:&b https://www.spigotmc.org/resources/96378/"
                     );
                     break;
@@ -223,7 +223,7 @@ public class Initializer {
                             "&cYou have a newer version of S.I.R. installed.",
                             "&cErrors might occur in this build.",
                             "Spigot Version: &a" + updateResult.getSpigotVersion()
-                                    + "&7 - Your Version: &e" + main.version
+                                    + "&7 - Your Version: &e" + main.PLUGIN_VERSION
                     );
                     break;
                 default:
@@ -244,7 +244,7 @@ public class Initializer {
         new PlayerListener(main);
         new LoginListener(main);
         new VanishListener(main);
-        records.doRecord("&7Registered &e" + listeners + "&7 plugin's listeners.");
+        records.doRecord("&7Registered &e" + LISTENERS + "&7 plugin's listeners.");
     }
 
     public void reloadFiles() {

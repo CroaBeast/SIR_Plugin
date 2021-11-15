@@ -12,7 +12,7 @@ public class CMI implements Listener {
         Initializer init = main.getInitializer();
         if (!init.hasCMI) return;
         main.getServer().getPluginManager().registerEvents(this, main);
-        init.listeners++;
+        init.LISTENERS++;
     }
 
     @EventHandler

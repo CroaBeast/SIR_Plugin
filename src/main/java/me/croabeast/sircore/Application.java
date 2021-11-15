@@ -3,7 +3,6 @@ package me.croabeast.sircore;
 import me.croabeast.sircore.command.*;
 import me.croabeast.sircore.objects.*;
 import me.croabeast.sircore.utilities.*;
-import org.apache.commons.lang.SystemUtils;
 import org.bukkit.*;
 import org.bukkit.configuration.file.*;
 import org.bukkit.plugin.*;
@@ -18,15 +17,20 @@ public final class Application extends JavaPlugin {
     private EventUtils utils;
     private Announcer announcer;
 
-    public String version;
+    public String PLUGIN_VERSION;
+    public int GET_VERSION;
 
     @Override
     public void onEnable() {
         long start = System.currentTimeMillis();
         main = this; // The plugin instance initializing...
 
-        version = getDescription().getVersion();
-        String header = "&7SIR " + version + " was&a loaded&7 in ";
+        String version = Bukkit.getBukkitVersion().split("-")[0];
+        GET_VERSION = Integer.parseInt(version.split("\\.")[1]);
+        String mcName = Bukkit.getVersion().split("-")[1] + " " + version;
+
+        PLUGIN_VERSION = getDescription().getVersion();
+        String header = "&7SIR " + PLUGIN_VERSION + " was&a loaded&7 in ";
 
         records = new Records(main);
         init = new Initializer(main);
@@ -38,11 +42,11 @@ public final class Application extends JavaPlugin {
         new Executor(main); // Register the main cmd for the plugin
 
         records.rawRecord(
-                "&e &e &e ____ &e &e ___ &e &e ____",
-                "&e &e (___ &e &e &e &e | &e &e &e |___)",
-                "&e &e ____) . _|_ . | &e &e \\ . &fv" + version,
-                "&e &e &7Developer: " + getDescription().getAuthors().get(0),
-                "&e &e &7Software: "+ text.serverName, ""
+                "&0* *&e____ &0* &e___ &0* &e____",
+                "&0* &e(___&0 * * &e|&0* * &e|___)",
+                "&0* &e____) . _|_ . | &0* &e\\ . &fv" + PLUGIN_VERSION,
+                "&0* &7Developer: " + getDescription().getAuthors().get(0),
+                "&0* &7Software: " + mcName, ""
         );
 
         init.loadSavedFiles();
@@ -65,16 +69,16 @@ public final class Application extends JavaPlugin {
     @Override
     public void onDisable() {
         records.rawRecord(
-                "&e   ____   ___   ____",
-                "&e  (___     |    |___)",
-                "&e  ____) . _|_ . |   \\ . &fv" + version, ""
+                "&0* *&e____ &0* &e___ &0* &e____",
+                "&0* &e(___&0 * * &e|&0* * &e|___)",
+                "&0* &e____) . _|_ . | &0* &e\\ . &fv" + PLUGIN_VERSION, ""
         );
         announcer.cancelTask();
         records.doRecord(
                 "&7The announcement task has been stopped."
         );
         records.doRecord(
-                "&7SIR &c" + version + "&7 was totally disabled.",
+                "&7SIR &c" + PLUGIN_VERSION + "&7 was totally disabled.",
                 "&7Hope we can see you again&c nwn"
         );
         main = null; // This will prevent any memory leaks.

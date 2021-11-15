@@ -26,20 +26,20 @@ public class EventUtils {
 
     public List<Player> loggedPlayers = new ArrayList<>();
 
-    public String doFormat(String msg, Player player, boolean isColor) {
-        String[] keys = {"{PLAYER}", "{WORLD}"};
-        String[] v = {player.getName(), player.getWorld().getName()};
-
-        String message = StringUtils.replaceEach(msg, keys, v);
+    public String doFormat(String line, Player player, boolean isColor) {
+        String message = StringUtils.replaceEach(line,
+                new String[] {"{PLAYER}", "{WORLD}"},
+                new String[] {player.getName(), player.getWorld().getName()}
+        );
         return isColor ? text.parsePAPI(player, message) : message;
     }
 
     public boolean hasPerm(CommandSender sender, String perm) {
         if (sender instanceof ConsoleCommandSender) return true;
-        Player senderPlayer = (Player) sender;
-        return  main.getInitializer().hasVault ?
-                Initializer.Perms.playerHas(null, senderPlayer, perm) :
-                senderPlayer.hasPermission(perm);
+        Player player = (Player) sender;
+        return  main.getInitializer().HAS_VAULT ?
+                Initializer.Perms.playerHas(null, player, perm) :
+                player.hasPermission(perm);
     }
 
     private boolean certainPerm(Player player, String perm) {
@@ -55,7 +55,7 @@ public class EventUtils {
     }
 
     private boolean cmiVanish(Player player) {
-        if (main.getPlugin("CMI") == null) return false;
+        if (!main.getInitializer().hasCMI) return false;
         return CMIUser.getUser(player).isVanished();
     }
 
@@ -118,7 +118,7 @@ public class EventUtils {
     private void sendToConsole(String message) {
         if (!text.getOption(1, "send-console")) return;
 
-        String split = text.getValue("split");
+        String split = text.getSplit();
         message = message.replace(split, "&r" + split);
 
         main.getRecords().doRecord("&7> &f" + message);
@@ -130,45 +130,56 @@ public class EventUtils {
         return message;
     }
 
-    public void typeMessage(Player player, String message) {
-        if (message.startsWith("[ACTION-BAR]")) {
-            text.actionBar(player, setUp("[ACTION-BAR]", message));
+    public void typeMessage(Player player, String line) {
+        if (line.startsWith("[ACTION-BAR]")) {
+            text.actionBar(player,
+                    setUp("[ACTION-BAR]", line)
+            );
         }
-        else if (message.startsWith("[TITLE]")) {
-            String split = text.getValue("split");
-            String[] title = setUp("[TITLE]", message).split(Pattern.quote(split));
-            text.title(player, title, new String[] {"20", "60", "20"});
+        else if (line.startsWith("[TITLE]")) {
+            String split = Pattern.quote(text.getSplit());
+            text.title(player,
+                    setUp("[TITLE]", line).split(split),
+                    new String[] {"10", "50", "10"}
+            );
         }
-        else if (message.startsWith("[JSON]")) {
-            String command = player.getName() + " " + setUp("[JSON]", message);
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + command);
+        else if (line.startsWith("[JSON]")) {
+            Bukkit.dispatchCommand(
+                    Bukkit.getConsoleSender(),
+                    "tellraw " + player.getName() + " " +
+                    setUp("[JSON]", line)
+            );
         }
-        else text.sendMixed(player, message);
+        else text.sendMixed(player, line);
     }
 
-    public void playsound(ConfigurationSection id, Player player) {
-        String sound = id.getString("sound");
-        if (sound == null) return;
+    public void playSound(ConfigurationSection id, Player player) {
+        Sound sound;
+        String rawSound = id.getString("sound");
+        if (rawSound == null) return;
 
         try {
-            Enum.valueOf(Sound.class, sound);
+            Enum.valueOf(Sound.class, rawSound);
+            sound = Sound.valueOf(rawSound);
         } catch (IllegalArgumentException ex) {
             return;
         }
 
-        player.playSound(player.getLocation(), Sound.valueOf(sound), 1, 1);
+        player.playSound(
+                player.getLocation(), sound, 1, 1
+        );
     }
 
-    private void invulnerable(ConfigurationSection id, Player player) {
+    private void giveGod(ConfigurationSection id, Player player) {
         int godTime = id.getInt("invulnerable", 0) ;
-        if (text.getVersion <= 8 || godTime <= 0) return;
+        if (main.GET_VERSION <= 8 || godTime <= 0) return;
 
         Runnable god = () -> player.setInvulnerable(false);
         player.setInvulnerable(true);
         Bukkit.getScheduler().runTaskLater(main, god, godTime);
     }
 
-    public void spawn(ConfigurationSection id, Player player) {
+    public void goSpawn(ConfigurationSection id, Player player) {
         String[] coordinates;
         Location location;
         String path = id.getString("spawn.x-y-z", "");
@@ -177,8 +188,7 @@ public class EventUtils {
         World world = Bukkit.getWorld(name);
         if (world == null) return;
 
-        if (path.equals("")) location = world.getSpawnLocation();
-        else {
+        if (!path.equals("")) {
             coordinates = path.split(",");
             if (coordinates.length == 3) {
                 int x = Integer.parseInt(coordinates[0]);
@@ -188,6 +198,7 @@ public class EventUtils {
             }
             else location = world.getSpawnLocation();
         }
+        else location = world.getSpawnLocation();
 
         player.teleport(location);
     }
@@ -198,22 +209,24 @@ public class EventUtils {
         for (String message : id.getStringList(isPublic ? "public" : "private")) {
             if (message == null || message.equals("")) continue;
             if (message.startsWith(" ")) message = message.substring(1);
-            message = doFormat(message, player, true);
 
+            message = doFormat(message, player, false);
             sendToConsole(message);
+            message = text.parsePAPI(player, message);
 
             if (isPublic) for (Player p : players) typeMessage(p, message);
             else typeMessage(player, message);
         }
     }
 
-    public void command(ConfigurationSection id, Player player, boolean join) {
+    public void runCmds(ConfigurationSection id, Player player) {
         for (String message : id.getStringList("commands")) {
             if (message == null || message.equals("")) continue;
             if (message.startsWith(" ")) message = message.substring(1);
-            message = doFormat(message, player, false);
+            if (player != null)
+                message = doFormat(message, player, false);
 
-            if (message.startsWith("[PLAYER]") && join) {
+            if (message.startsWith("[PLAYER]") && player != null) {
                 Bukkit.dispatchCommand(player, setUp("[PLAYER]", message));
             }
             else Bukkit.dispatchCommand(Bukkit.getConsoleSender(), message);
@@ -221,7 +234,7 @@ public class EventUtils {
     }
 
     public void runEvent(ConfigurationSection id, Player player, boolean join, boolean spawn, boolean login) {
-        Runnable event = () -> {
+        Bukkit.getScheduler().runTaskLater(main, () -> {
             if (id == null) {
                 main.getRecords().doRecord(player,
                         "<P> &cA valid message group isn't found...",
@@ -230,16 +243,13 @@ public class EventUtils {
                 return;
             }
 
-            if (join) playsound(id, player);
-            if (join) invulnerable(id, player);
-            if (join && spawn) spawn(id, player);
+            if (join) playSound(id, player);
+            if (join) giveGod(id, player);
+            if (join && spawn) goSpawn(id, player);
 
             send(id, player, true);
             if (join) send(id, player, false);
-            command(id, player, join);
-        };
-        
-        int delay = main.getConfig().getInt("login.ticks-after", 0);
-        Bukkit.getScheduler().runTaskLater(main, event, login ? delay : 3);
+            runCmds(id, join ? player : null);
+        }, login ? main.getConfig().getInt("login.ticks-after", 0) : 3);
     }
 }

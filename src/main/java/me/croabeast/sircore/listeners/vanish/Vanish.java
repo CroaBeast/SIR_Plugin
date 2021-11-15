@@ -13,7 +13,7 @@ public class Vanish implements Listener {
         Initializer init = main.getInitializer();
         if (!init.srVanish && !init.prVanish) return;
         main.getServer().getPluginManager().registerEvents(this, main);
-        init.listeners++;
+        init.LISTENERS++;
     }
 
     @EventHandler
