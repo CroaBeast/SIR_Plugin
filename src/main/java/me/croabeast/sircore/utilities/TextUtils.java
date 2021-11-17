@@ -38,10 +38,10 @@ public class TextUtils {
     public boolean getOption(int i, String path) {
         String P;
 
-        if (i == 4) P = "updater.plugin.";
+        if (i == 1) P = "options.";
         else if (i == 2) P = "login.";
         else if (i == 3) P = "vanish.";
-        else if (i == 1) P = "options.";
+        else if (i == 4) P = "updater.plugin.";
         else P = "";
 
         return main.getConfig().getBoolean(P + path);

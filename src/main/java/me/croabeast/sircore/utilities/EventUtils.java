@@ -23,7 +23,7 @@ public class EventUtils {
         this.text = main.getTextUtils();
     }
 
-    public List<Player> loggedPlayers = new ArrayList<>();
+    public List<Player> LOGGED_PLAYERS = new ArrayList<>();
 
     public String doFormat(String line, Player player, boolean isColor) {
         String message = StringUtils.replaceEach(line,

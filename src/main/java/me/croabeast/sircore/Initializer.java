@@ -3,6 +3,7 @@ package me.croabeast.sircore;
 import me.croabeast.sircore.listeners.*;
 import me.croabeast.sircore.objects.*;
 import net.milkbowl.vault.permission.*;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.*;
 
 import java.util.*;
@@ -192,51 +193,6 @@ public class Initializer {
             }
             else records.doRecord("&cNo vanish plugin installed. &7Unhooking...");
         }
-    }
-
-    public void startUpdater() {
-        Updater.init(main, 96378).updateCheck().whenComplete(((updateResult, throwable) -> {
-            if (!main.getTextUtils().getOption(4, "on-start")) return;
-
-            String latest = updateResult.getNewestVersion();
-
-            records.rawRecord("");
-            switch (updateResult.getReason()) {
-                case NEW_UPDATE:
-                    records.doRecord(
-                            "&4NEW UPDATE!",
-                            "&cYou don't have the latest version of S.I.R. installed.",
-                            "&cRemember, older versions won't receive any support.",
-                            "&7New Version: &a" + latest + "&7 - Your Version: &e" + main.PLUGIN_VERSION,
-                            "&7Link:&b https://www.spigotmc.org/resources/96378/"
-                    );
-                    break;
-                case UP_TO_DATE:
-                    records.doRecord(
-                            "&eYou have the latest version of S.I.R. &7(" + latest + ")",
-                            "&7I would appreciate if you keep updating &c<3"
-                    );
-                    break;
-                case UNRELEASED_VERSION:
-                    records.doRecord(
-                            "&4DEVELOPMENT BUILD:",
-                            "&cYou have a newer version of S.I.R. installed.",
-                            "&cErrors might occur in this build.",
-                            "Spigot Version: &a" + updateResult.getSpigotVersion()
-                                    + "&7 - Your Version: &e" + main.PLUGIN_VERSION
-                    );
-                    break;
-                default:
-                    records.rawRecord(
-                            "&4WARNING!",
-                            "&cCould not check for a new version of S.I.R.",
-                            "&7Please check your connection and restart the server.",
-                            "&7Possible reason: &e" + updateResult.getReason()
-                    );
-                    break;
-            }
-            records.rawRecord("");
-        }));
     }
 
     public void registerListeners() {

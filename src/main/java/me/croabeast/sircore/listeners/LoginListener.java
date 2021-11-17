@@ -30,7 +30,7 @@ public class LoginListener implements Listener {
         if (!text.getOption(2, "enabled")) return;
         if (utils.isVanished(player, true) && text.getOption(3, "silent")) return;
 
-        utils.loggedPlayers.add(player);
+        utils.LOGGED_PLAYERS.add(player);
         utils.runEvent(id, player, true, !text.getOption(2, "enabled"), true);
     }
 }

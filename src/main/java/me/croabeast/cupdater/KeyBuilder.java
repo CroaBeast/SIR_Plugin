@@ -72,11 +72,6 @@ public class KeyBuilder implements Cloneable {
         builder.replace(minIndex, builder.length(), "");
     }
 
-    public static boolean isSubKeyOf(String parentKey, String subKey, char separator) {
-        if (parentKey.isEmpty()) return false;
-        return subKey.startsWith(parentKey) && subKey.startsWith(String.valueOf(separator), parentKey.length());
-    }
-
     @Override
     public String toString() {
         return builder.toString();
@@ -85,5 +80,10 @@ public class KeyBuilder implements Cloneable {
     @Override
     protected KeyBuilder clone() throws CloneNotSupportedException {
         return new KeyBuilder((KeyBuilder) super.clone());
+    }
+
+    public static boolean isSubKeyOf(String parentKey, String subKey, char separator) {
+        if (parentKey.isEmpty()) return false;
+        return subKey.startsWith(parentKey) && subKey.startsWith(String.valueOf(separator), parentKey.length());
     }
 }

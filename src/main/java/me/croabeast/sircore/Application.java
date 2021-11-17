@@ -19,6 +19,7 @@ public final class Application extends JavaPlugin {
     private TextUtils text;
     private EventUtils utils;
     private Announcer announcer;
+    private DoUpdate doUpdate;
 
     public String PLUGIN_VERSION;
     public int GET_VERSION;
@@ -40,6 +41,7 @@ public final class Application extends JavaPlugin {
         text = new TextUtils(main);
         utils = new EventUtils(main);
         announcer = new Announcer(main);
+        doUpdate = new DoUpdate(main);
 
         init.startMetrics(); // The bStats method for Metrics class
         new Executor(main); // Register the main cmd for the plugin
@@ -66,7 +68,7 @@ public final class Application extends JavaPlugin {
         );
         records.rawRecord("");
 
-        init.startUpdater();
+        doUpdate.initUpdater(null);
     }
 
     @Override
@@ -106,6 +108,7 @@ public final class Application extends JavaPlugin {
     public TextUtils getTextUtils() { return text; }
     public EventUtils getEventUtils() { return utils; }
     public Announcer getAnnouncer() { return announcer; }
+    public DoUpdate getDoUpdate() { return doUpdate; }
 
     public Plugin getPlugin(String name) {
         return Bukkit.getPluginManager().getPlugin(name);
