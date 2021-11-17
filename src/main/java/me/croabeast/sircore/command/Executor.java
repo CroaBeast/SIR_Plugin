@@ -6,7 +6,6 @@ import me.croabeast.sircore.objects.*;
 import me.croabeast.sircore.utilities.*;
 import org.bukkit.*;
 import org.bukkit.command.*;
-import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
 
 import java.util.*;
@@ -77,7 +76,7 @@ public class Executor {
         Set<Player> players = new HashSet<>();
 
         if (player == sender || player != null) return Collections.singleton(player);
-        if (input.matches("(?i)@a")) return new HashSet<>(Bukkit.getOnlinePlayers());
+        if (input.matches("(?i)@a")) return new HashSet<>(main.everyPlayer());
 
         input = input.toUpperCase();
 
@@ -89,14 +88,13 @@ public class Executor {
 
         if (input.startsWith("PERM:")) {
             String perm = input.substring(5);
-            Bukkit.getOnlinePlayers().stream().filter(p -> utils.hasPerm(p, perm))
-                    .forEach(players::add);
+            main.everyPlayer().stream().filter(p -> utils.hasPerm(p, perm)).forEach(players::add);
             return players;
         }
 
         if (input.startsWith("GROUP:")) {
             String group = input.substring(6);
-            Bukkit.getOnlinePlayers().stream().filter(
+            main.everyPlayer().stream().filter(
                     p -> {
                         boolean isGroup = false;
                         if (main.getInitializer().HAS_VAULT) {
@@ -152,17 +150,12 @@ public class Executor {
             this.args = args;
 
             if (hasNoPerm("announcer.*")) return true;
-
             if (args.length == 0) return oneMessage("announcer-help");
-
             if (args.length > 2) return notArgument(args[args.length - 1]);
-
-            ConfigurationSection id = main.getAnnounces().getConfigurationSection("messages");
 
             switch (args[0].toLowerCase()) {
                 case "start":
                     if (args.length > 1) return notArgument(args[args.length - 1]);
-
                     if (announcer.isRunning()) return oneMessage("cant-start");
 
                     announcer.startTask();
@@ -170,7 +163,6 @@ public class Executor {
 
                 case "cancel":
                     if (args.length > 1) return notArgument(args[args.length - 1]);
-
                     if (!announcer.isRunning())  return oneMessage("cant-stop");
 
                     announcer.cancelTask();
@@ -191,10 +183,11 @@ public class Executor {
                         return true;
                     }
 
-                    if (args.length == 1 || id == null || id.getConfigurationSection(args[1]) == null)
+                    if (args.length == 1 || announcer.getID() == null ||
+                            announcer.getID().getConfigurationSection(args[1]) == null)
                         return oneMessage("select-announce");
 
-                    announcer.runSection(Objects.requireNonNull(id.getConfigurationSection(args[1])));
+                    announcer.runSection(announcer.getID().getConfigurationSection(args[1]));
                     return true;
 
                 default: return notArgument(args[args.length - 1]);
@@ -207,10 +200,8 @@ public class Executor {
             this.sender = sender;
             this.args = args;
             if (hasNoPerm("admin.*")) return true;
-
             if (args.length == 0)
                 return oneMessage("main-help", "VERSION", main.getDescription().getVersion());
-
             if (args.length > 1) return notArgument(args[args.length - 1]);
 
             switch (args[0].toLowerCase()) {
@@ -256,13 +247,11 @@ public class Executor {
             String split = text.getSplit();
 
             if (hasNoPerm("print.*")) return true;
-
             if (args.length == 0) return sendPrintHelp("main");
 
             else if (args[0].matches("(?i)targets")) {
                 if (hasNoPerm("print.targets")) return true;
                 if (args.length > 1) return notArgument(args[args.length - 1]);
-
                 return sendPrintHelp("targets");
             }
 
@@ -279,9 +268,7 @@ public class Executor {
 
             else if (args[0].matches("(?i)ACTION-BAR")) {
                 if (hasNoPerm("print.action-bar")) return true;
-
                 if (args.length == 1) return sendPrintHelp("action-bar");
-
                 if (args.length < 3) return oneMessage("empty-message");
 
                 String message = rawMessage(2);
@@ -297,11 +284,8 @@ public class Executor {
 
             else if (args[0].matches("(?i)CHAT")) {
                 if (hasNoPerm("print.chat")) return true;
-
                 if (args.length == 1) return sendPrintHelp("chat");
-
                 if (args.length < 4) return oneMessage("empty-message");
-
                 if (!args[2].matches("(?i)DEFAULT|CENTERED|MIXED")) return notArgument(args[1]);
 
                 String noFormat = rawMessage(3);
@@ -327,9 +311,7 @@ public class Executor {
 
             else if (args[0].matches("(?i)TITLE")) {
                 if (hasNoPerm("print.chat")) return true;
-
                 if (args.length == 1) return sendPrintHelp("title");
-
                 if (args.length < 4) return oneMessage("empty-message");
 
                 String noFormat = rawMessage(3);

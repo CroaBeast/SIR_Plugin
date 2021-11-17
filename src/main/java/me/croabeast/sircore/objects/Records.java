@@ -31,8 +31,8 @@ public class Records {
         Arrays.asList(lines).forEach(s -> {
             if (sender instanceof Player)
                 playerRecord((Player) sender, s.replace("<P> ", "&e SIR &8> &7"));
-            main.getLogger().info(parseColor(
-                    s.startsWith("<P> ") ? s.substring(4) : s)
+            main.getLogger().info(
+                    parseColor(s.startsWith("<P> ") ? s.substring(4) : s)
             );
         });
     }

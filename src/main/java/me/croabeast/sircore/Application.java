@@ -5,8 +5,11 @@ import me.croabeast.sircore.objects.*;
 import me.croabeast.sircore.utilities.*;
 import org.bukkit.*;
 import org.bukkit.configuration.file.*;
+import org.bukkit.entity.*;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.*;
+
+import java.util.*;
 
 public final class Application extends JavaPlugin {
 
@@ -82,6 +85,10 @@ public final class Application extends JavaPlugin {
                 "&7Hope we can see you again&c nwn"
         );
         main = null; // This will prevent any memory leaks.
+    }
+
+    public List<Player> everyPlayer() {
+        return new ArrayList<>(Bukkit.getOnlinePlayers());
     }
 
     public FileConfiguration getAnnounces() {

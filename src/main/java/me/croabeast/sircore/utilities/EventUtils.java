@@ -9,7 +9,6 @@ import org.bukkit.command.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
 import org.bukkit.metadata.*;
-import org.jetbrains.annotations.*;
 
 import java.util.*;
 import java.util.regex.*;
@@ -124,7 +123,7 @@ public class EventUtils {
         main.getRecords().doRecord("&7> &f" + message);
     }
 
-    private String setUp(@NotNull String type, String message) {
+    private String initLine(String type, String message) {
         message = message.substring(type.length());
         if (message.startsWith(" ")) message = message.substring(1);
         return message;
@@ -133,13 +132,13 @@ public class EventUtils {
     public void typeMessage(Player player, String line) {
         if (line.startsWith("[ACTION-BAR]")) {
             text.actionBar(player,
-                    setUp("[ACTION-BAR]", line)
+                    initLine("[ACTION-BAR]", line)
             );
         }
         else if (line.startsWith("[TITLE]")) {
             String split = Pattern.quote(text.getSplit());
             text.title(player,
-                    setUp("[TITLE]", line).split(split),
+                    initLine("[TITLE]", line).split(split),
                     new String[] {"10", "50", "10"}
             );
         }
@@ -147,7 +146,7 @@ public class EventUtils {
             Bukkit.dispatchCommand(
                     Bukkit.getConsoleSender(),
                     "tellraw " + player.getName() + " " +
-                    setUp("[JSON]", line)
+                    initLine("[JSON]", line)
             );
         }
         else text.sendMixed(player, line);
@@ -204,17 +203,16 @@ public class EventUtils {
     }
 
     private void send(ConfigurationSection id, Player player, boolean isPublic) {
-        List<Player> players = new ArrayList<>(Bukkit.getOnlinePlayers());
+        for (String line : id.getStringList(isPublic ? "public" : "private")) {
+            if (line == null || line.equals("")) continue;
+            if (line.startsWith(" ")) line = line.substring(1);
 
-        for (String message : id.getStringList(isPublic ? "public" : "private")) {
-            if (message == null || message.equals("")) continue;
-            if (message.startsWith(" ")) message = message.substring(1);
+            line = doFormat(line, player, false);
+            sendToConsole(line);
+            String message = text.parsePAPI(player, line);
 
-            message = doFormat(message, player, false);
-            sendToConsole(message);
-            message = text.parsePAPI(player, message);
-
-            if (isPublic) for (Player p : players) typeMessage(p, message);
+            if (isPublic)
+                main.everyPlayer().forEach(p -> typeMessage(p, message));
             else typeMessage(player, message);
         }
     }
@@ -227,7 +225,7 @@ public class EventUtils {
                 message = doFormat(message, player, false);
 
             if (message.startsWith("[PLAYER]") && player != null) {
-                Bukkit.dispatchCommand(player, setUp("[PLAYER]", message));
+                Bukkit.dispatchCommand(player, initLine("[PLAYER]", message));
             }
             else Bukkit.dispatchCommand(Bukkit.getConsoleSender(), message);
         }

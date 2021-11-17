@@ -2,7 +2,6 @@ package me.croabeast.sircore.objects;
 
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.utilities.*;
-import org.bukkit.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
 import org.bukkit.scheduler.*;
@@ -18,7 +17,6 @@ public class Announcer {
     private int ORDER = 0;
     private boolean IS_RUNNING = false;
 
-    private ConfigurationSection id;
     private BukkitRunnable runnable;
 
     public Announcer(Application main) {
@@ -49,8 +47,8 @@ public class Announcer {
     }
 
     public void runSection(ConfigurationSection id) {
-        if (Bukkit.getOnlinePlayers().isEmpty()) return;
-        Bukkit.getOnlinePlayers().forEach(p -> playMessage(id, p));
+        if (main.everyPlayer().isEmpty()) return;
+        main.everyPlayer().forEach(p -> playMessage(id, p));
         id.getStringList("lines").forEach(this::lineLogger);
         utils.runCmds(id, null);
     }
@@ -60,18 +58,20 @@ public class Announcer {
             cancelTask();
             return;
         }
+
+        if (getID() == null) return;
         IS_RUNNING = true;
 
-        id = main.getAnnounces().getConfigurationSection("messages");
-        if (id == null) return;
-
-        List<String> keys = new ArrayList<>(id.getKeys(false));
+        List<String> keys = new ArrayList<>(getID().getKeys(false));
         Map<Integer, ConfigurationSection> sections = new HashMap<>();
 
-        keys.forEach(s -> sections.put(keys.indexOf(s), id.getConfigurationSection(s)));
+        keys.forEach(s ->
+                sections.put(keys.indexOf(s), getID().getConfigurationSection(s))
+        );
 
         int count = sections.size() - 1;
         if (ORDER > count) ORDER = 0;
+
         runSection(sections.get(ORDER));
 
         if (!main.getAnnounces().getBoolean("random")) {
@@ -91,6 +91,10 @@ public class Announcer {
 
     public boolean isRunning() {
         return IS_RUNNING;
+    }
+
+    public ConfigurationSection getID() {
+        return main.getAnnounces().getConfigurationSection("messages");
     }
 
     public int getDelay() {

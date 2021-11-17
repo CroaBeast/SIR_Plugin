@@ -1,9 +1,7 @@
 package me.croabeast.sircore.command;
 
 import me.croabeast.sircore.*;
-import org.bukkit.*;
 import org.bukkit.command.*;
-import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
 import org.bukkit.util.*;
 
@@ -28,27 +26,27 @@ public class Completer {
         if (cmd != null) cmd.setTabCompleter(completer);
     }
 
-    private List<String> finalTab(List<?>... lists) {
+    private List<String> resultTab(List<?>... lists) {
         List<String> tab = new ArrayList<>();
-        String arg = args[args.length - 1];
         for (List<?> list : lists) list.forEach(e -> tab.add((String) e));
-        return StringUtil.copyPartialMatches(arg, tab, new ArrayList<>());
+        return StringUtil.copyPartialMatches(
+                args[args.length - 1],
+                tab, new ArrayList<>()
+        );
     }
 
-    private List<String> finalTab(String... args) {
-        return finalTab(Arrays.asList(args));
+    private List<String> resultTab(String... args) {
+        return resultTab(Arrays.asList(args));
     }
 
     private TabCompleter announcerCompleter() {
         return (sender, command, alias, args) -> {
             this.args = args;
 
-            if (args.length == 1) return finalTab("start", "preview", "cancel", "reboot");
+            if (args.length == 1) return resultTab("start", "preview", "cancel", "reboot");
 
-            if(args.length == 2 && args[1].matches("(?i)preview")){
-                ConfigurationSection id = main.getAnnounces().getConfigurationSection("messages");
-                if (id != null) return finalTab(new ArrayList<>(id.getKeys(false)));
-            }
+            if(args.length == 2 && args[0].matches("(?i)preview"))
+                return resultTab(new ArrayList<>(main.getAnnouncer().getID().getKeys(false)));
 
             return new ArrayList<>();
         };
@@ -57,7 +55,7 @@ public class Completer {
     private TabCompleter sirCompleter() {
         return (sender, command, alias, args) -> {
             this.args = args;
-            if (args.length == 1) return finalTab("reload", "help", "support");
+            if (args.length == 1) return resultTab("reload", "help", "support");
             return new ArrayList<>();
         };
     }
@@ -66,22 +64,22 @@ public class Completer {
         return (sender, command, alias, args) -> {
             this.args = args;
 
-            if (args.length == 1) return finalTab("targets", "ACTION-BAR", "CHAT", "TITLE");
+            if (args.length == 1) return resultTab("targets", "ACTION-BAR", "CHAT", "TITLE");
 
             if (args.length == 2 && args[0].matches("(?i)ACTION-BAR|CHAT|TITLE")) {
-                return finalTab(
+                return resultTab(
                         Arrays.asList("@a", "PERM:", "WORLD:", (main.getInitializer().HAS_VAULT ? "GROUP:" : null)),
-                        Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList())
+                        main.everyPlayer().stream().map(Player::getName).collect(Collectors.toList())
                 );
             }
 
             if (args.length == 3) {
-                if (args[0].matches("(?i)ACTION-BAR")) return finalTab("<message>");
-                else if (args[0].matches("(?i)CHAT")) return finalTab("DEFAULT", "CENTERED", "MIXED");
-                else if (args[0].matches("(?i)TITLE")) return finalTab("DEFAULT", "10,50,10");
+                if (args[0].matches("(?i)ACTION-BAR")) return resultTab("<message>");
+                else if (args[0].matches("(?i)CHAT")) return resultTab("DEFAULT", "CENTERED", "MIXED");
+                else if (args[0].matches("(?i)TITLE")) return resultTab("DEFAULT", "10,50,10");
             }
 
-            if (args.length == 4 && args[0].matches("(?i)CHAT|TITLE")) return finalTab("<message>");
+            if (args.length == 4 && args[0].matches("(?i)CHAT|TITLE")) return resultTab("<message>");
 
             return new ArrayList<>();
         };
