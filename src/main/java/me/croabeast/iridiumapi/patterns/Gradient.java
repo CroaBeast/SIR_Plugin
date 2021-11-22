@@ -25,5 +25,4 @@ public class Gradient implements Patterns {
         }
         return string;
     }
-
 }

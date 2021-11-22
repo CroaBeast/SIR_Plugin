@@ -19,7 +19,7 @@ public class LoginListener implements Listener {
         if (!main.getInitializer().HAS_LOGIN) return;
         new AuthMe(main);
         new UserLogin(main);
-        main.getServer().getPluginManager().registerEvents(this, main);
+        main.registerListener(this);
     }
 
     @EventHandler
@@ -30,7 +30,7 @@ public class LoginListener implements Listener {
         if (!text.getOption(2, "enabled")) return;
         if (utils.isVanished(player, true) && text.getOption(3, "silent")) return;
 
-        utils.LOGGED_PLAYERS.add(player);
+        utils.getLoggedPlayers().add(player);
         utils.runEvent(id, player, true, !text.getOption(2, "enabled"), true);
     }
 }

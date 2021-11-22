@@ -11,7 +11,6 @@
 main-prefix: ' &e&lSIR &8>&7'
 
 # IF YOU WANT TO DISABLE ANY OF THESE MESSAGES, JUST LEAVE IT BLANK >> ''
-get-sections: '<P> Loaded &b{TOTAL} &7messages groups in &b{SECTION} &7section.'
 reload-files: '<P> All the .yml files was reloaded successfully.'
 no-permission: '<P> You don''t have the permission &c{PERM} &7to use this.'
 wrong-arg: '<P> The argument &c{ARG} &7is invalid or does not exist.'

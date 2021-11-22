@@ -213,21 +213,9 @@ public class Executor {
                     if (hasNoPerm("admin.reload")) return true;
 
                     main.getInitializer().reloadFiles();
-
-                    String[] keys = {"{TOTAL}", "{SECTION}"};
-                    main.getMessages().getKeys(false).forEach(s -> {
-                        String sect = text.getSections(s) + "";
-                        text.send(sender, "get-sections", keys, sect, s);
-                    });
-
                     if (!announcer.isRunning()) announcer.startTask();
                     sendMessage("reload-files", null, null);
-
-                    if (!text.getOption(1, "enabled") && main.getAnnouncer().getDelay() == 0)
-                        records.doRecord(sender,
-                                "", "<P> &7Both main features of &eS.I.R. &7are disabled.",
-                                "<P> &cIt's better to delete the plugin instead doing that...", ""
-                        );
+                    main.getInitializer().checkFeatures(sender);
                     return true;
 
                 case "support":
@@ -275,9 +263,7 @@ public class Executor {
 
                 sendReminder(args[1]);
                 if (!targets(args[1]).isEmpty()) {
-                    targets(args[1]).forEach(
-                            player -> text.actionBar(player, text.parsePAPI(player, message))
-                    );
+                    targets(args[1]).forEach(p -> text.actionBar(p, text.parsePAPI(p, message)));
                     messageLogger("ACTION-BAR", message);
                 }
             }
@@ -293,18 +279,16 @@ public class Executor {
 
                 sendReminder(args[1]);
                 if (!targets(args[1]).isEmpty()) {
-                    if (args[2].matches("(?i)CENTERED")) {
-                        targets(args[1]).forEach(
-                                p -> message.forEach(s -> text.sendCentered(p, s)));
-                    }
-                    else if (args[2].matches("(?i)MIXED")) {
-                        targets(args[1]).forEach(
-                                p -> message.forEach(s -> text.sendMixed(p, s)));
-                    }
-                    else if (args[2].matches("(?i)DEFAULT")) {
+                    if (args[2].matches("(?i)CENTERED"))
+                        targets(args[1]).forEach(p -> message.forEach(s -> text.sendCentered(p, s)));
+
+                    else if (args[2].matches("(?i)DEFAULT"))
                         targets(args[1]).forEach(
                                 p -> message.forEach(s -> p.sendMessage(text.parsePAPI(p, s))));
-                    }
+
+                    else if (args[2].matches("(?i)MIXED"))
+                        targets(args[1]).forEach(p -> message.forEach(s -> text.sendMixed(p, s)));
+
                     messageLogger("CHAT", noFormat.replace(split, "&r" + split));
                 }
             }

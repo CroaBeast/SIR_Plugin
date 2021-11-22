@@ -22,6 +22,7 @@ updater:
     # I DO NOT recommend update those files. But if you want to...
     messages: false
     announces: false
+    motd: false
 
 # Some useful options for this plugin if you want to change them.
 options:

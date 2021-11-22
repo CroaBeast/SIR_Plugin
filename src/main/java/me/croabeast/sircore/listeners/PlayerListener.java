@@ -19,11 +19,11 @@ public class PlayerListener implements Listener {
         this.init = main.getInitializer();
         this.text = main.getTextUtils();
         this.utils = main.getEventUtils();
-        main.getServer().getPluginManager().registerEvents(this, main);
+        main.registerListener(this);
         init.LISTENERS++;
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     private void onJoin(PlayerJoinEvent event) {
         if (!text.getOption(1, "enabled")) return;
         
@@ -43,7 +43,7 @@ public class PlayerListener implements Listener {
         utils.runEvent(id, player, true, true, false);
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.MONITOR)
     private void onQuit(PlayerQuitEvent event) {
         if (!text.getOption(1, "enabled")) return;
         
@@ -55,8 +55,8 @@ public class PlayerListener implements Listener {
         if (utils.isVanished(player, false) &&
                 text.getOption(3, "silent")) return;
         if (init.HAS_LOGIN) {
-            if (!utils.LOGGED_PLAYERS.contains(player)) return;
-            utils.LOGGED_PLAYERS.remove(player);
+            if (!utils.getLoggedPlayers().contains(player)) return;
+            utils.getLoggedPlayers().remove(player);
         }
 
         utils.runEvent(id, player, false, false, false);

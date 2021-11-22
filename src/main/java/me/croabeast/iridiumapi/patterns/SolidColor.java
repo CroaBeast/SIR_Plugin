@@ -22,5 +22,4 @@ public class SolidColor implements Patterns {
         }
         return string;
     }
-
 }

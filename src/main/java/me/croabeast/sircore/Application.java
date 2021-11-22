@@ -6,6 +6,7 @@ import me.croabeast.sircore.utilities.*;
 import org.bukkit.*;
 import org.bukkit.configuration.file.*;
 import org.bukkit.entity.*;
+import org.bukkit.event.*;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.*;
 
@@ -58,9 +59,8 @@ public final class Application extends JavaPlugin {
         init.setPluginHooks();
         init.registerListeners();
         announcer.startTask();
-        records.doRecord(
-                "&7The announcement task has been started."
-        );
+        records.doRecord("&7The announcement task has been started.");
+        init.checkFeatures(null);
 
         records.doRecord(
                 "",
@@ -93,24 +93,23 @@ public final class Application extends JavaPlugin {
         return new ArrayList<>(Bukkit.getOnlinePlayers());
     }
 
-    public FileConfiguration getAnnounces() {
-        return init.announces.getFile();
-    }
-    public FileConfiguration getLang() {
-        return init.lang.getFile();
-    }
-    public FileConfiguration getMessages() {
-        return init.messages.getFile();
-    }
+    public FileConfiguration getAnnounces() { return init.announces.getFile(); }
+    public FileConfiguration getLang() { return init.lang.getFile(); }
+    public FileConfiguration getMessages() { return init.messages.getFile(); }
+    public FileConfiguration getMOTD() { return init.motd.getFile(); }
 
     public Records getRecords() { return records; }
     public Initializer getInitializer() { return init; }
     public TextUtils getTextUtils() { return text; }
     public EventUtils getEventUtils() { return utils; }
-    public Announcer getAnnouncer() { return announcer; }
     public DoUpdate getDoUpdate() { return doUpdate; }
+    public Announcer getAnnouncer() { return announcer; }
 
     public Plugin getPlugin(String name) {
         return Bukkit.getPluginManager().getPlugin(name);
+    }
+
+    public void registerListener(Listener listener) {
+        main.getServer().getPluginManager().registerEvents(listener, main);
     }
 }

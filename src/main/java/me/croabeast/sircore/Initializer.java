@@ -3,7 +3,7 @@ package me.croabeast.sircore;
 import me.croabeast.sircore.listeners.*;
 import me.croabeast.sircore.objects.*;
 import net.milkbowl.vault.permission.*;
-import org.bukkit.entity.Player;
+import org.bukkit.command.*;
 import org.bukkit.plugin.*;
 
 import java.util.*;
@@ -18,6 +18,7 @@ public class Initializer {
     public SavedFile announces;
     public SavedFile lang;
     public SavedFile messages;
+    public SavedFile motd;
 
     public int LISTENERS = 0;
     public int FILES = 0;
@@ -52,22 +53,19 @@ public class Initializer {
 
     public void loadSavedFiles() {
         records.doRecord("&bLoading plugin's files...");
+
         config = new SavedFile(main, "config");
         lang = new SavedFile(main, "lang");
         messages = new SavedFile(main, "messages");
         announces = new SavedFile(main, "announces");
+        motd = new SavedFile(main, "motd");
 
         config.updateInitFile();
         lang.updateInitFile();
         messages.updateInitFile();
         announces.updateInitFile();
+        motd.updateInitFile();
 
-        for (String key : main.getMessages().getKeys(false)) {
-            int sections = main.getTextUtils().getSections(key);
-            if (sections == 0) continue;
-            String section = sections + "&7 groups in the &e'" + key;
-            records.doRecord("&7Found &e" + section + "'&7 section.");
-        }
         records.doRecord("&7Loaded &e" + FILES + "&7 files in the plugin's folder.");
     }
 
@@ -98,7 +96,7 @@ public class Initializer {
 
             entry.put("Vanish Plugins", 1);
 
-            if (HAS_VAULT) {
+            if (HAS_VANISH) {
                 if (hasCMI) map.put("CMI", entry);
                 else if (essentials) map.put("EssentialsX", entry);
                 else if (srVanish) map.put("SuperVanish", entry);
@@ -198,6 +196,7 @@ public class Initializer {
     public void registerListeners() {
         records.doRecord("", "&bLoading all the listeners...");
         new PlayerListener(main);
+        new MOTDListener(main);
         new LoginListener(main);
         new VanishListener(main);
         records.doRecord("&7Registered &e" + LISTENERS + "&7 plugin's listeners.");
@@ -208,6 +207,18 @@ public class Initializer {
         lang.reloadFile();
         messages.reloadFile();
         announces.reloadFile();
+        motd.reloadFile();
+    }
+
+    public void checkFeatures(CommandSender sender) {
+        if (main.getTextUtils().getOption(1, "enabled") || main.getAnnouncer().getDelay() != 0 |
+                main.getMOTD().getBoolean("enabled")) return;
+
+        records.doRecord(sender,
+                "", "<P> &All main features of &eS.I.R. &7are disabled.",
+                "<P> &cIt's better to delete the plugin instead doing that...",
+                sender != null ? "" : null
+        );
     }
 
     private void showPluginInfo(String name) {

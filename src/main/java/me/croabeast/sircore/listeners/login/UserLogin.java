@@ -11,12 +11,12 @@ public class UserLogin implements Listener {
     public UserLogin(Application main) {
         Initializer init = main.getInitializer();
         if (!init.userLogin) return;
-        main.getServer().getPluginManager().registerEvents(this, main);
+        main.registerListener(this);
         init.LISTENERS++;
     }
 
     @EventHandler
-    public void onLogin(AuthenticationEvent event){
+    private void onLogin(AuthenticationEvent event){
         event.setAnnouncement(null);
         Bukkit.getPluginManager().callEvent(new LoginEvent(event.getPlayer()));
     }

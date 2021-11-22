@@ -7,7 +7,6 @@ import me.croabeast.sircore.handlers.*;
 import me.croabeast.sircore.terminals.*;
 import org.apache.commons.lang.*;
 import org.bukkit.command.*;
-import org.bukkit.configuration.*;
 import org.bukkit.configuration.file.*;
 import org.bukkit.entity.*;
 
@@ -29,8 +28,8 @@ public class TextUtils {
     public TextUtils(Application main) {
         this.main = main;
 
-        papi = (player, message) -> !main.getInitializer().HAS_PAPI || player == null ?
-                message : PlaceholderAPI.setPlaceholders(player, message);
+        papi =  (p, line) -> !main.getInitializer().HAS_PAPI ? line :
+                (p != null ? PlaceholderAPI.setPlaceholders(p, line) : line);
         actionBar = main.GET_VERSION < 11 ? new ActBar10() : new ActBar17();
         titleMain = main.GET_VERSION < 10 ? new Title9() : new Title17();
     }
@@ -98,17 +97,6 @@ public class TextUtils {
             sendCentered(player, message.replace(center, ""));
         }
         else player.sendMessage(parsePAPI(player, message));
-    }
-
-    public int getSections(String path) {
-        int messages = 0;
-        ConfigurationSection ids = main.getMessages().getConfigurationSection(path);
-        if (ids == null) return 0;
-
-        for (String key : ids.getKeys(false))
-            if (ids.getConfigurationSection(key) != null) messages++;
-
-        return messages;
     }
 
     public List<String> fileList(FileConfiguration file, String path) {

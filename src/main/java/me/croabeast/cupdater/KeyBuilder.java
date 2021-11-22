@@ -1,7 +1,7 @@
 package me.croabeast.cupdater;
 
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.*;
+import org.bukkit.configuration.file.*;
 
 public class KeyBuilder implements Cloneable {
 
@@ -24,7 +24,9 @@ public class KeyBuilder implements Cloneable {
     public void parseLine(String line) {
         line = line.trim();
         String[] currentSplitLine = line.split(":");
-        while (builder.length() > 0 && !config.contains(builder.toString() + separator + currentSplitLine[0])) removeLastKey();
+        while (builder.length() > 0 &&
+                !config.contains(builder.toString() + separator + currentSplitLine[0]))
+            removeLastKey();
         if (builder.length() > 0) builder.append(separator);
         builder.append(currentSplitLine[0]);
     }
@@ -36,6 +38,11 @@ public class KeyBuilder implements Cloneable {
 
     public boolean isEmpty() {
         return builder.length() == 0;
+    }
+
+    public static boolean isSubKeyOf(String parentKey, String subKey, char separator) {
+        if (parentKey.isEmpty()) return false;
+        return subKey.startsWith(parentKey) && subKey.startsWith(String.valueOf(separator), parentKey.length());
     }
 
     public boolean isSubKeyOf(String parentKey) {
@@ -80,10 +87,5 @@ public class KeyBuilder implements Cloneable {
     @Override
     protected KeyBuilder clone() throws CloneNotSupportedException {
         return new KeyBuilder((KeyBuilder) super.clone());
-    }
-
-    public static boolean isSubKeyOf(String parentKey, String subKey, char separator) {
-        if (parentKey.isEmpty()) return false;
-        return subKey.startsWith(parentKey) && subKey.startsWith(String.valueOf(separator), parentKey.length());
     }
 }

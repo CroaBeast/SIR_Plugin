@@ -22,7 +22,7 @@ public class VanishListener implements Listener {
         new CMI(main);
         new Essentials(main);
         new Vanish(main);
-        main.getServer().getPluginManager().registerEvents(this, main);
+        main.registerListener(this);
     }
 
     @EventHandler
@@ -32,7 +32,7 @@ public class VanishListener implements Listener {
         ConfigurationSection id = utils.lastSection(player, vanish ? "join" : "quit");
 
         if (!init.HAS_VANISH || !text.getOption(3, "enabled")) return;
-        if(init.HAS_LOGIN && !utils.LOGGED_PLAYERS.contains(player)) utils.LOGGED_PLAYERS.add(player);
+        if(init.HAS_LOGIN) utils.getLoggedPlayers().add(player);
 
         utils.runEvent(id, player, vanish, text.getOption(3, "use-spawn"), false);
     }

@@ -4,3 +4,46 @@
 ########################
 # Want to use unicode characters? Check this site: https://coolsymbol.com
 
+# Choose if this module going to be enabled or disabled.
+enabled: true
+
+# Sets the maximum player size. It doesn't modify the actual
+# capacity, just changes the number on the Server List.
+max-players:
+  # You can choose between:
+  # - MAXIMUM: shows the count for all online players + 1
+  # - CUSTOM: shows a custom value from 'count:'
+  # - DEFAULT: shows the max players from server.properties
+  type: DEFAULT
+  # Only valid if you're using the CUSTOM type
+  count: 69420
+
+# Sets the server icon with a custom one you can define.
+# You can set all your images inside on the SIR/icons folder.
+# The icon(s) MUST BE 64 x 64 PIXELS and in the .png format.
+server-icon:
+  # - DISABLED: It just disables this feature.
+  # You can also disable it deleting 'usage:' line.
+  # - SINGLE: Uses only one image from 'image:'
+  # - RANDOM: Uses all images stored randomly.
+  # - LIST: Uses all images in alphabetic order.
+  usage: SINGLE
+  # This option can only be used with the SINGLE usage type.
+  image: server-icon.png
+
+# If enabled, it will set up all the MOTDs randomly.
+random-motds: false
+
+# You can set names instead of numbers if you want tho...
+motd-list:
+  1:
+    1: '#FDD120My server is a bit cool'
+    2: '<G:125DEA>Check it out :D</G:0F3AA0>'
+  2:
+    1: '<R:1>My server is very cool</R>'
+    2: '{#ABFF07}Look, a message with color'
+  3:
+    1: '<R:20>My server is the coolest B)</R>'
+  custom_name:
+    1: '<R:60>My server wants players :o</R>'
+    2: '<#213FFB>Haha, colors goes BBRRRRR'

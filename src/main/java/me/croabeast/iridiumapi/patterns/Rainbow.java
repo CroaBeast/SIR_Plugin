@@ -20,5 +20,4 @@ public class Rainbow implements Patterns {
         }
         return string;
     }
-
 }

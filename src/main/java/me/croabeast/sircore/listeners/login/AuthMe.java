@@ -10,12 +10,12 @@ public class AuthMe implements Listener {
     public AuthMe(Application main) {
         Initializer init = main.getInitializer();
         if (!init.authMe) return;
-        main.getServer().getPluginManager().registerEvents(this, main);
+        main.registerListener(this);
         init.LISTENERS++;
     }
 
     @EventHandler
-    public void onLogin(LoginEvent event){
+    private void onLogin(LoginEvent event){
         Bukkit.getPluginManager().callEvent(new me.croabeast.sircore.events.LoginEvent(event.getPlayer()));
     }
 }
