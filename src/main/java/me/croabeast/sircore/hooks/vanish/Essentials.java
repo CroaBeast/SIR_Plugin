@@ -1,4 +1,4 @@
-package me.croabeast.sircore.listeners.vanish;
+package me.croabeast.sircore.hooks.vanish;
 
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.events.*;

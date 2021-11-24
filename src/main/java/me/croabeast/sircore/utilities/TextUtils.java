@@ -3,7 +3,6 @@ package me.croabeast.sircore.utilities;
 import me.clip.placeholderapi.*;
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sircore.*;
-import me.croabeast.sircore.handlers.*;
 import me.croabeast.sircore.terminals.*;
 import org.apache.commons.lang.*;
 import org.bukkit.command.*;
@@ -15,10 +14,10 @@ import java.util.*;
 public class TextUtils {
 
     private final Application main;
+    private final ActionBar actionBar;
+    private final Title titleMain;
 
     private final PAPI papi;
-    private final ActionBar actionBar;
-    private final TitleMain titleMain;
 
     // Initializer for PAPI
     public interface PAPI {
@@ -30,8 +29,8 @@ public class TextUtils {
 
         papi =  (p, line) -> !main.getInitializer().HAS_PAPI ? line :
                 (p != null ? PlaceholderAPI.setPlaceholders(p, line) : line);
-        actionBar = main.GET_VERSION < 11 ? new ActBar10() : new ActBar17();
-        titleMain = main.GET_VERSION < 10 ? new Title9() : new Title17();
+        actionBar = new ActionBar(main);
+        titleMain = new Title(main);
     }
 
     public boolean getOption(int i, String path) {
@@ -131,7 +130,9 @@ public class TextUtils {
         send(sender, path, null, (String[]) null);
     }
 
-    public void actionBar(Player player, String message) { actionBar.send(player, message); }
+    public void actionBar(Player player, String message) {
+        actionBar.actionBar.send(player, message);
+    }
 
     private boolean checkInts(String[] array) {
         for (String integer : array)
@@ -151,6 +152,6 @@ public class TextUtils {
         String subtitle = message.length == 1 ? "" : message[1];
         if (!checkInts(times)) return;
         int[] ints = intArray(times);
-        titleMain.send(player, message[0], subtitle, ints[0], ints[1], ints[2]);
+        titleMain.title.send(player, message[0], subtitle, ints[0], ints[1], ints[2]);
     }
 }

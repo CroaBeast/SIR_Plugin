@@ -18,6 +18,7 @@ public final class Application extends JavaPlugin {
     private Records records;
     private Initializer init;
     private TextUtils text;
+    private PermUtils perms;
     private EventUtils utils;
     private Announcer announcer;
     private DoUpdate doUpdate;
@@ -40,6 +41,7 @@ public final class Application extends JavaPlugin {
         records = new Records(main);
         init = new Initializer(main);
         text = new TextUtils(main);
+        perms = new PermUtils(main);
         utils = new EventUtils(main);
         announcer = new Announcer(main);
         doUpdate = new DoUpdate(main);
@@ -101,6 +103,7 @@ public final class Application extends JavaPlugin {
     public Records getRecords() { return records; }
     public Initializer getInitializer() { return init; }
     public TextUtils getTextUtils() { return text; }
+    public PermUtils getPermUtils() { return perms; }
     public EventUtils getEventUtils() { return utils; }
     public DoUpdate getDoUpdate() { return doUpdate; }
     public Announcer getAnnouncer() { return announcer; }

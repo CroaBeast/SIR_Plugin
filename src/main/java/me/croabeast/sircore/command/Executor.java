@@ -15,7 +15,7 @@ public class Executor {
     private final Application main;
     private final Records records;
     private final TextUtils text;
-    private final EventUtils utils;
+    private final PermUtils perms;
     private final Announcer announcer;
 
     private String[] args;
@@ -26,7 +26,7 @@ public class Executor {
         this.records = main.getRecords();
         this.announcer = main.getAnnouncer();
         this.text = main.getTextUtils();
-        this.utils = main.getEventUtils();
+        this.perms = main.getPermUtils();
 
         registerCmd("announcer", announcerCmd());
         registerCmd("sir", mainCmd());
@@ -55,7 +55,7 @@ public class Executor {
     }
 
     private boolean hasNoPerm(String perm) {
-        if (utils.hasPerm(sender, "sir." + perm)) return false;
+        if (perms.hasPerm(sender, "sir." + perm)) return false;
 
         sendMessage("no-permission", "PERM", "sir." + perm);
         return true;
@@ -88,7 +88,7 @@ public class Executor {
 
         if (input.startsWith("PERM:")) {
             String perm = input.substring(5);
-            main.everyPlayer().stream().filter(p -> utils.hasPerm(p, perm)).forEach(players::add);
+            main.everyPlayer().stream().filter(p -> perms.hasPerm(p, perm)).forEach(players::add);
             return players;
         }
 
@@ -199,6 +199,7 @@ public class Executor {
         return (sender, command, label, args) -> {
             this.sender = sender;
             this.args = args;
+
             if (hasNoPerm("admin.*")) return true;
             if (args.length == 0)
                 return oneMessage("main-help", "VERSION", main.getDescription().getVersion());

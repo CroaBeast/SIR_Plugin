@@ -12,11 +12,13 @@ public class DoUpdate {
     private final Application main;
     private final Records records;
     private final TextUtils text;
+    private final PermUtils perms;
 
     public DoUpdate(Application main) {
         this.main = main;
         this.records = main.getRecords();
         this.text = main.getTextUtils();
+        this.perms = main.getPermUtils();
     }
 
     private void updateLogger(Player player, String... lines) {
@@ -87,15 +89,12 @@ public class DoUpdate {
 
     public void initUpdater(Player player) {
         if (player == null) {
-            if (!text.getOption(4, "on-start"))
-                return;
+            if (!text.getOption(4, "on-start")) return;
             runUpdater(null);
         }
         else {
-            boolean perm = main.getEventUtils().
-                    hasPerm(player, "sir.admin.updater");
-            if (!text.getOption(4, "send-op") || !perm)
-                return;
+            boolean perm = perms.hasPerm(player, "sir.admin.updater");
+            if (!text.getOption(4, "send-op") || !perm) return;
             runUpdater(player);
         }
     }

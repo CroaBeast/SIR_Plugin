@@ -112,26 +112,21 @@ public enum FontInfo {
     }
 
     public char getCharacter() {
-        return this.character;
+        return character;
     }
 
     public int getLength() {
-        return this.length;
+        return length;
     }
 
     public int getBoldLength() {
-        if (this == SPACE) {
-            return getLength();
-        }
+        if (this == SPACE) return getLength();
         return this.length + 1;
     }
 
     public static FontInfo getDefaultFontInfo(char c) {
-        for (FontInfo dFI : values()) {
-            if (dFI.getCharacter() == c) {
-                return dFI;
-            }
-        }
+        for (FontInfo dFI : values())
+            if (dFI.getCharacter() == c) return dFI;
         return DEFAULT;
     }
 }

@@ -2,7 +2,7 @@ package me.croabeast.sircore.listeners;
 
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.events.*;
-import me.croabeast.sircore.listeners.vanish.*;
+import me.croabeast.sircore.hooks.vanish.*;
 import me.croabeast.sircore.utilities.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;

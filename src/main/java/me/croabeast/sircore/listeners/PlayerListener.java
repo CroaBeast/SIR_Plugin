@@ -12,12 +12,14 @@ public class PlayerListener implements Listener {
     private final Application main;
     private final Initializer init;
     private final TextUtils text;
+    private final PermUtils perms;
     private final EventUtils utils;
 
     public PlayerListener(Application main) {
         this.main = main;
         this.init = main.getInitializer();
         this.text = main.getTextUtils();
+        this.perms = main.getPermUtils();
         this.utils = main.getEventUtils();
         main.registerListener(this);
         init.LISTENERS++;
@@ -31,14 +33,13 @@ public class PlayerListener implements Listener {
 
         Player player = event.getPlayer();
         ConfigurationSection id = utils.lastSection(player, true);
-        main.getDoUpdate().initUpdater(null);
+        main.getDoUpdate().initUpdater(player);
 
+        if (perms.isVanished(player, true) && text.getOption(3, "silent")) return;
         if (init.HAS_LOGIN && text.getOption(2, "enabled")) {
             if (text.getOption(2, "spawn-before")) utils.goSpawn(id, player);
             return;
         }
-        if (utils.isVanished(player, true) &&
-                text.getOption(3, "silent")) return;
 
         utils.runEvent(id, player, true, true, false);
     }
@@ -52,8 +53,7 @@ public class PlayerListener implements Listener {
         Player player = event.getPlayer();
         ConfigurationSection id = utils.lastSection(player, false);
 
-        if (utils.isVanished(player, false) &&
-                text.getOption(3, "silent")) return;
+        if (perms.isVanished(player, false) && text.getOption(3, "silent")) return;
         if (init.HAS_LOGIN) {
             if (!utils.getLoggedPlayers().contains(player)) return;
             utils.getLoggedPlayers().remove(player);

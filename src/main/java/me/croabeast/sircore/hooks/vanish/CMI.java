@@ -1,4 +1,4 @@
-package me.croabeast.sircore.listeners.vanish;
+package me.croabeast.sircore.hooks.vanish;
 
 import com.Zrips.CMI.events.*;
 import me.croabeast.sircore.*;

@@ -1,17 +1,27 @@
-package me.croabeast.sircore.handlers;
+package me.croabeast.sircore.terminals;
 
-import me.croabeast.sircore.terminals.*;
+import me.croabeast.sircore.*;
 import org.bukkit.entity.*;
 
 import java.lang.reflect.Constructor;
 
-public class Title9 implements TitleMain, Reflection {
+public class Title implements Reflection {
+
+    public GetTitle title;
 
     private int in;
     private int stay;
     private int out;
 
-    private void titleSubtitle(Player player, String message, boolean isTitle) {
+    public Title(Application main) {
+        title = main.GET_VERSION < 10 ? oldTitle() : newTitle();
+    }
+
+    public interface GetTitle {
+        void send(Player player, String title, String subtitle, int in, int stay, int out);
+    }
+
+    private void legacyMethod(Player player, String message, boolean isTitle) {
         try {
             Object e = getNMSClass("PacketPlayOutTitle").getDeclaredClasses()[0].getField("TIMES").get(null);
             Object chatMessage = getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getMethod("a", String.class).invoke(null, "{\"text\":\"" + message + "\"}");
@@ -35,12 +45,15 @@ public class Title9 implements TitleMain, Reflection {
         }
     }
 
-    @Override
-    public void send(Player player, String title, String subtitle, int in, int stay, int out) {
-        this.in = in;
-        this.stay = stay;
-        this.out = out;
-        titleSubtitle(player, title, true);
-        titleSubtitle(player, subtitle, false);
+    private GetTitle oldTitle() {
+        return (player, title, subtitle, in, stay, out) -> {
+            this.in = in;
+            this.stay = stay;
+            this.out = out;
+            legacyMethod(player, title, true);
+            legacyMethod(player, subtitle, false);
+        };
     }
+
+    public GetTitle newTitle() { return Player::sendTitle; }
 }

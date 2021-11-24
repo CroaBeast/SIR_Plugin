@@ -40,15 +40,19 @@ public class Initializer {
         this.main = main;
         records = main.getRecords();
 
-        HAS_PAPI = main.getPlugin("PlaceholderAPI") != null;
-        HAS_VAULT = main.getPlugin("Vault") != null;
-        authMe = main.getPlugin("AuthMe") != null;
-        userLogin = main.getPlugin("UserLogin") != null;
+        HAS_PAPI = isPlugin("PlaceholderAPI");
+        HAS_VAULT = isPlugin("Vault");
+        authMe = isPlugin("AuthMe");
+        userLogin = isPlugin("UserLogin");
 
-        hasCMI = main.getPlugin("CMI") != null;
-        essentials = main.getPlugin("Essentials") != null;
-        srVanish = main.getPlugin("SuperVanish") != null;
-        prVanish = main.getPlugin("PremiumVanish") != null;
+        hasCMI = isPlugin("CMI");
+        essentials = isPlugin("Essentials");
+        srVanish = isPlugin("SuperVanish");
+        prVanish = isPlugin("PremiumVanish");
+    }
+
+    private boolean isPlugin(String name) {
+        return main.getPlugin(name) != null;
     }
 
     public void loadSavedFiles() {
@@ -225,7 +229,7 @@ public class Initializer {
         String pluginVersion;
         String isHooked;
 
-        if (main.getPlugin(name) != null) {
+        if (isPlugin(name)) {
             pluginVersion = main.getPlugin(name).getDescription().getVersion();
             isHooked = " &aenabled&7. Hooking...";
         } else {

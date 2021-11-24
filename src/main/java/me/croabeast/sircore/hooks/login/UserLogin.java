@@ -1,4 +1,4 @@
-package me.croabeast.sircore.listeners.login;
+package me.croabeast.sircore.hooks.login;
 
 import com.elchologamer.userlogin.api.event.*;
 import me.croabeast.sircore.*;

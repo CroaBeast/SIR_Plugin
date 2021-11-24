@@ -1,4 +1,4 @@
-package me.croabeast.sircore.listeners.login;
+package me.croabeast.sircore.hooks.login;
 
 import fr.xephi.authme.events.*;
 import me.croabeast.sircore.*;
