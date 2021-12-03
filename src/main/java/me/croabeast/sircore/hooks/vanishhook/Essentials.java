@@ -1,4 +1,4 @@
-package me.croabeast.sircore.hooks.vanish;
+package me.croabeast.sircore.hooks.vanishhook;
 
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.events.*;
@@ -13,7 +13,6 @@ public class Essentials implements Listener {
         Initializer init = main.getInitializer();
         if (!init.essentials) return;
         main.registerListener(this);
-        init.LISTENERS++;
     }
 
     @EventHandler

@@ -25,12 +25,17 @@ public class Initializer {
 
     public boolean HAS_PAPI;
     public boolean HAS_VAULT;
+    public boolean DISCORD;
 
     public boolean HAS_LOGIN;
+    protected List<String> LOGIN_HOOKS = new ArrayList<>();
+
+    public boolean HAS_VANISH;
+    protected List<String> VANISH_HOOKS = new ArrayList<>();
+
     public boolean authMe;
     public boolean userLogin;
 
-    public boolean HAS_VANISH;
     public boolean hasCMI;
     public boolean essentials;
     public boolean srVanish;
@@ -42,18 +47,29 @@ public class Initializer {
 
         HAS_PAPI = isPlugin("PlaceholderAPI");
         HAS_VAULT = isPlugin("Vault");
-        authMe = isPlugin("AuthMe");
-        userLogin = isPlugin("UserLogin");
+        DISCORD = isPlugin("DiscordSRV");
 
-        hasCMI = isPlugin("CMI");
-        essentials = isPlugin("Essentials");
-        srVanish = isPlugin("SuperVanish");
-        prVanish = isPlugin("PremiumVanish");
+        authMe = isHooked("AuthMe", LOGIN_HOOKS);
+        userLogin = isHooked("UserLogin", LOGIN_HOOKS);
+
+        hasCMI = isHooked("CMI", VANISH_HOOKS);
+        essentials = isHooked("Essentials", VANISH_HOOKS);
+        srVanish = isHooked("SuperVanish", VANISH_HOOKS);
+        prVanish = isHooked("PremiumVanish", VANISH_HOOKS);
     }
 
     private boolean isPlugin(String name) {
         return main.getPlugin(name) != null;
     }
+
+    private boolean isHooked(String name, List<String> hookList) {
+        if (!isPlugin(name)) return false;
+        hookList.add(name);
+        return true;
+    }
+
+    protected Set<SavedFile> filesList = new HashSet<>();
+    public Set<SavedFile> getFilesList() { return filesList; }
 
     public void loadSavedFiles() {
         records.doRecord("&bLoading plugin's files...");
@@ -64,11 +80,7 @@ public class Initializer {
         announces = new SavedFile(main, "announces");
         motd = new SavedFile(main, "motd");
 
-        config.updateInitFile();
-        lang.updateInitFile();
-        messages.updateInitFile();
-        announces.updateInitFile();
-        motd.updateInitFile();
+        filesList.forEach(SavedFile::updateInitFile);
 
         records.doRecord("&7Loaded &e" + FILES + "&7 files in the plugin's folder.");
     }
@@ -114,7 +126,7 @@ public class Initializer {
 
     public void setPluginHooks() {
         // PlaceholderAPI
-        records.doRecord("", "&bChecking all the available hooks...");
+        records.doRecord("", "&bChecking all simple plugin hooks...");
         showPluginInfo("PlaceholderAPI");
 
         // Permissions
@@ -131,68 +143,35 @@ public class Initializer {
         }
 
         // Login hook
-        String loginPlugin = "Login Plugin";
-        int i = 0;
+        records.doRecord("", "&bChecking if a login plugin is enabled...");
 
-        if (authMe) {
-            i++;
-            loginPlugin = "AuthMe";
-        }
-        if (userLogin) {
-            i++;
-            loginPlugin = "UserLogin";
-        }
-
-        records.doRecord("> &7Checking if a login plugin is enabled...");
-
-        if (i == 1) {
+        if (LOGIN_HOOKS.size() == 1) {
             HAS_LOGIN = true;
-            showPluginInfo(loginPlugin);
-        } else {
+            showPluginInfo(LOGIN_HOOKS.get(0));
+        }
+        else {
             HAS_LOGIN = false;
-            if (i > 1) {
+            if (LOGIN_HOOKS.size() > 1)
                 records.doRecord(
                         "&cTwo or more compatible login plugins are installed.",
                         "&cPlease leave one of them installed."
                 );
-            }
             else records.doRecord("&cNo login plugin installed. &7Unhooking...");
         }
 
-        // Vanish hook
-        String vanishPlugin = "Vanish Plugin";
-        int x = 0;
+        records.doRecord("", "&bChecking if a vanish plugin is enabled...");
 
-        if (essentials) {
-            x++;
-            vanishPlugin = "Essentials";
-        }
-        if (hasCMI) {
-            x++;
-            vanishPlugin = "CMI";
-        }
-        if (srVanish) {
-            x++;
-            vanishPlugin = "SuperVanish";
-        }
-        if (prVanish) {
-            x++;
-            vanishPlugin = "PremiumVanish";
-        }
-
-        records.doRecord("> &7Checking if a vanish plugin is enabled...");
-
-        if (x == 1) {
+        if (VANISH_HOOKS.size() == 1) {
             HAS_VANISH = true;
-            showPluginInfo(vanishPlugin);
-        } else {
+            showPluginInfo(VANISH_HOOKS.get(0));
+        }
+        else {
             HAS_VANISH = false;
-            if (x > 1) {
+            if (VANISH_HOOKS.size() > 1)
                 records.doRecord(
                         "&cTwo or more compatible vanish plugins are installed.",
                         "&cPlease leave one of them installed."
                 );
-            }
             else records.doRecord("&cNo vanish plugin installed. &7Unhooking...");
         }
     }
@@ -206,16 +185,11 @@ public class Initializer {
         records.doRecord("&7Registered &e" + LISTENERS + "&7 plugin's listeners.");
     }
 
-    public void reloadFiles() {
-        config.reloadFile();
-        lang.reloadFile();
-        messages.reloadFile();
-        announces.reloadFile();
-        motd.reloadFile();
-    }
+    public void reloadFiles() { filesList.forEach(SavedFile::reloadFile); }
 
     public void checkFeatures(CommandSender sender) {
-        if (main.getTextUtils().getOption(1, "enabled") || main.getAnnouncer().getDelay() != 0 |
+        if (main.getTextUtils().getOption(1, "enabled") ||
+                main.getAnnouncer().getDelay() != 0 ||
                 main.getMOTD().getBoolean("enabled")) return;
 
         records.doRecord(sender,

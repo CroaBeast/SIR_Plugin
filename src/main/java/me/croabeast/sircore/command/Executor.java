@@ -40,8 +40,11 @@ public class Executor {
     }
 
     private void sendMessage(String path, String key, String value) {
-        if (key == null && value == null) text.send(sender, path);
-        else text.send(sender, path, new String[] {"{" + key + "}"}, value);
+        text.send(sender, path, key, value);
+    }
+
+    private void sendMessage(String path) {
+        text.send(sender, path, null, null);
     }
 
     private boolean oneMessage(String path, String key, String value) {
@@ -50,7 +53,7 @@ public class Executor {
     }
 
     private boolean oneMessage(String path) {
-        text.send(sender, path);
+        sendMessage(path);
         return true;
     }
 
@@ -67,7 +70,7 @@ public class Executor {
     }
 
     private boolean sendPrintHelp(String name) {
-        sendMessage("print-help." + name, null, null);
+        sendMessage("print-help." + name);
         return true;
     }
 
@@ -215,7 +218,7 @@ public class Executor {
 
                     main.getInitializer().reloadFiles();
                     if (!announcer.isRunning()) announcer.startTask();
-                    sendMessage("reload-files", null, null);
+                    sendMessage("reload-files");
                     main.getInitializer().checkFeatures(sender);
                     return true;
 

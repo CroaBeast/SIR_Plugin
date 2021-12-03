@@ -1,4 +1,4 @@
-package me.croabeast.sircore.hooks.vanish;
+package me.croabeast.sircore.hooks.vanishhook;
 
 import de.myzelyam.api.vanish.*;
 import me.croabeast.sircore.*;
@@ -13,7 +13,6 @@ public class Vanish implements Listener {
         Initializer init = main.getInitializer();
         if (!init.srVanish && !init.prVanish) return;
         main.registerListener(this);
-        init.LISTENERS++;
     }
 
     @EventHandler

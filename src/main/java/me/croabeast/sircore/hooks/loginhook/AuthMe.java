@@ -1,4 +1,4 @@
-package me.croabeast.sircore.hooks.login;
+package me.croabeast.sircore.hooks.loginhook;
 
 import fr.xephi.authme.events.*;
 import me.croabeast.sircore.*;
@@ -11,11 +11,10 @@ public class AuthMe implements Listener {
         Initializer init = main.getInitializer();
         if (!init.authMe) return;
         main.registerListener(this);
-        init.LISTENERS++;
     }
 
     @EventHandler
-    private void onLogin(LoginEvent event){
+    private void onLogin(LoginEvent event) {
         Bukkit.getPluginManager().callEvent(new me.croabeast.sircore.events.LoginEvent(event.getPlayer()));
     }
 }

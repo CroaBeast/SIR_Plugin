@@ -2,7 +2,7 @@ package me.croabeast.sircore.listeners;
 
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.events.*;
-import me.croabeast.sircore.hooks.login.*;
+import me.croabeast.sircore.hooks.loginhook.*;
 import me.croabeast.sircore.utilities.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
@@ -18,10 +18,11 @@ public class LoginListener implements Listener {
         this.text = main.getTextUtils();
         this.perms = main.getPermUtils();
         this.utils = main.getEventUtils();
+
         if (!main.getInitializer().HAS_LOGIN) return;
         new AuthMe(main);
         new UserLogin(main);
-        main.registerListener(this);
+        main.registerListener(this, false);
     }
 
     @EventHandler

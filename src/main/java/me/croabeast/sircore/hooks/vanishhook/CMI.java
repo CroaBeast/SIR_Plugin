@@ -1,4 +1,4 @@
-package me.croabeast.sircore.hooks.vanish;
+package me.croabeast.sircore.hooks.vanishhook;
 
 import com.Zrips.CMI.events.*;
 import me.croabeast.sircore.*;
@@ -12,7 +12,6 @@ public class CMI implements Listener {
         Initializer init = main.getInitializer();
         if (!init.hasCMI) return;
         main.registerListener(this);
-        init.LISTENERS++;
     }
 
     @EventHandler

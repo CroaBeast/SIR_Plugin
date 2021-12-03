@@ -79,10 +79,8 @@ public class EventUtils {
 
     private void sendToConsole(String message) {
         if (!text.getOption(1, "send-console")) return;
-
         String split = text.getSplit();
         message = message.replace(split, "&r" + split);
-
         main.getRecords().doRecord("&7> &f" + message);
     }
 
@@ -93,11 +91,8 @@ public class EventUtils {
     }
 
     public void typeMessage(Player player, String line) {
-        if (line.startsWith("[ACTION-BAR]")) {
-            text.actionBar(player,
-                    initLine("[ACTION-BAR]", line)
-            );
-        }
+        if (line.startsWith("[ACTION-BAR]"))
+            text.actionBar(player, initLine("[ACTION-BAR]", line));
         else if (line.startsWith("[TITLE]")) {
             String split = Pattern.quote(text.getSplit());
             text.title(player,
@@ -105,13 +100,11 @@ public class EventUtils {
                     new String[] {"10", "50", "10"}
             );
         }
-        else if (line.startsWith("[JSON]")) {
+        else if (line.startsWith("[JSON]"))
             Bukkit.dispatchCommand(
-                    Bukkit.getConsoleSender(),
-                    "tellraw " + player.getName() + " " +
-                    initLine("[JSON]", line)
+                    Bukkit.getConsoleSender(), "tellraw " +
+                    player.getName() + " " + initLine("[JSON]", line)
             );
-        }
         else text.sendMixed(player, line);
     }
 
@@ -123,18 +116,15 @@ public class EventUtils {
         try {
             Enum.valueOf(Sound.class, rawSound);
             sound = Sound.valueOf(rawSound);
-        } catch (IllegalArgumentException ex) {
-            return;
         }
+        catch (IllegalArgumentException ex) { return; }
 
-        player.playSound(
-                player.getLocation(), sound, 1, 1
-        );
+        player.playSound(player.getLocation(), sound, 1, 1);
     }
 
     private void giveGod(ConfigurationSection id, Player player) {
         int godTime = id.getInt("invulnerable", 0) ;
-        if (main.GET_VERSION <= 8 || godTime <= 0) return;
+        if (main.MC_VERSION <= 8 || godTime <= 0) return;
 
         Runnable god = () -> player.setInvulnerable(false);
         player.setInvulnerable(true);

@@ -11,6 +11,9 @@ import org.bukkit.util.*;
 import java.io.*;
 import java.util.*;
 
+import static me.croabeast.sircore.listeners.MOTDListener.UsageType.*;
+import static me.croabeast.sircore.listeners.MOTDListener.MaxType.*;
+
 public class MOTDListener implements Listener {
 
     private final Application main;
@@ -23,7 +26,6 @@ public class MOTDListener implements Listener {
         this.main = main;
         main.registerListener(this);
         registerIconsFolder();
-        main.getInitializer().LISTENERS++;
     }
 
     private void registerIconsFolder() {
@@ -32,15 +34,15 @@ public class MOTDListener implements Listener {
             main.getRecords().doRecord("&eGenerating the 'icons' folder...");
 
         File icon = new File(folder, "server-icon.png");
-        if (!icon.exists()) {
-            String path = "icons" + File.separator + "server-icon.png";
-            main.getRecords().doRecord(
-                    "&eGenerating the default server icon...",
-                    "&7If you don't want to generate this file,",
-                    "&7just name a file/icon:&e 'server-icon.png'"
-            );
-            main.saveResource(path, false);
-        }
+        if (icon.exists()) return;
+
+        String path = "icons" + File.separator + "server-icon.png";
+        main.getRecords().doRecord(
+                "&eGenerating the default server icon...",
+                "&7If you don't want to generate this file,",
+                "&7just name a file/icon:&e 'server-icon.png'"
+        );
+        main.saveResource(path, false);
     }
 
     private ConfigurationSection getID() {
@@ -70,41 +72,34 @@ public class MOTDListener implements Listener {
         else MOTD = new Random().nextInt(count + 1);
     }
 
-    private enum UsageType {
+    enum UsageType {
         DISABLED,
         LIST,
         SINGLE,
         RANDOM
     }
 
-    private String getUsageType() {
-        return main.getMOTD().getString("server-icon.usage", "DISABLED");
-    }
-
     private UsageType usageType() {
         UsageType type;
-        switch (getUsageType().toUpperCase()) {
+        switch (main.getMOTD().getString("server-icon.usage", "DISABLED").toUpperCase()) {
             case "SINGLE":
-                type = UsageType.SINGLE;
+                type = SINGLE;
                 break;
             case "LIST":
-                type = UsageType.LIST;
+                type = LIST;
                 break;
             case "RANDOM":
-                type = UsageType.RANDOM;
+                type = RANDOM;
                 break;
             case "DISABLED": default:
-                type = UsageType.DISABLED;
+                type = DISABLED;
                 break;
         }
         return type;
     }
 
     private void setServerIcon() {
-        if (usageType() == UsageType.DISABLED) {
-            event.setServerIcon(null);
-            return;
-        }
+        if (usageType() == DISABLED) return;
 
         File folder = new File(main.getDataFolder() + File.separator + "icons");
         File single = new File(folder, main.getMOTD().getString("server-icon.image", ""));
@@ -116,13 +111,13 @@ public class MOTDListener implements Listener {
         }
 
         int count = icons.length - 1;
-        if (usageType() != UsageType.SINGLE && ICON > count) ICON = 0;
+        if (usageType() != SINGLE && ICON > count) ICON = 0;
 
         CachedServerIcon icon = null;
 
         try {
             icon = Bukkit.loadServerIcon(
-                    usageType() == UsageType.SINGLE ? single : icons[ICON]
+                    usageType() == SINGLE ? single : icons[ICON]
             );
         } catch (Exception e) {
             event.setServerIcon(null);
@@ -141,49 +136,44 @@ public class MOTDListener implements Listener {
         }
         event.setServerIcon(icon);
 
-        if (usageType() == UsageType.SINGLE) return;
+        if (usageType() == SINGLE) return;
 
-        if (usageType() == UsageType.LIST) {
+        if (usageType() == LIST) {
             if (ICON < count) ICON++;
             else ICON = 0;
         }
-        else if (usageType() == UsageType.RANDOM)
+        else if (usageType() == RANDOM)
             ICON = new Random().nextInt(count + 1);
     }
 
-    private enum MaxType {
+    enum MaxType {
         DEFAULT,
         CUSTOM,
         MAXIMUM
     }
 
-    private String getMaxType() {
-        return main.getMOTD().getString("max-players.type", "DEFAULT");
-    }
-
     private MaxType maxType() {
         MaxType type;
-        switch (getMaxType().toUpperCase()) {
+        switch (main.getMOTD().getString("max-players.type", "DEFAULT").toUpperCase()) {
             case "CUSTOM":
-                type = MaxType.CUSTOM;
+                type = CUSTOM;
                 break;
             case "MAXIMUM":
-                type = MaxType.MAXIMUM;
+                type = MAXIMUM;
                 break;
             case "DEFAULT": default:
-                type = MaxType.DEFAULT;
+                type = DEFAULT;
                 break;
         }
         return type;
     }
 
     private void setMaxPlayers() {
-        if (maxType() == MaxType.DEFAULT) return;
+        if (maxType() == DEFAULT) return;
 
-        if (maxType() == MaxType.CUSTOM)
+        if (maxType() == CUSTOM)
             event.setMaxPlayers(main.getMOTD().getInt("max-players.count"));
-
-        else if (maxType() == MaxType.MAXIMUM)
+        else if (maxType() == MAXIMUM)
             event.setMaxPlayers(main.everyPlayer().size() + 1);
     }
 
@@ -193,7 +183,7 @@ public class MOTDListener implements Listener {
         if (!main.getMOTD().getBoolean("enabled")) return;
 
         registerMOTD();
-        setMaxPlayers();
         setServerIcon();
+        setMaxPlayers();
     }
 }

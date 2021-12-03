@@ -24,7 +24,8 @@ public final class Application extends JavaPlugin {
     private DoUpdate doUpdate;
 
     public String PLUGIN_VERSION;
-    public int GET_VERSION;
+    public String MC_FORK;
+    public int MC_VERSION;
 
     @Override
     public void onEnable() {
@@ -32,8 +33,8 @@ public final class Application extends JavaPlugin {
         main = this; // The plugin instance initializing...
 
         String version = Bukkit.getBukkitVersion().split("-")[0];
-        GET_VERSION = Integer.parseInt(version.split("\\.")[1]);
-        String mcName = Bukkit.getVersion().split("-")[1] + " " + version;
+        MC_VERSION = Integer.parseInt(version.split("\\.")[1]);
+        MC_FORK = Bukkit.getVersion().split("-")[1] + " " + version;
 
         PLUGIN_VERSION = getDescription().getVersion();
         String header = "&7SIR " + PLUGIN_VERSION + " was&a loaded&7 in ";
@@ -54,7 +55,7 @@ public final class Application extends JavaPlugin {
                 "&0* &e(___&0 * * &e|&0* * &e|___)",
                 "&0* &e____) . _|_ . | &0* &e\\ . &fv" + PLUGIN_VERSION,
                 "&0* &7Developer: " + getDescription().getAuthors().get(0),
-                "&0* &7Software: " + mcName, ""
+                "&0* &7Software: " + MC_FORK, ""
         );
 
         init.loadSavedFiles();
@@ -82,9 +83,7 @@ public final class Application extends JavaPlugin {
         );
         announcer.cancelTask();
         records.doRecord(
-                "&7The announcement task has been stopped."
-        );
-        records.doRecord(
+                "&7The announcement task has been stopped.",
                 "&7SIR &c" + PLUGIN_VERSION + "&7 was totally disabled.",
                 "&7Hope we can see you again&c nwn"
         );
@@ -112,7 +111,12 @@ public final class Application extends JavaPlugin {
         return Bukkit.getPluginManager().getPlugin(name);
     }
 
-    public void registerListener(Listener listener) {
+    public void registerListener(Listener listener, boolean addListener) {
         main.getServer().getPluginManager().registerEvents(listener, main);
+        if (addListener) init.LISTENERS++;
+    }
+
+    public void registerListener(Listener listener) {
+        registerListener(listener, true);
     }
 }

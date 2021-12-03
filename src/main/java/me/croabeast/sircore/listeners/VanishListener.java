@@ -2,7 +2,7 @@ package me.croabeast.sircore.listeners;
 
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.events.*;
-import me.croabeast.sircore.hooks.vanish.*;
+import me.croabeast.sircore.hooks.vanishhook.*;
 import me.croabeast.sircore.utilities.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
@@ -18,11 +18,12 @@ public class VanishListener implements Listener {
         this.init = main.getInitializer();
         this.text = main.getTextUtils();
         this.utils = main.getEventUtils();
+
         if (!init.HAS_VANISH) return;
         new CMI(main);
         new Essentials(main);
         new Vanish(main);
-        main.registerListener(this);
+        main.registerListener(this, false);
     }
 
     @EventHandler

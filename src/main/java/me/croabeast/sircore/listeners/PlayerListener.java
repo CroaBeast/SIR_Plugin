@@ -22,7 +22,6 @@ public class PlayerListener implements Listener {
         this.perms = main.getPermUtils();
         this.utils = main.getEventUtils();
         main.registerListener(this);
-        init.LISTENERS++;
     }
 
     @EventHandler(priority = EventPriority.MONITOR)

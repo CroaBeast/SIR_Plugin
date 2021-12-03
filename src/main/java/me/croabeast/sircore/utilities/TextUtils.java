@@ -4,7 +4,6 @@ import me.clip.placeholderapi.*;
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.terminals.*;
-import org.apache.commons.lang.*;
 import org.bukkit.command.*;
 import org.bukkit.configuration.file.*;
 import org.bukkit.entity.*;
@@ -15,7 +14,7 @@ public class TextUtils {
 
     private final Application main;
     private final ActionBar actionBar;
-    private final Title titleMain;
+    private final Title title;
 
     private final PAPI papi;
 
@@ -30,7 +29,7 @@ public class TextUtils {
         papi =  (p, line) -> !main.getInitializer().HAS_PAPI ? line :
                 (p != null ? PlaceholderAPI.setPlaceholders(p, line) : line);
         actionBar = new ActionBar(main);
-        titleMain = new Title(main);
+        title = new Title(main);
     }
 
     public boolean getOption(int i, String path) {
@@ -91,11 +90,8 @@ public class TextUtils {
 
     public void sendMixed(Player player, String message) {
         String center = getValue("center-prefix");
-
-        if (message.startsWith(center)) {
-            sendCentered(player, message.replace(center, ""));
-        }
-        else player.sendMessage(parsePAPI(player, message));
+        if (!message.startsWith(center)) player.sendMessage(parsePAPI(player, message));
+        else sendCentered(player, message.replace(center, ""));
     }
 
     public List<String> fileList(FileConfiguration file, String path) {
@@ -106,32 +102,31 @@ public class TextUtils {
 
     private List<String> toList(String path) { return fileList(main.getLang(), path); }
 
-    public void send(CommandSender sender, String path, String[] keys, String... values) {
+    public void send(CommandSender sender, String path, String key, String value) {
         String prefix = main.getLang().getString("main-prefix", ""),
-                key = getValue("config-prefix"),
+                prKey = getValue("config-prefix"),
                 center = getValue("center-prefix");
 
         for (String line : toList(path)) {
             if (line == null || line.equals("")) continue;
-            line = StringUtils.replaceEach(
-                    line.startsWith(key) ? line.replace(key, prefix) : line,
-                    keys, values
-            );
+            line = line.startsWith(prKey) ? line.replace(prKey, prefix) : line;
+            if (key != null && value != null)
+                line = line.replace("{" + key + "}", value);
 
-            if (!(sender instanceof Player)) {
-                if (line.startsWith(center)) line = line.replace(center,"");
+            if (sender instanceof ConsoleCommandSender) {
+                line = line.replace(center, "");
                 main.getRecords().rawRecord(line);
             }
-            else sendMixed((Player) sender, line);
+            else {
+                Player player = (Player) sender;
+                line = line.replace("{PLAYER}", player.getName());
+                sendMixed(player, line);
+            }
         }
     }
 
-    public void send(CommandSender sender, String path) {
-        send(sender, path, null, (String[]) null);
-    }
-
     public void actionBar(Player player, String message) {
-        actionBar.actionBar.send(player, message);
+        actionBar.getMethod().send(player, message);
     }
 
     private boolean checkInts(String[] array) {
@@ -150,8 +145,7 @@ public class TextUtils {
     public void title(Player player, String[] message, String[] times) {
         if (message.length == 0 || message.length > 2) return;
         String subtitle = message.length == 1 ? "" : message[1];
-        if (!checkInts(times)) return;
-        int[] ints = intArray(times);
-        titleMain.title.send(player, message[0], subtitle, ints[0], ints[1], ints[2]);
+        int[] i = checkInts(times) ? intArray(times) : new int[]{10, 50, 10};
+        title.getMethod().send(player, message[0], subtitle, i[0], i[1], i[2]);
     }
 }

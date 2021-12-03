@@ -1,4 +1,4 @@
-package me.croabeast.sircore.hooks.login;
+package me.croabeast.sircore.hooks.loginhook;
 
 import com.elchologamer.userlogin.api.event.*;
 import me.croabeast.sircore.*;
@@ -12,7 +12,6 @@ public class UserLogin implements Listener {
         Initializer init = main.getInitializer();
         if (!init.userLogin) return;
         main.registerListener(this);
-        init.LISTENERS++;
     }
 
     @EventHandler

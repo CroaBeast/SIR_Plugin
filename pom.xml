@@ -6,7 +6,7 @@
 
     <groupId>me.croabeast</groupId>
     <artifactId>SIR_Plugin</artifactId>
-    <version>1.2-R3</version>
+    <version>1.2-R7</version>
     <packaging>jar</packaging>
 
     <name>SIR_Plugin</name> <!--Simple In-game Receptionist-->
@@ -27,6 +27,7 @@
                     <target>${java.version}</target>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -43,7 +44,45 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5.2</version>
+                <executions>
+                    <execution>
+                        <id>UserLogin</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>com.elchologamer</groupId>
+                            <artifactId>UserLogin</artifactId>
+                            <version>2.12.1</version>
+                            <packaging>jar</packaging>
+                            <file>lib/UserLogin.jar</file>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>CMI</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>com.Zrips</groupId>
+                            <artifactId>CMI</artifactId>
+                            <version>9.0</version>
+                            <packaging>jar</packaging>
+                            <file>lib/CMI.jar</file>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
+
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -51,6 +90,7 @@
             </resource>
         </resources>
     </build>
+
     <repositories>
         <repository>
             <id>spigotmc-repo</id>
@@ -96,18 +136,16 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>UserLogin</groupId>
-            <artifactId>UserLogin</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/UserLogin.jar</systemPath>
+            <groupId>com.Zrips</groupId>
+            <artifactId>CMI</artifactId>
+            <version>9.0</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>CMI</groupId>
-            <artifactId>CMI</artifactId>
-            <version>1.0</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/CMI.jar</systemPath>
+            <groupId>com.elchologamer</groupId>
+            <artifactId>UserLogin</artifactId>
+            <version>2.12.1</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>fr.xephi</groupId>

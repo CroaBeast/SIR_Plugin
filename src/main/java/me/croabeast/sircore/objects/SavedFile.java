@@ -21,8 +21,11 @@ public class SavedFile {
         this.records = main.getRecords();
         this.name = name;
         this.location = name + ".yml";
+
         registerFile();
-        main.getInitializer().FILES++;
+        Initializer init = main.getInitializer();
+        init.FILES++;
+        init.getFilesList().add(this);
     }
 
     private File catchFile() { return new File(main.getDataFolder(), location); }

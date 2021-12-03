@@ -4,6 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 public interface Reflection {
+
     default void sendPacket(Player player, Object packet) {
         try {
             Object handle  = player.getClass().getMethod("getHandle").invoke(player);
@@ -13,6 +14,7 @@ public interface Reflection {
             e.printStackTrace();
         }
     }
+
     default Class<?> getNMSClass(String name) {
         String version = Bukkit.getServer().getClass().getPackage().getName().split("\\.")[3];
         try {

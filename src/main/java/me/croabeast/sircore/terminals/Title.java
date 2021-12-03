@@ -7,19 +7,21 @@ import java.lang.reflect.Constructor;
 
 public class Title implements Reflection {
 
-    public GetTitle title;
+    private final GetTitle title;
 
     private int in;
     private int stay;
     private int out;
 
     public Title(Application main) {
-        title = main.GET_VERSION < 10 ? oldTitle() : newTitle();
+        title = main.MC_VERSION < 10 ? oldTitle() : newTitle();
     }
 
     public interface GetTitle {
         void send(Player player, String title, String subtitle, int in, int stay, int out);
     }
+
+    public GetTitle getMethod() { return title; }
 
     private void legacyMethod(Player player, String message, boolean isTitle) {
         try {

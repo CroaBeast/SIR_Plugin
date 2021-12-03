@@ -23,6 +23,7 @@ updater:
     messages: false
     announces: false
     motd: false
+    discord: false
 
 # Some useful options for this plugin if you want to change them.
 options:

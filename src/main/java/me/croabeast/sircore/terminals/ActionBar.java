@@ -9,15 +9,17 @@ import java.lang.reflect.*;
 
 public class ActionBar implements Reflection {
 
-    public GetActionBar actionBar;
+    private final GetActionBar actionBar;
 
     public ActionBar(Application main) {
-        actionBar = main.GET_VERSION < 11 ? oldActionBar() : newActionBar();
+        actionBar = main.MC_VERSION < 11 ? oldActionBar() : newActionBar();
     }
 
     public interface GetActionBar {
         void send(Player player, String message);
     }
+
+    public GetActionBar getMethod() { return actionBar; }
 
     private GetActionBar oldActionBar() {
         return (player, message) -> {
