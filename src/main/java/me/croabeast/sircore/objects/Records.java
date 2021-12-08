@@ -18,7 +18,7 @@ public class Records {
     private String parseColor(String line) {
         String isBukkit = main.MC_FORK.split(" ")[0];
         return (main.MC_VERSION >= 12 && !isBukkit.matches("(?i)Spigot")) ?
-                IridiumAPI.process(line) : IridiumAPI.stripColor(line);
+                IridiumAPI.process(line) : IridiumAPI.stripAll(line);
     }
 
     public void playerRecord(Player player, String... lines) {

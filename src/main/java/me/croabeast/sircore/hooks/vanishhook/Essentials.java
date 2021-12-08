@@ -9,7 +9,7 @@ import org.bukkit.event.*;
 
 public class Essentials implements Listener {
 
-    public Essentials(Application main){
+    public Essentials(Application main) {
         Initializer init = main.getInitializer();
         if (!init.essentials) return;
         main.registerListener(this);

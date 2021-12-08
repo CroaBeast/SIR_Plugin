@@ -23,7 +23,7 @@ public class PermUtils {
                 player.hasPermission(perm);
     }
 
-    boolean certainPerm(Player player, String perm) {
+    public boolean certainPerm(Player player, String perm) {
         return !perm.matches("(?i)DEFAULT") && hasPerm(player, perm);
     }
 

@@ -33,11 +33,10 @@ public final class Application extends JavaPlugin {
         main = this; // The plugin instance initializing...
 
         String version = Bukkit.getBukkitVersion().split("-")[0];
+
         MC_VERSION = Integer.parseInt(version.split("\\.")[1]);
         MC_FORK = Bukkit.getVersion().split("-")[1] + " " + version;
-
         PLUGIN_VERSION = getDescription().getVersion();
-        String header = "&7SIR " + PLUGIN_VERSION + " was&a loaded&7 in ";
 
         records = new Records(main);
         init = new Initializer(main);
@@ -50,12 +49,13 @@ public final class Application extends JavaPlugin {
         init.startMetrics(); // The bStats method for Metrics class
         new Executor(main); // Register the main cmd for the plugin
 
-        records.rawRecord(
+        records.rawRecord("" +
                 "&0* *&e____ &0* &e___ &0* &e____",
                 "&0* &e(___&0 * * &e|&0* * &e|___)",
                 "&0* &e____) . _|_ . | &0* &e\\ . &fv" + PLUGIN_VERSION,
                 "&0* &7Developer: " + getDescription().getAuthors().get(0),
-                "&0* &7Software: " + MC_FORK, ""
+                "&0* &7Software: " + MC_FORK,
+                "&0* &7Java Version: " + System.getProperty("java.version"), ""
         );
 
         init.loadSavedFiles();
@@ -65,9 +65,9 @@ public final class Application extends JavaPlugin {
         records.doRecord("&7The announcement task has been started.");
         init.checkFeatures(null);
 
-        records.doRecord(
-                "",
-                header + (System.currentTimeMillis() - start) + " ms."
+        records.doRecord("",
+                "&7SIR " + PLUGIN_VERSION + " was&a loaded&7 in " +
+                        (System.currentTimeMillis() - start) + " ms."
         );
         records.rawRecord("");
 
@@ -76,7 +76,7 @@ public final class Application extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        records.rawRecord(
+        records.rawRecord("" +
                 "&0* *&e____ &0* &e___ &0* &e____",
                 "&0* &e(___&0 * * &e|&0* * &e|___)",
                 "&0* &e____) . _|_ . | &0* &e\\ . &fv" + PLUGIN_VERSION, ""
@@ -94,6 +94,7 @@ public final class Application extends JavaPlugin {
         return new ArrayList<>(Bukkit.getOnlinePlayers());
     }
 
+    public FileConfiguration getChat() { return init.chat.getFile(); }
     public FileConfiguration getAnnounces() { return init.announces.getFile(); }
     public FileConfiguration getLang() { return init.lang.getFile(); }
     public FileConfiguration getMessages() { return init.messages.getFile(); }

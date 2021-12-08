@@ -4,6 +4,9 @@
 ########################
 # Want to use unicode characters? Check this site: https://coolsymbol.com
 
+# Choose if this module going to be enabled or disabled.
+enabled: true
+
 info:
   ##### Different sections:
   # This .yml file has 3 main sections: first-join, join and quit.
@@ -108,6 +111,7 @@ join:
     spawn:
       world: world
       x-y-z: 0,80,0
+      yaw-pitch: 0,-90
   2:
     permission: vip.super.lol
     public:

@@ -1,9 +1,11 @@
 package me.croabeast.sircore.utilities;
 
 import me.croabeast.sircore.*;
+import me.croabeast.sircore.objects.*;
 import org.apache.commons.lang.*;
 import org.bukkit.*;
 import org.bukkit.configuration.*;
+import org.bukkit.configuration.file.*;
 import org.bukkit.entity.*;
 
 import java.util.*;
@@ -12,11 +14,13 @@ import java.util.regex.*;
 public class EventUtils {
 
     private final Application main;
+    private final Records records;
     private final TextUtils text;
     private final PermUtils perms;
 
     public EventUtils(Application main) {
         this.main = main;
+        this.records = main.getRecords();
         this.text = main.getTextUtils();
         this.perms = main.getPermUtils();
     }
@@ -32,12 +36,12 @@ public class EventUtils {
         return isColor ? text.parsePAPI(player, message) : message;
     }
 
-    public ConfigurationSection lastSection(Player player, String path) {
+    public ConfigurationSection lastSection(FileConfiguration file, Player player, String path) {
         ConfigurationSection finalId = null;
         String maxPerm = "";
         int highest = 0;
 
-        ConfigurationSection section = main.getMessages().getConfigurationSection(path);
+        ConfigurationSection section = file.getConfigurationSection(path);
         if (section == null) return null;
 
         for (String key : section.getKeys(false)) {
@@ -68,8 +72,12 @@ public class EventUtils {
         return finalId;
     }
 
-    public ConfigurationSection lastSection(Player player, boolean join) {
-        return lastSection(player, join ?
+    public ConfigurationSection lastSection(Player player, String path) {
+        return lastSection(main.getMessages(), player, path);
+    }
+
+    public ConfigurationSection lastSection(Player player, boolean isJoin) {
+        return lastSection(player, isJoin ?
                 (!player.hasPlayedBefore() &&
                         main.getMessages().isConfigurationSection("first-join") ?
                         "first-join" : "join"
@@ -81,7 +89,7 @@ public class EventUtils {
         if (!text.getOption(1, "send-console")) return;
         String split = text.getSplit();
         message = message.replace(split, "&r" + split);
-        main.getRecords().doRecord("&7> &f" + message);
+        records.doRecord("&7> &f" + message);
     }
 
     private String initLine(String type, String message) {
@@ -102,7 +110,7 @@ public class EventUtils {
         }
         else if (line.startsWith("[JSON]"))
             Bukkit.dispatchCommand(
-                    Bukkit.getConsoleSender(), "tellraw " +
+                    Bukkit.getConsoleSender(), "minecraft:tellraw " +
                     player.getName() + " " + initLine("[JSON]", line)
             );
         else text.sendMixed(player, line);
@@ -133,22 +141,31 @@ public class EventUtils {
 
     public void goSpawn(ConfigurationSection id, Player player) {
         String[] coordinates;
+        String[] rotations;
         Location location;
-        String path = id.getString("spawn.x-y-z", "");
+
         String name = id.getString("spawn.world", "");
+        String path = id.getString("spawn.x-y-z", "");
+        String rotation = id.getString("spawn.yaw-pitch", "");
 
         World world = Bukkit.getWorld(name);
         if (world == null) return;
 
-        if (!path.equals("")) {
-            coordinates = path.split(",");
-            if (coordinates.length == 3) {
-                int x = Integer.parseInt(coordinates[0]);
-                int y = Integer.parseInt(coordinates[1]);
-                int z = Integer.parseInt(coordinates[2]);
+        coordinates = path.split(",");
+        rotations = rotation.split(",");
+
+        if (!path.equals("") && coordinates.length == 3) {
+            int x = Integer.parseInt(coordinates[0]);
+            int y = Integer.parseInt(coordinates[1]);
+            int z = Integer.parseInt(coordinates[2]);
+
+            if (rotation.equals("") || rotations.length != 2)
                 location = new Location(world, x, y, z);
+            else {
+                int yaw = Integer.parseInt(rotations[0]);
+                int pitch = Integer.parseInt(rotations[1]);
+                location = new Location(world, x, y, z, yaw, pitch);
             }
-            else location = world.getSpawnLocation();
         }
         else location = world.getSpawnLocation();
 
@@ -187,7 +204,7 @@ public class EventUtils {
     public void runEvent(ConfigurationSection id, Player player, boolean join, boolean spawn, boolean login) {
         Bukkit.getScheduler().runTaskLater(main, () -> {
             if (id == null) {
-                main.getRecords().doRecord(player,
+                records.doRecord(player,
                         "<P> &cA valid message group isn't found...",
                         "<P> &7Please check your&e messages.yml &7file."
                 );

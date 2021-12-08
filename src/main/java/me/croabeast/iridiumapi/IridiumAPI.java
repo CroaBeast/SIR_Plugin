@@ -53,9 +53,10 @@ public class IridiumAPI {
     public static String color(@NotNull String string, @NotNull Color start, @NotNull Color end) {
         StringBuilder specialColors = new StringBuilder();
         for (String color : SPECIAL_COLORS) {
-            if (!string.contains(color)) continue;
-            specialColors.append(color);
-            string = string.replace(color, "");
+            if (string.contains(color)) {
+                specialColors.append(color);
+                string = string.replace(color, "");
+            }
         }
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -63,7 +64,7 @@ public class IridiumAPI {
         String[] characters = string.split("");
 
         for (int i = 0; i < string.length(); i++)
-            stringBuilder.append(specialColors).append(colors[i]).append(characters[i]);
+            stringBuilder.append(colors[i]).append(specialColors).append(characters[i]);
         return stringBuilder.toString();
     }
 
@@ -71,9 +72,10 @@ public class IridiumAPI {
     public static String rainbow(@NotNull String string, float saturation) {
         StringBuilder specialColors = new StringBuilder();
         for (String color : SPECIAL_COLORS) {
-            if (!string.contains(color)) continue;
-            specialColors.append(color);
-            string = string.replace(color, "");
+            if (string.contains(color)) {
+                specialColors.append(color);
+                string = string.replace(color, "");
+            }
         }
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -81,7 +83,7 @@ public class IridiumAPI {
         String[] characters = string.split("");
 
         for (int i = 0; i < string.length(); i++)
-            stringBuilder.append(specialColors).append(colors[i]).append(characters[i]);
+            stringBuilder.append(colors[i]).append(specialColors).append(characters[i]);
         return stringBuilder.toString();
     }
 
@@ -92,9 +94,25 @@ public class IridiumAPI {
     }
 
     @NotNull
-    public static String stripColor(@NotNull String string) {
-        return string.replaceAll("[&§][a-f0-9lnokm]|<[/]?\\w(:[0-9A-F]{6})?>|\\{#([0-9A-Fa-f]{6})}|" +
-                "<#([0-9A-Fa-f]{6})>|&#([0-9A-Fa-f]{6})|#([0-9A-Fa-f]{6})", "");
+    public static String stripBukkit(@NotNull String string) {
+        return string.replaceAll("(?i)[&§][a-f0-9]", "");
+    }
+
+    @NotNull
+    public static String stripSpecial(@NotNull String string) {
+        return string.replaceAll("(?i)[&§][k-o]", "");
+    }
+
+    @NotNull
+    public static String stripRGB(@NotNull String string) {
+        return string.replaceAll("(?i)<[/]?[gr](:[0-9]{3,6})?>|\\{#[0-9A-F]{6}}|" +
+                "<#[0-9A-F]{6}>|&#[0-9A-F]{6}|#[0-9A-F]{6}", "");
+    }
+
+    @NotNull
+    public static String stripAll(@NotNull String string) {
+        return string.replaceAll("(?i)[&§][a-f0-9lnokm]|<[/]?[gr](:[0-9]{3,6})?>|" +
+                "\\{#[0-9A-F]{6}}|<#[0-9A-F]{6}>|&#[0-9A-F]{6}|#[0-9A-F]{6}/gm", "");
     }
 
     @NotNull

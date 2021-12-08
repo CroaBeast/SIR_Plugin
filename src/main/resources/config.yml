@@ -26,10 +26,13 @@ updater:
     discord: false
 
 # Some useful options for this plugin if you want to change them.
+# ------------------------------------------------------------
+# The enabled option for custom join/quit messages was moved to
+# the messages.yml file to be more... understandable.
+# It's enabled by default, if it was disabled before 1.3-R1,
+# go to messages.yml and add or change 'enabled: false'.
+# ------------------------------------------------------------
 options:
-  # Enables the custom join/quit messages features. If you want to
-  # disable it, set this to false.
-  enabled: true
   # It will log the join/quit messages and the announcements from
   # announces.yml to the server's console.
   send-console: true
@@ -42,10 +45,10 @@ values:
   # ONLY FOR lang.yml file!!
   # Every message that start with this string, will have the main-prefix.
   config-prefix: '<P>'
-  # ONLY FOR lang.yml, messages.yml files AND FOR CHAT TYPE!!
+  # Valid only in SIR files or inputs that accept centered messages.
   # Put this first on those chat messages you want to center.
   center-prefix: '<C>'
-  # ONLY FOR messages.yml file AND /print command!!
+  # Can be used in the /print command
   # If you want to add more than one line in your CHAT type message,
   # or you want title AND subtitle, use it to split the message.
   line-separator: '<n>'
@@ -67,7 +70,7 @@ login:
   spawn-before: true
 
 # If a vanish plugin is installed, this section will be activated.
-# Compatible vanish plugins: [ CMI, EssentialsX ]
+# Compatible vanish plugins: [ CMI, EssentialsX, SuperVanish, etc ]
 vanish:
   # This option send a join/quit section when a player changes its
   # vanish status. Disabling this won't send any messages when a player

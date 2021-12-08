@@ -26,13 +26,12 @@ public class PlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     private void onJoin(PlayerJoinEvent event) {
-        if (!text.getOption(1, "enabled")) return;
-        
-        event.setJoinMessage(null); //Message initializer
-
         Player player = event.getPlayer();
         ConfigurationSection id = utils.lastSection(player, true);
+
         main.getDoUpdate().initUpdater(player);
+        if (!main.getMessages().getBoolean("enabled", true)) return;
+        event.setJoinMessage(null); //Message initializer
 
         if (perms.isVanished(player, true) && text.getOption(3, "silent")) return;
         if (init.HAS_LOGIN && text.getOption(2, "enabled")) {
@@ -45,12 +44,11 @@ public class PlayerListener implements Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     private void onQuit(PlayerQuitEvent event) {
-        if (!text.getOption(1, "enabled")) return;
-        
-        event.setQuitMessage(null); //Message initializer
-
         Player player = event.getPlayer();
         ConfigurationSection id = utils.lastSection(player, false);
+
+        if (!main.getMessages().getBoolean("enabled", true)) return;
+        event.setQuitMessage(null); //Message initializer
 
         if (perms.isVanished(player, false) && text.getOption(3, "silent")) return;
         if (init.HAS_LOGIN) {

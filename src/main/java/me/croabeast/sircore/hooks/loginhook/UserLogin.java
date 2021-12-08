@@ -15,7 +15,7 @@ public class UserLogin implements Listener {
     }
 
     @EventHandler
-    private void onLogin(AuthenticationEvent event){
+    private void onLogin(AuthenticationEvent event) {
         event.setAnnouncement(null);
         Bukkit.getPluginManager().callEvent(new LoginEvent(event.getPlayer()));
     }

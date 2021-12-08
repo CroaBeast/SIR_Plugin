@@ -7,20 +7,24 @@ import org.bukkit.configuration.file.*;
 import java.io.*;
 import java.util.*;
 
-public class SavedFile {
+public class YmlFile {
 
     private final Application main;
     private final Records records;
+
     private final String name;
     private final String location;
+    private boolean firstUse;
+
     private FileConfiguration file;
     private File rawYmlFile;
 
-    public SavedFile(Application main, String name) {
+    public YmlFile(Application main, String name) {
         this.main = main;
         this.records = main.getRecords();
         this.name = name;
         this.location = name + ".yml";
+        this.firstUse = false;
 
         registerFile();
         Initializer init = main.getInitializer();
@@ -31,6 +35,8 @@ public class SavedFile {
     private File catchFile() { return new File(main.getDataFolder(), location); }
 
     public FileConfiguration getFile() { return file; }
+
+    public boolean isFirstUsed() { return firstUse; }
 
     public void reloadFile() {
         if (name.equals("config")) main.reloadConfig();
@@ -71,6 +77,7 @@ public class SavedFile {
     private void registerFile() {
         if (catchFile().exists()) return;
         records.doRecord("&cFile " + location + " missing... &7Generating!");
+        this.firstUse = true;
         saveDefaultFile();
     }
 

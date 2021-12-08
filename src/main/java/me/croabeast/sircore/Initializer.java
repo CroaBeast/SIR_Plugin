@@ -14,11 +14,11 @@ public class Initializer {
     private final Records records;
     public static Permission Perms;
 
-    public SavedFile config;
-    public SavedFile announces;
-    public SavedFile lang;
-    public SavedFile messages;
-    public SavedFile motd;
+    public YmlFile chat;
+    public YmlFile announces;
+    public YmlFile lang;
+    public YmlFile messages;
+    public YmlFile motd;
 
     public int LISTENERS = 0;
     public int FILES = 0;
@@ -58,9 +58,7 @@ public class Initializer {
         prVanish = isHooked("PremiumVanish", VANISH_HOOKS);
     }
 
-    private boolean isPlugin(String name) {
-        return main.getPlugin(name) != null;
-    }
+    private boolean isPlugin(String name) { return main.getPlugin(name) != null; }
 
     private boolean isHooked(String name, List<String> hookList) {
         if (!isPlugin(name)) return false;
@@ -68,19 +66,20 @@ public class Initializer {
         return true;
     }
 
-    protected Set<SavedFile> filesList = new HashSet<>();
-    public Set<SavedFile> getFilesList() { return filesList; }
+    protected Set<YmlFile> filesList = new HashSet<>();
+    public Set<YmlFile> getFilesList() { return filesList; }
 
     public void loadSavedFiles() {
         records.doRecord("&bLoading plugin's files...");
 
-        config = new SavedFile(main, "config");
-        lang = new SavedFile(main, "lang");
-        messages = new SavedFile(main, "messages");
-        announces = new SavedFile(main, "announces");
-        motd = new SavedFile(main, "motd");
+        new YmlFile(main, "config");
+        lang = new YmlFile(main, "lang");
+        messages = new YmlFile(main, "messages");
+        chat = new YmlFile(main, "chat");
+        announces = new YmlFile(main, "announces");
+        motd = new YmlFile(main, "motd");
 
-        filesList.forEach(SavedFile::updateInitFile);
+        filesList.forEach(YmlFile::updateInitFile);
 
         records.doRecord("&7Loaded &e" + FILES + "&7 files in the plugin's folder.");
     }
@@ -180,21 +179,23 @@ public class Initializer {
         records.doRecord("", "&bLoading all the listeners...");
         new PlayerListener(main);
         new MOTDListener(main);
+        new FormatListener(main);
         new LoginListener(main);
         new VanishListener(main);
         records.doRecord("&7Registered &e" + LISTENERS + "&7 plugin's listeners.");
     }
 
-    public void reloadFiles() { filesList.forEach(SavedFile::reloadFile); }
+    public void reloadFiles() { filesList.forEach(YmlFile::reloadFile); }
 
     public void checkFeatures(CommandSender sender) {
-        if (main.getTextUtils().getOption(1, "enabled") ||
+        if (main.getMessages().getBoolean("enabled", true) ||
                 main.getAnnouncer().getDelay() != 0 ||
-                main.getMOTD().getBoolean("enabled")) return;
+                main.getMOTD().getBoolean("enabled") ||
+                main.getChat().getBoolean("enabled")) return;
 
         records.doRecord(sender,
                 "", "<P> &All main features of &eS.I.R. &7are disabled.",
-                "<P> &cIt's better to delete the plugin instead doing that...",
+                "<P> &cIt's better to remove the plugin instead doing that...",
                 sender != null ? "" : null
         );
     }
