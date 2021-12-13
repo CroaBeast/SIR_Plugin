@@ -11,7 +11,7 @@
 main-prefix: ' &e&lSIR &8>&7'
 
 # IF YOU WANT TO DISABLE ANY OF THESE MESSAGES, JUST LEAVE IT BLANK >> ''
-reload-files: '<P> All the .yml files was reloaded successfully.'
+reload-files: '<P> All the .yml files was reloaded successfully in {TIME} ms.'
 no-permission: '<P> You don''t have the permission &c{PERM} &7to use this.'
 wrong-arg: '<P> The argument &c{ARG} &7is invalid or does not exist.'
 empty-message: '<P> You can''t send an empty message, type something.'

@@ -21,7 +21,7 @@ public final class Application extends JavaPlugin {
     private PermUtils perms;
     private EventUtils utils;
     private Announcer announcer;
-    private DoUpdate doUpdate;
+    private Amender amender;
 
     public String PLUGIN_VERSION;
     public String MC_FORK;
@@ -44,7 +44,7 @@ public final class Application extends JavaPlugin {
         perms = new PermUtils(main);
         utils = new EventUtils(main);
         announcer = new Announcer(main);
-        doUpdate = new DoUpdate(main);
+        amender = new Amender(main);
 
         init.startMetrics(); // The bStats method for Metrics class
         new Executor(main); // Register the main cmd for the plugin
@@ -62,16 +62,14 @@ public final class Application extends JavaPlugin {
         init.setPluginHooks();
         init.registerListeners();
         announcer.startTask();
-        records.doRecord("&7The announcement task has been started.");
-        init.checkFeatures(null);
 
-        records.doRecord("",
+        records.doRecord("&7The announcement task has been started.", "",
                 "&7SIR " + PLUGIN_VERSION + " was&a loaded&7 in " +
                         (System.currentTimeMillis() - start) + " ms."
         );
         records.rawRecord("");
 
-        doUpdate.initUpdater(null);
+        amender.initUpdater(null);
     }
 
     @Override
@@ -105,7 +103,7 @@ public final class Application extends JavaPlugin {
     public TextUtils getTextUtils() { return text; }
     public PermUtils getPermUtils() { return perms; }
     public EventUtils getEventUtils() { return utils; }
-    public DoUpdate getDoUpdate() { return doUpdate; }
+    public Amender getAmender() { return amender; }
     public Announcer getAnnouncer() { return announcer; }
 
     public Plugin getPlugin(String name) {

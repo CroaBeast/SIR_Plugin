@@ -43,23 +43,18 @@ public class Executor {
         text.send(sender, path, key, value);
     }
 
-    private void sendMessage(String path) {
-        text.send(sender, path, null, null);
-    }
-
     private boolean oneMessage(String path, String key, String value) {
         sendMessage(path, key, value);
         return true;
     }
 
     private boolean oneMessage(String path) {
-        sendMessage(path);
+        sendMessage(path, null, null);
         return true;
     }
 
     private boolean hasNoPerm(String perm) {
         if (perms.hasPerm(sender, "sir." + perm)) return false;
-
         sendMessage("no-permission", "PERM", "sir." + perm);
         return true;
     }
@@ -70,7 +65,7 @@ public class Executor {
     }
 
     private boolean sendPrintHelp(String name) {
-        sendMessage("print-help." + name);
+        sendMessage("print-help." + name, null, null);
         return true;
     }
 
@@ -216,10 +211,11 @@ public class Executor {
                 case "reload":
                     if (hasNoPerm("admin.reload")) return true;
 
+                    long start = System.currentTimeMillis();
                     main.getInitializer().reloadFiles();
                     if (!announcer.isRunning()) announcer.startTask();
-                    sendMessage("reload-files");
-                    main.getInitializer().checkFeatures(sender);
+                    sendMessage("reload-files", "TIME",
+                            (System.currentTimeMillis() - start) + "");
                     return true;
 
                 case "support":
@@ -309,7 +305,7 @@ public class Executor {
                     targets(args[1]).forEach(p -> {
                         String[] message = text.parsePAPI(p, noFormat).split(split);
                         if (args[2].matches("(?i)DEFAULT"))
-                            text.title(p, message, new String[] {"10", "50", "10"});
+                            text.title(p, message, null);
                         else text.title(p, message, args[2].split(","));
                     });
                     messageLogger("TITLE", noFormat.replace(split, "&r" + split));

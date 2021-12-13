@@ -130,6 +130,7 @@ public class TextUtils {
     }
 
     private boolean checkInts(String[] array) {
+        if (array == null) return false;
         for (String integer : array)
             if (!integer.matches("-?\\d+")) return false;
         return true;

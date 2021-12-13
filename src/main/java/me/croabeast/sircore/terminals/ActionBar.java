@@ -36,9 +36,8 @@ public class ActionBar implements Reflection {
         };
     }
 
-    private void newerActBar(Player player, String message) {
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
+    private GetActionBar newActionBar() {
+        return (player, message) ->
+                player.spigot().sendMessage(ChatMessageType.ACTION_BAR, TextComponent.fromLegacyText(message));
     }
-
-    private GetActionBar newActionBar() { return this::newerActBar; }
 }

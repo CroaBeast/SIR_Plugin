@@ -45,16 +45,16 @@ public class MOTDListener implements Listener {
         main.saveResource(path, false);
     }
 
-    private ConfigurationSection getID() {
+    private ConfigurationSection getList() {
         return main.getMOTD().getConfigurationSection("motd-list");
     }
 
     private void registerMOTD() {
-        List<String> keys = new ArrayList<>(getID().getKeys(false));
+        List<String> keys = new ArrayList<>(getList().getKeys(false));
         Map<Integer, ConfigurationSection> sections = new HashMap<>();
 
         keys.forEach(s ->
-                sections.put(keys.indexOf(s), getID().getConfigurationSection(s))
+                sections.put(keys.indexOf(s), getList().getConfigurationSection(s))
         );
 
         int count = sections.size() - 1;

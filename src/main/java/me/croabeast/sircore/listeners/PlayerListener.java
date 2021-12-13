@@ -24,16 +24,18 @@ public class PlayerListener implements Listener {
         main.registerListener(this);
     }
 
+    private boolean isSilent() { return text.getOption(3, "silent"); }
+
     @EventHandler(priority = EventPriority.MONITOR)
     private void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         ConfigurationSection id = utils.lastSection(player, true);
 
-        main.getDoUpdate().initUpdater(player);
+        main.getAmender().initUpdater(player);
         if (!main.getMessages().getBoolean("enabled", true)) return;
         event.setJoinMessage(null); //Message initializer
 
-        if (perms.isVanished(player, true) && text.getOption(3, "silent")) return;
+        if (perms.isVanished(player, true) && isSilent()) return;
         if (init.HAS_LOGIN && text.getOption(2, "enabled")) {
             if (text.getOption(2, "spawn-before")) utils.goSpawn(id, player);
             return;
@@ -50,7 +52,7 @@ public class PlayerListener implements Listener {
         if (!main.getMessages().getBoolean("enabled", true)) return;
         event.setQuitMessage(null); //Message initializer
 
-        if (perms.isVanished(player, false) && text.getOption(3, "silent")) return;
+        if (perms.isVanished(player, false) && isSilent()) return;
         if (init.HAS_LOGIN) {
             if (!utils.getLoggedPlayers().contains(player)) return;
             utils.getLoggedPlayers().remove(player);

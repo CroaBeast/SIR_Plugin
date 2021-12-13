@@ -21,9 +21,9 @@ updater:
     lang: true
     # I DO NOT recommend update those files. But if you want to...
     messages: false
+    chat: false
     announces: false
     motd: false
-    discord: false
 
 # Some useful options for this plugin if you want to change them.
 # ------------------------------------------------------------

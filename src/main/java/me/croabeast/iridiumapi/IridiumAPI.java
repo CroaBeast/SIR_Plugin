@@ -41,7 +41,8 @@ public class IridiumAPI {
     @NotNull
     public static String process(@NotNull String string) {
         for (Patterns pattern : PATTERNS) string = pattern.process(string);
-        return ChatColor.translateAlternateColorCodes('&', string);
+        string = ChatColor.translateAlternateColorCodes('&', string);
+        return string;
     }
 
     @NotNull

@@ -92,26 +92,22 @@ public class EventUtils {
         records.doRecord("&7> &f" + message);
     }
 
-    private String initLine(String type, String message) {
+    private String parse(String type, String message) {
         message = message.substring(type.length());
-        if (message.startsWith(" ")) message = message.substring(1);
-        return message;
+        return message.startsWith(" ") ? message.substring(1) : message;
     }
 
     public void typeMessage(Player player, String line) {
         if (line.startsWith("[ACTION-BAR]"))
-            text.actionBar(player, initLine("[ACTION-BAR]", line));
+            text.actionBar(player, parse("[ACTION-BAR]", line));
         else if (line.startsWith("[TITLE]")) {
             String split = Pattern.quote(text.getSplit());
-            text.title(player,
-                    initLine("[TITLE]", line).split(split),
-                    new String[] {"10", "50", "10"}
-            );
+            text.title(player, parse("[TITLE]", line).split(split), null);
         }
-        else if (line.startsWith("[JSON]"))
+        else if (line.startsWith("[JSON]") && line.contains("{\"text\":"))
             Bukkit.dispatchCommand(
                     Bukkit.getConsoleSender(), "minecraft:tellraw " +
-                    player.getName() + " " + initLine("[JSON]", line)
+                    player.getName() + " " + parse("[JSON]", line)
             );
         else text.sendMixed(player, line);
     }
@@ -194,9 +190,8 @@ public class EventUtils {
             if (player != null)
                 message = doFormat(message, player, false);
 
-            if (message.startsWith("[PLAYER]") && player != null) {
-                Bukkit.dispatchCommand(player, initLine("[PLAYER]", message));
-            }
+            if (message.startsWith("[PLAYER]") && player != null)
+                Bukkit.dispatchCommand(player, parse("[PLAYER]", message));
             else Bukkit.dispatchCommand(Bukkit.getConsoleSender(), message);
         }
     }

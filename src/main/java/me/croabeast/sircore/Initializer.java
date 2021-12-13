@@ -3,7 +3,6 @@ package me.croabeast.sircore;
 import me.croabeast.sircore.listeners.*;
 import me.croabeast.sircore.objects.*;
 import net.milkbowl.vault.permission.*;
-import org.bukkit.command.*;
 import org.bukkit.plugin.*;
 
 import java.util.*;
@@ -186,19 +185,6 @@ public class Initializer {
     }
 
     public void reloadFiles() { filesList.forEach(YmlFile::reloadFile); }
-
-    public void checkFeatures(CommandSender sender) {
-        if (main.getMessages().getBoolean("enabled", true) ||
-                main.getAnnouncer().getDelay() != 0 ||
-                main.getMOTD().getBoolean("enabled") ||
-                main.getChat().getBoolean("enabled")) return;
-
-        records.doRecord(sender,
-                "", "<P> &All main features of &eS.I.R. &7are disabled.",
-                "<P> &cIt's better to remove the plugin instead doing that...",
-                sender != null ? "" : null
-        );
-    }
 
     private void showPluginInfo(String name) {
         String pluginVersion;

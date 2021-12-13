@@ -26,7 +26,9 @@ public class YmlFile {
         this.location = name + ".yml";
         this.firstUse = false;
 
-        registerFile();
+        saveDefaultFile();
+        file = YamlConfiguration.loadConfiguration(catchFile());
+
         Initializer init = main.getInitializer();
         init.FILES++;
         init.getFilesList().add(this);
@@ -70,15 +72,11 @@ public class YmlFile {
             return;
         }
         if (rawYmlFile == null) rawYmlFile = catchFile();
-        if (!rawYmlFile.exists())
+        if (!rawYmlFile.exists()) {
+            records.doRecord("&cFile " + location + " missing... &7Generating!");
+            this.firstUse = true;
             main.saveResource(location, false);
-    }
-
-    private void registerFile() {
-        if (catchFile().exists()) return;
-        records.doRecord("&cFile " + location + " missing... &7Generating!");
-        this.firstUse = true;
-        saveDefaultFile();
+        }
     }
 
     public void updateInitFile() {

@@ -7,14 +7,14 @@ import org.bukkit.entity.*;
 
 import java.util.*;
 
-public class DoUpdate {
+public class Amender {
 
     private final Application main;
     private final Records records;
     private final TextUtils text;
     private final PermUtils perms;
 
-    public DoUpdate(Application main) {
+    public Amender(Application main) {
         this.main = main;
         this.records = main.getRecords();
         this.text = main.getTextUtils();
