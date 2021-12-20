@@ -15,12 +15,15 @@ import java.util.*;
 public final class Application extends JavaPlugin {
 
     private Application main;
+
     private Records records;
     private Initializer init;
+
     private TextUtils text;
     private PermUtils perms;
     private EventUtils utils;
-    private Announcer announcer;
+
+    private Reporter reporter;
     private Amender amender;
 
     public String PLUGIN_VERSION;
@@ -40,10 +43,12 @@ public final class Application extends JavaPlugin {
 
         records = new Records(main);
         init = new Initializer(main);
+
         text = new TextUtils(main);
         perms = new PermUtils(main);
         utils = new EventUtils(main);
-        announcer = new Announcer(main);
+
+        reporter = new Reporter(main);
         amender = new Amender(main);
 
         init.startMetrics(); // The bStats method for Metrics class
@@ -61,7 +66,7 @@ public final class Application extends JavaPlugin {
         init.loadSavedFiles();
         init.setPluginHooks();
         init.registerListeners();
-        announcer.startTask();
+        reporter.startTask();
 
         records.doRecord("&7The announcement task has been started.", "",
                 "&7SIR " + PLUGIN_VERSION + " was&a loaded&7 in " +
@@ -79,7 +84,7 @@ public final class Application extends JavaPlugin {
                 "&0* &e(___&0 * * &e|&0* * &e|___)",
                 "&0* &e____) . _|_ . | &0* &e\\ . &fv" + PLUGIN_VERSION, ""
         );
-        announcer.cancelTask();
+        reporter.cancelTask();
         records.doRecord(
                 "&7The announcement task has been stopped.",
                 "&7SIR &c" + PLUGIN_VERSION + "&7 was totally disabled.",
@@ -97,14 +102,17 @@ public final class Application extends JavaPlugin {
     public FileConfiguration getLang() { return init.lang.getFile(); }
     public FileConfiguration getMessages() { return init.messages.getFile(); }
     public FileConfiguration getMOTD() { return init.motd.getFile(); }
+    public FileConfiguration getDiscord() { return init.discord.getFile(); }
 
     public Records getRecords() { return records; }
     public Initializer getInitializer() { return init; }
+
     public TextUtils getTextUtils() { return text; }
     public PermUtils getPermUtils() { return perms; }
     public EventUtils getEventUtils() { return utils; }
+
     public Amender getAmender() { return amender; }
-    public Announcer getAnnouncer() { return announcer; }
+    public Reporter getReporter() { return reporter; }
 
     public Plugin getPlugin(String name) {
         return Bukkit.getPluginManager().getPlugin(name);

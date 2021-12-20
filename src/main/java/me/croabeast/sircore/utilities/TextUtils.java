@@ -51,11 +51,15 @@ public class TextUtils {
     public String getSplit() { return getValue("line-separator"); }
 
     public String parsePAPI(Player player, String message) {
-        return IridiumAPI.process(papi.parsePAPI(player, message));
+        return papi.parsePAPI(player, message);
+    }
+
+    public String parse(Player player, String message) {
+        return IridiumAPI.process(parsePAPI(player, message));
     }
 
     public void sendCentered(Player player, String message) {
-        message = parsePAPI(player, message);
+        message = parse(player, message);
 
         int messagePxSize = 0;
         boolean previousCode = false;
@@ -90,7 +94,7 @@ public class TextUtils {
 
     public void sendMixed(Player player, String message) {
         String center = getValue("center-prefix");
-        if (!message.startsWith(center)) player.sendMessage(parsePAPI(player, message));
+        if (!message.startsWith(center)) player.sendMessage(parse(player, message));
         else sendCentered(player, message.replace(center, ""));
     }
 

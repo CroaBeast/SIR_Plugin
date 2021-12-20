@@ -46,7 +46,7 @@ public class Completer {
             if (args.length == 1) return resultTab("start", "preview", "cancel", "reboot");
 
             if(args.length == 2 && args[0].matches("(?i)preview"))
-                return resultTab(new ArrayList<>(main.getAnnouncer().getID().getKeys(false)));
+                return resultTab(new ArrayList<>(main.getReporter().getID().getKeys(false)));
 
             return new ArrayList<>();
         };

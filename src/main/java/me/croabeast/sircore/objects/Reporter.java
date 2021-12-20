@@ -8,7 +8,7 @@ import org.bukkit.scheduler.*;
 
 import java.util.*;
 
-public class Announcer {
+public class Reporter {
 
     private final Application main;
     private final TextUtils text;
@@ -19,7 +19,7 @@ public class Announcer {
 
     private BukkitRunnable runnable;
 
-    public Announcer(Application main) {
+    public Reporter(Application main) {
         this.main = main;
         this.text = main.getTextUtils();
         this.utils = main.getEventUtils();
@@ -39,10 +39,7 @@ public class Announcer {
 
     private void lineLogger(String line) {
         main.getRecords().rawRecord("[SIR-ANNOUNCES] " +
-                line.replace(
-                        text.getSplit(),
-                        "&r" + text.getSplit()
-                )
+                line.replace(text.getSplit(), "&r" + text.getSplit())
         );
     }
 
@@ -98,7 +95,7 @@ public class Announcer {
     }
 
     public int getDelay() {
-        return main.getAnnounces().getInt("interval", 20 * 60);
+        return main.getAnnounces().getInt("interval", 1200);
     }
 
     public void cancelTask() {

@@ -1,0 +1,89 @@
+########################
+#   SIR by CroaBeast   #
+# Depressed since 2004 #
+########################
+# Want to use unicode characters? Check this site: https://coolsymbol.com
+
+# WARNING:
+# DO NOT FORGET TO SET UP PROPERLY YOUR DiscordSRV CONFIG.YML FILE BEFORE
+# USING THIS MODULE!!!!
+# Useful link: https://docs.discordsrv.com/Installation/
+# NOTE: You need to disable the default join-quit messages of DiscordSRV in
+# its plugins/DiscordSRV/messages.yml file to not see duplicated messages.
+
+# Copy your Server ID and paste it here.
+# If the SERVER ID is invalid or is empty, this module will be disabled.
+server-id: SERVER_ID
+
+# Put every channel you want to receive a message type.
+# Or just put the same channel for every message type lol
+channels:
+  first-join: CHANNEL_ID
+  join: CHANNEL_ID
+  quit: CHANNEL_ID
+  chat: CHANNEL_ID
+
+# Edit every format you want in here! More formats coming soon...
+# Internal Placeholders:
+# - {PLAYER}: player's name
+# - {UUID}: player's UUID
+formats:
+  first-join:
+    # If this text is '' or missing, the embed message will be showed.
+    # Else it will send a plain message.
+    text: ''
+    # If the embed section is missing, it will send the plain text above
+    # If you don't like any string of this section, delete it or set it ''
+    embed:
+      # The embed message's color. If the color is invalid or missing,
+      # will use the BLACK color as default.
+      color: YELLOW
+      author:
+        # The message of the author. Deleting this won't add author's message.
+        name: 'Made by CroaBeast'
+        # The clickable link for the author.
+        # WARNING: THIS DEPENDS ON THE AUTHOR'S MESSAGE. SO TO USE THE URL
+        # THE AUTHOR'S MESSAGE NEEDS TO BE NOT NULL OR ''
+        url: 'https://www.spigotmc.org/resources/96378/'
+        # The picture that shows up in the author's name.
+        iconURL: 'https://crafatar.com/avatars/{UUID}'
+      # The thumbnail for the embed message. If it's missing, it will not
+      # show any image in the thumbnail.
+      thumbnail: 'https://crafatar.com/avatars/{UUID}'
+      # The title and description of the body of the embed message.
+      title: 'S.I.R. - Chat Plugin'
+      description: ':bell: `{PLAYER} has join the server for the first time`'
+      # It will set a time stamp of the embed the actual time if enabled.
+      timeStamp: true
+  join:
+    text: ''
+    embed:
+      color: GREEN
+      author:
+        name: 'Made by CroaBeast'
+        url: 'https://www.spigotmc.org/resources/96378/'
+        iconURL: 'https://crafatar.com/avatars/{UUID}'
+      thumbnail: 'https://crafatar.com/avatars/{UUID}'
+      title: 'S.I.R. - Chat Plugin'
+      description: ':white_check_mark: `{PLAYER} has join the server`:bangbang:'
+      timeStamp: true
+  quit:
+    text: ':x: `{PLAYER} has left the server` :broken_heart:'
+    embed:
+      color: RED
+      author:
+        name: ''
+        url: ''
+        iconURL: ''
+      thumbnail: ''
+      title: ''
+      description: ''
+      timeStamp: true
+  # You can also use embed messages here, but I don't think if that will
+  # look good or 'aesthetic' in your chat channel xd
+  # Specific internal placeholders:
+  # {PREFIX}: the player's prefix specified for each player in chat.yml file
+  # {SUFFIX}: the player's suffix specified for each player in chat.yml file
+  # {MESSAGE}: the player's message that sends to the chat
+  chat:
+    text: '**{PREFIX}** {PLAYER} `{SUFFIX}` :white_small_square: {MESSAGE}'

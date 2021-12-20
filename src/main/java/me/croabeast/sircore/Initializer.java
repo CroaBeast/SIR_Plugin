@@ -1,9 +1,12 @@
 package me.croabeast.sircore;
 
+import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
+import github.scarsz.discordsrv.util.*;
 import me.croabeast.sircore.listeners.*;
 import me.croabeast.sircore.objects.*;
 import net.milkbowl.vault.permission.*;
 import org.bukkit.plugin.*;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 
@@ -18,6 +21,7 @@ public class Initializer {
     public YmlFile lang;
     public YmlFile messages;
     public YmlFile motd;
+    public YmlFile discord;
 
     public int LISTENERS = 0;
     public int FILES = 0;
@@ -77,6 +81,7 @@ public class Initializer {
         chat = new YmlFile(main, "chat");
         announces = new YmlFile(main, "announces");
         motd = new YmlFile(main, "motd");
+        discord = new YmlFile(main, "discord");
 
         filesList.forEach(YmlFile::updateInitFile);
 
@@ -88,6 +93,7 @@ public class Initializer {
 
         metrics.addCustomChart(new Metrics.SimplePie("hasPAPI", () -> HAS_PAPI + ""));
         metrics.addCustomChart(new Metrics.SimplePie("hasVault", () -> HAS_VAULT + ""));
+        metrics.addCustomChart(new Metrics.SimplePie("hasDiscord", () -> DISCORD + ""));
 
         metrics.addCustomChart(new Metrics.DrilldownPie("loginPlugins", () -> {
             Map<String, Map<String, Integer>> map = new HashMap<>();
@@ -138,6 +144,16 @@ public class Initializer {
                 records.doRecord("&7Vault&a installed&7, hooking in a perm plugin...");
             }
             else records.doRecord("&7Unknown perm provider&7, using default system.");
+        }
+
+        // DiscordSRV Hook
+        records.doRecord("", "&bChecking if DiscordSRV is enabled...");
+        showPluginInfo("DiscordSRV");
+
+        if (DISCORD) {
+            if (getServer() == null)
+                records.doRecord("&cYour Server ID is invalid. Unhooking...");
+            else records.doRecord("&7Hooked to: &e" + getServer().getName());
         }
 
         // Login hook
@@ -199,5 +215,14 @@ public class Initializer {
         }
 
         records.doRecord("&7" + name + " " + pluginVersion + isHooked);
+    }
+
+    @Nullable
+    public Guild getServer() {
+        try {
+            String server = main.getDiscord().getString("server-id", "");
+            return DiscordUtil.getJda().getGuildById(server);
+        }
+        catch (Exception e) { return null; }
     }
 }

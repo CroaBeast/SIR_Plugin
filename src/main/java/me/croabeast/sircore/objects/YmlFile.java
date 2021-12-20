@@ -27,7 +27,7 @@ public class YmlFile {
         this.firstUse = false;
 
         saveDefaultFile();
-        file = YamlConfiguration.loadConfiguration(catchFile());
+        reloadFile();
 
         Initializer init = main.getInitializer();
         init.FILES++;
@@ -47,9 +47,8 @@ public class YmlFile {
 
     private void saveFile() {
         if (file == null || rawYmlFile == null) return;
-        try {
-            this.getFile().save(this.rawYmlFile);
-        } catch (IOException e) {
+        try { this.getFile().save(this.rawYmlFile); }
+        catch (IOException e) {
             records.doRecord("&7The &e" + location + "&7 file&c couldn't be saved&7.");
             e.printStackTrace();
         }
@@ -57,9 +56,8 @@ public class YmlFile {
     }
 
     private void updatingFile() {
-        try {
-            ConfigUpdater.update(main, location, catchFile(), Collections.emptyList());
-        } catch (IOException e) {
+        try { ConfigUpdater.update(main, location, catchFile(), Collections.emptyList()); }
+        catch (IOException e) {
             records.doRecord("&7The &e" + location + "&7 file&c couldn't be updated&7.");
             e.printStackTrace();
         }

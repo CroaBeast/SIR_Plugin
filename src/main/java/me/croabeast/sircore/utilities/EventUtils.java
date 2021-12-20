@@ -1,12 +1,15 @@
 package me.croabeast.sircore.utilities;
 
 import me.croabeast.sircore.*;
+import me.croabeast.sircore.hooks.DiscordMsg;
 import me.croabeast.sircore.objects.*;
 import org.apache.commons.lang.*;
 import org.bukkit.*;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.*;
 import org.bukkit.configuration.file.*;
 import org.bukkit.entity.*;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 import java.util.regex.*;
@@ -33,9 +36,10 @@ public class EventUtils {
                 new String[] {"{PLAYER}", "{WORLD}"},
                 new String[] {player.getName(), player.getWorld().getName()}
         );
-        return isColor ? text.parsePAPI(player, message) : message;
+        return isColor ? text.parse(player, message) : message;
     }
 
+    @Nullable
     public ConfigurationSection lastSection(FileConfiguration file, Player player, String path) {
         ConfigurationSection finalId = null;
         String maxPerm = "";
@@ -72,16 +76,15 @@ public class EventUtils {
         return finalId;
     }
 
+    @Nullable
     public ConfigurationSection lastSection(Player player, String path) {
         return lastSection(main.getMessages(), player, path);
     }
 
+    @Nullable
     public ConfigurationSection lastSection(Player player, boolean isJoin) {
         return lastSection(player, isJoin ?
-                (!player.hasPlayedBefore() &&
-                        main.getMessages().isConfigurationSection("first-join") ?
-                        "first-join" : "join"
-                ) : "quit"
+                (!player.hasPlayedBefore() ? "first-join" : "join") : "quit"
         );
     }
 
@@ -168,18 +171,17 @@ public class EventUtils {
         player.teleport(location);
     }
 
-    private void send(ConfigurationSection id, Player player, boolean isPublic) {
+    private void runMsgs(ConfigurationSection id, Player player, boolean isPublic) {
         for (String line : id.getStringList(isPublic ? "public" : "private")) {
             if (line == null || line.equals("")) continue;
             if (line.startsWith(" ")) line = line.substring(1);
 
             line = doFormat(line, player, false);
-            sendToConsole(line);
-            String message = text.parsePAPI(player, line);
+            sendToConsole(text.parsePAPI(player, line));
+            String message = text.parse(player, line);
 
-            if (isPublic)
-                main.everyPlayer().forEach(p -> typeMessage(p, message));
-            else typeMessage(player, message);
+            if (!isPublic) typeMessage(player, message);
+            else main.everyPlayer().forEach(p -> typeMessage(p, message));
         }
     }
 
@@ -190,29 +192,37 @@ public class EventUtils {
             if (player != null)
                 message = doFormat(message, player, false);
 
-            if (message.startsWith("[PLAYER]") && player != null)
-                Bukkit.dispatchCommand(player, parse("[PLAYER]", message));
-            else Bukkit.dispatchCommand(Bukkit.getConsoleSender(), message);
+            boolean isPlayer = message.startsWith("[PLAYER]") && player != null;
+            CommandSender sender = isPlayer ? player : Bukkit.getConsoleSender();
+            String cmd = isPlayer ? parse("[PLAYER]", message) : message;
+            Bukkit.dispatchCommand(sender, cmd);
         }
     }
 
-    public void runEvent(ConfigurationSection id, Player player, boolean join, boolean spawn, boolean login) {
+    public void runEvent(ConfigurationSection id, Player p, boolean isJoin, boolean doTP, boolean login) {
         Bukkit.getScheduler().runTaskLater(main, () -> {
             if (id == null) {
-                records.doRecord(player,
+                records.doRecord(p,
                         "<P> &cA valid message group isn't found...",
                         "<P> &7Please check your&e messages.yml &7file."
                 );
                 return;
             }
 
-            if (join) playSound(id, player);
-            if (join) giveGod(id, player);
-            if (join && spawn) goSpawn(id, player);
+            runMsgs(id, p, true);
+            if (isJoin) {
+                runMsgs(id, p, false);
+                playSound(id, p);
+                giveGod(id, p);
+                if (doTP) goSpawn(id, p);
+            }
+            runCmds(id, isJoin ? p : null);
 
-            send(id, player, true);
-            if (join) send(id, player, false);
-            runCmds(id, join ? player : null);
-        }, login ? main.getConfig().getInt("login.ticks-after", 0) : 3);
+            if (main.getInitializer().DISCORD) {
+                DiscordMsg msg = new DiscordMsg(main, p, isJoin ?
+                        (!p.hasPlayedBefore() ? "first-join" : "join") : "quit");
+                if (main.getInitializer().getServer() != null) msg.sendMessage();
+            }
+        }, login ? main.getConfig().getInt("login.ticks-after") : 3);
     }
 }

@@ -16,7 +16,7 @@ public class Executor {
     private final Records records;
     private final TextUtils text;
     private final PermUtils perms;
-    private final Announcer announcer;
+    private final Reporter reporter;
 
     private String[] args;
     private CommandSender sender;
@@ -24,7 +24,7 @@ public class Executor {
     public Executor(Application main) {
         this.main = main;
         this.records = main.getRecords();
-        this.announcer = main.getAnnouncer();
+        this.reporter = main.getReporter();
         this.text = main.getTextUtils();
         this.perms = main.getPermUtils();
 
@@ -154,23 +154,23 @@ public class Executor {
             switch (args[0].toLowerCase()) {
                 case "start":
                     if (args.length > 1) return notArgument(args[args.length - 1]);
-                    if (announcer.isRunning()) return oneMessage("cant-start");
+                    if (reporter.isRunning()) return oneMessage("cant-start");
 
-                    announcer.startTask();
-                    return oneMessage("started", null, null);
+                    reporter.startTask();
+                    return oneMessage("started");
 
                 case "cancel":
                     if (args.length > 1) return notArgument(args[args.length - 1]);
-                    if (!announcer.isRunning())  return oneMessage("cant-stop");
+                    if (!reporter.isRunning())  return oneMessage("cant-stop");
 
-                    announcer.cancelTask();
-                    return oneMessage("stopped", null, null);
+                    reporter.cancelTask();
+                    return oneMessage("stopped");
 
                 case "reboot":
                     if (args.length > 1) return notArgument(args[args.length - 1]);
 
-                    if (announcer.isRunning()) announcer.cancelTask();
-                    announcer.startTask();
+                    if (reporter.isRunning()) reporter.cancelTask();
+                    reporter.startTask();
                     return oneMessage("rebooted");
 
                 case "preview":
@@ -181,11 +181,11 @@ public class Executor {
                         return true;
                     }
 
-                    if (args.length == 1 || announcer.getID() == null ||
-                            announcer.getID().getConfigurationSection(args[1]) == null)
+                    if (args.length == 1 || reporter.getID() == null ||
+                            reporter.getID().getConfigurationSection(args[1]) == null)
                         return oneMessage("select-announce");
 
-                    announcer.runSection(announcer.getID().getConfigurationSection(args[1]));
+                    reporter.runSection(reporter.getID().getConfigurationSection(args[1]));
                     return true;
 
                 default: return notArgument(args[args.length - 1]);
@@ -213,7 +213,7 @@ public class Executor {
 
                     long start = System.currentTimeMillis();
                     main.getInitializer().reloadFiles();
-                    if (!announcer.isRunning()) announcer.startTask();
+                    if (!reporter.isRunning()) reporter.startTask();
                     sendMessage("reload-files", "TIME",
                             (System.currentTimeMillis() - start) + "");
                     return true;
@@ -263,7 +263,7 @@ public class Executor {
 
                 sendReminder(args[1]);
                 if (!targets(args[1]).isEmpty()) {
-                    targets(args[1]).forEach(p -> text.actionBar(p, text.parsePAPI(p, message)));
+                    targets(args[1]).forEach(p -> text.actionBar(p, text.parse(p, message)));
                     messageLogger("ACTION-BAR", message);
                 }
             }
@@ -284,7 +284,7 @@ public class Executor {
 
                     else if (args[2].matches("(?i)DEFAULT"))
                         targets(args[1]).forEach(
-                                p -> message.forEach(s -> p.sendMessage(text.parsePAPI(p, s))));
+                                p -> message.forEach(s -> p.sendMessage(text.parse(p, s))));
 
                     else if (args[2].matches("(?i)MIXED"))
                         targets(args[1]).forEach(p -> message.forEach(s -> text.sendMixed(p, s)));
@@ -303,7 +303,7 @@ public class Executor {
                 sendReminder(args[1]);
                 if (!targets(args[1]).isEmpty()) {
                     targets(args[1]).forEach(p -> {
-                        String[] message = text.parsePAPI(p, noFormat).split(split);
+                        String[] message = text.parse(p, noFormat).split(split);
                         if (args[2].matches("(?i)DEFAULT"))
                             text.title(p, message, null);
                         else text.title(p, message, args[2].split(","));

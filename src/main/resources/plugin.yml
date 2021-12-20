@@ -6,6 +6,7 @@ authors: [ CroaBeast ]
 softdepend:
   - AuthMe
   - CMI
+  - DiscordSRV
   - UserLogin
   - Vault
   - PlaceholderAPI
