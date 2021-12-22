@@ -51,7 +51,7 @@ formats:
     prefix: '&a&l SIR'
     suffix: '&2&oIM SEXY B)'
     hover:
-      - '<R:1>This is a hover message.<>'
+      - '<R:1>&lThis is a hover message.</R>'
       - '&e%player_name% &7is the same as &6{PLAYER}'
     click:
       execute: '/me pls help me'

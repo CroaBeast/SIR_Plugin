@@ -1,7 +1,7 @@
 package me.croabeast.sircore;
 
+import github.scarsz.discordsrv.*;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
-import github.scarsz.discordsrv.util.*;
 import me.croabeast.sircore.listeners.*;
 import me.croabeast.sircore.objects.*;
 import net.milkbowl.vault.permission.*;
@@ -44,6 +44,9 @@ public class Initializer {
     public boolean srVanish;
     public boolean prVanish;
 
+    protected Set<YmlFile> filesList = new HashSet<>();
+    public Set<YmlFile> getFilesList() { return filesList; }
+
     public Initializer(Application main) {
         this.main = main;
         records = main.getRecords();
@@ -68,9 +71,6 @@ public class Initializer {
         hookList.add(name);
         return true;
     }
-
-    protected Set<YmlFile> filesList = new HashSet<>();
-    public Set<YmlFile> getFilesList() { return filesList; }
 
     public void loadSavedFiles() {
         records.doRecord("&bLoading plugin's files...");
@@ -150,12 +150,6 @@ public class Initializer {
         records.doRecord("", "&bChecking if DiscordSRV is enabled...");
         showPluginInfo("DiscordSRV");
 
-        if (DISCORD) {
-            if (getServer() == null)
-                records.doRecord("&cYour Server ID is invalid. Unhooking...");
-            else records.doRecord("&7Hooked to: &e" + getServer().getName());
-        }
-
         // Login hook
         records.doRecord("", "&bChecking if a login plugin is enabled...");
 
@@ -218,10 +212,10 @@ public class Initializer {
     }
 
     @Nullable
-    public Guild getServer() {
+    public Guild getDiscordServer() {
         try {
             String server = main.getDiscord().getString("server-id", "");
-            return DiscordUtil.getJda().getGuildById(server);
+            return DiscordSRV.getPlugin().getJda().getGuildById(server);
         }
         catch (Exception e) { return null; }
     }

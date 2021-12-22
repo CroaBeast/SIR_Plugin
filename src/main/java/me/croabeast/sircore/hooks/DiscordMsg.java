@@ -45,7 +45,7 @@ public class DiscordMsg {
     }
 
     @Nullable
-    private Guild getServer() { return main.getInitializer().getServer(); }
+    private Guild getServer() { return main.getInitializer().getDiscordServer(); }
 
     public DiscordMsg setMessage(@NotNull String message) {
         this.message = message;

@@ -221,7 +221,7 @@ public class EventUtils {
             if (main.getInitializer().DISCORD) {
                 DiscordMsg msg = new DiscordMsg(main, p, isJoin ?
                         (!p.hasPlayedBefore() ? "first-join" : "join") : "quit");
-                if (main.getInitializer().getServer() != null) msg.sendMessage();
+                if (main.getInitializer().getDiscordServer() != null) msg.sendMessage();
             }
         }, login ? main.getConfig().getInt("login.ticks-after") : 3);
     }

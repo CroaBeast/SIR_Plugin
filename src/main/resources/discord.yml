@@ -30,7 +30,7 @@ channels:
 formats:
   first-join:
     # If this text is '' or missing, the embed message will be showed.
-    # Else it will send a plain message.
+    # Else it will send the plain message you put below.
     text: ''
     # If the embed section is missing, it will send the plain text above
     # If you don't like any string of this section, delete it or set it ''

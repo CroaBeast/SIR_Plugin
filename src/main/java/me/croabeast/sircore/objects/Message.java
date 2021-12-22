@@ -1,5 +1,7 @@
 package me.croabeast.sircore.objects;
 
+import com.Zrips.CMI.CMI;
+import com.Zrips.CMI.Modules.Warps.CmiWarp;
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.utilities.*;
 import net.md_5.bungee.api.chat.*;
@@ -65,9 +67,9 @@ public class Message {
         TextComponent component = new TextComponent(TextComponent.fromLegacyText(getFormat()));
 
         if (hoverText != null) component.setHoverEvent(new HoverEvent(SHOW_TEXT, this.hoverText));
-        if (execute != null) component.setClickEvent(new ClickEvent(RUN_COMMAND, this.execute));
-        if (suggest != null) component.setClickEvent(new ClickEvent(SUGGEST_COMMAND, this.suggest));
-        if (openURL != null) component.setClickEvent(new ClickEvent(OPEN_URL, this.openURL));
+        if (execute != null) component.setClickEvent(new ClickEvent(RUN_COMMAND, text.parsePAPI(player, this.execute)));
+        if (suggest != null) component.setClickEvent(new ClickEvent(SUGGEST_COMMAND, text.parsePAPI(player, this.suggest)));
+        if (openURL != null) component.setClickEvent(new ClickEvent(OPEN_URL, text.parsePAPI(player, this.openURL)));
 
         return component;
     }

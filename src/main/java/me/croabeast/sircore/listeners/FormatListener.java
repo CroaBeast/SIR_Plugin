@@ -59,7 +59,7 @@ public class FormatListener implements Listener {
         if (!id.getBoolean("color.normal")) line = stripBukkit(line);
         if (!id.getBoolean("color.special")) line = stripSpecial(line);
         if (!id.getBoolean("color.rgb")) line = stripRGB(line);
-        return line;
+        return parseFormat(line);
     }
 
     @EventHandler()
@@ -84,9 +84,9 @@ public class FormatListener implements Listener {
         String resultFormat = text.parse(player, start + message + end);
 
         TextComponent result = new Message(main, player, resultFormat)
-                .setExecutor(id.getString("click.execute"))
-                .setSuggestion(id.getString("click.suggest"))
-                .setURL(id.getString("click.openURL"))
+                .setExecutor(parseFormat(id.getString("click.execute")))
+                .setSuggestion(parseFormat(id.getString("click.suggest")))
+                .setURL(parseFormat(id.getString("click.openURL")))
                 .setHover(idList()).getBuilder();
 
         if (id == null || format.length > 2 || result == null) {
@@ -103,9 +103,9 @@ public class FormatListener implements Listener {
             String resultMessage = IridiumAPI.stripAll(event.getMessage());
             DiscordMsg msg = new DiscordMsg(main, player, "chat",
                     new String[]{"{PREFIX}", "{SUFFIX}"}, values).setMessage(resultMessage);
-            if (main.getInitializer().getServer() != null) msg.sendMessage();
+            if (main.getInitializer().getDiscordServer() != null) msg.sendMessage();
         }
 
-        player.spigot().sendMessage(result);
+        main.everyPlayer().forEach(p -> p.spigot().sendMessage(result));
     }
 }

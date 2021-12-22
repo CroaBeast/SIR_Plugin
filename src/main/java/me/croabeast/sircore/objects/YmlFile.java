@@ -41,7 +41,10 @@ public class YmlFile {
     public boolean isFirstUsed() { return firstUse; }
 
     public void reloadFile() {
-        if (name.equals("config")) main.reloadConfig();
+        if (name.equals("config")) {
+            main.reloadConfig();
+            return;
+        }
         file = YamlConfiguration.loadConfiguration(catchFile());
     }
 
