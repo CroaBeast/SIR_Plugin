@@ -13,9 +13,11 @@ import java.util.*;
 public class Executor {
 
     private final Application main;
-    private final Records records;
+
+    private final Recorder recorder;
     private final TextUtils text;
     private final PermUtils perms;
+
     private final Reporter reporter;
 
     private String[] args;
@@ -23,7 +25,7 @@ public class Executor {
 
     public Executor(Application main) {
         this.main = main;
-        this.records = main.getRecords();
+        this.recorder = main.getRecorder();
         this.reporter = main.getReporter();
         this.text = main.getTextUtils();
         this.perms = main.getPermUtils();
@@ -138,7 +140,7 @@ public class Executor {
         if (start == null || start.equals("")) return;
         if (format) line = IridiumAPI.process(line);
 
-        records.doRecord(start);
+        recorder.doRecord(start);
         main.getLogger().info("[" + type + "] " + line);
     }
 
@@ -175,7 +177,7 @@ public class Executor {
 
                 case "preview":
                     if (sender instanceof ConsoleCommandSender) {
-                        records.doRecord(
+                        recorder.doRecord(
                                 "&cYou can't preview an announce if you are the console."
                         );
                         return true;
@@ -210,10 +212,11 @@ public class Executor {
 
                 case "reload":
                     if (hasNoPerm("admin.reload")) return true;
-
                     long start = System.currentTimeMillis();
-                    main.getInitializer().reloadFiles();
+
+                    main.reloadFiles();
                     if (!reporter.isRunning()) reporter.startTask();
+
                     sendMessage("reload-files", "TIME",
                             (System.currentTimeMillis() - start) + "");
                     return true;
@@ -247,11 +250,11 @@ public class Executor {
                 if (hasNoPerm("print.logger")) return true;
 
                 if (args.length < 2) {
-                    records.doRecord(sender, "<P> &7Use my secret command wisely...");
+                    recorder.doRecord(sender, "<P> &7Use my secret command wisely...");
                     return true;
                 }
 
-                records.doRecord(rawMessage(1));
+                recorder.doRecord(rawMessage(1));
             }
 
             else if (args[0].matches("(?i)ACTION-BAR")) {

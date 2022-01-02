@@ -1,17 +1,17 @@
-package me.croabeast.sircore.objects;
+package me.croabeast.sircore.utilities;
 
-import me.croabeast.iridiumapi.IridiumAPI;
+import me.croabeast.iridiumapi.*;
 import me.croabeast.sircore.*;
 import org.bukkit.command.*;
 import org.bukkit.entity.*;
 
 import java.util.*;
 
-public class Records {
+public class Recorder {
 
     private final Application main;
 
-    public Records(Application main) {
+    public Recorder(Application main) {
         this.main = main;
     }
 

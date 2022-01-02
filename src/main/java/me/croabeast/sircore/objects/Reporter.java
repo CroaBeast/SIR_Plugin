@@ -5,6 +5,7 @@ import me.croabeast.sircore.utilities.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
 import org.bukkit.scheduler.*;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 
@@ -38,7 +39,7 @@ public class Reporter {
     }
 
     private void lineLogger(String line) {
-        main.getRecords().rawRecord("[SIR-ANNOUNCES] " +
+        main.getRecorder().rawRecord("[SIR-ANNOUNCES] " +
                 line.replace(text.getSplit(), "&r" + text.getSplit())
         );
     }
@@ -78,10 +79,7 @@ public class Reporter {
         else ORDER = new Random().nextInt(count + 1);
 
         runnable = new BukkitRunnable() {
-            @Override
-            public void run() {
-                startTask();
-            }
+            @Override public void run() { startTask(); }
         };
         runnable.runTaskLater(main, getDelay());
     }
@@ -90,6 +88,7 @@ public class Reporter {
         return IS_RUNNING;
     }
 
+    @Nullable
     public ConfigurationSection getID() {
         return main.getAnnounces().getConfigurationSection("messages");
     }

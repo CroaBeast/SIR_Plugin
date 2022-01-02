@@ -19,21 +19,23 @@ import static me.croabeast.iridiumapi.IridiumAPI.*;
 public class FormatListener implements Listener {
 
     private final Application main;
-    private final Records records;
+    private final Recorder recorder;
+
     private final TextUtils text;
     private final EventUtils utils;
 
     private ConfigurationSection id;
 
-    private String playerName;
-    private String playerPrefix;
-    private String playerSuffix;
+    private String playerName,
+            playerPrefix, playerSuffix;
 
     public FormatListener(Application main) {
         this.main = main;
-        this.records = main.getRecords();
+        this.recorder = main.getRecorder();
+
         this.text = main.getTextUtils();
         this.utils = main.getEventUtils();
+
         main.registerListener(this);
     }
 
@@ -90,20 +92,20 @@ public class FormatListener implements Listener {
                 .setHover(idList()).getBuilder();
 
         if (id == null || format.length > 2 || result == null) {
-            main.getRecords().doRecord(player,
+            recorder.doRecord(player,
                     "<P> &cCouldn't found any valid chat format, check your chat.yml");
             return;
         }
 
         event.setCancelled(true);
-        records.rawRecord(resultFormat);
+        recorder.rawRecord(resultFormat);
 
         if (main.getInitializer().DISCORD) {
             String[] values = {IridiumAPI.stripAll(playerPrefix), IridiumAPI.stripAll(playerSuffix)};
             String resultMessage = IridiumAPI.stripAll(event.getMessage());
             DiscordMsg msg = new DiscordMsg(main, player, "chat",
                     new String[]{"{PREFIX}", "{SUFFIX}"}, values).setMessage(resultMessage);
-            if (main.getInitializer().getDiscordServer() != null) msg.sendMessage();
+            if (main.getInitializer().discordServer() != null) msg.sendMessage();
         }
 
         main.everyPlayer().forEach(p -> p.spigot().sendMessage(result));

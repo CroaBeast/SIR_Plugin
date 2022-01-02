@@ -10,32 +10,45 @@ import org.bukkit.event.player.*;
 public class PlayerListener implements Listener {
 
     private final Application main;
+
     private final Initializer init;
     private final TextUtils text;
     private final PermUtils perms;
+
     private final EventUtils utils;
 
     public PlayerListener(Application main) {
         this.main = main;
+
         this.init = main.getInitializer();
         this.text = main.getTextUtils();
         this.perms = main.getPermUtils();
+
         this.utils = main.getEventUtils();
         main.registerListener(this);
     }
 
     private boolean isSilent() { return text.getOption(3, "silent"); }
 
-    @EventHandler(priority = EventPriority.MONITOR)
-    private void onJoin(PlayerJoinEvent event) {
+    @EventHandler
+    private void onLogin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
-        ConfigurationSection id = utils.lastSection(player, true);
 
         main.getAmender().initUpdater(player);
         if (!main.getMessages().getBoolean("enabled", true)) return;
-        event.setJoinMessage(null); //Message initializer
 
-        if (perms.isVanished(player, true) && isSilent()) return;
+        ConfigurationSection id = utils.lastSection(player, true);
+        if (id == null) {
+            main.getRecorder().doRecord(player,
+                    "<P> &cA valid message group isn't found...",
+                    "<P> &7Please check your&e messages.yml &7file."
+            );
+            return;
+        }
+
+        event.setJoinMessage(null);
+
+        if (init.HAS_VANISH && isSilent() && perms.isVanished(player, true)) return;
         if (init.HAS_LOGIN && text.getOption(2, "enabled")) {
             if (text.getOption(2, "spawn-before")) utils.goSpawn(id, player);
             return;
@@ -44,12 +57,21 @@ public class PlayerListener implements Listener {
         utils.runEvent(id, player, true, true, false);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler
     private void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
-        ConfigurationSection id = utils.lastSection(player, false);
 
         if (!main.getMessages().getBoolean("enabled", true)) return;
+
+        ConfigurationSection id = utils.lastSection(player, false);
+        if (id == null) {
+            main.getRecorder().doRecord(player,
+                    "<P> &cA valid message group isn't found...",
+                    "<P> &7Please check your&e messages.yml &7file."
+            );
+            return;
+        }
+
         event.setQuitMessage(null); //Message initializer
 
         if (perms.isVanished(player, false) && isSilent()) return;

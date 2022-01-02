@@ -2,6 +2,7 @@ name: SIR # Simple In-game Receptionist
 version: '${project.version}'
 prefix: SIR
 authors: [ CroaBeast ]
+load: POSTWORLD
 
 softdepend:
   - AuthMe

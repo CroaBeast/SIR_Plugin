@@ -1,5 +1,6 @@
 package me.croabeast.sircore.utilities;
 
+import com.google.common.collect.*;
 import me.clip.placeholderapi.*;
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sircore.*;
@@ -100,7 +101,7 @@ public class TextUtils {
 
     public List<String> fileList(FileConfiguration file, String path) {
         return  !file.isList(path) ?
-                Collections.singletonList(file.getString(path)) :
+                Lists.newArrayList(file.getString(path)) :
                 file.getStringList(path);
     }
 
@@ -119,7 +120,7 @@ public class TextUtils {
 
             if (sender instanceof ConsoleCommandSender) {
                 line = line.replace(center, "");
-                main.getRecords().rawRecord(line);
+                main.getRecorder().rawRecord(line);
             }
             else {
                 Player player = (Player) sender;

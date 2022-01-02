@@ -1,10 +1,10 @@
 package me.croabeast.sircore.hooks;
 
-import github.scarsz.discordsrv.dependencies.jda.api.EmbedBuilder;
+import github.scarsz.discordsrv.dependencies.jda.api.*;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
 import me.croabeast.sircore.*;
-import me.croabeast.sircore.objects.*;
-import org.apache.commons.lang.StringUtils;
+import me.croabeast.sircore.utilities.*;
+import org.apache.commons.lang.*;
 import org.bukkit.entity.*;
 import org.bukkit.Color;
 import org.jetbrains.annotations.*;
@@ -15,20 +15,17 @@ import java.util.*;
 public class DiscordMsg {
 
     private final Application main;
-    private final Records records;
+    private final Recorder recorder;
 
     private final Player player;
-    private final String type;
-    private final String embedPath;
+    private final String type, embedPath;
 
     private String message = "";
-
-    private String[] keys = null;
-    private String[] values = null;
+    private String[] keys, values;
 
     public DiscordMsg(Application main, Player player, String type) {
         this.main = main;
-        this.records = main.getRecords();
+        this.recorder = main.getRecorder();
         this.player = player;
         this.type = type;
         this.embedPath = "formats." + type + ".embed";
@@ -36,7 +33,7 @@ public class DiscordMsg {
 
     public DiscordMsg(Application main, Player player, String type, String[] keys, String[] values) {
         this.main = main;
-        this.records = main.getRecords();
+        this.recorder = main.getRecorder();
         this.player = player;
         this.type = type;
         this.embedPath = "formats." + type + ".embed";
@@ -45,7 +42,7 @@ public class DiscordMsg {
     }
 
     @Nullable
-    private Guild getServer() { return main.getInitializer().getDiscordServer(); }
+    private Guild getServer() { return main.getInitializer().discordServer(); }
 
     public DiscordMsg setMessage(@NotNull String message) {
         this.message = message;
@@ -80,7 +77,7 @@ public class DiscordMsg {
                 return ((Color) Class.forName("org.bukkit.Color").getField(rgb).get(null)).asRGB();
             }
         } catch (Exception e) {
-            records.doRecord(player, "" +
+            recorder.doRecord(player, "" +
                     "<P> &cThe color " + rgb + " is not a valid color.",
                     "<P> &7Localized error: &e" + e.getLocalizedMessage()
             );
@@ -122,7 +119,7 @@ public class DiscordMsg {
         if (getServer() == null || getChannel() == null) {
             String input = getServer() == null ?
                     "Discord Server" : "Text Channel";
-            records.doRecord(player, "" +
+            recorder.doRecord(player, "" +
                     "<P> &cThe " + input + " ID is invalid or doesn't exist.",
                     "<P> &7Please check your ID and change it ASAP."
             );

@@ -9,15 +9,13 @@ import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.*;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 
 public final class Application extends JavaPlugin {
 
-    private Application main;
-
-    private Records records;
+    private Recorder recorder;
     private Initializer init;
 
     private TextUtils text;
@@ -27,14 +25,14 @@ public final class Application extends JavaPlugin {
     private Reporter reporter;
     private Amender amender;
 
-    public String PLUGIN_VERSION;
-    public String MC_FORK;
+    private FilesUtils files;
+
+    public String PLUGIN_VERSION, MC_FORK;
     public int MC_VERSION;
 
     @Override
     public void onEnable() {
         long start = System.currentTimeMillis();
-        main = this; // The plugin instance initializing...
 
         String version = Bukkit.getBukkitVersion().split("-")[0];
 
@@ -42,70 +40,73 @@ public final class Application extends JavaPlugin {
         MC_FORK = Bukkit.getVersion().split("-")[1] + " " + version;
         PLUGIN_VERSION = getDescription().getVersion();
 
-        records = new Records(main);
-        init = new Initializer(main);
+        recorder = new Recorder(this);
+        init = new Initializer(this);
 
-        text = new TextUtils(main);
-        perms = new PermUtils(main);
-        utils = new EventUtils(main);
+        files = new FilesUtils(this);
+        text = new TextUtils(this);
+        perms = new PermUtils(this);
+        utils = new EventUtils(this);
 
-        reporter = new Reporter(main);
-        amender = new Amender(main);
+        reporter = new Reporter(this);
+        amender = new Amender(this);
 
         init.startMetrics(); // The bStats method for Metrics class
-        new Executor(main); // Register the main cmd for the plugin
+        new Executor(this); // Register the main cmd for the plugin
 
-        records.rawRecord("" +
-                "&0* *&e____ &0* &e___ &0* &e____",
-                "&0* &e(___&0 * * &e|&0* * &e|___)",
-                "&0* &e____) . _|_ . | &0* &e\\ . &fv" + PLUGIN_VERSION,
+        pluginHeader();
+        recorder.rawRecord(
                 "&0* &7Developer: " + getDescription().getAuthors().get(0),
                 "&0* &7Software: " + MC_FORK,
                 "&0* &7Java Version: " + System.getProperty("java.version"), ""
         );
 
-        init.loadSavedFiles();
+        files.loadFiles(true);
         init.setPluginHooks();
         init.registerListeners();
         reporter.startTask();
 
-        records.doRecord("&7The announcement task has been started.", "",
+        recorder.doRecord("&7The announcement task has been started.", "",
                 "&7SIR " + PLUGIN_VERSION + " was&a loaded&7 in " +
                         (System.currentTimeMillis() - start) + " ms."
         );
-        records.rawRecord("");
+        recorder.rawRecord("");
 
         amender.initUpdater(null);
     }
 
     @Override
     public void onDisable() {
-        records.rawRecord("" +
-                "&0* *&e____ &0* &e___ &0* &e____",
-                "&0* &e(___&0 * * &e|&0* * &e|___)",
-                "&0* &e____) . _|_ . | &0* &e\\ . &fv" + PLUGIN_VERSION, ""
-        );
+        pluginHeader();
         reporter.cancelTask();
-        records.doRecord(
+        recorder.doRecord(
                 "&7The announcement task has been stopped.",
                 "&7SIR &c" + PLUGIN_VERSION + "&7 was totally disabled.",
                 "&7Hope we can see you again&c nwn"
         );
-        main = null; // This will prevent any memory leaks.
+    }
+
+    private void pluginHeader() {
+        recorder.rawRecord("" +
+                "&0* *&e____ &0* &e___ &0* &e____",
+                "&0* &e(___&0 * * &e|&0* * &e|___)",
+                "&0* &e____) . _|_ . | &0* &e\\ . &fv" + PLUGIN_VERSION, ""
+        );
     }
 
     public List<Player> everyPlayer() {
         return new ArrayList<>(Bukkit.getOnlinePlayers());
     }
 
-    public FileConfiguration getChat() { return init.chat.getFile(); }
-    public FileConfiguration getAnnounces() { return init.announces.getFile(); }
-    public FileConfiguration getLang() { return init.lang.getFile(); }
-    public FileConfiguration getMessages() { return init.messages.getFile(); }
-    public FileConfiguration getMOTD() { return init.motd.getFile(); }
-    public FileConfiguration getDiscord() { return init.discord.getFile(); }
+    @NotNull public FileConfiguration getConfig() { return files.getFile("config"); }
+    public FileConfiguration getChat() { return files.getFile("chat"); }
+    public FileConfiguration getAnnounces() { return files.getFile("announces"); }
+    public FileConfiguration getLang() { return files.getFile("lang"); }
+    public FileConfiguration getMessages() { return files.getFile("messages"); }
+    public FileConfiguration getMOTD() { return files.getFile("motd"); }
+    public FileConfiguration getDiscord() { return files.getFile("discord"); }
 
-    public Records getRecords() { return records; }
+    public Recorder getRecorder() { return recorder; }
     public Initializer getInitializer() { return init; }
 
     public TextUtils getTextUtils() { return text; }
@@ -120,11 +121,13 @@ public final class Application extends JavaPlugin {
     }
 
     public void registerListener(Listener listener, boolean addListener) {
-        main.getServer().getPluginManager().registerEvents(listener, main);
+        getServer().getPluginManager().registerEvents(listener, this);
         if (addListener) init.LISTENERS++;
     }
 
     public void registerListener(Listener listener) {
         registerListener(listener, true);
     }
+
+    public void reloadFiles() { files.loadFiles(false); }
 }

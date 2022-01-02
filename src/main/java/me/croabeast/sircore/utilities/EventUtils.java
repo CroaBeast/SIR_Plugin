@@ -1,15 +1,15 @@
 package me.croabeast.sircore.utilities;
 
 import me.croabeast.sircore.*;
-import me.croabeast.sircore.hooks.DiscordMsg;
-import me.croabeast.sircore.objects.*;
+import me.croabeast.sircore.hooks.*;
 import org.apache.commons.lang.*;
 import org.bukkit.*;
-import org.bukkit.command.CommandSender;
+import org.bukkit.command.*;
 import org.bukkit.configuration.*;
 import org.bukkit.configuration.file.*;
 import org.bukkit.entity.*;
-import org.jetbrains.annotations.Nullable;
+import org.bukkit.scheduler.*;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 import java.util.regex.*;
@@ -17,13 +17,15 @@ import java.util.regex.*;
 public class EventUtils {
 
     private final Application main;
-    private final Records records;
+    private final Initializer init;
+
     private final TextUtils text;
     private final PermUtils perms;
 
     public EventUtils(Application main) {
         this.main = main;
-        this.records = main.getRecords();
+        this.init = main.getInitializer();
+
         this.text = main.getTextUtils();
         this.perms = main.getPermUtils();
     }
@@ -39,41 +41,37 @@ public class EventUtils {
         return isColor ? text.parse(player, message) : message;
     }
 
+    private String isJoinString(Player p, boolean isJoin) {
+        return isJoin ? (!p.hasPlayedBefore() ? "first-join" : "join") : "quit";
+    }
+
     @Nullable
     public ConfigurationSection lastSection(FileConfiguration file, Player player, String path) {
-        ConfigurationSection finalId = null;
+        ConfigurationSection resultSection = null;
         String maxPerm = "";
         int highest = 0;
 
         ConfigurationSection section = file.getConfigurationSection(path);
-        if (section == null) return null;
+        if (section == null || section.getKeys(false).isEmpty()) return null;
 
         for (String key : section.getKeys(false)) {
             ConfigurationSection id = section.getConfigurationSection(key);
             if (id == null) continue;
 
             String perm = id.getString("permission", "DEFAULT");
-            int before = perm.matches("(?i)DEFAULT") ? 0 : 1;
-            int priority = id.getInt("priority", before);
+            int priority = id.getInt("priority", perm.matches("(?i)DEFAULT") ? 0 : 1);
 
             if (priority > highest) {
-                highest = priority;
                 maxPerm = perm;
+                highest = priority;
             }
+
+            if (perms.certainPerm(player, maxPerm)) resultSection = id;
+            else if (perms.certainPerm(player, perm)) resultSection = id;
+            else if (perm.matches("(?i)DEFAULT")) resultSection = id;
         }
 
-        for (String key : section.getKeys(false)) {
-            ConfigurationSection id = section.getConfigurationSection(key);
-            if (id == null) continue;
-
-            String perm = id.getString("permission", "DEFAULT");
-
-            if (perms.certainPerm(player, maxPerm)) finalId = id;
-            else if (perms.certainPerm(player, perm)) finalId = id;
-            else if (perm.matches("(?i)DEFAULT")) finalId = id;
-        }
-
-        return finalId;
+        return resultSection;
     }
 
     @Nullable
@@ -83,21 +81,20 @@ public class EventUtils {
 
     @Nullable
     public ConfigurationSection lastSection(Player player, boolean isJoin) {
-        return lastSection(player, isJoin ?
-                (!player.hasPlayedBefore() ? "first-join" : "join") : "quit"
-        );
+        return lastSection(player, isJoinString(player, isJoin));
     }
 
     private void sendToConsole(String message) {
         if (!text.getOption(1, "send-console")) return;
         String split = text.getSplit();
         message = message.replace(split, "&r" + split);
-        records.doRecord("&7> &f" + message);
+        main.getRecorder().doRecord("&7> &f" + message);
     }
 
     private String parse(String type, String message) {
         message = message.substring(type.length());
-        return message.startsWith(" ") ? message.substring(1) : message;
+        while (message.charAt(0) == ' ') message = message.substring(1);
+        return message;
     }
 
     public void typeMessage(Player player, String line) {
@@ -124,14 +121,19 @@ public class EventUtils {
             Enum.valueOf(Sound.class, rawSound);
             sound = Sound.valueOf(rawSound);
         }
-        catch (IllegalArgumentException ex) { return; }
+        catch (Exception ex) {
+            main.getRecorder().doRecord(player,
+                    "<P> The sound you input is invalid."
+            );
+            return;
+        }
 
         player.playSound(player.getLocation(), sound, 1, 1);
     }
 
     private void giveGod(ConfigurationSection id, Player player) {
-        int godTime = id.getInt("invulnerable", 0) ;
-        if (main.MC_VERSION <= 8 || godTime <= 0) return;
+        int godTime = id.getInt("invulnerable") ;
+        if (main.MC_VERSION <= 8 | godTime <= 0) return;
 
         Runnable god = () -> player.setInvulnerable(false);
         player.setInvulnerable(true);
@@ -139,9 +141,10 @@ public class EventUtils {
     }
 
     public void goSpawn(ConfigurationSection id, Player player) {
-        String[] coordinates;
-        String[] rotations;
+        String[] coordinates, rotations;
         Location location;
+
+        if (!id.isConfigurationSection("spawn")) return;
 
         String name = id.getString("spawn.world", "");
         String path = id.getString("spawn.x-y-z", "");
@@ -172,9 +175,12 @@ public class EventUtils {
     }
 
     private void runMsgs(ConfigurationSection id, Player player, boolean isPublic) {
-        for (String line : id.getStringList(isPublic ? "public" : "private")) {
+        List<String> messages = id.getStringList(isPublic ? "public" : "private");
+        if (messages.isEmpty()) return;
+
+        for (String line : messages) {
             if (line == null || line.equals("")) continue;
-            if (line.startsWith(" ")) line = line.substring(1);
+            while (line.charAt(0) == ' ') line = line.substring(1);
 
             line = doFormat(line, player, false);
             sendToConsole(text.parsePAPI(player, line));
@@ -186,43 +192,41 @@ public class EventUtils {
     }
 
     public void runCmds(ConfigurationSection id, Player player) {
-        for (String message : id.getStringList("commands")) {
-            if (message == null || message.equals("")) continue;
-            if (message.startsWith(" ")) message = message.substring(1);
-            if (player != null)
-                message = doFormat(message, player, false);
+        List<String> commands = id.getStringList("commands");
+        if (commands.isEmpty()) return;
 
-            boolean isPlayer = message.startsWith("[PLAYER]") && player != null;
+        for (String line : commands) {
+            if (line == null || line.equals("")) continue;
+            while (line.charAt(0) == ' ') line = line.substring(1);
+            if (player != null)
+                line = doFormat(line, player, false);
+
+            boolean isPlayer = line.startsWith("[PLAYER]") && player != null;
             CommandSender sender = isPlayer ? player : Bukkit.getConsoleSender();
-            String cmd = isPlayer ? parse("[PLAYER]", message) : message;
+            String cmd = isPlayer ? parse("[PLAYER]", line) : line;
             Bukkit.dispatchCommand(sender, cmd);
         }
     }
 
-    public void runEvent(ConfigurationSection id, Player p, boolean isJoin, boolean doTP, boolean login) {
-        Bukkit.getScheduler().runTaskLater(main, () -> {
-            if (id == null) {
-                records.doRecord(p,
-                        "<P> &cA valid message group isn't found...",
-                        "<P> &7Please check your&e messages.yml &7file."
-                );
-                return;
-            }
+    private void initEventTasks(ConfigurationSection id, Player p, boolean isJoin, boolean doTP) {
+        runMsgs(id, p, true);
+        if (isJoin) {
+            runMsgs(id, p, false);
+            playSound(id, p);
+            giveGod(id, p);
+            if (doTP) goSpawn(id, p);
+        }
+        runCmds(id, isJoin ? p : null);
 
-            runMsgs(id, p, true);
-            if (isJoin) {
-                runMsgs(id, p, false);
-                playSound(id, p);
-                giveGod(id, p);
-                if (doTP) goSpawn(id, p);
-            }
-            runCmds(id, isJoin ? p : null);
+        if (init.DISCORD && init.discordServer() != null)
+            new DiscordMsg(main, p, isJoinString(p, isJoin)).sendMessage();
+    }
 
-            if (main.getInitializer().DISCORD) {
-                DiscordMsg msg = new DiscordMsg(main, p, isJoin ?
-                        (!p.hasPlayedBefore() ? "first-join" : "join") : "quit");
-                if (main.getInitializer().getDiscordServer() != null) msg.sendMessage();
-            }
-        }, login ? main.getConfig().getInt("login.ticks-after") : 3);
+    public void runEvent(ConfigurationSection id, Player p, boolean isJoin, boolean doTP, boolean isLogin) {
+        int ticks = main.getConfig().getInt("login.ticks-after");
+        if (!isLogin || ticks <= 0) initEventTasks(id, p, doTP, isJoin);
+        else new BukkitRunnable() {
+            @Override public void run() { initEventTasks(id, p, isJoin, doTP); }
+        }.runTaskLaterAsynchronously(main, ticks);
     }
 }

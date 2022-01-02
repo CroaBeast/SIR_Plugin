@@ -4,52 +4,32 @@ import github.scarsz.discordsrv.*;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
 import me.croabeast.sircore.listeners.*;
 import me.croabeast.sircore.objects.*;
+import me.croabeast.sircore.utilities.*;
 import net.milkbowl.vault.permission.*;
 import org.bukkit.plugin.*;
-import org.jetbrains.annotations.*;
 
 import java.util.*;
 
 public class Initializer {
 
     private final Application main;
-    private final Records records;
+    private final Recorder recorder;
     public static Permission Perms;
 
-    public YmlFile chat;
-    public YmlFile announces;
-    public YmlFile lang;
-    public YmlFile messages;
-    public YmlFile motd;
-    public YmlFile discord;
-
     public int LISTENERS = 0;
-    public int FILES = 0;
 
-    public boolean HAS_PAPI;
-    public boolean HAS_VAULT;
-    public boolean DISCORD;
+    public boolean HAS_PAPI, HAS_VAULT,
+            DISCORD, HAS_LOGIN, HAS_VANISH;
 
-    public boolean HAS_LOGIN;
-    protected List<String> LOGIN_HOOKS = new ArrayList<>();
+    protected List<String> LOGIN_HOOKS = new ArrayList<>(),
+            VANISH_HOOKS = new ArrayList<>();
 
-    public boolean HAS_VANISH;
-    protected List<String> VANISH_HOOKS = new ArrayList<>();
-
-    public boolean authMe;
-    public boolean userLogin;
-
-    public boolean hasCMI;
-    public boolean essentials;
-    public boolean srVanish;
-    public boolean prVanish;
-
-    protected Set<YmlFile> filesList = new HashSet<>();
-    public Set<YmlFile> getFilesList() { return filesList; }
+    public boolean authMe, userLogin, hasCMI,
+            essentials, srVanish, prVanish;
 
     public Initializer(Application main) {
         this.main = main;
-        records = main.getRecords();
+        recorder = main.getRecorder();
 
         HAS_PAPI = isPlugin("PlaceholderAPI");
         HAS_VAULT = isPlugin("Vault");
@@ -70,22 +50,6 @@ public class Initializer {
         if (!isPlugin(name)) return false;
         hookList.add(name);
         return true;
-    }
-
-    public void loadSavedFiles() {
-        records.doRecord("&bLoading plugin's files...");
-
-        new YmlFile(main, "config");
-        lang = new YmlFile(main, "lang");
-        messages = new YmlFile(main, "messages");
-        chat = new YmlFile(main, "chat");
-        announces = new YmlFile(main, "announces");
-        motd = new YmlFile(main, "motd");
-        discord = new YmlFile(main, "discord");
-
-        filesList.forEach(YmlFile::updateInitFile);
-
-        records.doRecord("&7Loaded &e" + FILES + "&7 files in the plugin's folder.");
     }
 
     public void startMetrics() {
@@ -130,28 +94,40 @@ public class Initializer {
 
     public void setPluginHooks() {
         // PlaceholderAPI
-        records.doRecord("", "&bChecking all simple plugin hooks...");
+        recorder.doRecord("", "&bChecking all simple plugin hooks...");
         showPluginInfo("PlaceholderAPI");
 
         // Permissions
         if (!HAS_VAULT)
-            records.doRecord("&7Vault&c isn't installed&7, using default system.");
+            recorder.doRecord("&7Vault&c isn't installed&7, using default system.");
         else {
             ServicesManager servMngr = main.getServer().getServicesManager();
             RegisteredServiceProvider<Permission> rsp = servMngr.getRegistration(Permission.class);
             if (rsp != null) {
                 Perms = rsp.getProvider();
-                records.doRecord("&7Vault&a installed&7, hooking in a perm plugin...");
+                recorder.doRecord("&7Vault&a installed&7, hooking in a perm plugin...");
             }
-            else records.doRecord("&7Unknown perm provider&7, using default system.");
+            else recorder.doRecord("&7Unknown perm provider&7, using default system.");
         }
 
         // DiscordSRV Hook
-        records.doRecord("", "&bChecking if DiscordSRV is enabled...");
+        recorder.doRecord("", "&bChecking if DiscordSRV is enabled...");
         showPluginInfo("DiscordSRV");
 
+        if (DISCORD) {
+            if (discordServer() != null)
+                recorder.doRecord("" +
+                        "&7Server name: &e" + discordServer().getName() + " by " +
+                        Objects.requireNonNull(discordServer().getOwner()).getEffectiveName()
+                );
+            else recorder.doRecord("" +
+                    "&cInvalid SERVER_ID, change it ASAP",
+                    "&7After that, use &b/sir reload"
+            );
+        }
+
         // Login hook
-        records.doRecord("", "&bChecking if a login plugin is enabled...");
+        recorder.doRecord("", "&bChecking if a login plugin is enabled...");
 
         if (LOGIN_HOOKS.size() == 1) {
             HAS_LOGIN = true;
@@ -160,14 +136,14 @@ public class Initializer {
         else {
             HAS_LOGIN = false;
             if (LOGIN_HOOKS.size() > 1)
-                records.doRecord(
+                recorder.doRecord(
                         "&cTwo or more compatible login plugins are installed.",
                         "&cPlease leave one of them installed."
                 );
-            else records.doRecord("&cNo login plugin installed. &7Unhooking...");
+            else recorder.doRecord("&cNo login plugin installed. &7Unhooking...");
         }
 
-        records.doRecord("", "&bChecking if a vanish plugin is enabled...");
+        recorder.doRecord("", "&bChecking if a vanish plugin is enabled...");
 
         if (VANISH_HOOKS.size() == 1) {
             HAS_VANISH = true;
@@ -176,25 +152,26 @@ public class Initializer {
         else {
             HAS_VANISH = false;
             if (VANISH_HOOKS.size() > 1)
-                records.doRecord(
+                recorder.doRecord(
                         "&cTwo or more compatible vanish plugins are installed.",
                         "&cPlease leave one of them installed."
                 );
-            else records.doRecord("&cNo vanish plugin installed. &7Unhooking...");
+            else recorder.doRecord("&cNo vanish plugin installed. &7Unhooking...");
         }
     }
 
     public void registerListeners() {
-        records.doRecord("", "&bLoading all the listeners...");
+        recorder.doRecord("", "&bLoading all the listeners...");
+
         new PlayerListener(main);
         new MOTDListener(main);
         new FormatListener(main);
-        new LoginListener(main);
-        new VanishListener(main);
-        records.doRecord("&7Registered &e" + LISTENERS + "&7 plugin's listeners.");
-    }
 
-    public void reloadFiles() { filesList.forEach(YmlFile::reloadFile); }
+        if (HAS_LOGIN) new LoginListener(main);
+        if (HAS_VANISH) new VanishListener(main);
+
+        recorder.doRecord("&7Registered &e" + LISTENERS + "&7 plugin's listeners.");
+    }
 
     private void showPluginInfo(String name) {
         String pluginVersion;
@@ -208,11 +185,10 @@ public class Initializer {
             isHooked = "&cnot found&7. Unhooking...";
         }
 
-        records.doRecord("&7" + name + " " + pluginVersion + isHooked);
+        recorder.doRecord("&7" + name + " " + pluginVersion + isHooked);
     }
 
-    @Nullable
-    public Guild getDiscordServer() {
+    public Guild discordServer() {
         try {
             String server = main.getDiscord().getString("server-id", "");
             return DiscordSRV.getPlugin().getJda().getGuildById(server);

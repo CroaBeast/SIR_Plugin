@@ -2,6 +2,7 @@ package me.croabeast.sircore.command;
 
 import me.croabeast.sircore.*;
 import org.bukkit.command.*;
+import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
 import org.bukkit.util.*;
 
@@ -26,12 +27,12 @@ public class Completer {
         if (cmd != null) cmd.setTabCompleter(completer);
     }
 
-    private List<String> resultTab(List<?>... lists) {
+    private List<String> resultTab(Collection<?>... lists) {
         List<String> tab = new ArrayList<>();
-        for (List<?> list : lists) list.forEach(e -> tab.add((String) e));
+        for (Collection<?> list : lists)
+            list.forEach(e -> tab.add((String) e));
         return StringUtil.copyPartialMatches(
-                args[args.length - 1],
-                tab, new ArrayList<>()
+                args[args.length - 1], tab, new ArrayList<>()
         );
     }
 
@@ -45,8 +46,11 @@ public class Completer {
 
             if (args.length == 1) return resultTab("start", "preview", "cancel", "reboot");
 
-            if(args.length == 2 && args[0].matches("(?i)preview"))
-                return resultTab(new ArrayList<>(main.getReporter().getID().getKeys(false)));
+            if(args.length == 2 && args[0].matches("(?i)preview")) {
+                ConfigurationSection id = main.getAnnounces().getConfigurationSection("messages");
+                if (id == null) return resultTab("NOT_FOUND");
+                else return resultTab(id.getKeys(false));
+            }
 
             return new ArrayList<>();
         };

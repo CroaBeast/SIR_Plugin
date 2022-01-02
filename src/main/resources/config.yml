@@ -49,7 +49,7 @@ values:
   # Valid only in SIR files or inputs that accept centered messages.
   # Put this first on those chat messages you want to center.
   center-prefix: '<C>'
-  # Can be used in the /print command
+  # Can be used in most of the plugin files and the /print command.
   # If you want to add more than one line in your CHAT type message,
   # or you want title AND subtitle, use it to split the message.
   line-separator: '<n>'

@@ -17,7 +17,7 @@ import java.util.Map;
 
 public class ConfigUpdater {
 
-    private static final char SEPARATOR = '.';
+    private static final char SPLIT = '.';
 
     public static void update(Plugin plugin, String resourceName, File toUpdate, List<String> ignoredSections)
             throws IOException {
@@ -39,9 +39,8 @@ public class ConfigUpdater {
         String value = writer.toString();
 
         Path toUpdatePath = toUpdate.toPath();
-        if (!value.equals(new String(Files.readAllBytes(toUpdatePath), StandardCharsets.UTF_8))) {
+        if (!value.equals(new String(Files.readAllBytes(toUpdatePath), StandardCharsets.UTF_8)))
             Files.write(toUpdatePath, value.getBytes(StandardCharsets.UTF_8));
-        }
     }
 
     private static void write(FileConfiguration defaultConfig, FileConfiguration currentConfig, BufferedWriter writer,
@@ -49,8 +48,8 @@ public class ConfigUpdater {
 
         FileConfiguration parserConfig = new YamlConfiguration();
 
-        keyLoop: for (String fullKey : defaultConfig.getKeys(true)) {
-            String indents = KeyBuilder.getIndents(fullKey, SEPARATOR);
+        keyLoop : for (String fullKey : defaultConfig.getKeys(true)) {
+            String indents = KeyBuilder.getIndents(fullKey, SPLIT);
 
             if (!ignoredSectionsValues.isEmpty()) {
                 for (Map.Entry<String, String> entry : ignoredSectionsValues.entrySet()) {
@@ -58,7 +57,7 @@ public class ConfigUpdater {
                         writer.write(entry.getValue() + "\n");
                         continue keyLoop;
                     }
-                    else if (KeyBuilder.isSubKeyOf(entry.getKey(), fullKey, SEPARATOR)) continue keyLoop;
+                    else if (KeyBuilder.isSubKeyOf(entry.getKey(), fullKey, SPLIT)) continue keyLoop;
                     else writeCommentIfExists(comments, writer, fullKey, indents);
                 }
             }
@@ -67,7 +66,7 @@ public class ConfigUpdater {
             Object currentValue = currentConfig.get(fullKey);
             if (currentValue == null) currentValue = defaultConfig.get(fullKey);
 
-            String[] splitFullKey = fullKey.split("[" + SEPARATOR + "]");
+            String[] splitFullKey = fullKey.split("[" + SPLIT + "]");
             String trailingKey = splitFullKey[splitFullKey.length - 1];
 
             if (currentValue instanceof ConfigurationSection) {
@@ -91,18 +90,17 @@ public class ConfigUpdater {
     }
 
     private static Map<String, String> parseComments(Plugin plugin, String resourceName, FileConfiguration defaultConfig) throws IOException {
-
         InputStream resource = plugin.getResource(resourceName);
         assert resource != null;
         BufferedReader reader = new BufferedReader(new InputStreamReader(resource));
+
         Map<String, String> comments = new LinkedHashMap<>();
         StringBuilder commentBuilder = new StringBuilder();
-        KeyBuilder keyBuilder = new KeyBuilder(defaultConfig, SEPARATOR);
+        KeyBuilder keyBuilder = new KeyBuilder(defaultConfig, SPLIT);
 
         String line;
         while ((line = reader.readLine()) != null) {
             String trimmedLine = line.trim();
-
             if (trimmedLine.startsWith("-")) continue;
 
             if (trimmedLine.isEmpty() || trimmedLine.startsWith("#")) commentBuilder.append(trimmedLine).append("\n");
@@ -126,19 +124,30 @@ public class ConfigUpdater {
     private static Map<String, String> parseIgnoredSections(File toUpdate, FileConfiguration currentConfig, Map<String, String> comments, List<String> ignoredSections) throws IOException {
         BufferedReader reader = new BufferedReader(new FileReader(toUpdate));
         Map<String, String> ignoredSectionsValues = new LinkedHashMap<>(ignoredSections.size());
-        KeyBuilder keyBuilder = new KeyBuilder(currentConfig, SEPARATOR);
+        KeyBuilder keyBuilder = new KeyBuilder(currentConfig, SPLIT);
         StringBuilder valueBuilder = new StringBuilder();
 
         String currentIgnoredSection = null;
         String line;
-        while ((line = reader.readLine()) != null) {
+
+        lineLoop : while ((line = reader.readLine()) != null) {
             String trimmedLine = line.trim();
-            if (trimmedLine.isEmpty() || trimmedLine.startsWith("#") || trimmedLine.startsWith("-")) continue;
+            if (trimmedLine.isEmpty() || trimmedLine.startsWith("#")) continue;
+
+            if (trimmedLine.startsWith("-")) {
+                for (String ignoredSection : ignoredSections) {
+                    boolean isIgnoredParent = ignoredSection.equals(keyBuilder.toString());
+                    if (!isIgnoredParent && !keyBuilder.isSubKeyOf(ignoredSection)) continue;
+
+                    valueBuilder.append("\n").append(line);
+                    continue lineLoop;
+                }
+            }
 
             keyBuilder.parseLine(trimmedLine);
             String fullKey = keyBuilder.toString();
 
-            if (currentIgnoredSection != null && !KeyBuilder.isSubKeyOf(currentIgnoredSection, fullKey, SEPARATOR)) {
+            if (currentIgnoredSection != null && !KeyBuilder.isSubKeyOf(currentIgnoredSection, fullKey, SPLIT)) {
                 ignoredSectionsValues.put(currentIgnoredSection, valueBuilder.toString());
                 valueBuilder.setLength(0);
                 currentIgnoredSection = null;
@@ -152,7 +161,7 @@ public class ConfigUpdater {
                     String comment = comments.get(fullKey);
 
                     if (comment != null) {
-                        String indents = KeyBuilder.getIndents(fullKey, SEPARATOR);
+                        String indents = KeyBuilder.getIndents(fullKey, SPLIT);
                         valueBuilder.append(indents).append(comment.replace("\n", "\n" + indents));
                         valueBuilder.setLength(valueBuilder.length() - indents.length());
                     }
@@ -178,7 +187,7 @@ public class ConfigUpdater {
     private static void removeLastKey(StringBuilder keyBuilder) {
         if (keyBuilder.length() == 0) return;
         String keyString = keyBuilder.toString();
-        String[] split = keyString.split("[" + SEPARATOR + "]");
+        String[] split = keyString.split("[" + SPLIT + "]");
         int minIndex = Math.max(0, keyBuilder.length() - split[split.length - 1].length() - 1);
         keyBuilder.replace(minIndex, keyBuilder.length(), "");
     }

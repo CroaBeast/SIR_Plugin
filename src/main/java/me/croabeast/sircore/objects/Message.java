@@ -1,7 +1,5 @@
 package me.croabeast.sircore.objects;
 
-import com.Zrips.CMI.CMI;
-import com.Zrips.CMI.Modules.Warps.CmiWarp;
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.utilities.*;
 import net.md_5.bungee.api.chat.*;
@@ -22,9 +20,7 @@ public class Message {
     private final String format;
 
     BaseComponent[] hoverText = null;
-    String suggest = null;
-    String execute = null;
-    String openURL = null;
+    private String suggest, execute, openURL;
 
     public Message(Application main, Player player, @Nullable String format) {
         this.text = main.getTextUtils();
@@ -64,13 +60,13 @@ public class Message {
     @Nullable
     public TextComponent getBuilder() {
         if (getFormat() == null) return null;
-        TextComponent component = new TextComponent(TextComponent.fromLegacyText(getFormat()));
+        TextComponent c = new TextComponent(TextComponent.fromLegacyText(getFormat()));
 
-        if (hoverText != null) component.setHoverEvent(new HoverEvent(SHOW_TEXT, this.hoverText));
-        if (execute != null) component.setClickEvent(new ClickEvent(RUN_COMMAND, text.parsePAPI(player, this.execute)));
-        if (suggest != null) component.setClickEvent(new ClickEvent(SUGGEST_COMMAND, text.parsePAPI(player, this.suggest)));
-        if (openURL != null) component.setClickEvent(new ClickEvent(OPEN_URL, text.parsePAPI(player, this.openURL)));
+        if (hoverText != null) c.setHoverEvent(new HoverEvent(SHOW_TEXT, this.hoverText));
+        if (execute != null) c.setClickEvent(new ClickEvent(RUN_COMMAND, text.parsePAPI(player, this.execute)));
+        if (suggest != null) c.setClickEvent(new ClickEvent(SUGGEST_COMMAND, text.parsePAPI(player, this.suggest)));
+        if (openURL != null) c.setClickEvent(new ClickEvent(OPEN_URL, text.parsePAPI(player, this.openURL)));
 
-        return component;
+        return c;
     }
 }

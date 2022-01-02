@@ -10,16 +10,19 @@ import org.bukkit.event.*;
 
 public class LoginListener implements Listener {
 
+    private final Application main;
+
     private final TextUtils text;
     private final PermUtils perms;
     private final EventUtils utils;
 
     public LoginListener(Application main) {
+        this.main = main;
+
         this.text = main.getTextUtils();
         this.perms = main.getPermUtils();
         this.utils = main.getEventUtils();
 
-        if (!main.getInitializer().HAS_LOGIN) return;
         new AuthMe(main);
         new UserLogin(main);
         main.registerListener(this, false);
@@ -28,10 +31,18 @@ public class LoginListener implements Listener {
     @EventHandler
     private void onLogin(LoginEvent event) {
         Player player = event.getPlayer();
-        ConfigurationSection id = utils.lastSection(player, true);
 
         if (!text.getOption(2, "enabled")) return;
         if (perms.isVanished(player, true) && text.getOption(3, "silent")) return;
+
+        ConfigurationSection id = utils.lastSection(player, true);
+        if (id == null) {
+            main.getRecorder().doRecord(player,
+                    "<P> &cA valid message group isn't found...",
+                    "<P> &7Please check your&e messages.yml &7file."
+            );
+            return;
+        }
 
         utils.getLoggedPlayers().add(player);
         utils.runEvent(id, player, true, !text.getOption(2, "enabled"), true);

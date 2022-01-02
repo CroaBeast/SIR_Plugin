@@ -2,6 +2,7 @@ package me.croabeast.sircore.listeners;
 
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sircore.*;
+import me.croabeast.sircore.utilities.Recorder;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.*;
 import org.bukkit.event.*;
@@ -17,13 +18,15 @@ import static me.croabeast.sircore.listeners.MOTDListener.MaxType.*;
 public class MOTDListener implements Listener {
 
     private final Application main;
+    private final Recorder recorder;
+
     private ServerListPingEvent event;
 
-    private int MOTD = 0;
-    private int ICON = 0;
+    private int MOTD = 0, ICON = 0;
 
     public MOTDListener(Application main) {
         this.main = main;
+        this.recorder = main.getRecorder();
         main.registerListener(this);
         registerIconsFolder();
     }
@@ -31,17 +34,17 @@ public class MOTDListener implements Listener {
     private void registerIconsFolder() {
         File folder = new File(main.getDataFolder(), "icons");
         if (!folder.exists() && folder.mkdirs())
-            main.getRecords().doRecord("&eGenerating the 'icons' folder...");
+            recorder.doRecord("&eGenerating the 'icons' folder...");
 
         File icon = new File(folder, "server-icon.png");
         if (icon.exists()) return;
 
-        String path = "icons" + File.separator + "server-icon.png";
-        main.getRecords().doRecord(
+        recorder.doRecord(
                 "&eGenerating the default server icon...",
                 "&7If you don't want to generate this file,",
                 "&7just name a file/icon:&e 'server-icon.png'"
         );
+        String path = "icons" + File.separator + "server-icon.png";
         main.saveResource(path, false);
     }
 
@@ -125,7 +128,7 @@ public class MOTDListener implements Listener {
                     "&cError loading your custom icon \n&7" +
                     e.getLocalizedMessage()
             ));
-            main.getRecords().doRecord(
+            recorder.doRecord(
                     "&7Error loading the icon: &c" + e.getLocalizedMessage()
             );
         }
@@ -177,7 +180,7 @@ public class MOTDListener implements Listener {
             event.setMaxPlayers(main.everyPlayer().size() + 1);
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler
     private void onServerPing(ServerListPingEvent event) {
         this.event = event;
         if (!main.getMOTD().getBoolean("enabled")) return;

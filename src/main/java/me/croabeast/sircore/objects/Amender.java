@@ -1,8 +1,8 @@
-package me.croabeast.sircore.utilities;
+package me.croabeast.sircore.objects;
 
 import com.google.common.collect.*;
 import me.croabeast.sircore.*;
-import me.croabeast.sircore.objects.*;
+import me.croabeast.sircore.utilities.*;
 import org.bukkit.entity.*;
 
 import java.util.*;
@@ -10,13 +10,13 @@ import java.util.*;
 public class Amender {
 
     private final Application main;
-    private final Records records;
+    private final Recorder recorder;
     private final TextUtils text;
     private final PermUtils perms;
 
     public Amender(Application main) {
         this.main = main;
-        this.records = main.getRecords();
+        this.recorder = main.getRecorder();
         this.text = main.getTextUtils();
         this.perms = main.getPermUtils();
     }
@@ -27,15 +27,15 @@ public class Amender {
         if (player != null) {
             if (list.get(0).equals("RR")) list.remove(0);
             list.forEach(s ->
-                    records.playerRecord(player, " " + s)
+                    recorder.playerRecord(player, " " + s)
             );
         }
         else {
             if (list.get(0).equals("RR")) {
                 list.remove(0);
-                list.forEach(records::rawRecord);
+                list.forEach(recorder::rawRecord);
             }
-            else list.forEach(records::doRecord);
+            else list.forEach(recorder::doRecord);
         }
     }
 
