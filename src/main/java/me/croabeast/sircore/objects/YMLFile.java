@@ -28,22 +28,37 @@ public class YMLFile {
         reloadFile();
     }
 
-    private File catchFile() { return new File(main.getDataFolder(), location); }
-    public FileConfiguration getFile() { return file; }
-    public void reloadFile() { file = YamlConfiguration.loadConfiguration(catchFile()); }
+    private File catchFile() {
+        return new File(main.getDataFolder(), location);
+    }
 
-    private void saveFile() {
+    public FileConfiguration getFile() {
+        return file;
+    }
+
+    public void reloadFile() {
+        file = YamlConfiguration.loadConfiguration(catchFile());
+    }
+
+    public void saveFile() {
         if (file == null || rawYmlFile == null) return;
-        try { this.getFile().save(this.rawYmlFile); }
+
+        try {
+            this.getFile().save(this.rawYmlFile);
+        }
         catch (Exception e) {
             recorder.doRecord("&7The &e" + location + "&7 file&c couldn't be saved&7.");
             e.printStackTrace();
         }
+
         recorder.doRecord("&7The &e" + location + "&7 file has been&a saved&7.");
     }
 
     private void updatingFile() {
-        try { ConfigUpdater.update(main, location, catchFile(), null); }
+        try {
+            ConfigUpdater.update(main, location, catchFile(), null);
+            if (main.MC_VERSION < 13) ConfigUpdater.update(main, location, catchFile(), null);
+        }
         catch (Exception e) {
             recorder.doRecord("&7The &e" + location + "&7 file&c couldn't be updated&7.");
             e.printStackTrace();

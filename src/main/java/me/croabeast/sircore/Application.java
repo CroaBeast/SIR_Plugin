@@ -12,6 +12,7 @@ import org.bukkit.plugin.java.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 public final class Application extends JavaPlugin {
 
@@ -64,11 +65,15 @@ public final class Application extends JavaPlugin {
         files.loadFiles(true);
         init.setPluginHooks();
         init.registerListeners();
-        reporter.startTask();
 
-        recorder.doRecord("&7The announcement task has been started.", "",
+        reporter.startTask();
+        recorder.doRecord("&7The announcement task has been started.");
+
+        init.loadAdvances();
+
+        recorder.doRecord("",
                 "&7SIR " + PLUGIN_VERSION + " was&a loaded&7 in " +
-                        (System.currentTimeMillis() - start) + " ms."
+                (System.currentTimeMillis() - start) + " ms."
         );
         recorder.rawRecord("");
 
@@ -78,7 +83,10 @@ public final class Application extends JavaPlugin {
     @Override
     public void onDisable() {
         pluginHeader();
+
+        init.unloadAdvances();
         reporter.cancelTask();
+
         recorder.doRecord(
                 "&7The announcement task has been stopped.",
                 "&7SIR &c" + PLUGIN_VERSION + "&7 was totally disabled.",
@@ -98,23 +106,58 @@ public final class Application extends JavaPlugin {
         return new ArrayList<>(Bukkit.getOnlinePlayers());
     }
 
-    @NotNull public FileConfiguration getConfig() { return files.getFile("config"); }
-    public FileConfiguration getChat() { return files.getFile("chat"); }
-    public FileConfiguration getAnnounces() { return files.getFile("announces"); }
-    public FileConfiguration getLang() { return files.getFile("lang"); }
-    public FileConfiguration getMessages() { return files.getFile("messages"); }
-    public FileConfiguration getMOTD() { return files.getFile("motd"); }
-    public FileConfiguration getDiscord() { return files.getFile("discord"); }
+    @NotNull
+    public FileConfiguration getConfig() {
+        return files.getFile("config");
+    }
+    public FileConfiguration getAdvances() {
+        return files.getFile("advances");
+    }
+    public FileConfiguration getChat() {
+        return files.getFile("chat");
+    }
+    public FileConfiguration getAnnounces() {
+        return files.getFile("announces");
+    }
+    public FileConfiguration getLang() {
+        return files.getFile("lang");
+    }
+    public FileConfiguration getMessages() {
+        return files.getFile("messages");
+    }
+    public FileConfiguration getMOTD() {
+        return files.getFile("motd");
+    }
+    public FileConfiguration getDiscord() {
+        return files.getFile("discord");
+    }
 
-    public Recorder getRecorder() { return recorder; }
-    public Initializer getInitializer() { return init; }
+    public Recorder getRecorder() {
+        return recorder;
+    }
+    public Initializer getInitializer() {
+        return init;
+    }
 
-    public TextUtils getTextUtils() { return text; }
-    public PermUtils getPermUtils() { return perms; }
-    public EventUtils getEventUtils() { return utils; }
+    public FilesUtils getFiles() {
+        return files;
+    }
+    public TextUtils getTextUtils() {
+        return text;
+    }
+    public PermUtils getPermUtils() {
+        return perms;
+    }
+    public EventUtils getEventUtils() {
+        return utils;
+    }
 
-    public Amender getAmender() { return amender; }
-    public Reporter getReporter() { return reporter; }
+    public Amender getAmender() {
+        return amender;
+    }
+    public Reporter getReporter() {
+        return reporter;
+    }
 
     public Plugin getPlugin(String name) {
         return Bukkit.getPluginManager().getPlugin(name);
@@ -128,6 +171,4 @@ public final class Application extends JavaPlugin {
     public void registerListener(Listener listener) {
         registerListener(listener, true);
     }
-
-    public void reloadFiles() { files.loadFiles(false); }
 }

@@ -1,13 +1,11 @@
 package me.croabeast.sircore.utilities;
 
+import com.google.common.collect.Lists;
 import me.croabeast.sircore.Application;
-import me.croabeast.sircore.objects.YMLFile;
+import me.croabeast.sircore.objects.*;
 import org.bukkit.configuration.file.*;
 
-import java.io.*;
 import java.util.*;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 public class FilesUtils {
 
@@ -15,7 +13,13 @@ public class FilesUtils {
     private final Recorder recorder;
 
     protected HashMap<String, YMLFile> files = new HashMap<>();
-    protected List<String> filesList = new ArrayList<>();
+
+    private final List<String> filesList =
+            Lists.newArrayList("" +
+                    "config", "lang", "messages", "announces",
+                    "chat", "motd", "discord", "advances"
+            );
+
     private int FILES = 0;
 
     public FilesUtils(Application main) {
@@ -28,7 +32,6 @@ public class FilesUtils {
         long time = System.currentTimeMillis();
         if (debug) recorder.doRecord("&bLoading plugin's files...");
 
-        registerFilesNames();
         filesList.forEach(this::addFile);
         filesList.forEach(s -> files.get(s).updateInitFile());
 
@@ -44,32 +47,11 @@ public class FilesUtils {
         FILES++;
     }
 
-    private void registerFilesNames() {
-        if (!filesList.isEmpty()) filesList.clear();
-
-        Package mainPackage = main.getClass().getPackage();
-        String name = mainPackage.getImplementationTitle();
-        String vs = mainPackage.getImplementationVersion();
-
-        JarFile jar;
-        try {
-            jar = new JarFile("" +
-                    main.getDataFolder().getParentFile() +
-                    File.separator + name + "-" + vs + ".jar"
-            );
-        }
-        catch (Exception e) { return; }
-
-        Enumeration<JarEntry> entries = jar.entries();
-        while (entries.hasMoreElements()) {
-            String entry = entries.nextElement().getName();
-            if (entry.endsWith(".yml") && !entry.equals("plugin.yml"))
-                filesList.add(entry.substring(0, entry.length() - 4));
-        }
-
-        Collections.swap(filesList, 0, filesList.indexOf("config"));
-        Collections.swap(filesList, 1, filesList.indexOf("lang"));
+    public YMLFile getObject(String name) {
+        return files.get(name);
     }
 
-    public FileConfiguration getFile(String name) { return files.get(name).getFile(); }
+    public FileConfiguration getFile(String name) {
+        return getObject(name).getFile();
+    }
 }

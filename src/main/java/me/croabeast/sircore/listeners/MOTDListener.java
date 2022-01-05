@@ -2,8 +2,8 @@ package me.croabeast.sircore.listeners;
 
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sircore.*;
-import me.croabeast.sircore.utilities.Recorder;
-import org.bukkit.Bukkit;
+import me.croabeast.sircore.utilities.*;
+import org.bukkit.*;
 import org.bukkit.configuration.*;
 import org.bukkit.event.*;
 import org.bukkit.event.server.*;
@@ -119,18 +119,15 @@ public class MOTDListener implements Listener {
         CachedServerIcon icon = null;
 
         try {
-            icon = Bukkit.loadServerIcon(
-                    usageType() == SINGLE ? single : icons[ICON]
-            );
-        } catch (Exception e) {
+            icon = Bukkit.loadServerIcon(usageType() == SINGLE ? single : icons[ICON]);
+        }
+        catch (Exception e) {
             event.setServerIcon(null);
             event.setMotd(IridiumAPI.process(
                     "&cError loading your custom icon \n&7" +
                     e.getLocalizedMessage()
             ));
-            recorder.doRecord(
-                    "&7Error loading the icon: &c" + e.getLocalizedMessage()
-            );
+            recorder.doRecord("&7Error loading the icon: &c" + e.getLocalizedMessage());
         }
 
         if (icon == null) {

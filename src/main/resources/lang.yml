@@ -23,7 +23,7 @@ main-help:
   - '  &7- &b/sir&7: The main command of the plugin.'
   - '  &7- &b/sir &3help&7: Shows this help menu.'
   - '  &7- &b/sir &3reload&7: Reloads all the files.'
-  - '  &7- &b/sir &support&7: Sends a link to our Discord.'
+  - '  &7- &b/sir &3support&7: Sends a link to our Discord.'
   - '  &7- &b/print&7: Prints a raw message to a target.'
   - '&8------------------------------------------&r'
 

@@ -29,14 +29,16 @@ public class Message {
     }
 
     @Nullable
-    public String getFormat() { return this.format; }
+    public String getFormat() {
+        return this.format;
+    }
 
     public Message setHover(@Nullable List<String> list) {
         if (list == null) return this;
         hoverText = new BaseComponent[list.size()];
 
         for (int i = 0; i < list.size(); i++) {
-            String line = text.parse(player, list.get(i)) + (i == list.size() - 1 ? "" : "\n");
+            String line = text.colorize(player, list.get(i)) + (i == list.size() - 1 ? "" : "\n");
             hoverText[i] = new TextComponent(TextComponent.fromLegacyText(line));
         }
         return this;

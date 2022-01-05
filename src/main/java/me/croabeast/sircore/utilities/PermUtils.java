@@ -16,11 +16,7 @@ public class PermUtils {
     }
 
     public boolean hasPerm(CommandSender sender, String perm) {
-        if (sender instanceof ConsoleCommandSender) return true;
-        Player player = (Player) sender;
-        return  main.getInitializer().HAS_VAULT ?
-                Initializer.Perms.playerHas(null, player, perm) :
-                player.hasPermission(perm);
+        return sender instanceof ConsoleCommandSender || sender.hasPermission(perm);
     }
 
     public boolean certainPerm(Player player, String perm) {

@@ -38,7 +38,7 @@ public class EventUtils {
                 new String[] {"{PLAYER}", "{WORLD}"},
                 new String[] {player.getName(), player.getWorld().getName()}
         );
-        return isColor ? text.parse(player, message) : message;
+        return isColor ? text.colorize(player, message) : message;
     }
 
     private String isJoinString(Player p, boolean isJoin) {
@@ -91,7 +91,7 @@ public class EventUtils {
         main.getRecorder().doRecord("&7> &f" + message);
     }
 
-    private String parse(String type, String message) {
+    public String parsePrefix(String type, String message) {
         message = message.substring(type.length());
         while (message.charAt(0) == ' ') message = message.substring(1);
         return message;
@@ -99,15 +99,15 @@ public class EventUtils {
 
     public void typeMessage(Player player, String line) {
         if (line.startsWith("[ACTION-BAR]"))
-            text.actionBar(player, parse("[ACTION-BAR]", line));
+            text.actionBar(player, parsePrefix("[ACTION-BAR]", line));
         else if (line.startsWith("[TITLE]")) {
             String split = Pattern.quote(text.getSplit());
-            text.title(player, parse("[TITLE]", line).split(split), null);
+            text.title(player, parsePrefix("[TITLE]", line).split(split), null);
         }
         else if (line.startsWith("[JSON]") && line.contains("{\"text\":"))
             Bukkit.dispatchCommand(
                     Bukkit.getConsoleSender(), "minecraft:tellraw " +
-                    player.getName() + " " + parse("[JSON]", line)
+                    player.getName() + " " + parsePrefix("[JSON]", line)
             );
         else text.sendMixed(player, line);
     }
@@ -121,10 +121,8 @@ public class EventUtils {
             Enum.valueOf(Sound.class, rawSound);
             sound = Sound.valueOf(rawSound);
         }
-        catch (Exception ex) {
-            main.getRecorder().doRecord(player,
-                    "<P> The sound you input is invalid."
-            );
+        catch (Exception e) {
+            main.getRecorder().doRecord(player, "<P> The sound you input is invalid.");
             return;
         }
 
@@ -174,17 +172,27 @@ public class EventUtils {
         player.teleport(location);
     }
 
+    private String removeSpace(String line) {
+        try {
+            while (line.charAt(0) == ' ') line = line.substring(1);
+            return line;
+        }
+        catch (IndexOutOfBoundsException e) {
+            return line;
+        }
+    }
+
     private void runMsgs(ConfigurationSection id, Player player, boolean isPublic) {
         List<String> messages = id.getStringList(isPublic ? "public" : "private");
         if (messages.isEmpty()) return;
 
         for (String line : messages) {
             if (line == null || line.equals("")) continue;
-            while (line.charAt(0) == ' ') line = line.substring(1);
+            line = removeSpace(line);
 
             line = doFormat(line, player, false);
             sendToConsole(text.parsePAPI(player, line));
-            String message = text.parse(player, line);
+            String message = text.colorize(player, line);
 
             if (!isPublic) typeMessage(player, message);
             else main.everyPlayer().forEach(p -> typeMessage(p, message));
@@ -197,14 +205,16 @@ public class EventUtils {
 
         for (String line : commands) {
             if (line == null || line.equals("")) continue;
-            while (line.charAt(0) == ' ') line = line.substring(1);
+            line = removeSpace(line);
             if (player != null)
                 line = doFormat(line, player, false);
 
             boolean isPlayer = line.startsWith("[PLAYER]") && player != null;
             CommandSender sender = isPlayer ? player : Bukkit.getConsoleSender();
-            String cmd = isPlayer ? parse("[PLAYER]", line) : line;
-            Bukkit.dispatchCommand(sender, cmd);
+            String cmd = isPlayer ? parsePrefix("[PLAYER]", line) : line;
+            new BukkitRunnable() {
+                @Override public void run() { Bukkit.dispatchCommand(sender, cmd); }
+            }.runTask(main);
         }
     }
 

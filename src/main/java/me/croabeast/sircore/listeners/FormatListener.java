@@ -73,7 +73,7 @@ public class FormatListener implements Listener {
 
         assert id != null;
         String rawFormat = id.getString("format", "");
-        String[] format = rawFormat.split("(?i)\\{MESSAGE}");
+        String[] format = rawFormat.split("(?i)\\{MESSAGE}", 2);
 
         this.playerPrefix = id.getString("prefix", "");
         this.playerSuffix = id.getString("suffix", "");
@@ -83,7 +83,7 @@ public class FormatListener implements Listener {
         String end = format.length == 1 ? "" : parseFormat(format[1]);
         String message = parseMessage(event.getMessage());
 
-        String resultFormat = text.parse(player, start + message + end);
+        String resultFormat = text.colorize(player, start + message + end);
 
         TextComponent result = new Message(main, player, resultFormat)
                 .setExecutor(parseFormat(id.getString("click.execute")))
@@ -91,7 +91,7 @@ public class FormatListener implements Listener {
                 .setURL(parseFormat(id.getString("click.openURL")))
                 .setHover(idList()).getBuilder();
 
-        if (id == null || format.length > 2 || result == null) {
+        if (id == null || result == null) {
             recorder.doRecord(player,
                     "<P> &cCouldn't found any valid chat format, check your chat.yml");
             return;
@@ -101,7 +101,9 @@ public class FormatListener implements Listener {
         recorder.rawRecord(resultFormat);
 
         if (main.getInitializer().DISCORD) {
-            String[] values = {IridiumAPI.stripAll(playerPrefix), IridiumAPI.stripAll(playerSuffix)};
+            String[] values = {
+                    IridiumAPI.stripAll(playerPrefix), IridiumAPI.stripAll(playerSuffix)
+            };
             String resultMessage = IridiumAPI.stripAll(event.getMessage());
             DiscordMsg msg = new DiscordMsg(main, player, "chat",
                     new String[]{"{PREFIX}", "{SUFFIX}"}, values).setMessage(resultMessage);

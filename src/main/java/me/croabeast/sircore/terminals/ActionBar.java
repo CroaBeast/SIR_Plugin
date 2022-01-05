@@ -19,7 +19,9 @@ public class ActionBar implements Reflection {
         void send(Player player, String message);
     }
 
-    public GetActionBar getMethod() { return actionBar; }
+    public GetActionBar getMethod() {
+        return actionBar;
+    }
 
     private GetActionBar oldActionBar() {
         return (player, message) -> {
@@ -30,7 +32,8 @@ public class ActionBar implements Reflection {
                 Object entityPlayer = player.getClass().getMethod("getHandle").invoke(player);
                 Object playerConnection = entityPlayer.getClass().getField("playerConnection").get(entityPlayer);
                 playerConnection.getClass().getMethod("sendPacket", getNMSClass("Packet")).invoke(playerConnection, packet);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 e.printStackTrace();
             }
         };

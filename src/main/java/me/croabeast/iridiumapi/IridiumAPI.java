@@ -96,19 +96,25 @@ public class IridiumAPI {
         String[] characters = source.split("");
 
         int outIndex = 0;
-        for (int i = 0; i < characters.length; i++) {
-            if ((characters[i].equals("&") || characters[i].equals("§"))
-                    && i + 1 < characters.length) {
-                if (!characters[i + 1].equals("r")) {
-                    specialColors.append(characters[i]);
-                    specialColors.append(characters[i + 1]);
+        try {
+            for (int i = 0; i < characters.length; i++) {
+                if ((characters[i].equals("&") || characters[i].equals("§"))
+                        && i + 1 < characters.length || colors == null) {
+                    if (!characters[i + 1].equals("r")) {
+                        specialColors.append(characters[i]);
+                        specialColors.append(characters[i + 1]);
+                    }
+                    else specialColors.setLength(0);
+                    i++;
                 }
-                else specialColors.setLength(0);
-                i++;
+                else stringBuilder.append(colors[outIndex++])
+                        .append(specialColors).append(characters[i]);
             }
-            else stringBuilder.append(colors[outIndex++])
-                    .append(specialColors).append(characters[i]);
         }
+        catch (IndexOutOfBoundsException e) {
+            return source;
+        }
+
         return stringBuilder.toString();
     }
 
@@ -120,8 +126,8 @@ public class IridiumAPI {
         return workingString;
     }
 
-    @NotNull
     private static ChatColor[] createRainbow(int step, float saturation) {
+        if (step == 0) return null;
         ChatColor[] colors = new ChatColor[step];
         double colorStep = (1.00 / step);
 
@@ -132,8 +138,8 @@ public class IridiumAPI {
         return colors;
     }
 
-    @NotNull
     private static ChatColor[] createGradient(@NotNull Color start, @NotNull Color end, int step) {
+        if (step == 1) return null;
         ChatColor[] colors = new ChatColor[step];
         int stepR = Math.abs(start.getRed() - end.getRed()) / (step - 1);
         int stepG = Math.abs(start.getGreen() - end.getGreen()) / (step - 1);

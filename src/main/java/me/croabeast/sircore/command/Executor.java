@@ -13,20 +13,24 @@ import java.util.*;
 public class Executor {
 
     private final Application main;
+    private final Initializer init;
 
     private final Recorder recorder;
+    private final Reporter reporter;
+
     private final TextUtils text;
     private final PermUtils perms;
-
-    private final Reporter reporter;
 
     private String[] args;
     private CommandSender sender;
 
     public Executor(Application main) {
         this.main = main;
+        this.init = main.getInitializer();
+
         this.recorder = main.getRecorder();
         this.reporter = main.getReporter();
+
         this.text = main.getTextUtils();
         this.perms = main.getPermUtils();
 
@@ -95,14 +99,9 @@ public class Executor {
         if (input.startsWith("GROUP:")) {
             String group = input.substring(6);
             main.everyPlayer().stream().filter(
-                    p -> {
-                        boolean isGroup = false;
-                        if (main.getInitializer().HAS_VAULT) {
-                            String first = Initializer.Perms.getPrimaryGroup(null, p);
-                            isGroup = first.matches("(?i)" + group);
-                        }
-                        return isGroup;
-                    }
+                    p -> init.HAS_VAULT && Initializer.Perms.
+                            getPrimaryGroup(null, p).
+                            matches("(?i)" + group)
             ).forEach(players::add);
             return players;
         }
@@ -214,8 +213,11 @@ public class Executor {
                     if (hasNoPerm("admin.reload")) return true;
                     long start = System.currentTimeMillis();
 
-                    main.reloadFiles();
+                    main.getFiles().loadFiles(false);
                     if (!reporter.isRunning()) reporter.startTask();
+
+                    init.unloadAdvances();
+                    init.loadAdvances();
 
                     sendMessage("reload-files", "TIME",
                             (System.currentTimeMillis() - start) + "");
@@ -266,7 +268,7 @@ public class Executor {
 
                 sendReminder(args[1]);
                 if (!targets(args[1]).isEmpty()) {
-                    targets(args[1]).forEach(p -> text.actionBar(p, text.parse(p, message)));
+                    targets(args[1]).forEach(p -> text.actionBar(p, text.colorize(p, message)));
                     messageLogger("ACTION-BAR", message);
                 }
             }
@@ -287,7 +289,7 @@ public class Executor {
 
                     else if (args[2].matches("(?i)DEFAULT"))
                         targets(args[1]).forEach(
-                                p -> message.forEach(s -> p.sendMessage(text.parse(p, s))));
+                                p -> message.forEach(s -> p.sendMessage(text.colorize(p, s))));
 
                     else if (args[2].matches("(?i)MIXED"))
                         targets(args[1]).forEach(p -> message.forEach(s -> text.sendMixed(p, s)));
@@ -306,7 +308,7 @@ public class Executor {
                 sendReminder(args[1]);
                 if (!targets(args[1]).isEmpty()) {
                     targets(args[1]).forEach(p -> {
-                        String[] message = text.parse(p, noFormat).split(split);
+                        String[] message = text.colorize(p, noFormat).split(split);
                         if (args[2].matches("(?i)DEFAULT"))
                             text.title(p, message, null);
                         else text.title(p, message, args[2].split(","));

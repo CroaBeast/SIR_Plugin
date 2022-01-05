@@ -35,10 +35,11 @@ info:
   # - "sound:" Plays a sound defined by this node. Deleting this won't play a sound.
   #            Keep in mind that sounds are different in most of the major version
   #            of Minecraft. Check these links for more info:
-  #            1.8: https://helpch.at/docs/1.8.8/index.html?org/bukkit/Sound.html
-  #            1.12: https://helpch.at/docs/1.12.2/index.html?org/bukkit/Sound.html
-  #            1.16: https://helpch.at/docs/1.16.5/index.html?org/bukkit/Sound.html
-  #            1.17: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html
+  #            1.8: https://helpch.at/docs/1.8.8/org/bukkit/Sound.html
+  #            1.12: https://helpch.at/docs/1.12.2/org/bukkit/Sound.html
+  #            1.16: https://helpch.at/docs/1.16.5/org/bukkit/Sound.html
+  #            1.17: https://helpch.at/docs/1.17.1/org/bukkit/Sound.html
+  #            1.18: https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html
   #            WARNING!!: You can't put this node on the "quit" section.
   # - "public:" Sends messages to all online players on the server. You can select
   #             between 3 types of messages. [SEE BELOW]

@@ -31,7 +31,7 @@ public class PlayerListener implements Listener {
     private boolean isSilent() { return text.getOption(3, "silent"); }
 
     @EventHandler
-    private void onLogin(PlayerJoinEvent event) {
+    private void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
         main.getAmender().initUpdater(player);
@@ -74,7 +74,7 @@ public class PlayerListener implements Listener {
 
         event.setQuitMessage(null); //Message initializer
 
-        if (perms.isVanished(player, false) && isSilent()) return;
+        if (init.HAS_VANISH && perms.isVanished(player, false) && isSilent()) return;
         if (init.HAS_LOGIN) {
             if (!utils.getLoggedPlayers().contains(player)) return;
             utils.getLoggedPlayers().remove(player);

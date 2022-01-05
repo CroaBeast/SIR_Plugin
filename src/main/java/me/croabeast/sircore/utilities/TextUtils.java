@@ -5,8 +5,9 @@ import me.clip.placeholderapi.*;
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.terminals.*;
+import org.apache.commons.lang.*;
 import org.bukkit.command.*;
-import org.bukkit.configuration.file.*;
+import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
 
 import java.util.*;
@@ -49,18 +50,20 @@ public class TextUtils {
         return main.getConfig().getString("values." + key);
     }
 
-    public String getSplit() { return getValue("line-separator"); }
+    public String getSplit() {
+        return getValue("line-separator");
+    }
 
     public String parsePAPI(Player player, String message) {
         return papi.parsePAPI(player, message);
     }
 
-    public String parse(Player player, String message) {
+    public String colorize(Player player, String message) {
         return IridiumAPI.process(parsePAPI(player, message));
     }
 
     public void sendCentered(Player player, String message) {
-        message = parse(player, message);
+        message = colorize(player, message);
 
         int messagePxSize = 0;
         boolean previousCode = false;
@@ -95,17 +98,26 @@ public class TextUtils {
 
     public void sendMixed(Player player, String message) {
         String center = getValue("center-prefix");
-        if (!message.startsWith(center)) player.sendMessage(parse(player, message));
+        if (!message.startsWith(center)) player.sendMessage(colorize(player, message));
         else sendCentered(player, message.replace(center, ""));
     }
 
-    public List<String> fileList(FileConfiguration file, String path) {
+    public List<String> fileList(Configuration file, String path) {
         return  !file.isList(path) ?
                 Lists.newArrayList(file.getString(path)) :
                 file.getStringList(path);
     }
 
-    private List<String> toList(String path) { return fileList(main.getLang(), path); }
+    private List<String> toList(String path) {
+        return fileList(main.getLang(), path);
+    }
+
+    public String stringKey(String key) {
+        if (key == null) return "empty";
+        return StringUtils.replaceEach(
+                key, new String[]{"/", ":"}, new String[]{".", "."}
+        );
+    }
 
     public void send(CommandSender sender, String path, String key, String value) {
         String prefix = main.getLang().getString("main-prefix", ""),

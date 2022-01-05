@@ -111,7 +111,7 @@ public enum FontInfo {
         this.length = length;
     }
 
-    public char getCharacter() {
+    private char getCharacter() {
         return character;
     }
 

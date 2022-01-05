@@ -82,7 +82,6 @@ public class Amender {
                     );
                     break;
             }
-
             updateLogger(player, "RR", "");
         });
     }

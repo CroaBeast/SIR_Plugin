@@ -21,7 +21,9 @@ public class Title implements Reflection {
         void send(Player player, String title, String subtitle, int in, int stay, int out);
     }
 
-    public GetTitle getMethod() { return title; }
+    public GetTitle getMethod() {
+        return title;
+    }
 
     private void legacyMethod(Player player, String message, boolean isTitle) {
         try {
@@ -42,7 +44,8 @@ public class Title implements Reflection {
                     subtitleConstructor.newInstance(e, chatMessage, Math.round((float) in / 20), Math.round((float) stay / 20), Math.round((float) out / 20));
 
             sendPacket(player, titlePacket);
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -57,5 +60,7 @@ public class Title implements Reflection {
         };
     }
 
-    public GetTitle newTitle() { return Player::sendTitle; }
+    public GetTitle newTitle() {
+        return Player::sendTitle;
+    }
 }

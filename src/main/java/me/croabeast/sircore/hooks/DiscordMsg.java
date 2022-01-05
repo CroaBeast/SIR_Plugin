@@ -2,6 +2,7 @@ package me.croabeast.sircore.hooks;
 
 import github.scarsz.discordsrv.dependencies.jda.api.*;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
+import github.scarsz.discordsrv.util.*;
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.utilities.*;
 import org.apache.commons.lang.*;
@@ -42,7 +43,9 @@ public class DiscordMsg {
     }
 
     @Nullable
-    private Guild getServer() { return main.getInitializer().discordServer(); }
+    private Guild getServer() {
+        return main.getInitializer().discordServer();
+    }
 
     public DiscordMsg setMessage(@NotNull String message) {
         this.message = message;
@@ -57,7 +60,7 @@ public class DiscordMsg {
         if (this.keys != null && this.values != null)
             line = StringUtils.replaceEach(line, this.keys, this.values);
 
-        return main.getTextUtils().parsePAPI(player, line);
+        return DiscordUtil.translateEmotes(main.getTextUtils().parsePAPI(player, line));
     }
 
     @Nullable private TextChannel getChannel() {
@@ -65,14 +68,18 @@ public class DiscordMsg {
             String channel = main.getDiscord().getString("channels." + type, "");
             return Objects.requireNonNull(getServer()).getTextChannelById(channel);
         }
-        catch (Exception e) { return null; }
+        catch (Exception e) {
+            return null;
+        }
     }
 
     private int embedColor() {
         int color = Color.BLACK.asRGB();
         String rgb = main.getDiscord().getString(embedPath + ".color", "BLACK");
         try {
-            try { return java.awt.Color.decode(rgb).getRGB(); }
+            try {
+                return java.awt.Color.decode(rgb).getRGB();
+            }
             catch (Exception e) {
                 return ((Color) Class.forName("org.bukkit.Color").getField(rgb).get(null)).asRGB();
             }

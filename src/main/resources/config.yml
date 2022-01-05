@@ -25,6 +25,7 @@ updater:
     announces: false
     motd: false
     discord: false
+    advances: false
 
 # Some useful options for this plugin if you want to change them.
 # ------------------------------------------------------------
@@ -34,8 +35,9 @@ updater:
 # go to messages.yml and add or change 'enabled: false'.
 # ------------------------------------------------------------
 options:
-  # It will log the join/quit messages and the announcements from
-  # announces.yml to the server's console.
+  # It will log the join/quit messages, the announcements from
+  # announces.yml, and the advancement messages from advances.yml
+  # to the server's console.
   send-console: true
   # This option is ONLY for the /print command.
   # Enabling this will parse color and placeholders in the logger.
@@ -83,3 +85,23 @@ vanish:
   # If a message has a "spawn:" section, and this option is disabled,
   # that spawn section won't be executed.
   use-spawn: false
+
+# Some options for the Advancement-Messages feature. Only for 1.12 +
+advances:
+  # Random user: Why is this option here and not in advances.yml?
+  # Answer: It's because the advances.yml file is saved everytime
+  # the plugin loads and reloads. This will cause any comment in that
+  # file to be deleted. That's why.
+  enabled: true
+  # The worlds list that will not show any advancement messages.
+  disabled-worlds: [ a_world ] # Disable this using []
+  # The gamemodes list that will not show any advancement messages.
+  disabled-modes: [ SPECTATOR ] # Disable this using []
+  # The world's list that will not show any advancement messages.
+  # THESE ARE JUST EXAMPLES FROM OTHER DATA PACKS!!
+  disabled-advs: # Disable this using []
+    - fusionmc:bastion_advancement_fix
+    - vanillatweaks:classic_fishing_loot
+    - vanillatweaks:double_shulker_shells
+    - global:fusion_mc
+    - vanillatweaks:wandering_trades

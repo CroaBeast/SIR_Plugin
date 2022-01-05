@@ -8,8 +8,9 @@
 # DO NOT FORGET TO SET UP PROPERLY YOUR DiscordSRV CONFIG.YML FILE BEFORE
 # USING THIS MODULE!!!!
 # Useful link: https://docs.discordsrv.com/Installation/
-# NOTE: You need to disable the default join-quit messages of DiscordSRV in
-# its plugins/DiscordSRV/messages.yml file to not see duplicated messages.
+# NOTE: You need to disable the default join-quit-advancement messages
+# of DiscordSRV in its plugins/DiscordSRV/messages.yml file to not see
+# duplicated messages.
 
 # Copy your Server ID and paste it here.
 # If the SERVER ID is invalid or is empty, this module will be disabled.
@@ -22,6 +23,7 @@ channels:
   join: CHANNEL_ID
   quit: CHANNEL_ID
   chat: CHANNEL_ID
+  advances: CHANNEL_ID
 
 # Edit every format you want in here! More formats coming soon...
 # Internal Placeholders:
@@ -87,3 +89,11 @@ formats:
   # {MESSAGE}: the player's message that sends to the chat
   chat:
     text: '**{PREFIX}** {PLAYER} `{SUFFIX}` :white_small_square: {MESSAGE}'
+  # Specific internal placeholders:
+  # {ADV}: the advancement's name
+  # {DESCRIPTION}: the advancement's description
+  # {TYPE}: the advancement's frame type
+  # {LOW-TYPE}: the advancement's frame type in lowercase
+  # {CAP-TYPE}: the advancement's frame type capitalized
+  advances:
+    text: '**{PLAYER}** has complete the {LOW-TYPE}: **{ADV}**'
