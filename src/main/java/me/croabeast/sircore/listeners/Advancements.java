@@ -18,13 +18,6 @@ public class Advancements implements Listener {
     private final TextUtils text;
     private final EventUtils utils;
 
-    private String frameType, advName, description;
-
-    String[] keys = {
-            "{PLAYER}", "{ADV}", "{DESCRIPTION}",
-            "{TYPE}", "{LOW-TYPE}", "{CAP-TYPE}"
-    };
-
     public Advancements(Application main) {
         this.main = main;
         this.text = main.getTextUtils();
@@ -32,18 +25,18 @@ public class Advancements implements Listener {
         main.registerListener(this);
     }
 
-    private String[] getValues(Player player) {
-        return new String[] {
-                player.getName() + "&r", advName + "&r", description + "&r",
-                frameType + "&r", frameType.toLowerCase() + "&r",
-                WordUtils.capitalizeFully(frameType) + "&r"
+    private void sendAdvSection(Player player, String path, String type, String name, String desc) {
+        String[] keys = {
+                "{PLAYER}", "{ADV}", "{DESCRIPTION}", "{TYPE}", "{LOW-TYPE}", "{CAP-TYPE}"
         };
-    }
+        String[] values = {
+                player.getName() + "&r", name + "&r", desc + "&r", type + "&r",
+                type.toLowerCase() + "&r", WordUtils.capitalizeFully(type) + "&r"
+        };
 
-    private void sendAdvSection(Player player, String path) {
         for (String line : text.fileList(main.getAdvances(), path)) {
             if (line == null || line.equals("")) continue;
-            line = StringUtils.replaceEach(line, keys, getValues(player));
+            line = StringUtils.replaceEach(line, keys, values);
 
             if (text.getOption(1, "send-console") &&
                     !line.startsWith("[CMD]")) main.getRecorder().doRecord(line);
@@ -63,7 +56,7 @@ public class Advancements implements Listener {
         }
 
         if (main.getInitializer().DISCORD && main.getInitializer().discordServer() != null)
-            new DiscordMsg(main, player, "advances", keys, getValues(player)).sendMessage();
+            new DiscordMsg(main, player, "advances", keys, values).sendMessage();
     }
 
     @EventHandler
@@ -75,22 +68,29 @@ public class Advancements implements Listener {
             if (s.equals(player.getWorld().getName())) return;
 
         for (String s : main.getConfig().getStringList("advances.disabled-modes")) {
-            try { if (player.getGameMode() == GameMode.valueOf(s.toUpperCase())) return; }
+            try {
+                GameMode mode = GameMode.valueOf(s.toUpperCase());
+                if (player.getGameMode() == mode) return;
+            }
             catch (IllegalArgumentException ignored) {}
         }
 
         Advancement adv = event.getAdvancement();
+        if (!main.getInitializer().getAdvancements().contains(adv)) return;
+
+        ReflectKeys handler = new ReflectKeys(adv);
         String key = adv.getKey().toString();
 
         if (key.contains("root") || key.contains("recipes")) return;
         if (main.getConfig().getStringList("advances.disabled-advs").contains(key)) return;
 
         List<String> norms = new ArrayList<>(adv.getCriteria());
-        AdvancementProgress progress = player.getAdvancementProgress(adv);
         if (norms.isEmpty()) return;
 
-        Date date = progress.getDateAwarded(norms.get(norms.size() - 1));
+        Date date = player.getAdvancementProgress(adv).getDateAwarded(norms.get(norms.size() - 1));
         if (date != null && date.getTime() < System.currentTimeMillis() - 5 * 1000) return;
+
+        String frameType = null, advName = null, description = null;
 
         String messageKey = main.getAdvances().getString(text.stringKey(key));
         if (messageKey == null) return;
@@ -106,7 +106,8 @@ public class Advancements implements Listener {
                     frameType = format.length == 3 ? format[2] : null;
                 }
                 messageKey = messageKey.split("-\\(")[0];
-            } catch (IndexOutOfBoundsException e) {
+            }
+            catch (IndexOutOfBoundsException e) {
                 main.getRecorder().doRecord(
                         "&cError when getting the custom format of the advancement.",
                         "&7Localized error: &e" + e.getLocalizedMessage()
@@ -115,12 +116,11 @@ public class Advancements implements Listener {
             }
         }
 
-        ReflectKeys handler = new ReflectKeys(adv);
         if (frameType == null) frameType = handler.getFrameType();
         if (advName == null) advName = handler.getTitle();
         if (description == null) description = handler.getDescription();
 
-        sendAdvSection(player, messageKey);
+        sendAdvSection(player, messageKey, frameType, advName, description);
     }
 
     public static class ReflectKeys {
@@ -163,10 +163,8 @@ public class Advancements implements Listener {
         }
 
         private void registerKeys() {
-            Class<?> craftClass = getNMSClass(
-                    "org.bukkit.craftbukkit",
-                    "advancement.CraftAdvancement",
-                    true);
+            Class<?> craftClass = getNMSClass("org.bukkit.craftbukkit",
+                    "advancement.CraftAdvancement", true);
             if (craftClass == null) return;
 
             Object craftAdv = craftClass.cast(adv);

@@ -16,19 +16,19 @@ public class PermUtils {
     }
 
     public boolean hasPerm(CommandSender sender, String perm) {
-        return sender instanceof ConsoleCommandSender || sender.hasPermission(perm);
+        return (sender instanceof ConsoleCommandSender) || sender.hasPermission(perm);
     }
 
     public boolean certainPerm(Player player, String perm) {
-        return !perm.matches("(?i)DEFAULT") && hasPerm(player, perm);
+        return perm != null && !perm.matches("(?i)DEFAULT") && hasPerm(player, perm);
     }
 
-    private boolean essVanish(Player player, boolean join) {
+    private boolean essVanish(Player player, boolean isJoin) {
         Essentials ess = (Essentials) main.getPlugin("Essentials");
-        if (ess == null) return false;
+        if (!main.getInitializer().essentials || ess == null) return false;
 
-        boolean isJoin = join && certainPerm(player, "essentials.silentjoin.vanish");
-        return ess.getUser(player).isVanished() || isJoin;
+        boolean hasJoined = isJoin && player.hasPermission("essentials.silentjoin.vanish");
+        return ess.getUser(player).isVanished() || hasJoined;
     }
 
     private boolean cmiVanish(Player player) {

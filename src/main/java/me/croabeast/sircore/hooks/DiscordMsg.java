@@ -3,6 +3,7 @@ package me.croabeast.sircore.hooks;
 import github.scarsz.discordsrv.dependencies.jda.api.*;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
 import github.scarsz.discordsrv.util.*;
+import me.croabeast.iridiumapi.IridiumAPI;
 import me.croabeast.sircore.*;
 import me.croabeast.sircore.utilities.*;
 import org.apache.commons.lang.*;
@@ -60,10 +61,12 @@ public class DiscordMsg {
         if (this.keys != null && this.values != null)
             line = StringUtils.replaceEach(line, this.keys, this.values);
 
-        return DiscordUtil.translateEmotes(main.getTextUtils().parsePAPI(player, line));
+        line = IridiumAPI.stripAll(main.getTextUtils().parsePAPI(player, line));
+        return DiscordUtil.translateEmotes(line);
     }
 
-    @Nullable private TextChannel getChannel() {
+    @Nullable
+    private TextChannel getChannel() {
         try {
             String channel = main.getDiscord().getString("channels." + type, "");
             return Objects.requireNonNull(getServer()).getTextChannelById(channel);

@@ -42,6 +42,9 @@ options:
   # This option is ONLY for the /print command.
   # Enabling this will parse color and placeholders in the logger.
   format-logger: false
+  # If enabled, it will remove all unnecessary spaces for every
+  # message to send. Recommended leaving it in 'true'.
+  hard-spacing: true
 
 # Some values you might want to change in the plugin.
 values:
@@ -85,6 +88,15 @@ vanish:
   # If a message has a "spawn:" section, and this option is disabled,
   # that spawn section won't be executed.
   use-spawn: false
+
+# Some options for the chat formatter feature.
+chat:
+  # If enabled, it will send only the player's name and message in the
+  # console, just to be it more simple. This option applies to ALL formats.
+  simple-logger:
+    enabled: false
+    # You can use PlaceholderAPI, {PREFIX} and {SUFFIX}
+    format: '&7{PLAYER}: {MESSAGE}'
 
 # Some options for the Advancement-Messages feature. Only for 1.12 +
 advances:

@@ -1,5 +1,6 @@
 package me.croabeast.sircore;
 
+import com.google.common.collect.Lists;
 import github.scarsz.discordsrv.*;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
 import me.croabeast.sircore.listeners.*;
@@ -25,6 +26,8 @@ public class Initializer {
 
     protected List<String> LOGIN_HOOKS = new ArrayList<>(),
             VANISH_HOOKS = new ArrayList<>();
+
+    private List<Advancement> advancements = new ArrayList<>();
 
     public Initializer(Application main) {
         this.main = main;
@@ -190,12 +193,13 @@ public class Initializer {
             world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
         }
 
-        Set<String> tasks = new HashSet<>(), goals = new HashSet<>(),
-                challenges = new HashSet<>(), keys = new HashSet<>();
-        Iterator<Advancement> progress = main.getServer().advancementIterator();
+        List<Advancement> tasks = new ArrayList<>(), goals = new ArrayList<>(),
+                challenges = new ArrayList<>(), errors = new ArrayList<>(),
+                keys = new ArrayList<>();
 
-        while (progress.hasNext()) {
-            Advancement adv = progress.next();
+        advancements = Lists.newArrayList(main.getServer().advancementIterator());
+
+        for (Advancement adv : advancements) {
             String key = main.getTextUtils().stringKey(adv.getKey().toString());
             String type = new Advancements.ReflectKeys(adv).getFrameType();
 
@@ -203,32 +207,43 @@ public class Initializer {
             boolean notContained = !main.getAdvances().contains(key);
 
             if (type.matches("(?i)CHALLENGE")) {
-                challenges.add(key);
+                challenges.add(adv);
                 if (notContained) {
                     main.getAdvances().set(key, "type.challenge");
-                    keys.add(key);
+                    keys.add(adv);
                 }
             }
             else if (type.matches("(?i)TASK")) {
-                tasks.add(key);
+                tasks.add(adv);
                 if (notContained) {
                     main.getAdvances().set(key, "type.task");
-                    keys.add(key);
+                    keys.add(adv);
                 }
             }
             else if (type.matches("(?i)GOAL")) {
-                goals.add(key);
+                goals.add(adv);
                 if (notContained) {
                     main.getAdvances().set(key, "type.goal");
-                    keys.add(key);
+                    keys.add(adv);
+                }
+            }
+            else {
+                errors.add(adv);
+                if (notContained) {
+                    main.getAdvances().set(key, "type.custom");
+                    keys.add(adv);
                 }
             }
         }
 
         if (keys.size() > 0) main.getFiles().getObject("advances").saveFile();
-        recorder.doRecord(
+
+        String error = errors.size() == 0 ? null : "&7Unknowns: &c" + errors.size() +
+                "&7. Check your advances.yml file";
+
+        recorder.doRecord("" +
                 "&7Tasks: &a" + tasks.size() + "&7 - Goals: &b" + goals.size() + "&7 - " +
-                "&7Challenges: &d" + challenges.size(), // haha, I hate those empty gaps lmao
+                "&7Challenges: &d" + challenges.size(), error, // I HATE EMPTY SPACES AAA
                 "&7Registered advancements in &e" + (System.currentTimeMillis() - time) + "&7 ms."
         );
     }
@@ -270,5 +285,9 @@ public class Initializer {
         catch (Exception e) {
             return null;
         }
+    }
+
+    public List<Advancement> getAdvancements() {
+        return advancements;
     }
 }

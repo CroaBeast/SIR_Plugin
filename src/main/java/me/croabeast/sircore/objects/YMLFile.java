@@ -44,7 +44,7 @@ public class YMLFile {
         if (file == null || rawYmlFile == null) return;
 
         try {
-            this.getFile().save(this.rawYmlFile);
+            getFile().save(rawYmlFile);
         }
         catch (Exception e) {
             recorder.doRecord("&7The &e" + location + "&7 file&c couldn't be saved&7.");

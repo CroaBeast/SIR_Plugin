@@ -98,7 +98,14 @@ public class FormatListener implements Listener {
         }
 
         event.setCancelled(true);
-        recorder.rawRecord(resultFormat);
+
+        String path = "chat.simple-logger.";
+        if (main.getConfig().getBoolean(path + "enabled")) {
+            String simple = main.getConfig().getString(path + "format");
+            simple = parseFormat(simple).replace("{MESSAGE}", message);
+            recorder.rawRecord(text.parsePAPI(player, simple));
+        }
+        else recorder.rawRecord(resultFormat);
 
         if (main.getInitializer().DISCORD) {
             String[] values = {

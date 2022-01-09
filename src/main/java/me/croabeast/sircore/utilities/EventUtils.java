@@ -48,7 +48,7 @@ public class EventUtils {
     @Nullable
     public ConfigurationSection lastSection(FileConfiguration file, Player player, String path) {
         ConfigurationSection resultSection = null;
-        String maxPerm = "";
+        String maxPerm = null;
         int highest = 0;
 
         ConfigurationSection section = file.getConfigurationSection(path);
@@ -56,7 +56,7 @@ public class EventUtils {
 
         for (String key : section.getKeys(false)) {
             ConfigurationSection id = section.getConfigurationSection(key);
-            if (id == null) continue;
+            assert id != null;
 
             String perm = id.getString("permission", "DEFAULT");
             int priority = id.getInt("priority", perm.matches("(?i)DEFAULT") ? 0 : 1);
@@ -64,6 +64,7 @@ public class EventUtils {
             if (priority > highest) {
                 maxPerm = perm;
                 highest = priority;
+                System.out.println(maxPerm + " - " + highest);
             }
 
             if (perms.certainPerm(player, maxPerm)) resultSection = id;
@@ -91,10 +92,23 @@ public class EventUtils {
         main.getRecorder().doRecord("&7> &f" + message);
     }
 
+    private String removeSpace(String line) {
+        if (text.getOption(1, "hard-spacing")) {
+            String startLine = line;
+            try {
+                while (line.charAt(0) == ' ') line = line.substring(1);
+                return line;
+            }
+            catch (IndexOutOfBoundsException e) {
+                return startLine;
+            }
+        }
+        else return line.startsWith(" ") ? line.substring(1) : line;
+    }
+
     public String parsePrefix(String type, String message) {
         message = message.substring(type.length());
-        while (message.charAt(0) == ' ') message = message.substring(1);
-        return message;
+        return removeSpace(message);
     }
 
     public void typeMessage(Player player, String line) {
@@ -170,16 +184,6 @@ public class EventUtils {
         else location = world.getSpawnLocation();
 
         player.teleport(location);
-    }
-
-    private String removeSpace(String line) {
-        try {
-            while (line.charAt(0) == ' ') line = line.substring(1);
-            return line;
-        }
-        catch (IndexOutOfBoundsException e) {
-            return line;
-        }
     }
 
     private void runMsgs(ConfigurationSection id, Player player, boolean isPublic) {

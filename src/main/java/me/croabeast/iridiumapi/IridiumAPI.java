@@ -85,7 +85,7 @@ public class IridiumAPI {
 
     @NotNull
     public static String stripAll(@NotNull String string) {
-        return string.replaceAll("(?i)[&§][a-f0-9lnokm]|<[/]?[gr](:[0-9]{3,6})?>|" +
+        return string.replaceAll("(?i)[&§][a-f0-9lnokmr]|<[/]?[gr](:[0-9]{3,6})?>|" +
                 "\\{#[0-9A-F]{6}}|<#[0-9A-F]{6}>|&#[0-9A-F]{6}|#[0-9A-F]{6}/gm", "");
     }
 
