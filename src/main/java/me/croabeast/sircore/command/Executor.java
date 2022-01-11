@@ -169,24 +169,20 @@ public class Executor {
 
                 case "reboot":
                     if (args.length > 1) return notArgument(args[args.length - 1]);
-
-                    if (reporter.isRunning()) reporter.cancelTask();
-                    reporter.startTask();
+                    if (!reporter.isRunning()) reporter.startTask();
                     return oneMessage("rebooted");
 
                 case "preview":
                     if (sender instanceof ConsoleCommandSender) {
-                        recorder.doRecord(
-                                "&cYou can't preview an announce if you are the console."
-                        );
+                        recorder.doRecord("&cYou can't preview an announce in console.");
                         return true;
                     }
 
-                    if (args.length == 1 || reporter.getID() == null ||
-                            reporter.getID().getConfigurationSection(args[1]) == null)
+                    if (args.length == 1 || reporter.getSection() == null ||
+                            reporter.getSection().getConfigurationSection(args[1]) == null)
                         return oneMessage("select-announce");
 
-                    reporter.runSection(reporter.getID().getConfigurationSection(args[1]));
+                    reporter.runSection(reporter.getSection().getConfigurationSection(args[1]));
                     return true;
 
                 default: return notArgument(args[args.length - 1]);

@@ -3,6 +3,7 @@ package me.croabeast.sircore;
 import com.google.common.collect.Lists;
 import github.scarsz.discordsrv.*;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
+import me.croabeast.sircore.hooks.ReflectKeys;
 import me.croabeast.sircore.listeners.*;
 import me.croabeast.sircore.objects.*;
 import me.croabeast.sircore.utilities.*;
@@ -28,6 +29,7 @@ public class Initializer {
             VANISH_HOOKS = new ArrayList<>();
 
     private List<Advancement> advancements = new ArrayList<>();
+    protected HashMap<Advancement, ReflectKeys> keys = new HashMap<>();
 
     public Initializer(Application main) {
         this.main = main;
@@ -181,6 +183,8 @@ public class Initializer {
     @SuppressWarnings("deprecation")
     public void loadAdvances() {
         if (main.MC_VERSION < 12) return;
+        if (!advancements.isEmpty()) advancements.clear();
+        if (!keys.isEmpty()) keys.clear();
 
         long time = System.currentTimeMillis();
         recorder.doRecord("", "&bLoading all the advancements...");
@@ -200,13 +204,22 @@ public class Initializer {
         advancements = Lists.newArrayList(main.getServer().advancementIterator());
 
         for (Advancement adv : advancements) {
+            this.keys.put(adv, new ReflectKeys(adv));
+
             String key = main.getTextUtils().stringKey(adv.getKey().toString());
-            String type = new Advancements.ReflectKeys(adv).getFrameType();
+            final String type = this.keys.get(adv).getFrameType();
 
             if (key.contains("root") || key.contains("recipes")) continue;
             boolean notContained = !main.getAdvances().contains(key);
 
-            if (type.matches("(?i)CHALLENGE")) {
+            if (type == null) {
+                errors.add(adv);
+                if (notContained) {
+                    main.getAdvances().set(key, "type.custom");
+                    keys.add(adv);
+                }
+            }
+            else if (type.matches("(?i)CHALLENGE")) {
                 challenges.add(adv);
                 if (notContained) {
                     main.getAdvances().set(key, "type.challenge");
@@ -239,7 +252,7 @@ public class Initializer {
         if (keys.size() > 0) main.getFiles().getObject("advances").saveFile();
 
         String error = errors.size() == 0 ? null : "&7Unknowns: &c" + errors.size() +
-                "&7. Check your advances.yml file";
+                "&7. Check your advances.yml file!!!";
 
         recorder.doRecord("" +
                 "&7Tasks: &a" + tasks.size() + "&7 - Goals: &b" + goals.size() + "&7 - " +
@@ -290,4 +303,5 @@ public class Initializer {
     public List<Advancement> getAdvancements() {
         return advancements;
     }
+    public HashMap<Advancement, ReflectKeys> getKeys() { return keys; }
 }

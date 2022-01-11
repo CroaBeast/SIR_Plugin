@@ -38,7 +38,7 @@ public class VanishListener implements Listener {
         if (!init.HAS_VANISH || !text.getOption(3, "enabled")) return;
         if(init.HAS_LOGIN) utils.getLoggedPlayers().add(player);
 
-        ConfigurationSection id = utils.lastSection(player, vanish ? "join" : "quit");
+        ConfigurationSection id = utils.resultSection(player, vanish ? "join" : "quit");
         if (id == null) {
             main.getRecorder().doRecord(player,
                     "<P> &cA valid message group isn't found...",

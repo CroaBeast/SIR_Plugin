@@ -37,7 +37,7 @@ public class PlayerListener implements Listener {
         main.getAmender().initUpdater(player);
         if (!main.getMessages().getBoolean("enabled", true)) return;
 
-        ConfigurationSection id = utils.lastSection(player, true);
+        ConfigurationSection id = utils.resultSection(player, true);
         if (id == null) {
             main.getRecorder().doRecord(player,
                     "<P> &cA valid message group isn't found...",
@@ -63,7 +63,7 @@ public class PlayerListener implements Listener {
 
         if (!main.getMessages().getBoolean("enabled", true)) return;
 
-        ConfigurationSection id = utils.lastSection(player, false);
+        ConfigurationSection id = utils.resultSection(player, false);
         if (id == null) {
             main.getRecorder().doRecord(player,
                     "<P> &cA valid message group isn't found...",

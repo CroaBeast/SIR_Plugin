@@ -69,7 +69,7 @@ public class FormatListener implements Listener {
         if (!main.getChat().getBoolean("enabled")) return;
 
         Player player = event.getPlayer();
-        this.id = utils.lastSection(main.getChat(), player, "formats");
+        this.id = utils.resultSection(main.getChat(), player, "formats");
 
         assert id != null;
         String rawFormat = id.getString("format", "");

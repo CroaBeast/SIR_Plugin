@@ -16,7 +16,7 @@ public class Reporter {
     private final EventUtils utils;
 
     private int ORDER = 0;
-    private boolean IS_RUNNING = false;
+    private boolean isRunning = false;
 
     private BukkitRunnable runnable;
 
@@ -57,14 +57,14 @@ public class Reporter {
             return;
         }
 
-        if (getID() == null) return;
-        IS_RUNNING = true;
+        if (getSection() == null) return;
+        isRunning = true;
 
-        List<String> keys = new ArrayList<>(getID().getKeys(false));
+        List<String> keys = new ArrayList<>(getSection().getKeys(false));
         Map<Integer, ConfigurationSection> sections = new HashMap<>();
 
         keys.forEach(s ->
-                sections.put(keys.indexOf(s), getID().getConfigurationSection(s))
+                sections.put(keys.indexOf(s), getSection().getConfigurationSection(s))
         );
 
         int count = sections.size() - 1;
@@ -81,15 +81,15 @@ public class Reporter {
         runnable = new BukkitRunnable() {
             @Override public void run() { startTask(); }
         };
-        runnable.runTaskLater(main, getDelay());
+        runnable.runTaskLaterAsynchronously(main, getDelay());
     }
 
     public boolean isRunning() {
-        return IS_RUNNING;
+        return isRunning;
     }
 
     @Nullable
-    public ConfigurationSection getID() {
+    public ConfigurationSection getSection() {
         return main.getAnnounces().getConfigurationSection("messages");
     }
 
@@ -99,7 +99,7 @@ public class Reporter {
 
     public void cancelTask() {
         if (runnable == null) return;
-        IS_RUNNING = false;
+        isRunning = false;
         runnable.cancel();
     }
 }

@@ -46,15 +46,16 @@ public class EventUtils {
     }
 
     @Nullable
-    public ConfigurationSection lastSection(FileConfiguration file, Player player, String path) {
+    public ConfigurationSection resultSection(FileConfiguration file, Player player, String path) {
         ConfigurationSection resultSection = null;
+
         String maxPerm = null;
         int highest = 0;
 
         ConfigurationSection section = file.getConfigurationSection(path);
         if (section == null || section.getKeys(false).isEmpty()) return null;
 
-        for (String key : section.getKeys(false)) {
+        for (String key : new ArrayList<>(section.getKeys(false))) {
             ConfigurationSection id = section.getConfigurationSection(key);
             assert id != null;
 
@@ -64,10 +65,16 @@ public class EventUtils {
             if (priority > highest) {
                 maxPerm = perm;
                 highest = priority;
-                System.out.println(maxPerm + " - " + highest);
             }
+        }
 
-            if (perms.certainPerm(player, maxPerm)) resultSection = id;
+        for (String key : new ArrayList<>(section.getKeys(false))) {
+            ConfigurationSection id = section.getConfigurationSection(key);
+            assert id != null;
+
+            String perm = id.getString("permission", "DEFAULT");
+
+            if (perm.matches("(?i)" + maxPerm) && perms.certainPerm(player, maxPerm)) return id;
             else if (perms.certainPerm(player, perm)) resultSection = id;
             else if (perm.matches("(?i)DEFAULT")) resultSection = id;
         }
@@ -76,13 +83,13 @@ public class EventUtils {
     }
 
     @Nullable
-    public ConfigurationSection lastSection(Player player, String path) {
-        return lastSection(main.getMessages(), player, path);
+    public ConfigurationSection resultSection(Player player, String path) {
+        return resultSection(main.getMessages(), player, path);
     }
 
     @Nullable
-    public ConfigurationSection lastSection(Player player, boolean isJoin) {
-        return lastSection(player, isJoinString(player, isJoin));
+    public ConfigurationSection resultSection(Player player, boolean isJoin) {
+        return resultSection(player, isJoinString(player, isJoin));
     }
 
     private void sendToConsole(String message) {

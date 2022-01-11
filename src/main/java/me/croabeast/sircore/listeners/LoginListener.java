@@ -35,7 +35,7 @@ public class LoginListener implements Listener {
         if (!text.getOption(2, "enabled")) return;
         if (perms.isVanished(player, true) && text.getOption(3, "silent")) return;
 
-        ConfigurationSection id = utils.lastSection(player, true);
+        ConfigurationSection id = utils.resultSection(player, true);
         if (id == null) {
             main.getRecorder().doRecord(player,
                     "<P> &cA valid message group isn't found...",
