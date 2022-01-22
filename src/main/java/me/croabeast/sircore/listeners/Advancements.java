@@ -5,7 +5,7 @@ import me.croabeast.sircore.hooks.*;
 import me.croabeast.sircore.utilities.*;
 import org.apache.commons.lang.*;
 import org.bukkit.*;
-import org.bukkit.advancement.*;
+import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.player.*;
@@ -15,13 +15,18 @@ import java.util.*;
 public class Advancements implements Listener {
 
     private final Application main;
+    private final Initializer init;
+
     private final TextUtils text;
     private final EventUtils utils;
 
     public Advancements(Application main) {
         this.main = main;
+        this.init = main.getInitializer();
+
         this.text = main.getTextUtils();
         this.utils = main.getEventUtils();
+
         main.registerListener(this);
     }
 
@@ -55,8 +60,12 @@ public class Advancements implements Listener {
             }
         }
 
-        if (main.getInitializer().DISCORD && main.getInitializer().discordServer() != null)
+        if (init.DISCORD && init.discordServer() != null)
             new DiscordMsg(main, player, "advances", keys, values).sendMessage();
+    }
+
+    private List<String> advList(String path) {
+        return main.getConfig().getStringList("advances.disabled-" + path);
     }
 
     @EventHandler
@@ -64,25 +73,27 @@ public class Advancements implements Listener {
         Player player = event.getPlayer();
         if (!main.getConfig().getBoolean("advances.enabled")) return;
 
-        for (String s : main.getConfig().getStringList("advances.disabled.worlds"))
-            if (s.equals(player.getWorld().getName())) return;
+        if (!advList("worlds").isEmpty() &&
+                advList("worlds").contains(player.getWorld().getName())) return;
 
-        for (String s : main.getConfig().getStringList("advances.disabled-modes")) {
-            try {
-                GameMode mode = GameMode.valueOf(s.toUpperCase());
-                if (player.getGameMode() == mode) return;
+        if (!advList("modes").isEmpty()) {
+            for (String s : advList("modes")) {
+                try {
+                    GameMode mode = GameMode.valueOf(s.toUpperCase());
+                    if (player.getGameMode() == mode) return;
+                }
+                catch (IllegalArgumentException ignored) {}
             }
-            catch (IllegalArgumentException ignored) {}
         }
 
         Advancement adv = event.getAdvancement();
-        if (!main.getInitializer().getAdvancements().contains(adv)) return;
+        if (!init.getAdvancements().contains(adv)) return;
 
-        ReflectKeys handler = main.getInitializer().getKeys().get(adv);
+        ReflectKeys handler = init.getKeys().get(adv);
         String key = adv.getKey().toString();
 
         if (key.contains("root") || key.contains("recipes")) return;
-        if (main.getConfig().getStringList("advances.disabled-advs").contains(key)) return;
+        if (!advList("advs").isEmpty() && advList("advs").contains(key)) return;
 
         List<String> norms = new ArrayList<>(adv.getCriteria());
         if (norms.isEmpty()) return;

@@ -9,6 +9,7 @@ import org.apache.commons.lang.*;
 import org.bukkit.command.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -28,8 +29,8 @@ public class TextUtils {
     public TextUtils(Application main) {
         this.main = main;
 
-        papi =  (p, line) -> !main.getInitializer().HAS_PAPI ? line :
-                (p != null ? PlaceholderAPI.setPlaceholders(p, line) : line);
+        papi =  (p, line) -> !main.getInitializer().HAS_PAPI ?
+                line : PlaceholderAPI.setPlaceholders(p, line);
         actionBar = new ActionBar(main);
         title = new Title(main);
     }
@@ -54,7 +55,7 @@ public class TextUtils {
         return getValue("line-separator");
     }
 
-    public String parsePAPI(Player player, String message) {
+    public String parsePAPI(@Nullable Player player, String message) {
         return papi.parsePAPI(player, message);
     }
 
@@ -119,7 +120,7 @@ public class TextUtils {
         );
     }
 
-    public void send(CommandSender sender, String path, String key, String value) {
+    public void send(CommandSender sender, String path, String[] keys, String[] values) {
         String prefix = main.getLang().getString("main-prefix", ""),
                 prKey = getValue("config-prefix"),
                 center = getValue("center-prefix");
@@ -127,10 +128,10 @@ public class TextUtils {
         for (String line : toList(path)) {
             if (line == null || line.equals("")) continue;
             line = line.startsWith(prKey) ? line.replace(prKey, prefix) : line;
-            if (key != null && value != null)
-                line = line.replace("{" + key + "}", value);
+            if (keys != null && values != null)
+                line = StringUtils.replaceEach(line, keys, values);
 
-            if (sender instanceof ConsoleCommandSender) {
+            if (sender == null || sender instanceof ConsoleCommandSender) {
                 line = line.replace(center, "");
                 main.getRecorder().rawRecord(line);
             }
@@ -140,6 +141,10 @@ public class TextUtils {
                 sendMixed(player, line);
             }
         }
+    }
+
+    public void send(CommandSender sender, String path, String key, String value) {
+        send(sender, path, new String[]{"{" + key + "}"}, new String[]{value});
     }
 
     public void actionBar(Player player, String message) {
@@ -163,7 +168,8 @@ public class TextUtils {
     public void title(Player player, String[] message, String[] times) {
         if (message.length == 0 || message.length > 2) return;
         String subtitle = message.length == 1 ? "" : message[1];
-        int[] i = checkInts(times) ? intArray(times) : new int[]{10, 50, 10};
+        int[] i = checkInts(times) && times.length == 3 ?
+                intArray(times) : new int[]{10, 50, 10};
         title.getMethod().send(player, message[0], subtitle, i[0], i[1], i[2]);
     }
 }

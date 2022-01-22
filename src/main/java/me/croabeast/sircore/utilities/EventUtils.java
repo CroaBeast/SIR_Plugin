@@ -17,7 +17,9 @@ import java.util.regex.*;
 public class EventUtils {
 
     private final Application main;
+
     private final Initializer init;
+    private final Recorder recorder;
 
     private final TextUtils text;
     private final PermUtils perms;
@@ -25,6 +27,7 @@ public class EventUtils {
     public EventUtils(Application main) {
         this.main = main;
         this.init = main.getInitializer();
+        this.recorder = main.getRecorder();
 
         this.text = main.getTextUtils();
         this.perms = main.getPermUtils();
@@ -95,8 +98,7 @@ public class EventUtils {
     private void sendToConsole(String message) {
         if (!text.getOption(1, "send-console")) return;
         String split = text.getSplit();
-        message = message.replace(split, "&r" + split);
-        main.getRecorder().doRecord("&7> &f" + message);
+        recorder.doRecord(message.replace(split, "&r" + split));
     }
 
     private String removeSpace(String line) {
@@ -126,10 +128,14 @@ public class EventUtils {
             text.title(player, parsePrefix("[TITLE]", line).split(split), null);
         }
         else if (line.startsWith("[JSON]") && line.contains("{\"text\":"))
-            Bukkit.dispatchCommand(
-                    Bukkit.getConsoleSender(), "minecraft:tellraw " +
-                    player.getName() + " " + parsePrefix("[JSON]", line)
-            );
+            new BukkitRunnable() {
+                @Override public void run() {
+                    Bukkit.dispatchCommand(
+                            Bukkit.getConsoleSender(), "minecraft:tellraw " +
+                            player.getName() + " " + parsePrefix("[JSON]", line)
+                    );
+                }
+            }.runTask(main);
         else text.sendMixed(player, line);
     }
 
@@ -142,8 +148,8 @@ public class EventUtils {
             Enum.valueOf(Sound.class, rawSound);
             sound = Sound.valueOf(rawSound);
         }
-        catch (Exception e) {
-            main.getRecorder().doRecord(player, "<P> The sound you input is invalid.");
+        catch (IllegalArgumentException | NullPointerException e) {
+            recorder.doRecord(player, "<P> The sound you input is invalid.");
             return;
         }
 
@@ -154,9 +160,12 @@ public class EventUtils {
         int godTime = id.getInt("invulnerable") ;
         if (main.MC_VERSION <= 8 | godTime <= 0) return;
 
-        Runnable god = () -> player.setInvulnerable(false);
         player.setInvulnerable(true);
-        Bukkit.getScheduler().runTaskLater(main, god, godTime);
+        new BukkitRunnable() {
+            @Override public void run() {
+                player.setInvulnerable(false);
+            }
+        }.runTaskLater(main, godTime);
     }
 
     public void goSpawn(ConfigurationSection id, Player player) {
@@ -176,15 +185,38 @@ public class EventUtils {
         rotations = rotation.split(",");
 
         if (!path.equals("") && coordinates.length == 3) {
-            int x = Integer.parseInt(coordinates[0]);
-            int y = Integer.parseInt(coordinates[1]);
-            int z = Integer.parseInt(coordinates[2]);
+            int x, y, z;
+            try {
+                x = Integer.parseInt(coordinates[0]);
+                y = Integer.parseInt(coordinates[1]);
+                z = Integer.parseInt(coordinates[2]);
+            }
+            catch (NumberFormatException e) {
+                recorder.doRecord(player,
+                        "<P> &cThe coordinates are invalid, " +
+                        "teleporting to the world's spawn."
+                );
+                player.teleport(world.getSpawnLocation());
+                return;
+            }
 
             if (rotation.equals("") || rotations.length != 2)
                 location = new Location(world, x, y, z);
             else {
-                int yaw = Integer.parseInt(rotations[0]);
-                int pitch = Integer.parseInt(rotations[1]);
+                int yaw, pitch;
+                try {
+                    yaw = Integer.parseInt(rotations[0]);
+                    pitch = Integer.parseInt(rotations[1]);
+                }
+                catch (NumberFormatException e) {
+                    recorder.doRecord(player,
+                            "<P> &cThe rotation numbers are invalid, " +
+                            "teleporting to the default location."
+                    );
+                    player.teleport(new Location(world, x, y, z));
+                    return;
+                }
+
                 location = new Location(world, x, y, z, yaw, pitch);
             }
         }
@@ -224,7 +256,9 @@ public class EventUtils {
             CommandSender sender = isPlayer ? player : Bukkit.getConsoleSender();
             String cmd = isPlayer ? parsePrefix("[PLAYER]", line) : line;
             new BukkitRunnable() {
-                @Override public void run() { Bukkit.dispatchCommand(sender, cmd); }
+                @Override public void run() {
+                    Bukkit.dispatchCommand(sender, cmd);
+                }
             }.runTask(main);
         }
     }
@@ -245,6 +279,7 @@ public class EventUtils {
 
     public void runEvent(ConfigurationSection id, Player p, boolean isJoin, boolean doTP, boolean isLogin) {
         int ticks = main.getConfig().getInt("login.ticks-after");
+
         if (!isLogin || ticks <= 0) initEventTasks(id, p, doTP, isJoin);
         else new BukkitRunnable() {
             @Override public void run() { initEventTasks(id, p, isJoin, doTP); }

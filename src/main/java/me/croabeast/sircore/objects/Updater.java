@@ -16,18 +16,12 @@ public class Updater {
 
     public static final VersionScheme VERSION_SCHEME_DECIMAL = (first, second) -> {
         String[] firstSplit = splitVersionInfo(first), secondSplit = splitVersionInfo(second);
-        if (firstSplit == null || secondSplit == null) {
-            return null;
-        }
+        if (firstSplit == null || secondSplit == null) return null;
 
         for (int i = 0; i < Math.min(firstSplit.length, secondSplit.length); i++) {
             int currentValue = NumberUtils.toInt(firstSplit[i]), newestValue = NumberUtils.toInt(secondSplit[i]);
-
-            if (newestValue > currentValue) {
-                return second;
-            } else if (newestValue < currentValue) {
-                return first;
-            }
+            if (newestValue > currentValue) return second;
+            else if (newestValue < currentValue) return first;
         }
 
         return (secondSplit.length > firstSplit.length) ? second : first;
@@ -38,8 +32,6 @@ public class Updater {
     private static final Pattern DECIMAL_SCHEME_PATTERN = Pattern.compile("\\d+(?:\\.\\d+)*");
 
     private static Updater instance;
-
-    private UpdateResult lastResult = null;
 
     private final JavaPlugin plugin;
     private final int pluginID;
@@ -75,33 +67,27 @@ public class Updater {
                 String pluginVersion = plugin.getDescription().getVersion();
                 String latest = versionScheme.compareVersions(pluginVersion, currentVersion);
 
-                if (latest == null) {
+                if (latest == null)
                     return new UpdateResult(UpdateReason.UNSUPPORTED_VERSION_SCHEME);
-                }
-                else if (latest.equals(pluginVersion)) {
+                else if (latest.equals(pluginVersion))
                     return new UpdateResult(pluginVersion.equals(currentVersion) ?
                             UpdateReason.UP_TO_DATE :
                             UpdateReason.UNRELEASED_VERSION
                     );
-                }
-                else if (latest.equals(currentVersion)) {
+                else if (latest.equals(currentVersion))
                     return new UpdateResult(UpdateReason.NEW_UPDATE, latest);
-                }
-            } catch (IOException e) {
+            }
+            catch (IOException e) {
                 return new UpdateResult(UpdateReason.COULD_NOT_CONNECT);
             }
 
-            return new UpdateResult(responseCode == 401 ? UpdateReason.UNAUTHORIZED_QUERY : UpdateReason.UNKNOWN_ERROR);
+            return new UpdateResult(responseCode == 401 ?
+                    UpdateReason.UNAUTHORIZED_QUERY : UpdateReason.UNKNOWN_ERROR);
         });
     }
 
     private String getCurrentVersion() {
         return currentVersion;
-    }
-
-    @Nullable
-    public UpdateResult getLastResult() {
-        return lastResult;
     }
 
     private static String[] splitVersionInfo(String version) {
@@ -129,10 +115,6 @@ public class Updater {
         return instance;
     }
 
-    public static boolean isInitialized() {
-        return instance != null;
-    }
-
     @FunctionalInterface
     public interface VersionScheme {
         @Nullable String compareVersions(@NotNull String first, @NotNull String second);
@@ -154,10 +136,6 @@ public class Updater {
         private final UpdateReason reason;
         private final String newestVersion;
 
-        {
-            Updater.this.lastResult = this;
-        }
-
         private UpdateResult(@NotNull UpdateReason reason, @NotNull String newestVersion) {
             this.reason = reason;
             this.newestVersion = newestVersion;
@@ -173,10 +151,6 @@ public class Updater {
         @NotNull
         public UpdateReason getReason() {
             return reason;
-        }
-
-        public boolean requiresUpdate() {
-            return reason == UpdateReason.NEW_UPDATE;
         }
 
         @NotNull

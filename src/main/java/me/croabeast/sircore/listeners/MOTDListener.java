@@ -5,11 +5,13 @@ import me.croabeast.sircore.*;
 import me.croabeast.sircore.utilities.*;
 import org.bukkit.*;
 import org.bukkit.configuration.*;
+import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.event.server.*;
 import org.bukkit.util.*;
 
 import java.io.*;
+import java.net.InetSocketAddress;
 import java.util.*;
 
 import static me.croabeast.sircore.listeners.MOTDListener.UsageType.*;
@@ -52,6 +54,16 @@ public class MOTDListener implements Listener {
         return main.getMOTD().getConfigurationSection("motd-list");
     }
 
+    private Player getPlayerFromIP() {
+        Player player = null;
+        for (Player p : main.everyPlayer()) {
+            InetSocketAddress address = p.getAddress();
+            if (address == null) return null;
+            if (address.getAddress() == event.getAddress()) player = p;
+        }
+        return player;
+    }
+
     private void registerMOTD() {
         List<String> keys = new ArrayList<>(getList().getKeys(false));
         Map<Integer, ConfigurationSection> sections = new HashMap<>();
@@ -64,9 +76,10 @@ public class MOTDListener implements Listener {
         if (MOTD > count) MOTD = 0;
 
         event.setMotd(IridiumAPI.process(
+                main.getTextUtils().parsePAPI(getPlayerFromIP(), "" +
                 sections.get(MOTD).getString("1", "") + "\n" +
                 sections.get(MOTD).getString("2", "")
-        ));
+        )));
 
         if (!main.getMOTD().getBoolean("random-motds")) {
             if (MOTD < count) MOTD++;
@@ -101,6 +114,17 @@ public class MOTDListener implements Listener {
         return type;
     }
 
+    private void defaultIcon() {
+        try {
+            event.setServerIcon(null);
+        } catch (Exception e) {
+            recorder.doRecord(
+                    "&cError when trying to set to null the server icon.",
+                    "&7Your server doesn't support setting the icon to none."
+            );
+        }
+    }
+
     private void setServerIcon() {
         if (usageType() == DISABLED) return;
 
@@ -109,7 +133,7 @@ public class MOTDListener implements Listener {
 
         File[] icons = folder.listFiles((dir, name) -> name.endsWith(".png"));
         if (icons == null) {
-            event.setServerIcon(null);
+            defaultIcon();
             return;
         }
 
@@ -122,7 +146,7 @@ public class MOTDListener implements Listener {
             icon = Bukkit.loadServerIcon(usageType() == SINGLE ? single : icons[ICON]);
         }
         catch (Exception e) {
-            event.setServerIcon(null);
+            defaultIcon();
             event.setMotd(IridiumAPI.process(
                     "&cError loading your custom icon \n&7" +
                     e.getLocalizedMessage()
@@ -131,9 +155,10 @@ public class MOTDListener implements Listener {
         }
 
         if (icon == null) {
-            event.setServerIcon(null);
+            defaultIcon();
             return;
         }
+
         event.setServerIcon(icon);
 
         if (usageType() == SINGLE) return;

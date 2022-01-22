@@ -7,7 +7,7 @@ import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.player.*;
 
-public class PlayerListener implements Listener {
+public class JoinQuitPlayer implements Listener {
 
     private final Application main;
 
@@ -17,7 +17,7 @@ public class PlayerListener implements Listener {
 
     private final EventUtils utils;
 
-    public PlayerListener(Application main) {
+    public JoinQuitPlayer(Application main) {
         this.main = main;
 
         this.init = main.getInitializer();
@@ -59,9 +59,10 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     private void onQuit(PlayerQuitEvent event) {
-        Player player = event.getPlayer();
+        main.getExecutor().getReceivers().remove(event.getPlayer());
 
         if (!main.getMessages().getBoolean("enabled", true)) return;
+        Player player = event.getPlayer();
 
         ConfigurationSection id = utils.resultSection(player, false);
         if (id == null) {

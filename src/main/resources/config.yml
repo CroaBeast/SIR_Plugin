@@ -43,8 +43,13 @@ options:
   # Enabling this will parse color and placeholders in the logger.
   format-logger: false
   # If enabled, it will remove all unnecessary spaces for every
-  # message to send. Recommended leaving it in 'true'.
+  # message to send. Recommended leaving this 'true'.
   hard-spacing: true
+  # If enabled, it will check if the permission is set to that
+  # player; then if true, it will check if the player has the perm
+  # value set to true. Recommended leaving this 'false'.
+  # If enabled, it will not check if a player is OP tho.
+  hard-perm-check: false
 
 # Some values you might want to change in the plugin.
 values:
@@ -97,6 +102,9 @@ chat:
     enabled: false
     # You can use PlaceholderAPI, {PREFIX} and {SUFFIX}
     format: '&7{PLAYER}: {MESSAGE}'
+  # If enabled, it will allow players to send blank messages using
+  # spaces ' '. Recommended leaving this 'false'.
+  allow-empty: false
 
 # Some options for the Advancement-Messages feature. Only for 1.12 +
 advances:

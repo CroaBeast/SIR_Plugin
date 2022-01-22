@@ -24,6 +24,8 @@ public class Executor {
     private String[] args;
     private CommandSender sender;
 
+    protected Map<CommandSender, CommandSender> receivers = new HashMap<>();
+
     public Executor(Application main) {
         this.main = main;
         this.init = main.getInitializer();
@@ -37,7 +39,14 @@ public class Executor {
         registerCmd("announcer", announcerCmd());
         registerCmd("sir", mainCmd());
         registerCmd("print", printCmd());
+        registerCmd("msg", msgCmd());
+        registerCmd("reply", replyCmd());
+
         new Completer(main);
+    }
+
+    public Map<CommandSender, CommandSender> getReceivers() {
+        return receivers;
     }
 
     private void registerCmd(String name, CommandExecutor executor) {
@@ -109,11 +118,11 @@ public class Executor {
         return new HashSet<>();
     }
 
-    private String rawMessage(int size) {
+    private String rawMessage(int initial) {
         StringBuilder builder = new StringBuilder();
         String[] args = this.args;
 
-        for (int i = size; i < args.length; i++)
+        for (int i = initial; i < args.length; i++)
             builder.append(args[i]).append(" ");
 
         return builder.substring(0, builder.toString().length() - 1);
@@ -149,30 +158,34 @@ public class Executor {
             this.args = args;
 
             if (hasNoPerm("announcer.*")) return true;
-            if (args.length == 0) return oneMessage("announcer-help");
+            if (args.length == 0) return oneMessage("announcer.help");
             if (args.length > 2) return notArgument(args[args.length - 1]);
 
             switch (args[0].toLowerCase()) {
                 case "start":
+                    if (hasNoPerm("announcer.start")) return true;
                     if (args.length > 1) return notArgument(args[args.length - 1]);
-                    if (reporter.isRunning()) return oneMessage("cant-start");
+                    if (reporter.isRunning()) return oneMessage("announcer.cant-start");
 
                     reporter.startTask();
-                    return oneMessage("started");
+                    return oneMessage("announcer.started");
 
                 case "cancel":
+                    if (hasNoPerm("announcer.cancel")) return true;
                     if (args.length > 1) return notArgument(args[args.length - 1]);
-                    if (!reporter.isRunning())  return oneMessage("cant-stop");
+                    if (!reporter.isRunning())  return oneMessage("announcer.cant-stop");
 
                     reporter.cancelTask();
-                    return oneMessage("stopped");
+                    return oneMessage("announcer.stopped");
 
                 case "reboot":
+                    if (hasNoPerm("announcer.reboot")) return true;
                     if (args.length > 1) return notArgument(args[args.length - 1]);
                     if (!reporter.isRunning()) reporter.startTask();
-                    return oneMessage("rebooted");
+                    return oneMessage("announcer.rebooted");
 
                 case "preview":
+                    if (hasNoPerm("announcer.preview")) return true;
                     if (sender instanceof ConsoleCommandSender) {
                         recorder.doRecord("&cYou can't preview an announce in console.");
                         return true;
@@ -180,7 +193,7 @@ public class Executor {
 
                     if (args.length == 1 || reporter.getSection() == null ||
                             reporter.getSection().getConfigurationSection(args[1]) == null)
-                        return oneMessage("select-announce");
+                        return oneMessage("announcer.select");
 
                     reporter.runSection(reporter.getSection().getConfigurationSection(args[1]));
                     return true;
@@ -212,8 +225,8 @@ public class Executor {
                     main.getFiles().loadFiles(false);
                     if (!reporter.isRunning()) reporter.startTask();
 
-                    init.unloadAdvances();
-                    init.loadAdvances();
+                    init.unloadAdvances(true);
+                    init.loadAdvances(false);
 
                     sendMessage("reload-files", "TIME",
                             (System.currentTimeMillis() - start) + "");
@@ -295,7 +308,7 @@ public class Executor {
             }
 
             else if (args[0].matches("(?i)TITLE")) {
-                if (hasNoPerm("print.chat")) return true;
+                if (hasNoPerm("print.title")) return true;
                 if (args.length == 1) return sendPrintHelp("title");
                 if (args.length < 4) return oneMessage("empty-message");
 
@@ -304,16 +317,73 @@ public class Executor {
                 sendReminder(args[1]);
                 if (!targets(args[1]).isEmpty()) {
                     targets(args[1]).forEach(p -> {
-                        String[] message = text.colorize(p, noFormat).split(split);
-                        if (args[2].matches("(?i)DEFAULT"))
-                            text.title(p, message, null);
-                        else text.title(p, message, args[2].split(","));
+                        String[] array = args[2].matches("(?i)DEFAULT") ?
+                                null : args[2].split(",");
+                        text.title(p, text.colorize(p, noFormat).split(split), array);
                     });
                     messageLogger("TITLE", noFormat.replace(split, "&r" + split));
                 }
             }
 
             else sendMessage("wrong-arg", "ARG", args[0]);
+            return true;
+        };
+    }
+
+    private CommandExecutor msgCmd() {
+        return (sender, command, label, args) -> {
+            this.sender = sender;
+            this.args = args;
+
+            if (hasNoPerm("message.default")) return true;
+            if (args.length == 0) return oneMessage("message.need-player");
+
+            Player target = Bukkit.getPlayer(args[0]);
+            if (target == null) return oneMessage("message.not-player", "TARGET", args[0]);
+            if (target == sender) return oneMessage("message.not-yourself");
+
+            if (!receivers.isEmpty()) receivers.clear();
+            receivers.put(sender, target);
+            receivers.put(target, sender);
+
+            String senderName = sender instanceof ConsoleCommandSender ?
+                    main.getLang().getString("message.console-name") : sender.getName();
+
+            String[] values1 = {args[0], rawMessage(1)};
+            String[] values2 = {senderName, rawMessage(1)};
+
+            text.send(sender, "message.sender", new String[]{"{RECEIVER}", "{MESSAGE}"}, values1);
+            text.send(target, "message.receiver", new String[]{"{SENDER}", "{MESSAGE}"}, values2);
+            return true;
+        };
+    }
+
+    private CommandExecutor replyCmd() {
+        return (sender, command, label, args) -> {
+            this.sender = sender;
+            this.args = args;
+
+            if (hasNoPerm("message.reply")) return true;
+            if (args.length == 0) return oneMessage("message.need-player");
+
+            CommandSender target = (receivers.isEmpty() || !receivers.containsKey(sender)) ?
+                    Bukkit.getPlayer(args[0]) : receivers.getOrDefault(sender, null);
+
+            if (target == null) {
+                if (receivers.isEmpty()) return oneMessage("message.not-replied");
+                else return oneMessage("message.not-player", "TARGET", args[0]);
+            }
+
+            if (target == sender) return oneMessage("message.not-yourself");
+
+            String name = main.getLang().getString("message.console-name");
+            String message = rawMessage(receivers.containsKey(sender) ? 0 : 1);
+
+            String[] values1 = {target instanceof ConsoleCommandSender ? name : target.getName(), message};
+            String[] values2 = {sender instanceof ConsoleCommandSender ? name : sender.getName(), message};
+
+            text.send(sender, "message.sender", new String[]{"{RECEIVER}", "{MESSAGE}"}, values1);
+            text.send(target, "message.receiver", new String[]{"{SENDER}", "{MESSAGE}"}, values2);
             return true;
         };
     }

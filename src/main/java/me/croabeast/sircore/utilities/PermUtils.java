@@ -16,7 +16,9 @@ public class PermUtils {
     }
 
     public boolean hasPerm(CommandSender sender, String perm) {
-        return (sender instanceof ConsoleCommandSender) || sender.hasPermission(perm);
+        boolean isSet = main.getConfig().getBoolean("options.hard-perm-check");
+        isSet = (!isSet || sender.isPermissionSet(perm)) && sender.hasPermission(perm);
+        return (sender instanceof ConsoleCommandSender) || isSet;
     }
 
     public boolean certainPerm(Player player, String perm) {
@@ -26,9 +28,8 @@ public class PermUtils {
     private boolean essVanish(Player player, boolean isJoin) {
         Essentials ess = (Essentials) main.getPlugin("Essentials");
         if (!main.getInitializer().essentials || ess == null) return false;
-
-        boolean hasJoined = isJoin && player.hasPermission("essentials.silentjoin.vanish");
-        return ess.getUser(player).isVanished() || hasJoined;
+        return ess.getUser(player).isVanished() ||
+                (isJoin && hasPerm(player, "essentials.silentjoin.vanish"));
     }
 
     private boolean cmiVanish(Player player) {
@@ -42,7 +43,7 @@ public class PermUtils {
         return false;
     }
 
-    public boolean isVanished(Player p, boolean join) {
-        return essVanish(p, join) || cmiVanish(p) || normalVanish(p);
+    public boolean isVanished(Player p, boolean isJoin) {
+        return essVanish(p, isJoin) || cmiVanish(p) || normalVanish(p);
     }
 }

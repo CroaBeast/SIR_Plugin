@@ -17,9 +17,11 @@ public class Completer {
     public Completer(Application main) {
         this.main = main;
 
-        registerCmptr("announcer", announcerCompleter());
-        registerCmptr("sir", sirCompleter());
-        registerCmptr("print", printCompleter());
+        registerCmptr("announcer", announcerCmptr());
+        registerCmptr("sir", sirCmptr());
+        registerCmptr("print", printCmptr());
+        registerCmptr("msg", msgCmptr());
+        registerCmptr("reply", replyCmptr());
     }
 
     private void registerCmptr(String name, TabCompleter completer) {
@@ -40,7 +42,11 @@ public class Completer {
         return resultTab(Arrays.asList(args));
     }
 
-    private TabCompleter announcerCompleter() {
+    private List<String> onlinePlayers() {
+        return main.everyPlayer().stream().map(Player::getName).collect(Collectors.toList());
+    }
+
+    private TabCompleter announcerCmptr() {
         return (sender, command, alias, args) -> {
             this.args = args;
 
@@ -56,7 +62,7 @@ public class Completer {
         };
     }
 
-    private TabCompleter sirCompleter() {
+    private TabCompleter sirCmptr() {
         return (sender, command, alias, args) -> {
             this.args = args;
             if (args.length == 1) return resultTab("reload", "help", "support");
@@ -64,7 +70,7 @@ public class Completer {
         };
     }
 
-    private TabCompleter printCompleter() {
+    private TabCompleter printCmptr() {
         return (sender, command, alias, args) -> {
             this.args = args;
 
@@ -84,6 +90,31 @@ public class Completer {
             }
 
             if (args.length == 4 && args[0].matches("(?i)CHAT|TITLE")) return resultTab("<message>");
+
+            return new ArrayList<>();
+        };
+    }
+
+    private TabCompleter msgCmptr() {
+        return (sender, command, alias, args) -> {
+            this.args = args;
+
+            if (args.length == 1)
+                return resultTab(onlinePlayers());
+            if (args.length == 2) return resultTab("<message>");
+
+            return new ArrayList<>();
+        };
+    }
+
+    private TabCompleter replyCmptr() {
+        return (sender, command, alias, args) -> {
+            this.args = args;
+            boolean notPlayer = main.getExecutor().getReceivers().isEmpty();
+
+            if (args.length == 1)
+                return notPlayer ? resultTab(onlinePlayers()) : resultTab("<message>");
+            if (args.length == 2 && notPlayer) return resultTab("<message>");
 
             return new ArrayList<>();
         };

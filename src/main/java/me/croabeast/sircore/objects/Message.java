@@ -30,7 +30,7 @@ public class Message {
 
     @Nullable
     public String getFormat() {
-        return this.format;
+        return format;
     }
 
     public Message setHover(@Nullable List<String> list) {

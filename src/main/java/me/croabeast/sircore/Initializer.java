@@ -1,6 +1,6 @@
 package me.croabeast.sircore;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.*;
 import github.scarsz.discordsrv.*;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
 import me.croabeast.sircore.hooks.ReflectKeys;
@@ -21,6 +21,7 @@ public class Initializer {
     public static Permission Perms;
 
     public int LISTENERS = 0;
+    private boolean disabledAdvs = false;
 
     public boolean HAS_PAPI, HAS_VAULT, DISCORD, HAS_LOGIN, HAS_VANISH,
             authMe, userLogin, hasCMI, essentials, srVanish, prVanish;
@@ -28,7 +29,6 @@ public class Initializer {
     protected List<String> LOGIN_HOOKS = new ArrayList<>(),
             VANISH_HOOKS = new ArrayList<>();
 
-    private List<Advancement> advancements = new ArrayList<>();
     protected HashMap<Advancement, ReflectKeys> keys = new HashMap<>();
 
     public Initializer(Application main) {
@@ -128,11 +128,10 @@ public class Initializer {
                 );
             else recorder.doRecord("" +
                     "&cInvalid SERVER_ID, change it ASAP",
-                    "&7After that, use &b/sir reload"
+                    "&7After that, use &b/sir reload &7command"
             );
         }
 
-        // Login hook
         recorder.doRecord("", "&bChecking if a login plugin is enabled...");
 
         if (LOGIN_HOOKS.size() == 1) {
@@ -169,9 +168,9 @@ public class Initializer {
     public void registerListeners() {
         recorder.doRecord("", "&bLoading all the listeners...");
 
-        new PlayerListener(main);
+        new JoinQuitPlayer(main);
         new MOTDListener(main);
-        new FormatListener(main);
+        new ChatListener(main);
         new Advancements(main);
 
         if (HAS_LOGIN) new LoginListener(main);
@@ -181,29 +180,31 @@ public class Initializer {
     }
 
     @SuppressWarnings("deprecation")
-    public void loadAdvances() {
+    public void loadAdvances(boolean debug) {
         if (main.MC_VERSION < 12) return;
-        if (!advancements.isEmpty()) advancements.clear();
         if (!keys.isEmpty()) keys.clear();
 
         long time = System.currentTimeMillis();
-        recorder.doRecord("", "&bLoading all the advancements...");
+        if (debug) recorder.doRecord("", "&bLoading all the advancements...");
 
-        for (World world : main.getServer().getWorlds()) {
-            if (main.MC_VERSION == 12) {
-                world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "false");
-                continue;
+        if (main.getConfig().getBoolean("advances.enabled") && !disabledAdvs) {
+            disabledAdvs = true;
+            for (World world : main.getServer().getWorlds()) {
+                if (main.MC_VERSION == 12) {
+                    world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "false");
+                    continue;
+                }
+                world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
             }
-            world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
+            recorder.doRecord("&eAll worlds have default advancements disabled.");
         }
 
-        List<Advancement> tasks = new ArrayList<>(), goals = new ArrayList<>(),
+        List<Advancement>
+                tasks = new ArrayList<>(), goals = new ArrayList<>(),
                 challenges = new ArrayList<>(), errors = new ArrayList<>(),
                 keys = new ArrayList<>();
 
-        advancements = Lists.newArrayList(main.getServer().advancementIterator());
-
-        for (Advancement adv : advancements) {
+        for (Advancement adv : getAdvancements()) {
             this.keys.put(adv, new ReflectKeys(adv));
 
             String key = main.getTextUtils().stringKey(adv.getKey().toString());
@@ -254,7 +255,7 @@ public class Initializer {
         String error = errors.size() == 0 ? null : "&7Unknowns: &c" + errors.size() +
                 "&7. Check your advances.yml file!!!";
 
-        recorder.doRecord("" +
+        if (debug) recorder.doRecord("" +
                 "&7Tasks: &a" + tasks.size() + "&7 - Goals: &b" + goals.size() + "&7 - " +
                 "&7Challenges: &d" + challenges.size(), error, // I HATE EMPTY SPACES AAA
                 "&7Registered advancements in &e" + (System.currentTimeMillis() - time) + "&7 ms."
@@ -262,8 +263,12 @@ public class Initializer {
     }
 
     @SuppressWarnings("deprecation")
-    public void unloadAdvances() {
+    public void unloadAdvances(boolean load) {
         if (main.MC_VERSION < 12) return;
+        if (main.getConfig().getBoolean("advances.enabled") && load) return;
+
+        if (!disabledAdvs) return;
+        disabledAdvs = false;
 
         for (World world : main.getServer().getWorlds()) {
             if (main.MC_VERSION == 12) {
@@ -272,6 +277,8 @@ public class Initializer {
             }
             world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, true);
         }
+
+        recorder.doRecord("&eAll worlds have default advancements enabled.");
     }
 
     private void showPluginInfo(String name) {
@@ -301,7 +308,10 @@ public class Initializer {
     }
 
     public List<Advancement> getAdvancements() {
-        return advancements;
+        return Lists.newArrayList(main.getServer().advancementIterator());
     }
-    public HashMap<Advancement, ReflectKeys> getKeys() { return keys; }
+
+    public HashMap<Advancement, ReflectKeys> getKeys() {
+        return keys;
+    }
 }

@@ -21,9 +21,13 @@ commands:
   sir:
     description: Main command lmao
   print:
-    description: Print raw messages
+    aliases: [ rawmsg, rm ]
   announcer:
-    description: Send announcements
+    aliases: [ broadcast, bc ]
+  msg:
+    aliases: [ m ]
+  reply:
+    aliases: [ r ]
 
 permissions:
   sir.*:
@@ -32,6 +36,7 @@ permissions:
       sir.admin.*: true
       sir.print.*: true
       sir.announcer.*: true
+      sir.message.*: true
 
   sir.admin.*:
     default: op
@@ -56,6 +61,12 @@ permissions:
       sir.announcer.start: true
       sir.announcer.stop: true
       sir.announcer.reboot: true
+
+  sir.message.*:
+    default: op
+    children:
+      sir.message.default: true
+      sir.message.reply: true
 
   sir.admin.about:
     default: op
@@ -82,4 +93,9 @@ permissions:
   sir.announcer.stop:
     default: op
   sir.announcer.reboot:
+    default: op
+
+  sir.message.default:
+    default: op
+  sir.message.reply:
     default: op

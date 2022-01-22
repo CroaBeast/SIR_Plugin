@@ -38,16 +38,21 @@ public class Reporter {
         }
     }
 
-    private void lineLogger(String line) {
-        main.getRecorder().rawRecord("[SIR-ANNOUNCES] " +
-                line.replace(text.getSplit(), "&r" + text.getSplit())
-        );
+    private void announcerLogger(ConfigurationSection id) {
+        if (!text.getOption(1, "send-console")) return;
+        List<String> list = id.getStringList("lines");
+        if (list.isEmpty()) return;
+
+        list.forEach(s -> {
+            s = s.replace(text.getSplit(), "&r" + text.getSplit());
+            main.getRecorder().doRecord(s);
+        });
     }
 
     public void runSection(ConfigurationSection id) {
         if (main.everyPlayer().isEmpty()) return;
         main.everyPlayer().forEach(p -> playMessage(id, p));
-        id.getStringList("lines").forEach(this::lineLogger);
+        announcerLogger(id);
         utils.runCmds(id, null);
     }
 

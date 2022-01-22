@@ -9,10 +9,10 @@ import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.plugin.*;
 import org.bukkit.plugin.java.*;
+import org.bukkit.scheduler.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 public final class Application extends JavaPlugin {
 
@@ -27,6 +27,7 @@ public final class Application extends JavaPlugin {
     private Amender amender;
 
     private FilesUtils files;
+    private Executor executor;
 
     public String PLUGIN_VERSION, MC_FORK;
     public int MC_VERSION;
@@ -53,7 +54,7 @@ public final class Application extends JavaPlugin {
         amender = new Amender(this);
 
         init.startMetrics(); // The bStats method for Metrics class
-        new Executor(this); // Register the main cmd for the plugin
+        executor = new Executor(this); // Register the main cmd for the plugin
 
         pluginHeader();
         recorder.rawRecord(
@@ -68,8 +69,7 @@ public final class Application extends JavaPlugin {
 
         reporter.startTask();
         recorder.doRecord("&7The announcement task has been started.");
-
-        init.loadAdvances();
+        init.loadAdvances(true);
 
         recorder.doRecord("",
                 "&7SIR " + PLUGIN_VERSION + " was&a loaded&7 in " +
@@ -77,14 +77,20 @@ public final class Application extends JavaPlugin {
         );
         recorder.rawRecord("");
 
-        amender.initUpdater(null);
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                amender.initUpdater(null);
+            }
+        }.runTaskLater(this, 20);
     }
 
     @Override
     public void onDisable() {
         pluginHeader();
 
-        init.unloadAdvances();
+        utils.getLoggedPlayers().clear();
+        init.unloadAdvances(false);
         reporter.cancelTask();
 
         recorder.doRecord(
@@ -157,6 +163,9 @@ public final class Application extends JavaPlugin {
     }
     public Reporter getReporter() {
         return reporter;
+    }
+    public Executor getExecutor() {
+        return executor;
     }
 
     public Plugin getPlugin(String name) {
