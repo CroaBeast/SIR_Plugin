@@ -1,3 +1,3 @@
 # SIR (Simple In-game Receptionist)
 
-A chat plugin. Very usable and customizable.
+A chat plugin. Very useful and customizable.
