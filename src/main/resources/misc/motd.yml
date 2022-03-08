@@ -1,0 +1,7 @@
+motds:
+  first:
+    1: '<R:1>Check out my server!</R>'
+    2: '&7IP:&e play.my-server.com'
+  custom-name:
+    1: '               &7A Minecraft Server'
+    2: '              &4Here is another line'

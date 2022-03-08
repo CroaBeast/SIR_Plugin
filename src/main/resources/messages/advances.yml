@@ -1,0 +1,12 @@
+type:
+  task:
+    - ' &e{player}&7 has got the {low-type} <hover=[&7{description}]>&a{adv}</text>'
+    - '[cmd] minecraft:experience add {player} 100 points'
+  goal:
+    - ' &e{player}&7 has reached the {type} <hover=[&7{description}]>&b{adv}</text>'
+    - '[cmd] minecraft:experience add {player} 500 points'
+  challenge:
+    - ' &e{player}&7 has finished the &d{cap-type}&7: <hover=[&7{description}]>&5{adv}</text>'
+    - '[cmd] minecraft:experience add {player} 1000 points'
+  custom:
+    - ' &e{player} &7has made the {low-type} <hover=[&7{description}]>&b{adv}</text>'

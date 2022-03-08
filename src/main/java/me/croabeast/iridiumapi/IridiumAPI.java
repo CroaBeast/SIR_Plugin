@@ -1,13 +1,18 @@
 package me.croabeast.iridiumapi;
 
-import com.google.common.collect.*;
-import me.croabeast.iridiumapi.patterns.*;
-import net.md_5.bungee.api.*;
+import com.google.common.collect.ImmutableMap;
+import me.croabeast.iridiumapi.patterns.Gradient;
+import me.croabeast.iridiumapi.patterns.Patterns;
+import me.croabeast.iridiumapi.patterns.Rainbow;
+import me.croabeast.iridiumapi.patterns.SolidColor;
+import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
-import org.jetbrains.annotations.*;
+import org.jetbrains.annotations.NotNull;
 
-import java.awt.Color;
-import java.util.*;
+import java.awt.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 
 public class IridiumAPI {
 

@@ -2,24 +2,24 @@ name: SIR # Simple In-game Receptionist
 version: '${project.version}'
 prefix: SIR
 authors: [ CroaBeast ]
-load: POSTWORLD
 
 softdepend:
+  - DiscordSRV
   - AuthMe
   - CMI
+  - InteractiveChat
   - UserLogin
   - Vault
   - PlaceholderAPI
-  - EssentialsX
+  - Essentials
   - SuperVanish
   - PremiumVanish
-  - DiscordSRV
 
-main: me.croabeast.sircore.Application
+main: me.croabeast.sirplugin.SIRPlugin
 
 commands:
   sir:
-    description: Main command lmao
+    aliases: []
   print:
     aliases: [ rawmsg, rm ]
   announcer:
@@ -28,6 +28,8 @@ commands:
     aliases: [ m ]
   reply:
     aliases: [ r ]
+  ignore:
+    aliases: [ ig ]
 
 permissions:
   sir.*:
@@ -37,6 +39,7 @@ permissions:
       sir.print.*: true
       sir.announcer.*: true
       sir.message.*: true
+      sir.ignore: true
 
   sir.admin.*:
     default: op
@@ -98,4 +101,7 @@ permissions:
   sir.message.default:
     default: op
   sir.message.reply:
+    default: op
+
+  sir.ignore:
     default: op

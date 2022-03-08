@@ -1,0 +1,27 @@
+formats:
+  default:
+    format: '&7 {player}&8: <hover=[<R:1>First line</R><n>&aClick me]|run=[/msg {player} hi]>{#C0C0C0}{message}</text>'
+  vip:
+    permission: chat.vip
+    prefix: '&e&l VIP'
+    color:
+      normal: true
+    format: '{prefix} &7{player}&8: &#FFFF99{message}'
+  mvp:
+    permission: chat.mvp
+    priority: 2
+    prefix: '&6&l MVP'
+    suffix: '&eB)'
+    color:
+      normal: true
+      special: true
+    format: '{prefix} &7{player} {suffix}&8: <#FFCC33>{message}'
+  sir:
+    permission: chat.sir
+    priority: 100
+    prefix: '&c&l ADMIN'
+    color:
+      normal: true
+      special: true
+      rgb: true
+    format: '{prefix} &7{player}&8: #FF9999{message}'

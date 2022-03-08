@@ -16,24 +16,11 @@ updater:
     send-op: true
   # If enabled, the selected files will be updated automatically.
   # Don't worry, it doesn't delete any default comments at all.
-  files:
-    config: true
-    lang: true
-    # I DO NOT recommend update those files. But if you want to...
-    messages: false
-    chat: false
-    announces: false
-    motd: false
-    discord: false
-    advances: false
+  # Available files: config, lang, messages, announces, motd, chat,
+  #                  emojis, discord, advances
+  files: [ config, lang ]
 
 # Some useful options for this plugin if you want to change them.
-# ------------------------------------------------------------
-# The enabled option for custom join/quit messages was moved to
-# the messages.yml file to be more... understandable.
-# It's enabled by default, if it was disabled before 1.3-R1,
-# go to messages.yml and add or change 'enabled: false'.
-# ------------------------------------------------------------
 options:
   # It will log the join/quit messages, the announcements from
   # announces.yml, and the advancement messages from advances.yml
@@ -41,21 +28,22 @@ options:
   send-console: true
   # This option is ONLY for the /print command.
   # Enabling this will parse color and placeholders in the logger.
-  format-logger: false
+  log-format: false
   # If enabled, it will remove all unnecessary spaces for every
   # message to send. Recommended leaving this 'true'.
   hard-spacing: true
   # If enabled, it will check if the permission is set to that
   # player; then if true, it will check if the player has the perm
   # value set to true. Recommended leaving this 'false'.
-  # If enabled, it will not check if a player is OP tho.
+  # If enabled, it will not check if a player is OP and ALSO for
+  # wildcard-type permissions, like sir.* or worldedit.*.
   hard-perm-check: false
 
-# Some values you might want to change in the plugin.
+# You can delete the values section if you want to use the hard-coded values!
 values:
   # ONLY FOR lang.yml file!!
   # Every message that start with this string, will have the main-prefix.
-  config-prefix: '<P>'
+  lang-prefix-key: '<P>'
   # Valid only in SIR files or inputs that accept centered messages.
   # Put this first on those chat messages you want to center.
   center-prefix: '<C>'
@@ -64,64 +52,6 @@ values:
   # or you want title AND subtitle, use it to split the message.
   line-separator: '<n>'
 
-# If a login plugin is installed, this section will be activated.
-# Compatible login plugins: [ AuthMe, UserLogin ]
-login:
-  # it will send the messages after the player logs-in/register.
-  # Disabling this, messages will send like no compatible login
-  # plugin is installed in the server.
-  enabled: true
-  # This will send messages after some in-game ticks.
-  # You can set this to 0 if you don't want this option or deleting
-  # this path completely.
-  ticks-after: 10
-  # Enabling this will teleport the player before log-in/register if
-  # a message group has a "spawn:" section.
-  # Disabling it will teleport AFTER the player does it.
-  spawn-before: true
-
-# If a vanish plugin is installed, this section will be activated.
-# Compatible vanish plugins: [ CMI, EssentialsX, SuperVanish, etc ]
-vanish:
-  # This option send a join/quit section when a player changes its
-  # vanish status. Disabling this won't send any messages when a player
-  # changes its vanish status.
-  enabled: true
-  # If a player is vanished and this option is enabled, won't send
-  # any join/quit message to that player.
-  silent: true
-  # If a message has a "spawn:" section, and this option is disabled,
-  # that spawn section won't be executed.
-  use-spawn: false
-
-# Some options for the chat formatter feature.
-chat:
-  # If enabled, it will send only the player's name and message in the
-  # console, just to be it more simple. This option applies to ALL formats.
-  simple-logger:
-    enabled: false
-    # You can use PlaceholderAPI, {PREFIX} and {SUFFIX}
-    format: '&7{PLAYER}: {MESSAGE}'
-  # If enabled, it will allow players to send blank messages using
-  # spaces ' '. Recommended leaving this 'false'.
-  allow-empty: false
-
-# Some options for the Advancement-Messages feature. Only for 1.12 +
-advances:
-  # Random user: Why is this option here and not in advances.yml?
-  # Answer: It's because the advances.yml file is saved everytime
-  # the plugin loads and reloads. This will cause any comment in that
-  # file to be deleted. That's why.
-  enabled: true
-  # The worlds list that will not show any advancement messages.
-  disabled-worlds: [ a_world ] # Disable this using []
-  # The gamemodes list that will not show any advancement messages.
-  disabled-modes: [ SPECTATOR ] # Disable this using []
-  # The world's list that will not show any advancement messages.
-  # THESE ARE JUST EXAMPLES FROM OTHER DATA PACKS!!
-  disabled-advs: # Disable this using []
-    - fusionmc:bastion_advancement_fix
-    - vanillatweaks:classic_fishing_loot
-    - vanillatweaks:double_shulker_shells
-    - global:fusion_mc
-    - vanillatweaks:wandering_trades
+commands:
+  msg: true
+  ignore: true

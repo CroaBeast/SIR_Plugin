@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 
 public class Gradient implements Patterns {
 
-    Pattern pattern = Pattern.compile("<G:([0-9A-Fa-f]{6})>(.*?)</G:([0-9A-Fa-f]{6})>");
+    Pattern pattern = Pattern.compile("(?i)<G:([0-9A-F]{6})>(.*?)</G:([0-9A-F]{6})>");
 
     public String process(String string) {
         Matcher matcher = pattern.matcher(string);

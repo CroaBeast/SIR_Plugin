@@ -10,16 +10,13 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ConfigUpdater {
 
     private static final char SPLIT = '.';
 
-    public static void update(Plugin plugin, String resourceName, File toUpdate, List<String> ignoredSections)
+    public static void update(Plugin plugin, String resourceName, File toUpdate, String... ignoredSections)
             throws IOException {
         Preconditions.checkArgument(toUpdate.exists(), "The toUpdate file doesn't exist!");
 
@@ -31,7 +28,7 @@ public class ConfigUpdater {
         FileConfiguration currentConfig = YamlConfiguration.loadConfiguration(toUpdate);
         Map<String, String> comments = parseComments(plugin, resourceName, defaultConfig);
         Map<String, String> ignoredSectionsValues = parseIgnoredSections(toUpdate, currentConfig,
-                comments, ignoredSections == null ? Collections.emptyList() : ignoredSections
+                comments, ignoredSections == null ? Collections.emptyList() : Arrays.asList(ignoredSections)
         );
 
         StringWriter writer = new StringWriter();

@@ -7,112 +7,115 @@
 # Using the center prefix in this .yml and messages.yml file, will ONLY
 # work on a player using a command, not when the console is using it.
 
+# IF YOU WANT TO DISABLE ANY OF THESE MESSAGES, JUST LEAVE IT BLANK >> ''
+
 # The main prefix will be inserted in lines with <P> or "prefix-in-lang" string.
 main-prefix: ' &e&lSIR &8>&7'
 
-# IF YOU WANT TO DISABLE ANY OF THESE MESSAGES, JUST LEAVE IT BLANK >> ''
-reload-files: '<P> All the .yml files was reloaded successfully in {TIME} ms.'
-no-permission: '<P> You don''t have the permission &c{PERM} &7to use this.'
-wrong-arg: '<P> The argument &c{ARG} &7is invalid or does not exist.'
-empty-message: '<P> You can''t send an empty message, type something.'
-for-support: '<P> Enter our Discord server: &b{LINK}'
-
-# The help menu of the /sir command, very helpful for new players.
-main-help:
-  - '&8---------------&r &e&lSIR &7v {VERSION} &8---------------&r'
-  - '  &7- &b/sir&7: The main command of the plugin.'
-  - '  &7- &b/sir &3help&7: Shows this help menu.'
-  - '  &7- &b/sir &3reload&7: Reloads all the files.'
-  - '  &7- &b/sir &3support&7: Sends a link to our Discord.'
-  - '  &7- &b/print&7: Prints a raw message to a target.'
-  - '&8------------------------------------------&r'
-
-# For logging all messages types sent by the /print command.
-logger:
-  for-player: '<P> Check the console to see the logged message.'
-  # If you want to disable the logger, just leave this path blank: ''
-  header: '&7Logged Message:'
-
-# To remind if the sender sends a message via /print command.
-reminder:
-  empty: '<P> This target or group of targets is/are invalid or empty.'
-  success: '<P> The message was send correctly to {TARGET}!'
+no-permission: '<P> You do not have the permission &c{perm} &7to use this.'
+wrong-arg: '<P> The argument &c{arg} &7is invalid or does not exist.'
 
 # Some messages for the chat formatter feature. Use them wisely
 chat:
   empty-message: '<P> &cYou can not send an empty message.'
   invalid-format: '<P> &cCould not found any valid chat format, check your chat.yml'
 
-# Some messages for the /announcer command/feature. Not that important...
-announcer:
-  help:
-    - '&8----------&r &e/announcer &6Help Menu &8----------&r'
-    - ' &7- &b/announcer&7: Shows this help menu.'
-    - ' &7- &b/announcer start&7: Starts the task.'
-    - ' &7- &b/announcer cancel&7: Cancels the task.'
-    - ' &7- &b/announcer reboot&7: Reboots the task.'
-    - ' &7- &b/announcer preview <ID>&7:'
-    - '   &7Shows a preview of an announcement.'
-    - '&8------------------------------------&r'
-  cant-start: '<P> &cThe announcement task is already started.'
-  cant-stop: '<P> &cThe announcement task is already canceled.'
-  started: '<P> &cThe announcement task has been started.'
-  stopped: '<P> &cThe announcement task has been canceled.'
-  rebooted: '<P> &cThe announcement task has been reset.'
-  select: '<P> Please select a valid announce from&a announces.yml'
-
-# Messages for the /msg and /reply commands :D
-message:
-  need-player: '<P> &cYou need a player to use this command.'
-  not-player: '<P> &cThe player {TARGET} does not exist.'
-  not-replied: '<P> &cYou did not send a message to a player before.'
-  not-yourself: '<P> &cYou can not send a message to yourself.'
-  sender: ' &eME &8> &6{RECEIVER}&7: &f{MESSAGE}'
-  receiver: ' &6{SENDER} &8> &eME&7: &f{MESSAGE}'
-  console-name: '&cConsole'
-
-# The help menus of the /print command, still very helpful tho
-# I know that the help menus are terrible, but hope you will
-# understand it.
-print-help:
-  main:
-    - '&8----------&r &e/print &6Help Menu &8----------&r'
-    - ' &7- &b/print&7: Shows this help menu.'
-    - ' &7- &b/print targets&7: Shows the targets info.'
-    - ' &7- &b/print ACTION-BAR&7: Help for Action Bar.'
-    - ' &7- &b/print CHAT&7: Help for Chat messages.'
-    - ' &7- &b/print TITLE&7: Help for titles messages.'
-    - '&8------------------------------------&r'
-  targets:
-    - '&8----------&r &eTargets &6Help Menu &8----------&r'
-    - ' &7- &b<PLAYER>&7: Selects one player'
-    - ' &7- &b@a&7: Selects all online players'
-    - ' &7- &bWORLD:myWorld&7: Selects all players'
-    - '   &7in a valid and existing world'
-    - ' &7- &bPERM:my.perm&7: Selects all players'
-    - '   &7that has that permission'
-    - ' &7- &bGROUP:myGroup&7: Selects all players'
-    - '   &7in a perms group (Only with Vault)'
-    - '&8------------------------------------&r'
-  action-bar:
-    - '&8--------&r &eACTION-BAR &6Help Menu &8--------&r'
-    - ' &7USE: &b/print ACTION-BAR <TARGET> <my message>'
-    - '  &7- &3<TARGET>&7: Selects the respective target'
-    - '    &7See &b/print targets &7for more information'
-    - '&8------------------------------------&r'
-  chat:
-    - '&8----------&r &eCHAT &6Help Menu &8----------&r'
-    - ' &7USE: &b/print CHAT <TARGET> <TYPE> <my message>'
-    - '  &7- &3<TARGET>&7: Selects the respective target'
-    - '    &7See &b/print targets &7for more information'
-    - '  &7- &3<TYPE>&7: Use a chat type for the text'
-    - '    &7between CENTERED, DEFAULT and MIXED'
-    - '&8------------------------------------&r'
-  title:
-    - '&8----------&r &eTITLE &6Help Menu &8----------&r'
-    - ' &7USE: &b/print TITLE <TARGET> <TIMES> <my message>'
-    - '  &7- &3<TARGET>&7: Selects the respective target'
-    - '    &7See &b/print targets &7for more information'
-    - '  &7- &3<TIMES>&7: Use custom fade times for titles'
-    - '    &7Times are always in ticks (20 ticks = 1 sec)'
-    - '&8------------------------------------&r'
+commands:
+  # The main command (/sir) of the plugin.
+  sir:
+    help:
+      - '&7'
+      - ' &6>> &e&lSIR &7v {version}'
+      - '  &7 &b/sir&7: The main command of the plugin.'
+      - '  &7 &b/print&7: Prints a raw message to a target.'
+      - '  &7 &b/announcer&7: Manage announcements task.'
+      - '  &7 &b/msg&7: Send a private message to a player.'
+      - '  &7 &b/reply&7: Replies the private message.'
+      - '  &7 &b/ignore&7: Ignores a player from DMs or chat.'
+      - '&7'
+    support: '<P> Enter our Discord server: &b{link}'
+    reload: '<P> All the .yml files was reloaded successfully in {time} ms.'
+  # The /print or /rawmsg command.
+  print:
+    help:
+      main:
+        - '&7'
+        - ' &6>> &ePrint Help Menu'
+        - '  &7- &b/print&7: Shows this help menu.'
+        - '  &7- &b/print targets&7: Shows the targets info.'
+        - '  &7- &b/print ACTION-BAR&7: Help for Action Bar.'
+        - '  &7- &b/print CHAT&7: Help for Chat messages.'
+        - '  &7- &b/print TITLE&7: Help for titles messages.'
+        - '&7'
+      targets:
+        - '&7'
+        - ' &6>> &ePrint Targets Info'
+        - '  &7- &b<PLAYER>&7: Selects one player'
+        - '  &7- &b@a&7: Selects all online players'
+        - '  &7- &bWORLD:myWorld&7: Selects all players in a valid and existing world'
+        - '  &7- &bPERM:my.perm&7: Selects all players that has that permission'
+        - '  &7- &bGROUP:myGroup&7: Selects all players in a perms group (Only with Vault)'
+        - '&7'
+      action-bar: '<P> Usage: &b/print ACTION-BAR <target> <my message>'
+      chat: '<P> Usage: &b/print CHAT <target> <type> <my message>'
+      title: '<P> Usage: &b/print TITLE <target> <times> <my message>'
+    empty-message: '<P> &cYou can not send an empty message.'
+    # For logging all messages types sent by the /print command.
+    logger:
+      for-player: '<P> Check the console to see the logged message.'
+      # If you want to disable the logger, just leave this path blank: ''
+      header: '&7Logged Message:'
+    # To remind if the sender sends a message via /print command.
+    reminder:
+      empty: '<P> This target or group of targets is/are invalid or empty.'
+      success: '<P> The message was send correctly to {TARGET}!'
+  # The /announcer or /broadcast command.
+  announcer:
+    help:
+      - '&7'
+      - '&8----------&r &e/announcer &6Help Menu &8----------&r'
+      - '  &7- &b/announcer&7: Shows this help menu.'
+      - '  &7- &b/announcer start&7: Starts the task.'
+      - '  &7- &b/announcer cancel&7: Cancels the task.'
+      - '  &7- &b/announcer reboot&7: Reboots the task.'
+      - '  &7- &b/announcer preview <ID>&7:'
+      - '    &7Shows a preview of an announcement.'
+      - '&7'
+    cant-start: '<P> &cThe announcement task is already started.'
+    cant-stop: '<P> &cThe announcement task is already canceled.'
+    started: '<P> &cThe announcement task has been started.'
+    stopped: '<P> &cThe announcement task has been canceled.'
+    rebooted: '<P> &cThe announcement task has been reset.'
+    select: '<P> Please select a valid announce from&a announces.yml'
+  # The /msg and /reply commands.
+  msg-reply:
+    need-player: '<P> &cYou need a player to use this command.'
+    not-player: '<P> &cThe player {TARGET} does not exist.'
+    not-replied: '<P> &cYou did not send a message to a player before.'
+    not-yourself: '<P> &cYou can not send a message to yourself.'
+    sender: ' &eME &8> &6{RECEIVER}&7: &f{MESSAGE}'
+    receiver: ' &6{SENDER} &8> &eME&7: &f{MESSAGE}'
+    console-name: '&cConsole'
+  # The /ignore command.
+  ignore:
+    help:
+      - '&8-----------&r &e/ignore &6Help Menu &8-----------&r'
+      - ' &7- &b/ignore chat [player]&7: Ignores/un-ignores the player in chat.'
+      - ' &7- &b/ignore msg [player]&7: Ignores/un-ignores the messages of the player.'
+      - ' &7- &b/ignore all [player]&7: Ignores/un-ignores the player in chat and msgs.'
+      - '&8------------------------------------&r'
+    need-player: '<P> &cYou need a player to use this command.'
+    not-yourself: '<P> &cYou can not ignore yourself.'
+    not-player: '<P> &cThe player {target} does not exist.'
+    success:
+      player: '<P> &7You are now ignoring &a{target} in &e{type}&7.'
+      all: '<P> &7You are now ignoring all players in &e{type}&7.'
+    remove:
+      player: '<P> &7You are now &cnot&7 ignoring &a{target} in &e{type}&7.'
+      all: '<P> &7You are now &cnot&7 ignoring all players in &e{type}&7.'
+    ignoring:
+      player: '<P> &7This player is ignoring you in &e{type}&7.'
+      all: '<P> &7This player is ignoring all players in &e{type}&7.'
+    channels:
+      chat: 'Chat'
+      msg: 'Private Messages'

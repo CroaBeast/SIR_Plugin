@@ -1,7 +1,7 @@
 package me.croabeast.cupdater;
 
-import org.bukkit.configuration.*;
-import org.bukkit.configuration.file.*;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 
 public class KeyBuilder implements Cloneable {
 

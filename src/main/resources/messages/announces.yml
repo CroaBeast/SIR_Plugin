@@ -1,0 +1,21 @@
+announces:
+  1:
+    sound: ENTITY_PLAYER_LEVELUP
+    lines:
+      - '&7'
+      - '<C>&aThis is a S.I.R announcement'
+      - '<C>&7Disable announcements in&e modules.yml'
+      - '&7'
+  2:
+    lines:
+      - '[ACTION-BAR] &7Look, an action-bar S.I.R. announcement'
+      - '[TITLE] {#321ABA}A S.I.R. title<n>&#869021A S.I.R. subtitle'
+    commands:
+      - 'say hi server this is a command'
+  3:
+    sound: ENTITY_PLAYER_BURP
+    lines:
+      - '&7'
+      - '<C>&eThis is another S.I.R. announcement'
+      - '<C>&7Disable announcements in&e modules.yml'
+      - '&7'

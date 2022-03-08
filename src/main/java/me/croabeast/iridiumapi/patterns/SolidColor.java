@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class SolidColor implements Patterns {
 
-    Pattern pattern = Pattern.compile("\\{#([0-9A-Fa-f]{6})}|<#([0-9A-Fa-f]{6})>|&#([0-9A-Fa-f]{6})|#([0-9A-Fa-f]{6})");
+    Pattern pattern = Pattern.compile("(?i)\\{#([0-9A-F]{6})}|<#([0-9A-F]{6})>|&#([0-9A-F]{6})|#([0-9A-F]{6})");
 
     public String process(String string) {
         Matcher matcher = pattern.matcher(string);

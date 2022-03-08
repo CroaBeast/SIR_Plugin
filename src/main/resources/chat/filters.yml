@@ -1,0 +1,11 @@
+filters:
+  default:
+    replace-char: '*'
+    words:
+      - fuck
+      - idiot
+  vip:
+    permission: chat.vip
+    words:
+      - stupid
+      - dumb
