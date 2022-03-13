@@ -6,6 +6,7 @@ import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.entity.*;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
@@ -22,24 +23,26 @@ public class IgnoreCmd extends BaseCmd {
         return "ignore";
     }
 
-    private boolean setBoolean(String uuid, String key, Boolean obj) {
+    private boolean setBoolean(String uuid, String key, @Nullable Boolean obj, boolean isChat) {
         boolean value = obj == null || !obj;
+        uuid += "." + (isChat ? "all-chat" : "all-msg");
 
-        main.getIgnore().set("data." + uuid + ".all-chat", value);
+        main.getIgnore().set("data." + uuid, value);
         main.getFiles().getObject("ignore").saveFile();
 
         String path = "commands.ignore." + (value ? "success" : "remove");
         return oneMessage(path + ".all", "type", key);
     }
 
-    private boolean setList(List<String> list, String[] values, String target, String uuid) {
+    private boolean setList(List<String> list, String[] values, String target, String uuid, boolean isChat) {
         boolean add = list.isEmpty() || !list.contains(target);
         String[] keys = {"target", "type"};
+        uuid += "." + (isChat ? "chat" : "msg");
 
         if (add) list.add(target);
         else list.remove(target);
 
-        main.getIgnore().set("data." + uuid + "chat", list);
+        main.getIgnore().set("data." + uuid, list);
         main.getFiles().getObject("ignore").saveFile();
 
         String path = "commands.ignore." + (add ? "success" : "remove");
@@ -78,8 +81,8 @@ public class IgnoreCmd extends BaseCmd {
 
             if (args[1].matches("(?i)@a")) {
                 switch (args[0].toLowerCase()) {
-                    case "msg": return setBoolean(uuid, chatKey, allMsg);
-                    case "chat": return setBoolean(uuid, chatKey, allChat);
+                    case "msg": return setBoolean(uuid, msgKey, allMsg, false);
+                    case "chat": return setBoolean(uuid, chatKey, allChat, true);
                     default: return notArgument(args[args.length - 1]);
                 }
             }
@@ -92,12 +95,12 @@ public class IgnoreCmd extends BaseCmd {
 
             String targetUUID = target.getUniqueId().toString();
 
-            String[] values1 = {target.getName(), chatKey};
-            String[] values2 = {target.getName(), msgKey};
+            String[] chatValues = {target.getName(), chatKey};
+            String[] msgValues = {target.getName(), msgKey};
 
             switch (args[0].toLowerCase()) {
-                case "msg": return setList(msgList, values2, targetUUID, uuid);
-                case "chat": return setList(chatList, values1, targetUUID, uuid);
+                case "msg": return setList(msgList, msgValues, targetUUID, uuid, false);
+                case "chat": return setList(chatList, chatValues, targetUUID, uuid, true);
                 default: return notArgument(args[args.length - 1]);
             }
         };

@@ -2,6 +2,7 @@ package me.croabeast.sirplugin.utilities;
 
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.objects.*;
+import me.croabeast.sirplugin.objects.handlers.TextParser;
 import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.configuration.*;
@@ -163,7 +164,7 @@ public class EventUtils {
                 id.getString("spawn.yaw-pitch", ""));
     }
 
-    public void sendMessages(Player player, List<String> messages, boolean isPublic, boolean doLog) {
+    public void sendMessages(Player sender, List<String> messages, boolean isPublic, boolean doLog) {
         if (messages.isEmpty()) return;
 
         for (String line : messages) {
@@ -174,29 +175,27 @@ public class EventUtils {
                 for (int i = 0; i < Integer.parseInt(match.group(1)); i++) {
                     if (isPublic)
                         Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(""));
-                    else player.sendMessage("");
+                    else sender.sendMessage("");
                 }
                 continue;
             }
 
-            line = removeSpace(line);
-            line = parseInsensitiveEach(getChatValues(player, line), new String[] {"player", "world"},
-                    new String[] {player.getName(), player.getWorld().getName()});
+            line = parseInsensitiveEach(line, new String[] {"player", "world"},
+                    new String[] {sender.getName(), sender.getWorld().getName()});
+            line = removeSpace(getChatValues(sender, line));
 
             if (doLog && main.getConfig().getBoolean("options.send-console")) {
-                line = JsonMsg.centeredText(player, line);
-                LogUtils.doLog(line.replace(lineSplitter(), "&f" + lineSplitter()));
+                String logLine = JsonMsg.centeredText(sender, TextParser.stripPrefix(line));
+                LogUtils.doLog(logLine.replace(lineSplitter(), "&f" + lineSplitter()));
             }
 
-            String message = colorize(player, line);
-            if (isPublic)
-                Bukkit.getOnlinePlayers().forEach(p -> selectMsgType(p, message));
-            else selectMsgType(player, message);
+            if (!isPublic) TextParser.send(null, sender, line);
+            else for (Player p : Bukkit.getOnlinePlayers()) TextParser.send(p, sender, line);
         }
     }
     
-    public void sendMessages(Player player, List<String> messages, boolean isPublic) {
-        sendMessages(player, messages, isPublic, true);
+    public void sendMessages(Player sender, List<String> messages, boolean isPublic) {
+        sendMessages(sender, messages, isPublic, true);
     }
 
     public void runCommands(Player player, List<String> commands) {
@@ -207,12 +206,14 @@ public class EventUtils {
             line = removeSpace(line);
             boolean isPlayer = isStarting("[player]", line) && player != null;
 
-            if (isPlayer)
+            if (isPlayer) {
                 line = parseInsensitiveEach(line, new String[] {"player", "world"},
                         new String[] {player.getName(), player.getWorld().getName()});
+            }
 
             CommandSender sender = isPlayer ? player : Bukkit.getConsoleSender();
             String cmd = isPlayer ? parsePrefix("player", line) : line;
+
             new BukkitRunnable() {
                 @Override
                 public void run() {

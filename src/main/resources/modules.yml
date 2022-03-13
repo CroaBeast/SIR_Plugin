@@ -59,6 +59,14 @@ chat:
     enabled: false
     # You can use PlaceholderAPI, {PREFIX} and {SUFFIX}
     format: ' &7{player}: {message}'
+  # If disabled, it won't use the default format (from AsyncPlayerChatEvent).
+  # This will also allow chat compatibility with these features:
+  # - InteractiveChat support
+  # - Ignore chat command
+  # - Per Radius/World format
+  # - Hover and Click events
+  # Enabling this is NOT recommended.
+  default-format: false
   # This section is for the default format that applies to all chat formats
   # if you want to apply default changes instead of doing it one by one.
   # More info in our Discord Server!

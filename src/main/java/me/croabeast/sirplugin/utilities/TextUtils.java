@@ -60,7 +60,7 @@ public final class TextUtils {
         return line;
     }
 
-    public static String colorize(Player player, String line) {
+    public static String colorize(@Nullable Player player, String line) {
         if (BaseModule.isEnabled(BaseModule.Identifier.EMOJIS))
             line = main.getEmParser().parseEmojis(line);
         return IridiumAPI.process(parsePAPI(player, parseChars(line)));
@@ -102,6 +102,10 @@ public final class TextUtils {
         return line;
     }
 
+    public static String parseInsensitiveEach(String line, String key, String value) {
+        return parseInsensitiveEach(line, new String[] {key}, new String[] {value});
+    }
+
     public static void sendFileMsg(CommandSender sender, List<String> list, String[] keys, String[] values) {
         if (list.isEmpty()) return;
 
@@ -116,9 +120,9 @@ public final class TextUtils {
                 line = parseInsensitiveEach(line, new String[] {"player", "world"},
                         new String[] {player.getName(), player.getWorld().getName()});
 
-                selectMsgType(player, colorize(player, getChatValues(player, line)));
+                TextParser.send(null, player, getChatValues(player, line));
             }
-            else LogUtils.rawLog(JsonMsg.centeredText(null, line));
+            else LogUtils.rawLog(JsonMsg.centeredText(null, TextParser.stripPrefix(line)));
         }
     }
 
@@ -146,24 +150,28 @@ public final class TextUtils {
         actionBar.getMethod().send(player, message);
     }
 
-    private static boolean checkInts(String[] array) {
+    private static boolean checkInts(@Nullable String[] array) {
         if (array == null) return false;
-        for (String integer : array)
+        for (String integer : array) {
+            if (integer == null) return false;
             if (!integer.matches("-?\\d+")) return false;
+        }
         return true;
     }
 
-    public static void sendTitle(Player player, String[] message, String[] times) {
+    public static void sendTitle(Player player, String[] message, @Nullable String[] times) {
         if (message.length == 0 || message.length > 2) return;
         String subtitle = message.length == 1 ? "" : message[1];
 
         int[] i;
         if (checkInts(times) && times.length == 3) {
             i = new int[times.length];
-            for (int x = 0; x < times.length; x++)
+            for (int x = 0; x < times.length; x++) {
+                assert times[x] != null;
                 i[x] = Integer.parseInt(times[x]);
+            }
         }
-        else i = new int[] {10, 50, 10};
+        else i = new int[] {10, 60, 10};
 
         titleMngr.getMethod().send(player, message[0], subtitle, i[0], i[1], i[2]);
     }
@@ -193,22 +201,5 @@ public final class TextUtils {
         String[] values = {isNot ? null : getChatValue(player, "prefix", ""),
                 isNot ? null : getChatValue(player, "suffix", "")};
         return parseInsensitiveEach(line, new String[] {"prefix", "suffix"}, values);
-    }
-
-    public static void selectMsgType(Player player, String line) {
-        if (isStarting("[action-bar]", line)) {
-            sendActionBar(player, JsonMsg.stripJson(parsePrefix("action-bar", line)));
-        }
-        else if (isStarting("[title]", line)) {
-            line = JsonMsg.stripJson(parsePrefix("title", line));
-            sendTitle(player, line.split(lineSplitter()), null);
-        }
-        else if (isStarting("[json]", line) && line.contains("{\"text\":")) {
-            sendJsonMsg(player, JsonMsg.stripJson(parsePrefix("json", line)));
-        }
-        else if (isStarting("[bossbar", line)) {
-            new Bossbar(player, line).display();
-        }
-        else player.spigot().sendMessage(new JsonMsg(player, line).build());
     }
 }

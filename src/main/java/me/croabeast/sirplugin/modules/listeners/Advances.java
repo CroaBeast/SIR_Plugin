@@ -3,6 +3,7 @@ package me.croabeast.sirplugin.modules.listeners;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.hooks.*;
 import me.croabeast.sirplugin.modules.*;
+import me.croabeast.sirplugin.objects.handlers.TextParser;
 import me.croabeast.sirplugin.objects.handlers.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.apache.commons.lang.*;
@@ -46,7 +47,9 @@ public class Advances extends BaseModule implements Listener {
 
         for (String line : messages) {
             if (line == null || line.equals("")) continue;
+
             line = parseInsensitiveEach(line, keys, values);
+            line = parseInsensitiveEach(line, "world", player.getWorld().getName());
 
             if (main.getConfig().getBoolean("options.send-console") &&
                     !isStarting("[cmd]", line)) LogUtils.doLog(line);
@@ -58,13 +61,7 @@ public class Advances extends BaseModule implements Listener {
                 cmd = isLine ? parsePrefix("player", cmd) : cmd;
                 Bukkit.dispatchCommand(isLine ? player : Bukkit.getConsoleSender(), cmd);
             }
-            else {
-                String result = colorize(player, line);
-
-                if (!isStarting("[player]", line))
-                    Bukkit.getOnlinePlayers().forEach(p -> selectMsgType(p, result));
-                else selectMsgType(player, parsePrefix("player", result));
-            }
+            else TextParser.send(null, player, line);
         }
 
         if (Initializer.hasDiscord())

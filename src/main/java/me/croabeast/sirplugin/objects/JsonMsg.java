@@ -24,13 +24,13 @@ public class JsonMsg {
     /**
      * A prefix used in the main pattern to identify the event.
      */
-    final static String PATTERN_PREFIX = "(hover|run|suggest|url)=\\[(.+?)]";
+    final static String EVENT_ID = "(hover|run|suggest|url)=\\[(.+?)]";
 
     /**
      * The main pattern to identify the JSON message.
      */
     final static Pattern PATTERN =
-            Pattern.compile("(?i)<" + PATTERN_PREFIX + "(\\|" + PATTERN_PREFIX + ")?>(.+?)</text>");
+            Pattern.compile("(?i)<" + EVENT_ID + "(\\|" + EVENT_ID + ")?>(.+?)</text>");
 
     /**
      * Basic JSON message constructor.
@@ -38,18 +38,7 @@ public class JsonMsg {
      * @param line the line to parse the message.
      */
     public JsonMsg(Player player, String line) {
-        if (Initializer.hasIntChat()) {
-            try {
-                line = InteractiveChatAPI.markSender(line, player.getUniqueId());
-            }
-            catch (Exception e) {
-                LogUtils.doLog(
-                        "&cError parsing InteractiveChat placeholders.",
-                        "&eUpdate to the latest version of InteractiveChat."
-                );
-            }
-        }
-
+        line = parseInteractiveChat(player, line);
         this.player = player;
         this.line = centeredText(player, line);
         registerComponents();
@@ -65,18 +54,7 @@ public class JsonMsg {
      */
     public JsonMsg(Player player, String line, @Nullable String click, List<String> hover) {
         if (isValidJson(line)) line = stripJson(line);
-
-        if (Initializer.hasIntChat()) {
-            try {
-                line = InteractiveChatAPI.markSender(line, player.getUniqueId());
-            }
-            catch (Exception e) {
-                LogUtils.doLog(
-                        "&cError parsing InteractiveChat placeholders.",
-                        "&eUpdate to the latest version of InteractiveChat."
-                );
-            }
-        }
+        line = parseInteractiveChat(player, line);
 
         this.player = player;
         this.line = centeredText(player, line);
@@ -92,6 +70,26 @@ public class JsonMsg {
 
         components.add(comp);
         baseComponents = components.toArray(new BaseComponent[0]);
+    }
+
+    /**
+     * Parse InteractiveChat placeholders for using it the Json message.
+     * @param player the requested player
+     * @param line the line to parse
+     * @return the line with the parsed placeholders.
+     */
+    private String parseInteractiveChat(Player player, String line) {
+        if (!Initializer.hasIntChat()) return line;
+        try {
+            return InteractiveChatAPI.markSender(line, player.getUniqueId());
+        }
+        catch (Exception e) {
+            LogUtils.doLog(
+                    "&cError parsing InteractiveChat placeholders.",
+                    "&eUpdate to the latest version of InteractiveChat."
+            );
+            return line;
+        }
     }
 
     /**
@@ -178,7 +176,7 @@ public class JsonMsg {
             final String type2 = match.group(4);
             final String input2 = match.group(5);
 
-            boolean isExtra = extra != null && extra.matches("(?i)\\|" + PATTERN_PREFIX);
+            boolean isExtra = extra != null && extra.matches("(?i)\\|" + EVENT_ID);
 
             final String text = match.group(6);
             final String before = line.substring(lastEnd, match.start());
@@ -215,7 +213,7 @@ public class JsonMsg {
      * @param message the input message.
      * @return the centered chat message.
      */
-    public static String centerMessage(Player player, String message) {
+    public static String centerMessage(@Nullable Player player, String message) {
         String initial = colorize(player, stripJson(message));
 
         int messagePxSize = 0;
@@ -255,7 +253,7 @@ public class JsonMsg {
      * @param line the input line.
      * @return the result string.
      */
-    public static String centeredText(Player player, String line) {
+    public static String centeredText(@Nullable Player player, String line) {
         return line.startsWith(centerPrefix()) ?
                 centerMessage(player, line.replace(centerPrefix(), "")) :
                 colorize(player, line);

@@ -18,7 +18,7 @@ updater:
   # Don't worry, it doesn't delete any default comments at all.
   # Available files: config, lang, messages, announces, motd, chat,
   #                  emojis, discord, advances
-  files: [ config, lang ]
+  files: [ config, lang, modules ]
 
 # Some useful options for this plugin if you want to change them.
 options:
@@ -38,8 +38,12 @@ options:
   # If enabled, it will not check if a player is OP and ALSO for
   # wildcard-type permissions, like sir.* or worldedit.*.
   hard-perm-check: false
+  # if enabled, it will show the prefix of the message type in
+  # the console. Example:
+  # [ACTION-BAR] My action bar message.
+  show-prefix: true
 
-# You can delete the values section if you want to use the hard-coded values!
+# You can delete the values' section if you want to use the hard-coded values!
 values:
   # ONLY FOR lang.yml file!!
   # Every message that start with this string, will have the main-prefix.
@@ -51,7 +55,3 @@ values:
   # If you want to add more than one line in your CHAT type message,
   # or you want title AND subtitle, use it to split the message.
   line-separator: '<n>'
-
-commands:
-  msg: true
-  ignore: true

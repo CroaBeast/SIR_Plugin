@@ -57,19 +57,6 @@ public class Formatter extends BaseModule implements Listener {
         return removeSpace(line.replace("$", "\\$"));
     }
 
-    private List<Player> getPlayers(Player player, @Nullable String name, @Nullable Integer rad) {
-        List<Player> players = new ArrayList<>();
-        World world = name != null ? Bukkit.getWorld(name) : null;
-
-        if (rad != null && rad > 0) {
-            for (Entity ent : player.getNearbyEntities(rad, rad, rad))
-                if (ent instanceof Player) players.add((Player) ent);
-            return players;
-        }
-        else return world != null ? world.getPlayers() :
-                new ArrayList<>(Bukkit.getOnlinePlayers());
-    }
-
     @EventHandler
     private void onChat(AsyncPlayerChatEvent event) {
         if (event.isCancelled()) return;
@@ -116,18 +103,26 @@ public class Formatter extends BaseModule implements Listener {
         if (Initializer.hasLogin() && !utils.getLoggedPlayers().contains(player)) return;
 
         Integer radius = (Integer) getValue(id, "radius", 0);
-        List<Player> players = getPlayers(player, world, radius);
 
-        if (!players.isEmpty()) {
-            for (Player target : players) {
-                if (target == player) continue;
+        List<Player> players = new ArrayList<>();
+        World w = world != null ? Bukkit.getWorld(world) : null;
 
-                String s = "data." + target.getUniqueId() + ".", x = player.getUniqueId() + "";
-                List<String> list = main.getIgnore().getStringList(s + "chat");
+        if (radius != null && radius > 0) {
+            for (Entity ent : player.getNearbyEntities(radius, radius, radius))
+                if (ent instanceof Player) players.add((Player) ent);
+        }
+        else players.addAll(w != null ? w.getPlayers() : Bukkit.getOnlinePlayers());
 
-                if (main.getIgnore().getBoolean(s + "all-chat") ||
-                        (!list.isEmpty() && list.contains(x))) players.remove(target);
-            }
+        List<Player> targets = new ArrayList<>(players);
+
+        for (Player target : targets) {
+            if (target == player) continue;
+
+            String s = "data." + target.getUniqueId() + ".", x = player.getUniqueId() + "";
+            List<String> list = main.getIgnore().getStringList(s + "chat");
+
+            if (main.getIgnore().getBoolean(s + "all-chat") ||
+                    (!list.isEmpty() && list.contains(x))) players.remove(target);
         }
 
         Integer timer = (Integer) getValue(id, "cooldown.time", 0);
@@ -148,7 +143,9 @@ public class Formatter extends BaseModule implements Listener {
 
         String result = parseInsensitiveEach(removeSpace(format), keys, values);
 
-        if (!JsonMsg.isValidJson(result) && hover.isEmpty() && click == null &&
+        boolean isDefault = main.getModules().getBoolean("chat.default-format");
+
+        if (isDefault && !JsonMsg.isValidJson(result) && hover.isEmpty() && click == null &&
                 world == null && (radius == null || radius <= 0) && !Initializer.hasIntChat()) {
             event.setFormat(JsonMsg.centeredText(player, result));
             return;

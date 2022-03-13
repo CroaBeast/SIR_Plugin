@@ -10,8 +10,6 @@ import org.jetbrains.annotations.*;
 import java.util.*;
 import java.util.regex.*;
 
-import static me.croabeast.sirplugin.utilities.TextUtils.*;
-
 public class Bossbar {
 
     private final SIRPlugin main = SIRPlugin.getInstance();
@@ -25,19 +23,15 @@ public class Bossbar {
     private Integer time = null;
     private Boolean progress = null;
 
-    private final Pattern PATTERN =
-            Pattern.compile("(?i)\\[BOSSBAR(:(.+?)(:(.+?)(:(\\d+)(:(true|false))?)?)?)?](.+)");
-
     protected static Map<Player, BossBar> bossbarMap = new HashMap<>();
 
     public Bossbar(Player player, String line) {
         this.player = player;
         this.line = line;
-        registerVariables();
-    }
 
-    private void registerVariables() {
-        Matcher matcher = PATTERN.matcher(line);
+        Matcher matcher = Pattern.compile("(?i)\\[bossbar(:(.+?)(:(.+?)(:(\\d+)" +
+                        "(:(true|false))?)?)?)?](.+)").matcher(line);
+
         if (matcher.find()) {
             try {
                 color = BarColor.valueOf(matcher.group(2).toUpperCase());
@@ -66,15 +60,44 @@ public class Bossbar {
             this.line = matcher.group(9);
         }
 
-        if (color == null) color = BarColor.WHITE;
+        if (color == null) color = BarColor.BLUE;
         if (style == null) style = BarStyle.SOLID;
-        if (time == null) time = 3 * 20;
-        if (progress == null) progress = false;
 
-        if (line == null) line = "";
-        line = parseInsensitiveEach(line, new String[] {"player", "world"},
-                new String[] {player.getName(), player.getWorld().getName()});
-        line = colorize(player, removeSpace(line));
+        if (time == null) time = 3 * 20;
+        if (progress == null) progress = true;
+        if (this.line == null) this.line = "";
+    }
+
+    public Bossbar(Player player, String line, @Nullable String color, @Nullable String time, @Nullable String b) {
+        this.player = player;
+        this.line = line;
+
+        try {
+            color = color == null ? "GREEN" : color;
+            this.color = BarColor.valueOf(color.toUpperCase());
+        } catch (Exception e) {
+            this.color = null;
+        }
+
+        try {
+            time = time == null ? "3" : time;
+            this.time = Integer.parseInt(time) * 20;
+        } catch (Exception e) {
+            this.time = null;
+        }
+
+        try {
+            this.progress = Boolean.valueOf(b);
+        } catch (Exception e) {
+            this.progress = null;
+        }
+
+        style = BarStyle.SOLID;
+        if (this.color == null) this.color = BarColor.BLUE;
+
+        if (this.time == null) this.time = 3 * 20;
+        if (this.progress == null) this.progress = true;
+        if (this.line == null) this.line = "";
     }
 
     private void unregister() {

@@ -2,6 +2,7 @@ package me.croabeast.sirplugin.modules;
 
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.objects.*;
+import me.croabeast.sirplugin.objects.handlers.TextParser;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.configuration.*;
@@ -56,21 +57,21 @@ public class Reporter extends BaseModule {
 
     public void runSection(ConfigurationSection id) {
         String perm = id.getString("permission", "DEFAULT");
-        if (getPlayers(perm).isEmpty()) return;
+
+        List<Player> players = getPlayers(perm);
+        if (players.isEmpty()) return;
 
         List<String> msgs = TextUtils.fileList(id, "lines");
         List<String> cmds = TextUtils.fileList(id, "commands");
 
         if (!msgs.isEmpty()) {
-            getPlayers(perm).forEach(p ->
-                    utils.sendMessages(p, msgs, false, false));
-
             if (main.getConfig().getBoolean("options.send-console")) {
                 for (String line : msgs) {
-                    line = JsonMsg.centeredText(null, line);
-                    LogUtils.doLog(line.replace(lineSplitter(), "&f" + lineSplitter()));
+                    String logLine = JsonMsg.centeredText(null, TextParser.stripPrefix(line));
+                    LogUtils.doLog(logLine.replace(lineSplitter(), "&f" + lineSplitter()));
                 }
             }
+            players.forEach(p -> utils.sendMessages(p, msgs, false, false));
         }
 
         if (!cmds.isEmpty()) utils.runCommands(null, cmds);
