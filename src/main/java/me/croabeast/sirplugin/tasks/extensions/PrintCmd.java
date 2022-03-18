@@ -1,8 +1,9 @@
-package me.croabeast.sirplugin.tasks;
+package me.croabeast.sirplugin.tasks.extensions;
 
 import com.google.common.collect.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.objects.*;
+import me.croabeast.sirplugin.tasks.BaseCmd;
 import me.croabeast.sirplugin.utilities.*;
 import net.md_5.bungee.api.chat.*;
 import org.bukkit.command.*;
@@ -83,12 +84,12 @@ public class PrintCmd extends BaseCmd {
                                     if (!s.startsWith(center)) s = center + s;
                                     break;
                                 case "DEFAULT":
-                                    if (s.startsWith(center)) s = s.substring(center.length());
+                                    if (s.startsWith(center))
+                                        s = s.substring(center.length());
                                     break;
                                 case "MIXED": break;
                             }
-                            BaseComponent[] comps = new JsonMsg(p, s).build();
-                            p.spigot().sendMessage(comps);
+                            sendChat(p, p, s);
                         }
                     }
 

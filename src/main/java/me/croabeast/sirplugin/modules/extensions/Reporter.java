@@ -1,8 +1,9 @@
-package me.croabeast.sirplugin.modules;
+package me.croabeast.sirplugin.modules.extensions;
 
 import me.croabeast.sirplugin.*;
+import me.croabeast.sirplugin.modules.*;
 import me.croabeast.sirplugin.objects.*;
-import me.croabeast.sirplugin.objects.handlers.TextParser;
+import me.croabeast.sirplugin.objects.handlers.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.configuration.*;

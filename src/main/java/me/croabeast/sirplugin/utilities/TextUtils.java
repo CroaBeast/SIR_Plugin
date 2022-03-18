@@ -8,17 +8,15 @@ import me.croabeast.sirplugin.modules.*;
 import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.objects.handlers.*;
 import org.apache.commons.lang.*;
-import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
-import org.bukkit.scheduler.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
 import java.util.regex.*;
 
-import static me.croabeast.sirplugin.modules.listeners.Formatter.KeysHandler.*;
+import static me.croabeast.sirplugin.modules.extensions.listeners.Formatter.KeysHandler.*;
 
 public final class TextUtils {
 
@@ -106,11 +104,69 @@ public final class TextUtils {
         return parseInsensitiveEach(line, new String[] {key}, new String[] {value});
     }
 
+    public static void sendActionBar(@NotNull Player player, String message) {
+        actionBar.getMethod().send(player, message);
+    }
+
+    private static boolean checkInts(@Nullable String[] array) {
+        if (array == null) return false;
+        for (String integer : array) {
+            if (integer == null) return false;
+            if (!integer.matches("-?\\d+")) return false;
+        }
+        return true;
+    }
+
+    public static void sendTitle(@NotNull Player player, String[] message, @Nullable String[] times) {
+        if (message.length == 0 || message.length > 2) return;
+        String subtitle = message.length == 1 ? "" : message[1];
+
+        int[] i;
+        if (checkInts(times) && times.length == 3) {
+            i = new int[times.length];
+            for (int x = 0; x < times.length; x++) {
+                assert times[x] != null;
+                i[x] = Integer.parseInt(times[x]);
+            }
+        }
+        else i = new int[] {10, 60, 10};
+
+        titleMngr.getMethod().send(player, message[0], subtitle, i[0], i[1], i[2]);
+    }
+
+    public static void sendTitle(@NotNull Player player, String[] message, String time) {
+        sendTitle(player, message, new String[] {"10", time, "10"});
+    }
+
+    public static void sendBossbar(Player target, Player sender, String line) {
+        new Bossbar(target, sender, line).display();
+    }
+
+    public static void sendChat(Player target, Player sender, String line) {
+        target.spigot().sendMessage(new JsonMsg(sender, line).build());
+    }
+
+    public static String parsePrefix(String type, String message) {
+        return removeSpace(message.substring(("[" + type.toUpperCase() + "]").length()));
+    }
+
+    public static boolean isStarting(String prefix, String line) {
+        return line.regionMatches(true, 0, prefix, 0, prefix.length());
+    }
+
+    public static String getChatValues(@NotNull Player player, String line) {
+        boolean isNot = !BaseModule.isEnabled(BaseModule.Identifier.FORMATS);
+        String[] values = {isNot ? null : getChatValue(player, "prefix", ""),
+                isNot ? null : getChatValue(player, "suffix", "")};
+        return parseInsensitiveEach(line, new String[] {"prefix", "suffix"}, values);
+    }
+
     public static void sendFileMsg(CommandSender sender, List<String> list, String[] keys, String[] values) {
         if (list.isEmpty()) return;
 
         for (String line : list) {
             if (line == null || line.equals("")) continue;
+
             line = line.startsWith(langPKey()) ? line.replace(langPKey(), langPrefix()) : line;
             line = parseInsensitiveEach(line, keys, values);
 
@@ -144,62 +200,5 @@ public final class TextUtils {
 
     public static void sendFileMsg(CommandSender sender, String path) {
         sendFileMsg(sender, SIRPlugin.getInstance().getLang(), path, null, null);
-    }
-
-    public static void sendActionBar(Player player, String message) {
-        actionBar.getMethod().send(player, message);
-    }
-
-    private static boolean checkInts(@Nullable String[] array) {
-        if (array == null) return false;
-        for (String integer : array) {
-            if (integer == null) return false;
-            if (!integer.matches("-?\\d+")) return false;
-        }
-        return true;
-    }
-
-    public static void sendTitle(Player player, String[] message, @Nullable String[] times) {
-        if (message.length == 0 || message.length > 2) return;
-        String subtitle = message.length == 1 ? "" : message[1];
-
-        int[] i;
-        if (checkInts(times) && times.length == 3) {
-            i = new int[times.length];
-            for (int x = 0; x < times.length; x++) {
-                assert times[x] != null;
-                i[x] = Integer.parseInt(times[x]);
-            }
-        }
-        else i = new int[] {10, 60, 10};
-
-        titleMngr.getMethod().send(player, message[0], subtitle, i[0], i[1], i[2]);
-    }
-
-    public static void sendJsonMsg(Player player, String line) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                String cmd = "minecraft:tellraw " + player.getName() + " " + line;
-                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), cmd);
-            }
-        }.runTask(SIRPlugin.getInstance());
-    }
-
-    public static String parsePrefix(String type, String message) {
-        type = "[" + type.toUpperCase() + "]";
-        message = message.substring(type.length());
-        return removeSpace(message);
-    }
-
-    public static boolean isStarting(String prefix, String line) {
-        return line.regionMatches(true, 0, prefix, 0, prefix.length());
-    }
-
-    public static String getChatValues(Player player, String line) {
-        boolean isNot = !BaseModule.isEnabled(BaseModule.Identifier.FORMATS);
-        String[] values = {isNot ? null : getChatValue(player, "prefix", ""),
-                isNot ? null : getChatValue(player, "suffix", "")};
-        return parseInsensitiveEach(line, new String[] {"prefix", "suffix"}, values);
     }
 }

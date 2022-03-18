@@ -1,6 +1,6 @@
 package me.croabeast.sirplugin.objects;
 
-import me.croabeast.cupdater.*;
+import com.tchristofferson.configupdater.ConfigUpdater;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.configuration.file.*;

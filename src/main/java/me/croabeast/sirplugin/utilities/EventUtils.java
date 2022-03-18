@@ -198,7 +198,7 @@ public class EventUtils {
         sendMessages(sender, messages, isPublic, true);
     }
 
-    public void runCommands(Player player, List<String> commands) {
+    public void runCommands(@Nullable Player player, List<String> commands) {
         if (commands.isEmpty()) return;
 
         for (String line : commands) {
@@ -206,20 +206,14 @@ public class EventUtils {
             line = removeSpace(line);
             boolean isPlayer = isStarting("[player]", line) && player != null;
 
-            if (isPlayer) {
+            if (player != null) {
                 line = parseInsensitiveEach(line, new String[] {"player", "world"},
                         new String[] {player.getName(), player.getWorld().getName()});
             }
 
             CommandSender sender = isPlayer ? player : Bukkit.getConsoleSender();
             String cmd = isPlayer ? parsePrefix("player", line) : line;
-
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    Bukkit.dispatchCommand(sender, cmd);
-                }
-            }.runTask(main);
+            Bukkit.dispatchCommand(sender, cmd);
         }
     }
 }

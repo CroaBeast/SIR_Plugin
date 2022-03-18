@@ -1,11 +1,14 @@
 filters:
   default:
     replace-char: '*'
+    is-regex: true
     words:
-      - fuck
-      - idiot
+      - (?i)f(.)?ck
+      - (?i)dumbass|idiot
   vip:
     permission: chat.vip
+    replace-char: '*'
+    is-regex: false
     words:
       - stupid
       - dumb

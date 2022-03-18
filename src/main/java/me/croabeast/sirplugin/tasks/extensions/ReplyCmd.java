@@ -1,6 +1,7 @@
-package me.croabeast.sirplugin.tasks;
+package me.croabeast.sirplugin.tasks.extensions;
 
 import me.croabeast.sirplugin.*;
+import me.croabeast.sirplugin.tasks.BaseCmd;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.command.*;

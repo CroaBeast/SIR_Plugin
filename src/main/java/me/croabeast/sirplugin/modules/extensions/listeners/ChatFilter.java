@@ -1,17 +1,16 @@
-package me.croabeast.sirplugin.modules.listeners;
+package me.croabeast.sirplugin.modules.extensions.listeners;
 
-import me.croabeast.sirplugin.SIRPlugin;
-import me.croabeast.sirplugin.modules.BaseModule;
-import me.croabeast.sirplugin.utilities.TextUtils;
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
+import me.croabeast.sirplugin.*;
+import me.croabeast.sirplugin.modules.*;
+import me.croabeast.sirplugin.utilities.*;
+import org.apache.commons.lang.*;
+import org.bukkit.configuration.*;
+import org.bukkit.entity.*;
+import org.bukkit.event.*;
+import org.bukkit.event.player.*;
 
-import java.util.List;
+import java.util.*;
+import java.util.regex.*;
 
 public class ChatFilter extends BaseModule implements Listener {
 
@@ -48,9 +47,19 @@ public class ChatFilter extends BaseModule implements Listener {
         String replacer = id.getString("replace-char", "*");
 
         for (String word : words) {
-            if (!message.contains(word)) continue;
-            String filter = StringUtils.repeat(replacer, word.length());
-            message = message.replace(word, filter);
+            if (id.getBoolean("is-regex")) {
+                Matcher match = Pattern.compile(word).matcher(message);
+                if (!match.find()) continue;
+
+                String matcher = match.group();
+                String filter = StringUtils.repeat(replacer, matcher.length());
+                message = message.replace(matcher, filter);
+            }
+            else {
+                if (!message.contains(word)) continue;
+                String filter = StringUtils.repeat(replacer, word.length());
+                message = message.replace(word, filter);
+            }
         }
 
         event.setMessage(message);

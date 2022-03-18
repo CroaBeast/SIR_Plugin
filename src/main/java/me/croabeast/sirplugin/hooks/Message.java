@@ -7,32 +7,33 @@ import me.croabeast.iridiumapi.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.utilities.*;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.*;
 import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.jetbrains.annotations.*;
 
 import java.time.*;
-import java.util.Objects;
+import java.util.*;
+
+import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
 public class Message {
 
-    private final SIRPlugin main;
+    private final SIRPlugin main = SIRPlugin.getInstance();
 
     private final Player player;
     private final String channel, embedPath;
 
     private String[] keys, values;
 
-    public Message(SIRPlugin main, Player player, String channel) {
-        this.main = main;
+    public Message(Player player, String channel) {
         this.player = player;
         this.channel = channel;
         this.embedPath = "channels." + channel + ".embed";
     }
 
-    public Message(SIRPlugin main, Player player, String channel, String[] keys, String[] values) {
-        this(main, player, channel);
+    public Message(Player player, String channel, String[] keys, String[] values) {
+        this(player, channel);
         this.keys = keys;
         this.values = new String[values.length];
 
@@ -44,11 +45,11 @@ public class Message {
         String[] keys = {"player", "uuid"};
         String[] values = {player.getName(), player.getUniqueId().toString()};
 
-        line = TextUtils.parseInsensitiveEach(line, keys, values);
+        line = parseInsensitiveEach(line, keys, values);
         if (this.keys != null && this.values != null)
-            line = TextUtils.parseInsensitiveEach(line, this.keys, this.values);
+            line = parseInsensitiveEach(line, this.keys, this.values);
 
-        line = IridiumAPI.stripAll(TextUtils.parsePAPI(player, line));
+        line = IridiumAPI.stripAll(parsePAPI(player, line));
         return DiscordUtil.translateEmotes(line);
     }
 

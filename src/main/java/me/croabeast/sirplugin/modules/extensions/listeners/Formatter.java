@@ -1,4 +1,4 @@
-package me.croabeast.sirplugin.modules.listeners;
+package me.croabeast.sirplugin.modules.extensions.listeners;
 
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sirplugin.*;
@@ -18,7 +18,7 @@ import org.jetbrains.annotations.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.modules.listeners.Formatter.KeysHandler.*;
+import static me.croabeast.sirplugin.modules.extensions.listeners.Formatter.KeysHandler.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
 public class Formatter extends BaseModule implements Listener {
@@ -160,7 +160,7 @@ public class Formatter extends BaseModule implements Listener {
         );
 
         if (Initializer.hasDiscord())
-            new Message(main, player, "chat", keys, values).sendMessage();
+            new Message(player, "chat", keys, values).sendMessage();
 
         BaseComponent[] component = new JsonMsg(player, result, click, hover).build();
         players.forEach(p -> p.spigot().sendMessage(component));

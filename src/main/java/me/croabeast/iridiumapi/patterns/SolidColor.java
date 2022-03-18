@@ -5,10 +5,11 @@ import me.croabeast.iridiumapi.IridiumAPI;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class SolidColor implements Patterns {
+public class SolidColor extends BasePattern {
 
     Pattern pattern = Pattern.compile("(?i)\\{#([0-9A-F]{6})}|<#([0-9A-F]{6})>|&#([0-9A-F]{6})|#([0-9A-F]{6})");
 
+    @Override
     public String process(String string) {
         Matcher matcher = pattern.matcher(string);
         while (matcher.find()) {

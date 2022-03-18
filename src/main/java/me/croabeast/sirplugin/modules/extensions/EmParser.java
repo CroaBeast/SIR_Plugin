@@ -1,6 +1,7 @@
-package me.croabeast.sirplugin.modules;
+package me.croabeast.sirplugin.modules.extensions;
 
 import me.croabeast.sirplugin.*;
+import me.croabeast.sirplugin.modules.*;
 import org.bukkit.configuration.*;
 import org.jetbrains.annotations.*;
 

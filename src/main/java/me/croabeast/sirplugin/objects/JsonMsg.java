@@ -1,8 +1,8 @@
 package me.croabeast.sirplugin.objects;
 
 import com.loohp.interactivechat.api.*;
-import me.croabeast.sirplugin.Initializer;
-import me.croabeast.sirplugin.utilities.LogUtils;
+import me.croabeast.sirplugin.*;
+import me.croabeast.sirplugin.utilities.*;
 import net.md_5.bungee.api.chat.*;
 import org.bukkit.entity.*;
 import org.jetbrains.annotations.*;
@@ -16,9 +16,18 @@ import static net.md_5.bungee.api.chat.ClickEvent.Action.*;
 @SuppressWarnings("deprecation")
 public class JsonMsg {
 
+    /**
+     * The player to parse placeholders.
+     */
     private final Player player;
+    /**
+     * The line to initialize.
+     */
     private final String line;
 
+    /**
+     * The result chat components.
+     */
     private BaseComponent[] baseComponents;
 
     /**
@@ -37,7 +46,7 @@ public class JsonMsg {
      * @param player the player for parse placeholders.
      * @param line the line to parse the message.
      */
-    public JsonMsg(Player player, String line) {
+    public JsonMsg(@NotNull Player player, String line) {
         line = parseInteractiveChat(player, line);
         this.player = player;
         this.line = centeredText(player, line);
@@ -52,7 +61,7 @@ public class JsonMsg {
      * @param click the click input line for click event
      * @param hover the hover list for the hover event
      */
-    public JsonMsg(Player player, String line, @Nullable String click, List<String> hover) {
+    public JsonMsg(@NotNull Player player, String line, @Nullable String click, List<String> hover) {
         if (isValidJson(line)) line = stripJson(line);
         line = parseInteractiveChat(player, line);
 
@@ -79,17 +88,18 @@ public class JsonMsg {
      * @return the line with the parsed placeholders.
      */
     private String parseInteractiveChat(Player player, String line) {
-        if (!Initializer.hasIntChat()) return line;
-        try {
-            return InteractiveChatAPI.markSender(line, player.getUniqueId());
-        }
-        catch (Exception e) {
-            LogUtils.doLog(
-                    "&cError parsing InteractiveChat placeholders.",
-                    "&eUpdate to the latest version of InteractiveChat."
-            );
-            return line;
-        }
+        if (Initializer.hasIntChat())
+            try {
+                return InteractiveChatAPI.markSender(line, player.getUniqueId());
+            }
+            catch (Exception e) {
+                LogUtils.doLog(
+                        "&cError parsing InteractiveChat placeholders.",
+                        "&eUpdate to the latest version of InteractiveChat."
+                );
+                return line;
+            }
+        else return line;
     }
 
     /**

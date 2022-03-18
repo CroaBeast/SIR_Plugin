@@ -10,6 +10,8 @@ import org.jetbrains.annotations.*;
 import java.util.*;
 import java.util.regex.*;
 
+import static me.croabeast.sirplugin.utilities.TextUtils.*;
+
 public class Bossbar {
 
     private final SIRPlugin main = SIRPlugin.getInstance();
@@ -25,9 +27,10 @@ public class Bossbar {
 
     protected static Map<Player, BossBar> bossbarMap = new HashMap<>();
 
-    public Bossbar(Player player, String line) {
-        this.player = player;
-        this.line = line;
+    public Bossbar(@Nullable Player target, @NotNull Player player, String line) {
+        if (target == null) target = player;
+        this.player = target;
+        this.line = colorize(player, removeSpace(line));
 
         Matcher matcher = Pattern.compile("(?i)\\[bossbar(:(.+?)(:(.+?)(:(\\d+)" +
                         "(:(true|false))?)?)?)?](.+)").matcher(line);
@@ -68,36 +71,8 @@ public class Bossbar {
         if (this.line == null) this.line = "";
     }
 
-    public Bossbar(Player player, String line, @Nullable String color, @Nullable String time, @Nullable String b) {
-        this.player = player;
-        this.line = line;
-
-        try {
-            color = color == null ? "GREEN" : color;
-            this.color = BarColor.valueOf(color.toUpperCase());
-        } catch (Exception e) {
-            this.color = null;
-        }
-
-        try {
-            time = time == null ? "3" : time;
-            this.time = Integer.parseInt(time) * 20;
-        } catch (Exception e) {
-            this.time = null;
-        }
-
-        try {
-            this.progress = Boolean.valueOf(b);
-        } catch (Exception e) {
-            this.progress = null;
-        }
-
-        style = BarStyle.SOLID;
-        if (this.color == null) this.color = BarColor.BLUE;
-
-        if (this.time == null) this.time = 3 * 20;
-        if (this.progress == null) this.progress = true;
-        if (this.line == null) this.line = "";
+    public Bossbar(@NotNull Player player, String line) {
+        this(null, player, line);
     }
 
     private void unregister() {

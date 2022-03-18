@@ -1,9 +1,8 @@
-package me.croabeast.sirplugin.modules.listeners;
+package me.croabeast.sirplugin.modules.extensions.listeners;
 
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.hooks.*;
 import me.croabeast.sirplugin.modules.*;
-import me.croabeast.sirplugin.objects.handlers.TextParser;
 import me.croabeast.sirplugin.objects.handlers.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.apache.commons.lang.*;
@@ -65,7 +64,7 @@ public class Advances extends BaseModule implements Listener {
         }
 
         if (Initializer.hasDiscord())
-            new Message(main, player, "advances", keys, values).sendMessage();
+            new Message(player, "advances", keys, values).sendMessage();
     }
 
     private List<String> advList(String path) {

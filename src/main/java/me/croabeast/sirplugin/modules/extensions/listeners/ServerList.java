@@ -1,4 +1,4 @@
-package me.croabeast.sirplugin.modules.listeners;
+package me.croabeast.sirplugin.modules.extensions.listeners;
 
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sirplugin.*;

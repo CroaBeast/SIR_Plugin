@@ -27,7 +27,6 @@ public final class Initializer {
             vanishHooks = new ArrayList<>();
 
     static Map<Advancement, AdvKeys> keys = new HashMap<>();
-
     static Map<BaseModule.Identifier, BaseModule> moduleMap = new HashMap<>();
 
     public Initializer(SIRPlugin main) {

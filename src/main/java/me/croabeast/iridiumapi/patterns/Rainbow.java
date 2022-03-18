@@ -5,10 +5,11 @@ import me.croabeast.iridiumapi.IridiumAPI;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Rainbow implements Patterns {
+public class Rainbow extends BasePattern {
 
     Pattern pattern = Pattern.compile("(?i)<R:([0-9]{1,3})>(.*?)</R>");
 
+    @Override
     public String process(String string) {
         Matcher matcher = pattern.matcher(string);
         while (matcher.find()) {

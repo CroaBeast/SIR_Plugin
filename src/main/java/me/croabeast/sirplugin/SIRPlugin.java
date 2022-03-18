@@ -1,10 +1,12 @@
 package me.croabeast.sirplugin;
 
 import me.croabeast.sirplugin.modules.*;
-import me.croabeast.sirplugin.modules.listeners.*;
+import me.croabeast.sirplugin.modules.extensions.EmParser;
+import me.croabeast.sirplugin.modules.extensions.Reporter;
+import me.croabeast.sirplugin.modules.extensions.listeners.*;
 import me.croabeast.sirplugin.objects.Bossbar;
 import me.croabeast.sirplugin.objects.analytics.*;
-import me.croabeast.sirplugin.tasks.*;
+import me.croabeast.sirplugin.tasks.extensions.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.boss.BossBar;

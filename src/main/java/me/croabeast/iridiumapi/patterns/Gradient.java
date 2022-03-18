@@ -6,10 +6,11 @@ import java.awt.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Gradient implements Patterns {
+public class Gradient extends BasePattern {
 
     Pattern pattern = Pattern.compile("(?i)<G:([0-9A-F]{6})>(.*?)</G:([0-9A-F]{6})>");
 
+    @Override
     public String process(String string) {
         Matcher matcher = pattern.matcher(string);
         while (matcher.find()) {
