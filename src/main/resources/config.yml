@@ -16,8 +16,8 @@ updater:
     send-op: true
   # If enabled, the selected files will be updated automatically.
   # Don't worry, it doesn't delete any default comments at all.
-  # Available files: config, lang, messages, announces, motd, chat,
-  #                  emojis, discord, advances
+  # Available files: config, lang, modules, announces, join-quit,
+  #                 motd, chat, emojis, discord, advances, filters
   files: [ config, lang, modules ]
 
 # Some useful options for this plugin if you want to change them.

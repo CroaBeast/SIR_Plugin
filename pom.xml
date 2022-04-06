@@ -118,10 +118,6 @@
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
         <repository>
-            <id>maven-central</id>
-            <url>https://oss.sonatype.org/content/groups/public</url>
-        </repository>
-        <repository>
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>

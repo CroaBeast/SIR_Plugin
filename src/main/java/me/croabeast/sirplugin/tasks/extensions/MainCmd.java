@@ -63,8 +63,8 @@ public class MainCmd extends BaseCmd {
     @Override
     protected TabCompleter getCompleter() {
         return (sender, command, alias, args) -> {
-            if (args.length == 1) return resultTab(args, "reload", "help", "support");
-            return new ArrayList<>();
+            setArgs(args);
+            return args.length == 1 ? resultTab("reload", "help", "support") : new ArrayList<>();
         };
     }
 }

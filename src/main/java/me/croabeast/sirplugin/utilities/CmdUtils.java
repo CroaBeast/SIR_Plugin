@@ -1,5 +1,6 @@
 package me.croabeast.sirplugin.utilities;
 
+import com.google.common.collect.*;
 import me.croabeast.sirplugin.*;
 import org.bukkit.*;
 import org.bukkit.command.*;
@@ -14,11 +15,16 @@ public class CmdUtils {
     private final SIRPlugin main = SIRPlugin.getInstance();
 
     private CommandSender sender;
+    private String[] args;
     protected static HashMap<CommandSender, CommandSender> receivers = new HashMap<>();
 
     public void setSender(CommandSender sender) {
         this.sender = sender;
     }
+    public void setArgs(String[] args) {
+        this.args = args;
+    }
+
     public static HashMap<CommandSender, CommandSender> getReceivers() {
         return receivers;
     }
@@ -122,17 +128,16 @@ public class CmdUtils {
                 main.getLang().getString("commands.msg-reply.console-name") : sender.getName();
     }
 
-    protected List<String> resultTab(String[] args, Collection<?>... lists) {
+    @SafeVarargs
+    protected final List<String> resultTab(Collection<String>... lists) {
         List<String> tab = new ArrayList<>();
-        for (Collection<?> list : lists)
-            list.forEach(e -> tab.add((String) e));
+        for (Collection<String> list : lists) tab.addAll(list);
         return StringUtil.copyPartialMatches(
-                args[args.length - 1], tab, new ArrayList<>()
-        );
+                args[args.length - 1], tab, new ArrayList<>());
     }
 
-    protected List<String> resultTab(String[] args, String... array) {
-        return resultTab(args, Arrays.asList(array));
+    protected List<String> resultTab(String... array) {
+        return resultTab(Lists.newArrayList(array));
     }
 
     protected List<String> onlinePlayers() {

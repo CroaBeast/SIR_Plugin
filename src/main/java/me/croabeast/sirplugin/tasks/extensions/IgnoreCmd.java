@@ -110,9 +110,9 @@ public class IgnoreCmd extends BaseCmd {
     @Override
     protected TabCompleter getCompleter() {
         return (sender, command, alias, args) -> {
-            if (args.length == 1) return resultTab(args, "chat", "msg");
-            if (args.length == 2)
-                return resultTab(args, onlinePlayers(), Lists.newArrayList("@a"));
+            setArgs(args);
+            if (args.length == 1) return resultTab("chat", "msg");
+            if (args.length == 2) return resultTab(onlinePlayers(), Lists.newArrayList("@a"));
             return new ArrayList<>();
         };
     }

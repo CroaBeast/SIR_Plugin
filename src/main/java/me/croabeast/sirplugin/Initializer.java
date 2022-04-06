@@ -15,6 +15,8 @@ import org.bukkit.plugin.*;
 
 import java.util.*;
 
+import static me.croabeast.sirplugin.SIRPlugin.*;
+
 public final class Initializer {
 
     private final SIRPlugin main;
@@ -60,7 +62,7 @@ public final class Initializer {
 
     public static boolean hasDiscord() {
         return Bukkit.getPluginManager().isPluginEnabled("DiscordSRV") &&
-                SIRPlugin.getInstance().getInitializer().getGuild() != null &&
+                getInstance().getInitializer().getGuild() != null &&
                 BaseModule.isEnabled(BaseModule.Identifier.DISCORD);
     }
 
@@ -169,7 +171,7 @@ public final class Initializer {
 
     @SuppressWarnings("deprecation")
     public void loadAdvances(boolean debug) {
-        if (SIRPlugin.MAJOR_VERSION < 12) return;
+        if (MAJOR_VERSION < 12) return;
         if (!keys.isEmpty()) keys.clear();
 
         long time = System.currentTimeMillis();
@@ -180,7 +182,7 @@ public final class Initializer {
 
         if (BaseModule.isEnabled(BaseModule.Identifier.ADVANCES)) {
             for (World world : main.getServer().getWorlds()) {
-                if (SIRPlugin.MAJOR_VERSION == 12) {
+                if (MAJOR_VERSION == 12) {
                     world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "false");
                     continue;
                 }
@@ -256,11 +258,11 @@ public final class Initializer {
 
     @SuppressWarnings("deprecation")
     public void unloadAdvances(boolean reload) {
-        if (SIRPlugin.MAJOR_VERSION < 12) return;
+        if (MAJOR_VERSION < 12) return;
         if (BaseModule.isEnabled(BaseModule.Identifier.ADVANCES) && reload) return;
 
         for (World world : main.getServer().getWorlds()) {
-            if (SIRPlugin.MAJOR_VERSION == 12) {
+            if (MAJOR_VERSION == 12) {
                 world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "true");
                 continue;
             }

@@ -125,27 +125,25 @@ public class PrintCmd extends BaseCmd {
     @Override
     protected TabCompleter getCompleter() {
         return (sender, command, alias, args) -> {
+            setArgs(args);
             if (args.length == 1)
-                return resultTab(args, "targets", "ACTION-BAR", "CHAT", "TITLE");
+                return resultTab("targets", "ACTION-BAR", "CHAT", "TITLE");
 
             if (args.length == 2 && args[0].matches("(?i)ACTION-BAR|CHAT|TITLE")) {
-                return resultTab(args,
-                        Arrays.asList("@a", "PERM:", "WORLD:",
-                                (Initializer.hasVault() ? "GROUP:" : null)),
-                        onlinePlayers()
-                );
+                String group = Initializer.hasVault() ? "GROUP:" : null;
+                return resultTab(Arrays.asList("@a", "PERM:", "WORLD:", group), onlinePlayers());
             }
 
             if (args.length == 3) {
-                if (args[0].matches("(?i)ACTION-BAR")) return resultTab(args, "<message>");
+                if (args[0].matches("(?i)ACTION-BAR")) return resultTab("<message>");
                 else if (args[0].matches("(?i)TITLE"))
-                    return resultTab(args, "DEFAULT", "10,50,10");
+                    return resultTab("DEFAULT", "10,50,10");
                 else if (args[0].matches("(?i)CHAT"))
-                    return resultTab(args, "DEFAULT", "CENTERED", "MIXED");
+                    return resultTab("DEFAULT", "CENTERED", "MIXED");
             }
 
             if (args.length == 4 && args[0].matches("(?i)CHAT|TITLE"))
-                return resultTab(args, "<message>");
+                return resultTab("<message>");
 
             return new ArrayList<>();
         };

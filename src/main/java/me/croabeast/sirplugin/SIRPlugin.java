@@ -42,7 +42,7 @@ public final class SIRPlugin extends JavaPlugin {
         this.init = new Initializer(this);
         this.files = new FilesUtils();
 
-        new TextUtils();
+        TextUtils.initializeClass();
         this.utils = new EventUtils(this);
         this.amender = new Amender(this);
 
@@ -89,7 +89,6 @@ public final class SIRPlugin extends JavaPlugin {
     public void onDisable() {
         pluginHeader();
 
-        utils.getLoggedPlayers().clear();
         init.unloadAdvances(false);
         getReporter().cancelTask();
 

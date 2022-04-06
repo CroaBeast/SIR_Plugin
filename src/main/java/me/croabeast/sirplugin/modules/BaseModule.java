@@ -56,36 +56,43 @@ public abstract class BaseModule {
         /**
          * For global announcements.
          */
-        ANNOUNCES("announces"),
+        ANNOUNCES,
         /**
          * Manages the server MOTD.
          */
-        MOTD("motd"),
+        MOTD,
         /**
          * Changes the default chat format.
          */
-        FORMATS("formats"),
+        FORMATS,
         /**
          * Enables the DiscordSRV hook.
          */
-        DISCORD("discord"),
+        DISCORD,
         /**
          * For custom advance messages.
          */
-        ADVANCES("advances"),
+        ADVANCES,
         /**
          * Parses all the custom emoticons.
          */
-        EMOJIS("emojis"),
+        EMOJIS,
         /**
          * Denies some words in the chat.
          */
-        FILTERS("filters");
+        FILTERS;
 
         /**
          * The module's name.
          */
         private final String name;
+
+        /**
+         * Basic Identifier constructor.
+         */
+        Identifier() {
+            this.name = name().toLowerCase();
+        }
 
         /**
          * Basic Identifier constructor.

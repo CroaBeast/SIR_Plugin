@@ -71,11 +71,12 @@ public class ReplyCmd extends BaseCmd {
     @Override
     protected TabCompleter getCompleter() {
         return (sender, command, alias, args) -> {
+            setArgs(args);
             boolean notPlayer = !CmdUtils.getReceivers().containsKey(sender);
 
             if (args.length == 1)
-                return notPlayer ? resultTab(args, onlinePlayers()) : resultTab(args, "<message>");
-            if (args.length == 2 && notPlayer) return resultTab(args, "<message>");
+                return notPlayer ? resultTab(onlinePlayers()) : resultTab("<message>");
+            if (args.length == 2 && notPlayer) return resultTab("<message>");
 
             return new ArrayList<>();
         };

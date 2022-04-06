@@ -16,16 +16,17 @@ import org.jetbrains.annotations.*;
 import java.util.*;
 import java.util.regex.*;
 
+import static me.croabeast.sirplugin.SIRPlugin.*;
 import static me.croabeast.sirplugin.modules.extensions.listeners.Formatter.KeysHandler.*;
 
 public final class TextUtils {
 
-    private static final SIRPlugin main = SIRPlugin.getInstance();
+    private static final SIRPlugin main = getInstance();
 
     private static ActionBar actionBar;
     private static TitleMngr titleMngr;
 
-    public TextUtils() {
+    public static void initializeClass() {
         actionBar = new ActionBar();
         titleMngr = new TitleMngr();
     }
@@ -78,16 +79,21 @@ public final class TextUtils {
     }
 
     public static String removeSpace(String line) {
-        if (SIRPlugin.getInstance().getConfig().getBoolean("options.hard-spacing")) {
-            String startLine = line;
-            try {
-                while (line.charAt(0) == ' ') line = line.substring(1);
-                return line;
-            } catch (IndexOutOfBoundsException e) {
-                return startLine;
-            }
+        String isSpacing = getInstance().getConfig().
+                getString("options.hard-spacing", "true");
+
+        switch (isSpacing.toUpperCase()) {
+            case "TRUE":
+                String startLine = line;
+                try {
+                    while (line.charAt(0) == ' ') line = line.substring(1);
+                    return line;
+                } catch (IndexOutOfBoundsException e) {
+                    return startLine;
+                }
+
+            case "DISABLED": default: return line;
         }
-        else return line.startsWith(" ") ? line.substring(1) : line;
     }
 
     public static String parseInsensitiveEach(String line, String[] keys, String[] values) {
@@ -191,14 +197,14 @@ public final class TextUtils {
     }
 
     public static void sendFileMsg(CommandSender sender, String path, String[] keys, String[] values) {
-        sendFileMsg(sender, SIRPlugin.getInstance().getLang(), path, keys, values);
+        sendFileMsg(sender, getInstance().getLang(), path, keys, values);
     }
 
     public static void sendFileMsg(CommandSender sender, String path, String key, String value) {
-        sendFileMsg(sender, SIRPlugin.getInstance().getLang(), path, new String[] {key}, new String[] {value});
+        sendFileMsg(sender, getInstance().getLang(), path, new String[] {key}, new String[] {value});
     }
 
     public static void sendFileMsg(CommandSender sender, String path) {
-        sendFileMsg(sender, SIRPlugin.getInstance().getLang(), path, null, null);
+        sendFileMsg(sender, getInstance().getLang(), path, null, null);
     }
 }

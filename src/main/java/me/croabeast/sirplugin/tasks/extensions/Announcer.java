@@ -83,13 +83,12 @@ public class Announcer extends BaseCmd {
     @Override
     protected TabCompleter getCompleter() {
         return (sender, command, alias, args) -> {
-            if (args.length == 1) return resultTab(args, "start", "preview", "cancel", "reboot");
+            setArgs(args);
+            if (args.length == 1) return resultTab("start", "preview", "cancel", "reboot");
 
             if(args.length == 2 && args[0].matches("(?i)preview")) {
-                ConfigurationSection id = main.getAnnounces().
-                        getConfigurationSection("announces");
-                if (id == null) return resultTab(args, "NOT_FOUND");
-                else return resultTab(args, id.getKeys(false));
+                ConfigurationSection id = main.getAnnounces().getConfigurationSection("announces");
+                return id == null ? resultTab("NOT_FOUND") : resultTab(id.getKeys(false));
             }
 
             return new ArrayList<>();

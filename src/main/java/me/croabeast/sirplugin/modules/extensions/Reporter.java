@@ -62,8 +62,7 @@ public class Reporter extends BaseModule {
         List<Player> players = getPlayers(perm);
         if (players.isEmpty()) return;
 
-        List<String> msgs = TextUtils.fileList(id, "lines");
-        List<String> cmds = TextUtils.fileList(id, "commands");
+        List<String> msgs = TextUtils.fileList(id, "lines"), cmds = TextUtils.fileList(id, "commands");
 
         if (!msgs.isEmpty()) {
             if (main.getConfig().getBoolean("options.send-console")) {

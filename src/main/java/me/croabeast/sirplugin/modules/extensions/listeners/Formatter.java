@@ -13,7 +13,6 @@ import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.player.*;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -53,7 +52,7 @@ public class Formatter extends BaseModule implements Listener {
         if (!getColored(id, "normal")) line = IridiumAPI.stripBukkit(line);
         if (!getColored(id, "rgb")) line = IridiumAPI.stripRGB(line);
         if (!getColored(id, "special")) line = IridiumAPI.stripSpecial(line);
-        line = line.replace("%", "%%");
+        line = line.replace("\\", "\\\\");
         return removeSpace(line.replace("$", "\\$"));
     }
 
@@ -71,7 +70,7 @@ public class Formatter extends BaseModule implements Listener {
             return;
         }
 
-        String message = parseMessage(id, event.getMessage()), name = player.getName(),
+        String message = parseMessage(id, event.getMessage()),
                 format = (String) getValue(id, "format", ""),
                 prefix = (String) getValue(id, "prefix", ""),
                 suffix = (String) getValue(id, "suffix", ""),
@@ -83,7 +82,7 @@ public class Formatter extends BaseModule implements Listener {
                 hoverID.getStringList("hover");
 
         String[] keys = {"prefix", "suffix", "player", "message"},
-                values = {prefix, suffix, name, message};
+                values = {prefix, suffix, player.getName(), message};
 
         if (!hover.isEmpty()) {
             for (int i = 0; i < hover.size(); i++)
@@ -142,12 +141,11 @@ public class Formatter extends BaseModule implements Listener {
         }
 
         String result = parseInsensitiveEach(removeSpace(format), keys, values);
-
         boolean isDefault = main.getModules().getBoolean("chat.default-format");
 
         if (isDefault && !JsonMsg.isValidJson(result) && hover.isEmpty() && click == null &&
                 world == null && (radius == null || radius <= 0) && !Initializer.hasIntChat()) {
-            event.setFormat(JsonMsg.centeredText(player, result));
+            event.setFormat(JsonMsg.centeredText(player, result.replace("%", "%%")));
             return;
         }
 
@@ -165,15 +163,7 @@ public class Formatter extends BaseModule implements Listener {
         BaseComponent[] component = new JsonMsg(player, result, click, hover).build();
         players.forEach(p -> p.spigot().sendMessage(component));
 
-        if (timer != null && timer > 0 && !timedPlayers.containsKey(player)) {
-            timedPlayers.put(player, System.currentTimeMillis());
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    timedPlayers.remove(player);
-                }
-            }.runTaskLater(main, timer * 20);
-        }
+        if (timer != null && timer > 0) timedPlayers.put(player, System.currentTimeMillis());
     }
 
     public static class KeysHandler {
