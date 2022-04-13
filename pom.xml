@@ -66,43 +66,6 @@
                     </filters>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>2.5.2</version>
-                <executions>
-                    <execution>
-                        <id>UserLogin</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>com.elchologamer</groupId>
-                            <artifactId>UserLogin</artifactId>
-                            <version>2.0</version>
-                            <packaging>jar</packaging>
-                            <file>lib/UserLogin.jar</file>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>CMI</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>install-file</goal>
-                        </goals>
-                        <configuration>
-                            <groupId>com.Zrips</groupId>
-                            <artifactId>CMI</artifactId>
-                            <version>9.0</version>
-                            <packaging>jar</packaging>
-                            <file>lib/CMI.jar</file>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
         <resources>
             <resource>
