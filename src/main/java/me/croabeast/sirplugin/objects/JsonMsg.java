@@ -10,6 +10,7 @@ import org.jetbrains.annotations.*;
 import java.util.*;
 import java.util.regex.*;
 
+import static me.croabeast.iridiumapi.IridiumAPI.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 import static net.md_5.bungee.api.chat.ClickEvent.Action.*;
 
@@ -151,10 +152,22 @@ public class JsonMsg {
      */
     private void addHover(TextComponent comp, List<String> hover) {
         BaseComponent[] array = new BaseComponent[hover.size()];
-        for (int i = 0; i < hover.size(); i++) {
-            String end = i == hover.size() - 1 ? "" : "\n";
-            array[i] = toComponent(colorize(player, hover.get(i)) + end);
+        List<String> list = new ArrayList<>(hover);
+
+        for (int i = 0; i < list.size(); i++) {
+            String end = i == list.size() - 1 ? "" : "\n";
+            String line = list.get(i), startColor = null;
+
+            if (i - 1 >= 0 && !startWithColor(line))
+                startColor = getFirstColor(list.get(i - 1));
+
+            if (!startWithColor(line) && startColor != null)
+                line = startColor + line;
+
+            array[i] = toComponent(colorize(player, line) + end);
+            list.set(i, line);
         }
+
         comp.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, array));
     }
 

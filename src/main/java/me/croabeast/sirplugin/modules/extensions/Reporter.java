@@ -78,6 +78,11 @@ public class Reporter extends BaseModule {
     }
 
     public void startTask() {
+        if (!isEnabled()) {
+            cancelTask();
+            return;
+        }
+
         if (getDelay() <= 0) {
             cancelTask();
             return;

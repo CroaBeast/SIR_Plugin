@@ -1,17 +1,16 @@
 package me.croabeast.sirplugin;
 
 import me.croabeast.sirplugin.modules.*;
-import me.croabeast.sirplugin.modules.extensions.EmParser;
-import me.croabeast.sirplugin.modules.extensions.Reporter;
+import me.croabeast.sirplugin.modules.extensions.*;
 import me.croabeast.sirplugin.modules.extensions.listeners.*;
-import me.croabeast.sirplugin.objects.Bossbar;
+import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.objects.analytics.*;
 import me.croabeast.sirplugin.tasks.extensions.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
-import org.bukkit.boss.BossBar;
+import org.bukkit.boss.*;
 import org.bukkit.configuration.file.*;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.plugin.java.*;
 import org.jetbrains.annotations.*;
@@ -40,7 +39,7 @@ public final class SIRPlugin extends JavaPlugin {
         PLUGIN_VERSION = instance.getDescription().getVersion();
 
         this.init = new Initializer(this);
-        this.files = new FilesUtils();
+        this.files = new FilesUtils(this);
 
         TextUtils.initializeClass();
         this.utils = new EventUtils(this);
@@ -56,7 +55,6 @@ public final class SIRPlugin extends JavaPlugin {
         init.startMetrics();
 
         files.loadFiles(true);
-        files.loadFiles(false);
         init.setPluginHooks();
 
         init.registerCommands(
@@ -70,7 +68,7 @@ public final class SIRPlugin extends JavaPlugin {
                 new ChatFilter(this)
         );
 
-        getReporter().startTask();
+        if (getReporter().isEnabled()) getReporter().startTask();
         LogUtils.doLog("&7The announcement task has been started.");
 
         LogUtils.doLog("",
@@ -117,6 +115,7 @@ public final class SIRPlugin extends JavaPlugin {
     public static SIRPlugin getInstance() {
         return instance;
     }
+
     public Initializer getInitializer() {
         return init;
     }

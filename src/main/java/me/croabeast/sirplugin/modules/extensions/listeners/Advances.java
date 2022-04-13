@@ -60,7 +60,11 @@ public class Advances extends BaseModule implements Listener {
                 cmd = isLine ? parsePrefix("player", cmd) : cmd;
                 Bukkit.dispatchCommand(isLine ? player : Bukkit.getConsoleSender(), cmd);
             }
-            else TextParser.send(null, player, line);
+            else {
+                if (!isStarting("[player]", line))
+                    for (Player p : Bukkit.getOnlinePlayers()) TextParser.send(p, player, line);
+                else TextParser.send(null, player, parsePrefix("player", line));
+            }
         }
 
         if (Initializer.hasDiscord())
@@ -131,17 +135,15 @@ public class Advances extends BaseModule implements Listener {
         }
 
         if (advName == null) {
-            if (handler == null) {
-                String replacement = key.substring(key.lastIndexOf('/') + 1);
-                replacement = StringUtils.replace(replacement, "_", " ");
-                advName = WordUtils.capitalizeFully(replacement);
-            }
-            else advName = handler.getTitle();
+            String replacement = key.substring(key.lastIndexOf('/') + 1);
+            replacement = StringUtils.replace(replacement, "_", " ");
+            advName = handler == null || handler.getTitle() == null ?
+                    WordUtils.capitalizeFully(replacement) : handler.getTitle();
         }
         if (frameType == null)
             frameType = handler == null ? "PROGRESS" : handler.getFrameType();
         if (description == null)
-            description = handler == null ? null : handler.getDescription();
+            description = handler == null ? "No description." : handler.getDescription(true);
 
         sendAdvSection(player, messageKey, frameType, advName, description);
     }

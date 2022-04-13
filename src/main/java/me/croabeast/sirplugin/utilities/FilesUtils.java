@@ -1,15 +1,24 @@
 package me.croabeast.sirplugin.utilities;
 
+import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.objects.*;
 import org.bukkit.configuration.file.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
 
+import static me.croabeast.sirplugin.utilities.FilesUtils.Folder.*;
+
 public final class FilesUtils {
+
+    private final SIRPlugin main;
 
     HashMap<String, YMLFile> files = new HashMap<>();
     private int FILES = 0;
+
+    public FilesUtils(SIRPlugin main) {
+        this.main = main;
+    }
 
     public void loadFiles(boolean debug) {
         long time = System.currentTimeMillis();
@@ -20,12 +29,12 @@ public final class FilesUtils {
 
         addFiles("config", "lang", "modules");
 
-        addFiles((CharSequence) "chat", "emojis", "formats", "filters");
-        addFiles((CharSequence) "messages",
+        addFiles(CHAT, "emojis", "formats", "filters");
+        addFiles(MESSAGES,
                 "advances", "announces", "join-quit");
 
-        addFiles((CharSequence) "data", "ignore");
-        addFiles((CharSequence) "misc", "discord", "motd");
+        addFiles(DATA, "ignore");
+        addFiles(MISC, "discord", "motd");
 
         files.values().forEach(YMLFile::updateInitFile);
         files.values().forEach(YMLFile::reloadFile);
@@ -39,15 +48,15 @@ public final class FilesUtils {
 
     private void addFiles(String... names) {
         for (String name : names) {
-            files.put(name, new YMLFile(name));
+            files.put(name, new YMLFile(main, name));
             files.get(name).reloadFile();
             FILES++;
         }
     }
 
-    private void addFiles(CharSequence folder, String... names) {
+    private void addFiles(Folder folder, String... names) {
         for (String name : names) {
-            files.put(name, new YMLFile(name, folder.toString()));
+            files.put(name, new YMLFile(main, name, folder + ""));
             files.get(name).reloadFile();
             FILES++;
         }
@@ -61,5 +70,17 @@ public final class FilesUtils {
     @NotNull
     public FileConfiguration getFile(String name) {
         return getObject(name).getFile();
+    }
+
+    enum Folder {
+        CHAT,
+        MESSAGES,
+        DATA,
+        MISC;
+
+        @Override
+        public String toString() {
+            return name().toLowerCase();
+        }
     }
 }

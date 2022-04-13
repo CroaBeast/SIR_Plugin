@@ -30,7 +30,7 @@ public abstract class BaseModule {
      * Checks if the module is enabled in modules.yml
      * @return if the specified module is enabled.
      */
-    protected boolean isEnabled() {
+    public boolean isEnabled() {
         return isEnabled(getIdentifier());
     }
 

@@ -4,6 +4,7 @@ import com.tchristofferson.configupdater.ConfigUpdater;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.configuration.file.*;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.*;
 
@@ -15,7 +16,7 @@ public class YMLFile {
     /**
      * The instance of the plugin.
      */
-    private final SIRPlugin main = SIRPlugin.getInstance();
+    private final JavaPlugin main;
 
     /**
      * The name of the file without its extension.
@@ -47,12 +48,13 @@ public class YMLFile {
      * Basic file constructor.
      * @param name the file's name without its extension.
      */
-    public YMLFile(String name) {
+    public YMLFile(JavaPlugin main, String name) {
+        this.main = main;
         this.name = name;
         this.location = name + ".yml";
 
         saveDefaultFile();
-        reloadFile();
+        file = YamlConfiguration.loadConfiguration(catchFile());
     }
 
     /**
@@ -60,13 +62,14 @@ public class YMLFile {
      * @param name the file's name without its extension.
      * @param folder the specified custom folder.
      */
-    public YMLFile(String name, String folder) {
+    public YMLFile(JavaPlugin main, String name, String folder) {
+        this.main = main;
         this.name = name;
         this.location = name + ".yml";
         this.folder = folder;
 
         saveDefaultFile();
-        reloadFile();
+        file = YamlConfiguration.loadConfiguration(catchFile());
     }
 
     /**

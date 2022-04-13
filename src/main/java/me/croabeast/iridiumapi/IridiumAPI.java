@@ -10,6 +10,8 @@ import org.jetbrains.annotations.*;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class IridiumAPI {
 
@@ -20,6 +22,9 @@ public class IridiumAPI {
 
     private static final List<String> SPECIAL_COLORS =
             Arrays.asList("&l", "&n", "&o", "&k", "&m", "§l", "§n", "§o", "§k", "§m");
+
+    private static final String COLOR_MATCHER = "(?i)[&§][a-f0-9lnokmr]|<[/]?[gr](:[0-9]{3,6})?>|" +
+            "\\{#[0-9A-F]{6}}|<#[0-9A-F]{6}>|&#[0-9A-F]{6}|#[0-9A-F]{6}";
 
     private static final Map<Color, ChatColor> COLORS = ImmutableMap.<Color, ChatColor>builder()
             .put(new Color(0), ChatColor.getByChar('0'))
@@ -80,14 +85,24 @@ public class IridiumAPI {
 
     @NotNull
     public static String stripRGB(@NotNull String string) {
-        return string.replaceAll("(?i)<[/]?[gr](:[0-9]{3,6})?>|\\{#[0-9A-F]{6}}|" +
-                "<#[0-9A-F]{6}>|&#[0-9A-F]{6}|#[0-9A-F]{6}", "");
+        return string.replaceAll(COLOR_MATCHER, "");
     }
 
     @NotNull
     public static String stripAll(@NotNull String string) {
-        return string.replaceAll("(?i)[&§][a-f0-9lnokmr]|<[/]?[gr](:[0-9]{3,6})?>|" +
-                "\\{#[0-9A-F]{6}}|<#[0-9A-F]{6}>|&#[0-9A-F]{6}|#[0-9A-F]{6}/gm", "");
+        return string.replaceAll(COLOR_MATCHER, "");
+    }
+
+    @Nullable
+    public static String getFirstColor(@Nullable String string) {
+        if (string == null) return null;
+        Pattern pattern = Pattern.compile("^" + COLOR_MATCHER);
+        Matcher matcher = pattern.matcher(string);
+        return matcher.find() ? matcher.group() : null;
+    }
+
+    public static boolean startWithColor(@NotNull String string) {
+        return Pattern.compile("^(?i)&[a-f0-9lnokmr]").matcher(string).find();
     }
 
     @NotNull

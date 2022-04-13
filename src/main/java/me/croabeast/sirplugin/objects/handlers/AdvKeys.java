@@ -1,13 +1,16 @@
 package me.croabeast.sirplugin.objects.handlers;
 
+import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.advancement.*;
 import org.jetbrains.annotations.*;
 
+import java.util.*;
+
 public class AdvKeys {
 
     private final Advancement adv;
-    private String title, description, frameType;
+    @Nullable private String title, description, frameType;
 
     public AdvKeys(Advancement adv) {
         this.adv = adv;
@@ -81,13 +84,65 @@ public class AdvKeys {
         this.description = description.toString();
     }
 
+    @NotNull
     public String getFrameType() {
-        return frameType;
+        return frameType == null ? "PROGRESS" : frameType;
     }
+
+    @Nullable
     public String getTitle() {
         return title;
     }
-    public String getDescription() {
-        return description;
+
+    private String removeLiteralChars(String input) {
+        return input.replaceAll("\\\\Q", "").
+                replaceAll("\\\\E", "");
+    }
+
+    @NotNull
+    public String getDescription(boolean append) {
+        return getDescription(append, 24);
+    }
+
+    @NotNull
+    public String getDescription(boolean append, int charsLength) {
+        if (description == null) return "No description.";
+
+        String desc = description.replaceAll("[\\n]", " ");
+        if (!append) return desc;
+
+        StringTokenizer tok = new StringTokenizer(desc, " ");
+        StringBuilder output = new StringBuilder(desc.length());
+
+        int lineLen = 0;
+        String delimiter = TextUtils.lineSplitter();
+
+        while (tok.hasMoreTokens()) {
+            String word = tok.nextToken();
+            int i = charsLength - lineLen;
+
+            while (word.length() > charsLength) {
+                output.append(word, 0, i).append(delimiter);
+                word = word.substring(i);
+                lineLen = 0;
+            }
+
+            if (lineLen + word.length() > charsLength) {
+                output.append(delimiter);
+                lineLen = 0;
+            }
+
+            output.append(word).append(" ");
+            lineLen += word.length() + 1;
+        }
+
+        String format = removeLiteralChars(output.toString());
+        StringBuilder build = new StringBuilder();
+
+        for (String word : format.split(delimiter))
+            build.append(word, 0, word.length() - 1).append(delimiter);
+
+        format = build.substring(0, build.length() - delimiter.length());
+        return removeLiteralChars(format);
     }
 }

@@ -99,8 +99,6 @@ public class Formatter extends BaseModule implements Listener {
             return;
         }
 
-        if (Initializer.hasLogin() && !utils.getLoggedPlayers().contains(player)) return;
-
         Integer radius = (Integer) getValue(id, "radius", 0);
 
         List<Player> players = new ArrayList<>();

@@ -1,6 +1,7 @@
 package me.croabeast.sirplugin.tasks.extensions;
 
 import me.croabeast.sirplugin.*;
+import me.croabeast.sirplugin.modules.extensions.Reporter;
 import me.croabeast.sirplugin.tasks.BaseCmd;
 import org.bukkit.command.*;
 
@@ -44,7 +45,9 @@ public class MainCmd extends BaseCmd {
                     main.getInitializer().unloadAdvances(true);
                     main.getInitializer().loadAdvances(false);
 
-                    if (!main.getReporter().isRunning()) main.getReporter().startTask();
+                    Reporter reporter = main.getReporter();
+                    if (reporter.isEnabled() && !reporter.isRunning()) reporter.startTask();
+                    if (!reporter.isEnabled()) reporter.cancelTask();
 
                     sendMessage("commands.sir.reload", "time",
                             (System.currentTimeMillis() - start) + "");
