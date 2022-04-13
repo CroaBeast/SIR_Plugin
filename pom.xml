@@ -171,18 +171,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.Zrips</groupId>
-            <artifactId>CMI</artifactId>
-            <version>9.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.elchologamer</groupId>
-            <artifactId>UserLogin</artifactId>
-            <version>2.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
             <groupId>com.loohp</groupId>
             <artifactId>InteractiveChat</artifactId>
             <version>4.1.4.3</version>
