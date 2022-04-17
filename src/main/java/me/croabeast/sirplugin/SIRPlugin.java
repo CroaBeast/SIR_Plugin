@@ -162,14 +162,14 @@ public final class SIRPlugin extends JavaPlugin {
         return files.getFile("join-quit");
     }
 
-    public FileConfiguration getFilters() {
-        return files.getFile("filters");
-    }
     public FileConfiguration getFormats() {
         return files.getFile("formats");
     }
     public FileConfiguration getEmojis() {
         return files.getFile("emojis");
+    }
+    public FileConfiguration getFilters() {
+        return files.getFile("filters");
     }
 
     public FileConfiguration getDiscord() {

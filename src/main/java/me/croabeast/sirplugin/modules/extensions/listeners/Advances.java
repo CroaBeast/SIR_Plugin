@@ -143,7 +143,7 @@ public class Advances extends BaseModule implements Listener {
         if (frameType == null)
             frameType = handler == null ? "PROGRESS" : handler.getFrameType();
         if (description == null)
-            description = handler == null ? "No description." : handler.getDescription(true);
+            description = handler == null ? "No description." : handler.getDescription(false);
 
         sendAdvSection(player, messageKey, frameType, advName, description);
     }

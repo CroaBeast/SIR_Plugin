@@ -102,7 +102,7 @@ public class IridiumAPI {
     }
 
     public static boolean startWithColor(@NotNull String string) {
-        return Pattern.compile("^(?i)&[a-f0-9lnokmr]").matcher(string).find();
+        return Pattern.compile("^" + COLOR_MATCHER).matcher(string).find();
     }
 
     @NotNull

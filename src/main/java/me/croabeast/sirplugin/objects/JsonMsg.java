@@ -156,16 +156,7 @@ public class JsonMsg {
 
         for (int i = 0; i < list.size(); i++) {
             String end = i == list.size() - 1 ? "" : "\n";
-            String line = list.get(i), startColor = null;
-
-            if (i - 1 >= 0 && !startWithColor(line))
-                startColor = getFirstColor(list.get(i - 1));
-
-            if (!startWithColor(line) && startColor != null)
-                line = startColor + line;
-
-            array[i] = toComponent(colorize(player, line) + end);
-            list.set(i, line);
+            array[i] = toComponent(colorize(player, list.get(i)) + end);
         }
 
         comp.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, array));

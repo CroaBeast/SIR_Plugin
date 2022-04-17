@@ -19,6 +19,15 @@ modules:
   - 'filters'
 
 join-quit:
+  # Manages the cooldown between join-quit messages to not show those
+  # messages if the players joins/leaves the server really quick.
+  cooldown:
+    # Cooldown between join messages.
+    join: 5
+    # Cooldown between join and quit message.
+    between: 0 # Not enabled by default
+    # Cooldown between quit messages.
+    quit: 5
   # If a login plugin is installed, this section will be activated.
   # Compatible login plugins: [ AuthMe, UserLogin ]
   login:
@@ -42,9 +51,6 @@ join-quit:
     # vanish status. Disabling this won't send any messages when a player
     # changes its vanish status.
     enabled: true
-    # If a player is vanished and this option is enabled, won't send
-    # any join/quit message to that player.
-    silent: true
     # If a message has a "spawn:" section, and this option is disabled,
     # that spawn section won't be executed.
     use-spawn: false
