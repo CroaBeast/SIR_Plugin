@@ -2,7 +2,6 @@ package me.croabeast.sirplugin.utilities;
 
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.objects.*;
-import me.croabeast.sirplugin.objects.handlers.TextParser;
 import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.configuration.*;
@@ -15,6 +14,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static me.croabeast.sirplugin.SIRPlugin.*;
+import static me.croabeast.sirplugin.modules.listeners.Formatter.KeysHandler.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
 public class EventUtils {
@@ -182,15 +183,22 @@ public class EventUtils {
 
             line = parseInsensitiveEach(line, new String[] {"player", "world"},
                     new String[] {sender.getName(), sender.getWorld().getName()});
-            line = removeSpace(getChatValues(sender, line));
+
+            boolean isNot = !BaseModule.isEnabled(BaseModule.Identifier.FORMATS);
+            String[] values = {isNot ? null : getChatValue(sender, "prefix", ""),
+                    isNot ? null : getChatValue(sender, "suffix", "")};
+
+            line = parseInsensitiveEach(line, new String[] {"prefix", "suffix"}, values);
+            line = getTextUtils().removeSpace(line);
 
             if (doLog && main.getConfig().getBoolean("options.send-console")) {
-                String logLine = JsonMsg.centeredText(sender, TextParser.stripPrefix(line));
-                LogUtils.doLog(logLine.replace(lineSplitter(), "&f" + lineSplitter()));
+                String logLine = getTextUtils().centeredText(sender, getTextUtils().stripPrefix(line));
+                String splitter = getTextUtils().lineSeparator();
+                LogUtils.doLog(logLine.replace(splitter, "&f" + splitter));
             }
 
-            if (!isPublic) TextParser.send(null, sender, line);
-            else for (Player p : Bukkit.getOnlinePlayers()) TextParser.send(p, sender, line);
+            if (!isPublic) getTextUtils().sendMessage(null, sender, line);
+            else for (Player p : Bukkit.getOnlinePlayers()) getTextUtils().sendMessage(p, sender, line);
         }
     }
     
@@ -203,7 +211,7 @@ public class EventUtils {
 
         for (String line : commands) {
             if (line == null || line.equals("")) continue;
-            line = removeSpace(line);
+            line = getTextUtils().removeSpace(line);
             boolean isPlayer = isStarting("[player]", line) && player != null;
 
             if (player != null) {
@@ -212,7 +220,7 @@ public class EventUtils {
             }
 
             CommandSender sender = isPlayer ? player : Bukkit.getConsoleSender();
-            String cmd = isPlayer ? parsePrefix("player", line) : line;
+            String cmd = isPlayer ? getTextUtils().parsePrefix("player", line) : line;
             Bukkit.dispatchCommand(sender, cmd);
         }
     }

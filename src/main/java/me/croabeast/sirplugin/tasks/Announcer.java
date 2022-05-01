@@ -1,13 +1,15 @@
-package me.croabeast.sirplugin.tasks.extensions;
+package me.croabeast.sirplugin.tasks;
 
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.modules.extensions.Reporter;
-import me.croabeast.sirplugin.tasks.BaseCmd;
+import me.croabeast.sirplugin.modules.*;
+import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.command.*;
 import org.bukkit.configuration.*;
 
 import java.util.*;
+
+import static me.croabeast.sirplugin.utilities.Files.*;
 
 public class Announcer extends BaseCmd {
 
@@ -87,7 +89,7 @@ public class Announcer extends BaseCmd {
             if (args.length == 1) return resultTab("start", "preview", "cancel", "reboot");
 
             if(args.length == 2 && args[0].matches("(?i)preview")) {
-                ConfigurationSection id = main.getAnnounces().getConfigurationSection("announces");
+                ConfigurationSection id = ANNOUNCES.toFile().getConfigurationSection("announces");
                 return id == null ? resultTab("NOT_FOUND") : resultTab(id.getKeys(false));
             }
 

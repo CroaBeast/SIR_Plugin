@@ -1,23 +1,19 @@
-package me.croabeast.sirplugin.tasks.extensions;
+package me.croabeast.sirplugin.tasks;
 
 import com.google.common.collect.*;
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.tasks.BaseCmd;
+import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.entity.*;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 
+import static me.croabeast.sirplugin.utilities.Files.*;
+
 public class IgnoreCmd extends BaseCmd {
-
-    private final SIRPlugin main;
-
-    public IgnoreCmd(SIRPlugin main) {
-        this.main = main;
-    }
 
     @Override
     public String getName() {
@@ -28,8 +24,8 @@ public class IgnoreCmd extends BaseCmd {
         boolean value = obj == null || !obj;
         uuid += "." + (isChat ? "all-chat" : "all-msg");
 
-        main.getIgnore().set("data." + uuid, value);
-        main.getFiles().getObject("ignore").saveFile();
+        IGNORE.toFile().set("data." + uuid, value);
+        IGNORE.fromSource().saveFile();
 
         String path = "commands.ignore." + (value ? "success" : "remove");
         return oneMessage(path + ".all", "type", key);
@@ -43,8 +39,8 @@ public class IgnoreCmd extends BaseCmd {
         if (add) list.add(target);
         else list.remove(target);
 
-        main.getIgnore().set("data." + uuid, list);
-        main.getFiles().getObject("ignore").saveFile();
+        IGNORE.toFile().set("data." + uuid, list);
+        IGNORE.fromSource().saveFile();
 
         String path = "commands.ignore." + (add ? "success" : "remove");
         return oneMessage(path + "player", keys, values);
@@ -67,18 +63,18 @@ public class IgnoreCmd extends BaseCmd {
             if (args.length == 1) return oneMessage(path + "need-player");
             if (args.length > 2) return notArgument(args[args.length - 1]);
 
-            String chatKey = main.getLang().getString(path + "channels.chat"),
-                    msgKey = main.getLang().getString(path + "channels.msg");
+            String chatKey = LANG.toFile().getString(path + "channels.chat"),
+                    msgKey = LANG.toFile().getString(path + "channels.msg");
 
             String uuid = ((Player) sender).getUniqueId().toString();
 
-            Boolean allChat = main.getIgnore().contains("data." + uuid + ".all-chat") ?
-                    main.getIgnore().getBoolean("data." + uuid + ".all-chat") : null;
-            Boolean allMsg = main.getIgnore().contains("data." + uuid + ".all-msg") ?
-                    main.getIgnore().getBoolean("data." + uuid + ".all-msg") : null;
+            Boolean allChat = IGNORE.toFile().contains("data." + uuid + ".all-chat") ?
+                    IGNORE.toFile().getBoolean("data." + uuid + ".all-chat") : null;
+            Boolean allMsg = IGNORE.toFile().contains("data." + uuid + ".all-msg") ?
+                    IGNORE.toFile().getBoolean("data." + uuid + ".all-msg") : null;
 
-            List<String> chatList = main.getIgnore().getStringList("data." + uuid + ".chat");
-            List<String> msgList = main.getIgnore().getStringList("data." + uuid + ".msg");
+            List<String> chatList = IGNORE.toFile().getStringList("data." + uuid + ".chat");
+            List<String> msgList = IGNORE.toFile().getStringList("data." + uuid + ".msg");
 
             if (args[1].matches("(?i)@a")) {
                 switch (args[0].toLowerCase()) {

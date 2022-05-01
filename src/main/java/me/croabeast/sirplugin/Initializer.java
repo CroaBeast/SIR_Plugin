@@ -2,20 +2,20 @@ package me.croabeast.sirplugin;
 
 import com.google.common.collect.*;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
-import github.scarsz.discordsrv.util.DiscordUtil;
-import me.croabeast.sirplugin.modules.*;
+import github.scarsz.discordsrv.util.*;
+import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.objects.analytics.*;
-import me.croabeast.sirplugin.objects.handlers.*;
-import me.croabeast.sirplugin.tasks.*;
 import me.croabeast.sirplugin.utilities.*;
 import net.milkbowl.vault.permission.*;
 import org.bukkit.*;
 import org.bukkit.advancement.*;
+import org.bukkit.configuration.file.*;
 import org.bukkit.plugin.*;
 
 import java.util.*;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
+import static me.croabeast.sirplugin.utilities.Files.*;
 
 public final class Initializer {
 
@@ -202,46 +202,48 @@ public final class Initializer {
             final String type = Initializer.keys.get(adv).getFrameType();
 
             if (key.contains("root") || key.contains("recipes")) continue;
-            boolean notContained = !main.getAdvances().contains(key);
 
-            if (type == null) {
-                errors.add(adv);
-                if (notContained) {
-                    main.getAdvances().set(key, "type.custom");
-                    keys.add(adv);
-                }
-            }
-            else if (type.matches("(?i)CHALLENGE")) {
-                challenges.add(adv);
-                if (notContained) {
-                    main.getAdvances().set(key, "type.challenge");
-                    keys.add(adv);
-                }
-            }
-            else if (type.matches("(?i)TASK")) {
-                tasks.add(adv);
-                if (notContained) {
-                    main.getAdvances().set(key, "type.task");
-                    keys.add(adv);
-                }
-            }
-            else if (type.matches("(?i)GOAL")) {
-                goals.add(adv);
-                if (notContained) {
-                    main.getAdvances().set(key, "type.goal");
-                    keys.add(adv);
-                }
-            }
-            else {
-                errors.add(adv);
-                if (notContained) {
-                    main.getAdvances().set(key, "type.custom");
-                    keys.add(adv);
-                }
+            FileConfiguration advances = ADVANCES.initialFile();
+            if (advances == null) continue;
+
+            boolean notContained = !advances.contains(key);
+
+            switch (type.toUpperCase()) {
+                case "TASK":
+                    tasks.add(adv);
+                    if (notContained) {
+                        advances.set(key, "type.task");
+                        keys.add(adv);
+                    }
+                    break;
+
+                case "GOAL":
+                    goals.add(adv);
+                    if (notContained) {
+                        advances.set(key, "type.goal");
+                        keys.add(adv);
+                    }
+                    break;
+
+                case "CHALLENGE":
+                    challenges.add(adv);
+                    if (notContained) {
+                        advances.set(key, "type.challenge");
+                        keys.add(adv);
+                    }
+                    break;
+
+                default:
+                    errors.add(adv);
+                    if (notContained) {
+                        advances.set(key, "type.custom");
+                        keys.add(adv);
+                    }
+                    break;
             }
         }
 
-        if (keys.size() > 0) main.getFiles().getObject("advances").saveFile();
+        if (keys.size() > 0) ADVANCES.fromSource().saveFile();
 
         String error = errors.size() == 0 ? null : "&7Unknowns: &c" + errors.size() +
                 "&7. Check your advances.yml file!";
@@ -279,17 +281,9 @@ public final class Initializer {
         }
     }
 
-    public void registerCommands(BaseCmd... cmds) {
-        for (BaseCmd cmd : cmds) cmd.registerCommand();
-    }
-
     public Guild getGuild() {
-        try {
-            String server = main.getModules().getString("discord.server-id", "");
-            return DiscordUtil.getJda().getGuildById(server);
-        } catch (Exception e) {
-            return null;
-        }
+        String guild = MODULES.toFile().getString("discord.server-id", "");
+        return DiscordUtil.getJda().getGuildById(guild);
     }
 
     public static List<Advancement> getAdvancements() {

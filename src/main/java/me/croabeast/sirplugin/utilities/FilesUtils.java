@@ -62,14 +62,9 @@ public final class FilesUtils {
         }
     }
 
-    @NotNull
+    @Nullable
     public YMLFile getObject(String name) {
         return files.get(name);
-    }
-
-    @NotNull
-    public FileConfiguration getFile(String name) {
-        return getObject(name).getFile();
     }
 
     enum Folder {

@@ -1,9 +1,8 @@
-package me.croabeast.sirplugin.modules.extensions.listeners;
+package me.croabeast.sirplugin.modules.listeners;
 
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.hooks.*;
-import me.croabeast.sirplugin.modules.*;
 import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.utilities.*;
 import net.md_5.bungee.api.chat.*;
@@ -17,7 +16,9 @@ import org.jetbrains.annotations.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.modules.extensions.listeners.Formatter.KeysHandler.*;
+import static me.croabeast.sirplugin.SIRPlugin.*;
+import static me.croabeast.sirplugin.modules.listeners.Formatter.KeysHandler.*;
+import static me.croabeast.sirplugin.utilities.Files.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
 public class Formatter extends BaseModule implements Listener {
@@ -53,7 +54,7 @@ public class Formatter extends BaseModule implements Listener {
         if (!getColored(id, "rgb")) line = IridiumAPI.stripRGB(line);
         if (!getColored(id, "special")) line = IridiumAPI.stripSpecial(line);
         line = line.replace("\\", "\\\\");
-        return removeSpace(line.replace("$", "\\$"));
+        return getTextUtils().removeSpace(line.replace("$", "\\$"));
     }
 
     @EventHandler
@@ -63,10 +64,10 @@ public class Formatter extends BaseModule implements Listener {
 
         Player player = event.getPlayer();
         ConfigurationSection id =
-                utils.getSection(main.getFormats(), player, "formats");
+                utils.getSection(FORMATS.toFile(), player, "formats");
 
         if (id == null) {
-            sendFileMsg(player, "chat.invalid-format");
+            getTextUtils().sendMessageList(player, toList(LANG.toFile(), "chat.invalid-format"));
             return;
         }
 
@@ -84,18 +85,15 @@ public class Formatter extends BaseModule implements Listener {
         String[] keys = {"prefix", "suffix", "player", "message"},
                 values = {prefix, suffix, player.getName(), message};
 
-        if (!hover.isEmpty()) {
-            for (int i = 0; i < hover.size(); i++)
-                hover.set(i, parseInsensitiveEach(hover.get(i), keys, values));
-        }
+        if (!hover.isEmpty()) hover.replaceAll(line -> parseInsensitiveEach(line, keys, values));
 
         if (click != null)
             click = parsePAPI(player, parseInsensitiveEach(click, keys, values));
 
         if (StringUtils.isBlank(message) &&
-                !main.getModules().getBoolean("chat.allow-empty")) {
+                !MODULES.toFile().getBoolean("chat.allow-empty")) {
             event.setCancelled(true);
-            sendFileMsg(player, "chat.empty-message");
+            getTextUtils().sendMessageList(player, toList(LANG.toFile(), "chat.empty-message"));
             return;
         }
 
@@ -116,9 +114,9 @@ public class Formatter extends BaseModule implements Listener {
             if (target == player) continue;
 
             String s = "data." + target.getUniqueId() + ".", x = player.getUniqueId() + "";
-            List<String> list = main.getIgnore().getStringList(s + "chat");
+            List<String> list = IGNORE.toFile().getStringList(s + "chat");
 
-            if (main.getIgnore().getBoolean(s + "all-chat") ||
+            if (IGNORE.toFile().getBoolean(s + "all-chat") ||
                     (!list.isEmpty() && list.contains(x))) players.remove(target);
         }
 
@@ -132,18 +130,19 @@ public class Formatter extends BaseModule implements Listener {
                 int time = timer - ((int) (Math.round(rest / 100D) / 10));
                 String path = "cooldown.message";
 
-                List<String> list = fileList(isDef(id, path), path);
-                sendFileMsg(player, list, "time", time + "");
+                List<String> list = toList(isDef(id, path), path);
+                getTextUtils().sendMessageList(player, list,
+                        new String[] {"time"}, new String[] {time + ""});
                 return;
             }
         }
 
-        String result = parseInsensitiveEach(removeSpace(format), keys, values);
-        boolean isDefault = main.getModules().getBoolean("chat.default-format");
+        String result = parseInsensitiveEach(getTextUtils().removeSpace(format), keys, values);
+        boolean isDefault = MODULES.toFile().getBoolean("chat.default-format");
 
-        if (isDefault && !JsonMsg.isValidJson(result) && hover.isEmpty() && click == null &&
+        if (isDefault && !IS_JSON.apply(result) && hover.isEmpty() && click == null &&
                 world == null && (radius == null || radius <= 0) && !Initializer.hasIntChat()) {
-            event.setFormat(JsonMsg.centeredText(player, result.replace("%", "%%")));
+            event.setFormat(getTextUtils().centeredText(player, result.replace("%", "%%")));
             return;
         }
 
@@ -151,14 +150,14 @@ public class Formatter extends BaseModule implements Listener {
 
         String path = "chat.simple-logger.", s = main.getConfig().getString(path + "format");
         LogUtils.doLog(
-                parsePAPI(player, !main.getModules().getBoolean(path + "enabled")
+                parsePAPI(player, !MODULES.toFile().getBoolean(path + "enabled")
                         ? result : parseInsensitiveEach(s, keys, values))
         );
 
         if (Initializer.hasDiscord())
             new Message(player, "chat", keys, values).sendMessage();
 
-        BaseComponent[] component = new JsonMsg(player, result, click, hover).build();
+        BaseComponent[] component = getTextUtils().stringToJson(player, result, click, hover);
         players.forEach(p -> p.spigot().sendMessage(component));
 
         if (timer != null && timer > 0) timedPlayers.put(player, System.currentTimeMillis());
@@ -171,7 +170,7 @@ public class Formatter extends BaseModule implements Listener {
 
         @Nullable
         public static ConfigurationSection isDef(ConfigurationSection id, String path) {
-            ConfigurationSection d = main.getModules().getConfigurationSection("chat.default");
+            ConfigurationSection d = MODULES.toFile().getConfigurationSection("chat.default");
             return (d != null && d.getBoolean("enabled") && !id.contains(path)) ? d : id;
         }
 
@@ -190,7 +189,7 @@ public class Formatter extends BaseModule implements Listener {
         @Nullable
         public static String getChatValue(Player player, String path, Object def) {
             String value = (String) getValue(utils.getSection(
-                    main.getFormats(), player, "formats"), path, def);
+                    FORMATS.toFile(), player, "formats"), path, def);
             return StringUtils.isBlank(value) ? null : value;
         }
     }

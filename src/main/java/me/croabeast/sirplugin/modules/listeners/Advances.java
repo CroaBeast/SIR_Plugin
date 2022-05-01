@@ -1,9 +1,8 @@
-package me.croabeast.sirplugin.modules.extensions.listeners;
+package me.croabeast.sirplugin.modules.listeners;
 
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.hooks.*;
-import me.croabeast.sirplugin.modules.*;
-import me.croabeast.sirplugin.objects.handlers.*;
+import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.apache.commons.lang.*;
 import org.bukkit.*;
@@ -14,6 +13,8 @@ import org.bukkit.event.player.*;
 
 import java.util.*;
 
+import static me.croabeast.sirplugin.SIRPlugin.*;
+import static me.croabeast.sirplugin.utilities.Files.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
 public class Advances extends BaseModule implements Listener {
@@ -41,7 +42,7 @@ public class Advances extends BaseModule implements Listener {
                 type.toLowerCase() + "&r", WordUtils.capitalizeFully(type) + "&r"
         };
 
-        List<String> messages = fileList(main.getAdvances(), path);
+        List<String> messages = toList(ADVANCES.toFile(), path);
         if (messages.isEmpty()) return;
 
         for (String line : messages) {
@@ -54,16 +55,16 @@ public class Advances extends BaseModule implements Listener {
                     !isStarting("[cmd]", line)) LogUtils.doLog(line);
 
             if (isStarting("[cmd]", line)) {
-                String cmd = parsePrefix("cmd", line.replace("&r", ""));
+                String cmd = getTextUtils().parsePrefix("cmd", line.replace("&r", ""));
                 boolean isLine = isStarting("[player]", cmd);
 
-                cmd = isLine ? parsePrefix("player", cmd) : cmd;
+                cmd = isLine ? getTextUtils().parsePrefix("player", cmd) : cmd;
                 Bukkit.dispatchCommand(isLine ? player : Bukkit.getConsoleSender(), cmd);
             }
             else {
                 if (!isStarting("[player]", line))
-                    for (Player p : Bukkit.getOnlinePlayers()) TextParser.send(p, player, line);
-                else TextParser.send(null, player, parsePrefix("player", line));
+                    for (Player p : Bukkit.getOnlinePlayers()) getTextUtils().sendMessage(p, player, line);
+                else getTextUtils().sendMessage(null, player, getTextUtils().parsePrefix("player", line));
             }
         }
 
@@ -72,7 +73,7 @@ public class Advances extends BaseModule implements Listener {
     }
 
     private List<String> advList(String path) {
-        return main.getModules().getStringList("advancements.disabled-" + path);
+        return MODULES.toFile().getStringList("advancements.disabled-" + path);
     }
 
     @EventHandler
@@ -109,7 +110,7 @@ public class Advances extends BaseModule implements Listener {
 
         String frameType = null, advName = null, description = null;
 
-        String messageKey = main.getAdvances().getString(stringKey(key));
+        String messageKey = ADVANCES.toFile().getString(stringKey(key));
         if (messageKey == null) return;
 
         if (messageKey.contains("-(")) {
@@ -143,7 +144,7 @@ public class Advances extends BaseModule implements Listener {
         if (frameType == null)
             frameType = handler == null ? "PROGRESS" : handler.getFrameType();
         if (description == null)
-            description = handler == null ? "No description." : handler.getDescription(false);
+            description = handler == null ? "No description." : handler.getDescription();
 
         sendAdvSection(player, messageKey, frameType, advName, description);
     }

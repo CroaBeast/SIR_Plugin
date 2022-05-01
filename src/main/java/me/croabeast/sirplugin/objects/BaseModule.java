@@ -1,20 +1,11 @@
-package me.croabeast.sirplugin.modules;
+package me.croabeast.sirplugin.objects;
 
-import me.croabeast.sirplugin.*;
-import org.bukkit.configuration.file.*;
+import static me.croabeast.sirplugin.utilities.Files.MODULES;
 
 /**
  * This class represents a module used for each feature.
  */
 public abstract class BaseModule {
-
-    /**
-     * The modules.yml file of this plugin.
-     * @return the modules.yml file
-     */
-    private static FileConfiguration modulesFile() {
-        return SIRPlugin.getInstance().getModules();
-    }
 
     /**
      * Checks if the module is enabled in modules.yml
@@ -23,7 +14,7 @@ public abstract class BaseModule {
      */
     public static boolean isEnabled(Identifier identifier) {
         String name = identifier.toString().toLowerCase();
-        return modulesFile().getStringList("modules").contains(name);
+        return MODULES.toFile().getStringList("modules").contains(name);
     }
 
     /**

@@ -1,4 +1,4 @@
-package me.croabeast.sirplugin.tasks;
+package me.croabeast.sirplugin.objects;
 
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.utilities.*;

@@ -1,8 +1,8 @@
-package me.croabeast.sirplugin.tasks.extensions;
+package me.croabeast.sirplugin.tasks;
 
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.modules.extensions.Reporter;
-import me.croabeast.sirplugin.tasks.BaseCmd;
+import me.croabeast.sirplugin.modules.*;
+import me.croabeast.sirplugin.objects.*;
 import org.bukkit.command.*;
 
 import java.util.*;
@@ -26,13 +26,13 @@ public class MainCmd extends BaseCmd {
             setSender(sender);
             if (hasNoPerm("admin.*")) return true;
             if (args.length == 0)
-                return oneMessage("commands.sir.help", "version", SIRPlugin.PLUGIN_VERSION);
+                return oneMessage("commands.sir.help", "version", SIRPlugin.pluginVersion());
             if (args.length > 1) return notArgument(args[args.length - 1]);
 
             switch (args[0].toLowerCase()) {
                 case "help":
                     if (hasNoPerm("admin.help")) return true;
-                    return oneMessage("commands.sir.help", "version", SIRPlugin.PLUGIN_VERSION);
+                    return oneMessage("commands.sir.help", "version", SIRPlugin.pluginVersion());
 
                 case "reload":
                     if (hasNoPerm("admin.reload")) return true;

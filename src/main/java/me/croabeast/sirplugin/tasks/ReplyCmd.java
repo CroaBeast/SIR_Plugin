@@ -1,7 +1,7 @@
-package me.croabeast.sirplugin.tasks.extensions;
+package me.croabeast.sirplugin.tasks;
 
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.tasks.BaseCmd;
+import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.command.*;
@@ -9,13 +9,9 @@ import org.bukkit.entity.*;
 
 import java.util.*;
 
+import static me.croabeast.sirplugin.utilities.Files.*;
+
 public class ReplyCmd extends BaseCmd {
-
-    private final SIRPlugin main;
-
-    public ReplyCmd(SIRPlugin main) {
-        this.main = main;
-    }
 
     @Override
     public String getName() {
@@ -41,14 +37,14 @@ public class ReplyCmd extends BaseCmd {
 
             if (target instanceof Player) {
                 String path1 = "commands.ignore.", s = "data." + ((Player) target).getUniqueId() + ".",
-                        key = main.getLang().getString(path1 + "channels.msg");
+                        key = LANG.toFile().getString(path1 + "channels.msg");
 
-                if (main.getIgnore().getBoolean(s + "all-msg"))
+                if (IGNORE.toFile().getBoolean(s + "all-msg"))
                     return oneMessage(path1 + "ignoring.all", "type", key);
 
                 if (sender instanceof Player) {
                     String s1 = ((Player) sender).getUniqueId().toString();
-                    List<String> list = main.getIgnore().getStringList(s + "msg");
+                    List<String> list = IGNORE.toFile().getStringList(s + "msg");
 
                     if (!list.isEmpty() && list.contains(s1))
                         return oneMessage(path1 + "ignoring.player", "type", key);
@@ -60,9 +56,9 @@ public class ReplyCmd extends BaseCmd {
             String[] values1 = {isConsole(target), message};
             String[] values2 = {isConsole(sender), message};
 
-            TextUtils.sendFileMsg(sender,
+            SIRPlugin.getTextUtils().sendMessageList(sender, LANG.toFile(),
                     path + "sender", new String[] {"receiver", "message"}, values1);
-            TextUtils.sendFileMsg(target,
+            SIRPlugin.getTextUtils().sendMessageList(target, LANG.toFile(),
                     path + "receiver", new String[] {"sender", "message"}, values2);
             return true;
         };

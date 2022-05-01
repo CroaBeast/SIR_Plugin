@@ -66,7 +66,45 @@
                     </filters>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>2.5.2</version>
+                <executions>
+                    <execution>
+                        <id>UserLogin</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>com.elchologamer</groupId>
+                            <artifactId>UserLogin</artifactId>
+                            <version>2.0</version>
+                            <packaging>jar</packaging>
+                            <file>lib/UserLogin.jar</file>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>CMI</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>com.Zrips</groupId>
+                            <artifactId>CMI</artifactId>
+                            <version>9.0</version>
+                            <packaging>jar</packaging>
+                            <file>lib/CMI.jar</file>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
+
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -129,6 +167,12 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>com.github.CroaBeast</groupId>
+            <artifactId>BeansLib</artifactId>
+            <version>2.0.5</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
             <groupId>me.clip</groupId>
             <artifactId>placeholderapi</artifactId>
             <version>2.11.1</version>
@@ -168,6 +212,18 @@
             <groupId>com.github.LeonMangler</groupId>
             <artifactId>SuperVanish</artifactId>
             <version>6.2.6-4</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.Zrips</groupId>
+            <artifactId>CMI</artifactId>
+            <version>9.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.elchologamer</groupId>
+            <artifactId>UserLogin</artifactId>
+            <version>2.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>

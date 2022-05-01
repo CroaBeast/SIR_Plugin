@@ -8,12 +8,14 @@ import org.bukkit.command.*;
 import org.bukkit.entity.*;
 import org.bukkit.metadata.*;
 
+import static me.croabeast.sirplugin.utilities.Files.*;
+
 public final class PermUtils {
 
     private final static SIRPlugin main = SIRPlugin.getInstance();
 
     public static boolean hasPerm(CommandSender sender, String perm) {
-        boolean isSet = main.getConfig().getBoolean("options.hard-perm-check");
+        boolean isSet = CONFIG.toFile().getBoolean("options.hard-perm-check");
         isSet = (!isSet || sender.isPermissionSet(perm)) && sender.hasPermission(perm);
         return (sender instanceof ConsoleCommandSender) || isSet;
     }

@@ -10,9 +10,10 @@ import org.bukkit.util.*;
 import java.util.*;
 import java.util.stream.*;
 
-public class CmdUtils {
+import static me.croabeast.sirplugin.SIRPlugin.*;
+import static me.croabeast.sirplugin.utilities.Files.*;
 
-    private final SIRPlugin main = SIRPlugin.getInstance();
+public class CmdUtils {
 
     private CommandSender sender;
     private String[] args;
@@ -30,11 +31,11 @@ public class CmdUtils {
     }
     
     protected void sendMessage(String path, String key, String value) {
-        TextUtils.sendFileMsg(sender, path, key, value);
+        getTextUtils().sendMessageList(sender, LANG.toFile(), path, new String[] {key}, new String[] {value});
     }
 
     protected boolean oneMessage(String path, String[] keys, String[] values) {
-        TextUtils.sendFileMsg(sender, path, keys, values);
+        getTextUtils().sendMessageList(sender, LANG.toFile(), path, keys, values);
         return true;
     }
 
@@ -117,15 +118,15 @@ public class CmdUtils {
     }
 
     protected void messageLogger(String type, String line) {
-        String start = main.getLang().getString("logger.header");
+        String start = LANG.toFile().getString("logger.header");
         if (start == null || start.equals("")) return;
-        line = TextUtils.colorize(null, line);
+        line = getTextUtils().colorize(null, line);
         LogUtils.doLog(start, "&7[" + type + "] " + line);
     }
 
     protected String isConsole(CommandSender sender) {
         return sender instanceof ConsoleCommandSender ?
-                main.getLang().getString("commands.msg-reply.console-name") : sender.getName();
+                LANG.toFile().getString("commands.msg-reply.console-name") : sender.getName();
     }
 
     @SafeVarargs

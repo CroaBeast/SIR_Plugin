@@ -1,7 +1,7 @@
-package me.croabeast.sirplugin.modules.extensions.listeners;
+package me.croabeast.sirplugin.modules.listeners;
 
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.modules.*;
+import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.apache.commons.lang.*;
 import org.bukkit.configuration.*;
@@ -11,6 +11,8 @@ import org.bukkit.event.player.*;
 
 import java.util.*;
 import java.util.regex.*;
+
+import static me.croabeast.sirplugin.utilities.Files.*;
 
 public class ChatFilter extends BaseModule implements Listener {
 
@@ -38,10 +40,10 @@ public class ChatFilter extends BaseModule implements Listener {
         String message = event.getMessage();
 
         ConfigurationSection id =
-                main.getEventUtils().getSection(main.getFilters(), player, "filters");
+                main.getEventUtils().getSection(FILTERS.toFile(), player, "filters");
         if (id == null) return;
 
-        List<String> words = TextUtils.fileList(id, "words");
+        List<String> words = TextUtils.toList(id, "words");
         if (words.isEmpty()) return;
 
         String replacer = id.getString("replace-char", "*");

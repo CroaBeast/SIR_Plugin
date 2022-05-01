@@ -1,6 +1,6 @@
-package me.croabeast.sirplugin.objects.handlers;
+package me.croabeast.sirplugin.objects;
 
-import me.croabeast.sirplugin.utilities.*;
+import me.croabeast.sirplugin.*;
 import org.bukkit.*;
 import org.bukkit.advancement.*;
 import org.jetbrains.annotations.*;
@@ -51,32 +51,31 @@ public class AdvKeys {
     }
 
     private void registerKeys() {
-        Class<?> craftClass = getNMSClass("org.bukkit.craftbukkit",
-                "advancement.CraftAdvancement", true);
+        Class<?> craftClass = getNMSClass("org.bukkit.craftbukkit", "advancement.CraftAdvancement", true);
         if (craftClass == null) return;
 
-        Object craftAdv = craftClass.cast(adv);
-        Object advHandle = getObject(craftClass, craftAdv, "getHandle");
+        Object craftAdv = craftClass.cast(adv),
+                advHandle = getObject(craftClass, craftAdv, "getHandle");
         if (advHandle == null) return;
 
         Object craftDisplay = getObject(advHandle, "c");
         if (craftDisplay == null) return;
 
-        Object frameType = getObject(craftDisplay, "e");
-        Object chatComponentTitle = getObject(craftDisplay, "a");
-        Object chatComponentDesc = getObject(craftDisplay, "b");
-        if (frameType == null || chatComponentTitle == null ||
-                chatComponentDesc == null) return;
+        Object frameType = getObject(craftDisplay, "e"),
+                chatCompTitle = getObject(craftDisplay, "a"),
+                chatCompDesc = getObject(craftDisplay, "b");
+
+        if (frameType == null || chatCompTitle == null || chatCompDesc == null) return;
 
         Class<?> chatClass = MAJOR_VERSION >= 17 ?
-                getNMSClass("net.minecraft.network.chat",
-                        "IChatBaseComponent", false) :
+                getNMSClass("net.minecraft.network.chat", "IChatBaseComponent", false) :
                 getNMSClass(null, "IChatBaseComponent", true);
         if (chatClass == null) return;
 
         String method = MAJOR_VERSION < 13 ? "toPlainText" : "getString";
-        Object title = getObject(chatClass, chatComponentTitle, method);
-        Object description = getObject(chatClass, chatComponentDesc, method);
+        Object title = getObject(chatClass, chatCompTitle, method),
+                description = getObject(chatClass, chatCompDesc, method);
+
         if (title == null || description == null) return;
 
         this.frameType = frameType.toString();
@@ -95,27 +94,26 @@ public class AdvKeys {
     }
 
     private String removeLiteralChars(String input) {
-        return input.replaceAll("\\\\Q", "").
-                replaceAll("\\\\E", "");
+        return input.replaceAll("\\\\Q", "").replaceAll("\\\\E", "");
     }
 
     @NotNull
-    public String getDescription(boolean append) {
-        return getDescription(append, 24);
+    public String getDescription() {
+        return getDescription(false, 24);
     }
 
     @NotNull
     public String getDescription(boolean append, int charsLength) {
         if (description == null) return "No description.";
 
-        String desc = description.replaceAll("[\\n]", " ");
+        String desc = description.replaceAll("\\n", " ");
         if (!append) return desc;
 
         StringTokenizer tok = new StringTokenizer(desc, " ");
         StringBuilder output = new StringBuilder(desc.length());
 
         int lineLen = 0;
-        String delimiter = TextUtils.lineSplitter();
+        String delimiter = SIRPlugin.getTextUtils().lineSeparator();
 
         while (tok.hasMoreTokens()) {
             String word = tok.nextToken();

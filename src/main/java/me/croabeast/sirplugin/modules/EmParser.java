@@ -1,19 +1,15 @@
-package me.croabeast.sirplugin.modules.extensions;
+package me.croabeast.sirplugin.modules;
 
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.modules.*;
+import me.croabeast.sirplugin.objects.*;
 import org.bukkit.configuration.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
 
+import static me.croabeast.sirplugin.utilities.Files.*;
+
 public class EmParser extends BaseModule {
-
-    private final SIRPlugin main;
-
-    public EmParser(SIRPlugin main) {
-        this.main = main;
-    }
 
     protected List<Emoticon> emoticonList = new ArrayList<>();
 
@@ -28,7 +24,7 @@ public class EmParser extends BaseModule {
         if (!emoticonList.isEmpty()) emoticonList.clear();
 
         ConfigurationSection section =
-                main.getEmojis().getConfigurationSection("emojis");
+                EMOJIS.toFile().getConfigurationSection("emojis");
         if (section == null) return;
 
         for (String key : section.getKeys(false)) {

@@ -44,7 +44,7 @@ public class Amender {
                             "&cYou don't have the latest version of S.I.R. installed.",
                             "&cRemember, older versions won't receive any support.",
                             "&7New Version: &a" + latest +
-                                    "&7 - Your Version: &e" + SIRPlugin.PLUGIN_VERSION,
+                                    "&7 - Your Version: &e" + SIRPlugin.pluginVersion(),
                             "&7Link:&b https://www.spigotmc.org/resources/96378/"
                     );
                     break;
@@ -62,7 +62,7 @@ public class Amender {
                             "&cYou have a newer version of S.I.R. installed.",
                             "&cErrors might occur in this build.",
                             "Spigot Version: &a" + result.getSpigotVersion() +
-                            "&7 - Your Version: &e" + SIRPlugin.PLUGIN_VERSION
+                            "&7 - Your Version: &e" + SIRPlugin.pluginVersion()
                     );
                     break;
 

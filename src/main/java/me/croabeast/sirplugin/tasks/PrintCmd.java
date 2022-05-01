@@ -1,17 +1,16 @@
-package me.croabeast.sirplugin.tasks.extensions;
+package me.croabeast.sirplugin.tasks;
 
 import com.google.common.collect.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.objects.*;
-import me.croabeast.sirplugin.tasks.BaseCmd;
 import me.croabeast.sirplugin.utilities.*;
-import net.md_5.bungee.api.chat.*;
 import org.bukkit.command.*;
 import org.bukkit.entity.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.utilities.TextUtils.*;
+import static me.croabeast.beanslib.BeansLib.*;
+import static me.croabeast.sirplugin.SIRPlugin.*;
 
 public class PrintCmd extends BaseCmd {
 
@@ -27,8 +26,8 @@ public class PrintCmd extends BaseCmd {
             if (hasNoPerm("print.*")) return true;
             if (args.length == 0) return oneMessage("commands.print.help.main");
 
-            String center = centerPrefix();
-            String split = lineSplitter();
+            String center = getTextUtils().centerPrefix();
+            String split = getTextUtils().lineSeparator();
 
             if (args[0].matches("(?i)targets")) {
                 if (hasNoPerm("print.targets")) return true;
@@ -57,8 +56,8 @@ public class PrintCmd extends BaseCmd {
 
                 sendReminder(args[1]);
                 if (!targets(args[1]).isEmpty()) {
-                    targets(args[1]).forEach(p ->
-                            sendActionBar(p, colorize(p, message)));
+                    targets(args[1]).forEach(p -> getTextUtils().
+                            sendActionBar(p, getTextUtils().colorize(p, message)));
                     messageLogger("ACTION-BAR", message);
                 }
             }
@@ -89,7 +88,7 @@ public class PrintCmd extends BaseCmd {
                                     break;
                                 case "MIXED": break;
                             }
-                            sendChat(p, p, s);
+                            p.spigot().sendMessage(getTextUtils().stringToJson(p, s));
                         }
                     }
 
@@ -108,10 +107,9 @@ public class PrintCmd extends BaseCmd {
                 sendReminder(args[1]);
                 if (!targets(args[1]).isEmpty()) {
                     targets(args[1]).forEach(p -> {
-                        String[] array = args[2].matches("(?i)DEFAULT")
-                                ? null : args[2].split(",");
-                        String[] msg = colorize(p, JsonMsg.stripJson(noFormat)).split(split);
-                        sendTitle(p, msg, array);
+                        String[] array = args[2].matches("(?i)DEFAULT") ? null : args[2].split(","),
+                                msg = getTextUtils().colorize(p, stripJson(noFormat)).split(split);
+                        getTextUtils().sendTitle(p, msg, array);
                     });
                     messageLogger("TITLE", noFormat.replace(split, "&r" + split));
                 }

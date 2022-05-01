@@ -1,9 +1,7 @@
-package me.croabeast.sirplugin.modules.extensions;
+package me.croabeast.sirplugin.modules;
 
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.modules.*;
 import me.croabeast.sirplugin.objects.*;
-import me.croabeast.sirplugin.objects.handlers.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.configuration.*;
@@ -14,7 +12,8 @@ import org.jetbrains.annotations.*;
 import java.util.*;
 import java.util.stream.*;
 
-import static me.croabeast.sirplugin.utilities.TextUtils.lineSplitter;
+import static me.croabeast.sirplugin.SIRPlugin.*;
+import static me.croabeast.sirplugin.utilities.Files.*;
 
 public class Reporter extends BaseModule {
 
@@ -62,13 +61,14 @@ public class Reporter extends BaseModule {
         List<Player> players = getPlayers(perm);
         if (players.isEmpty()) return;
 
-        List<String> msgs = TextUtils.fileList(id, "lines"), cmds = TextUtils.fileList(id, "commands");
+        List<String> msgs = TextUtils.toList(id, "lines"), cmds = TextUtils.toList(id, "commands");
 
         if (!msgs.isEmpty()) {
             if (main.getConfig().getBoolean("options.send-console")) {
                 for (String line : msgs) {
-                    String logLine = JsonMsg.centeredText(null, TextParser.stripPrefix(line));
-                    LogUtils.doLog(logLine.replace(lineSplitter(), "&f" + lineSplitter()));
+                    String logLine = getTextUtils().centeredText(null, getTextUtils().stripPrefix(line));
+                    String splitter = getTextUtils().lineSeparator();
+                    LogUtils.doLog(logLine.replace(splitter, "&f" + splitter));
                 }
             }
             players.forEach(p -> utils.sendMessages(p, msgs, false, false));
@@ -96,7 +96,7 @@ public class Reporter extends BaseModule {
 
         runSection(sections.get(ORDER));
 
-        if (!main.getAnnounces().getBoolean("random")) {
+        if (!ANNOUNCES.toFile().getBoolean("random")) {
             if (ORDER < count) ORDER++;
             else ORDER = 0;
         }
@@ -117,11 +117,11 @@ public class Reporter extends BaseModule {
 
     @Nullable
     public ConfigurationSection getSection() {
-        return main.getAnnounces().getConfigurationSection("announces");
+        return ANNOUNCES.toFile().getConfigurationSection("announces");
     }
 
     public int getDelay() {
-        return main.getModules().getInt("announces.interval", 1200);
+        return ANNOUNCES.toFile().getInt("announces.interval", 1200);
     }
 
     public void cancelTask() {
