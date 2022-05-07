@@ -9,7 +9,7 @@ import org.bukkit.entity.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.utilities.Files.*;
+import static me.croabeast.sirplugin.objects.FileCatcher.*;
 
 public class ReplyCmd extends BaseCmd {
 
@@ -56,9 +56,9 @@ public class ReplyCmd extends BaseCmd {
             String[] values1 = {isConsole(target), message};
             String[] values2 = {isConsole(sender), message};
 
-            SIRPlugin.getTextUtils().sendMessageList(sender, LANG.toFile(),
+            SIRPlugin.textUtils().sendMessageList(sender, LANG.toFile(),
                     path + "sender", new String[] {"receiver", "message"}, values1);
-            SIRPlugin.getTextUtils().sendMessageList(target, LANG.toFile(),
+            SIRPlugin.textUtils().sendMessageList(target, LANG.toFile(),
                     path + "receiver", new String[] {"sender", "message"}, values2);
             return true;
         };

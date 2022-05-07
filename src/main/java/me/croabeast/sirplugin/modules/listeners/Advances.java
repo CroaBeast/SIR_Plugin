@@ -14,10 +14,10 @@ import org.bukkit.event.player.*;
 import java.util.*;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
-import static me.croabeast.sirplugin.utilities.Files.*;
+import static me.croabeast.sirplugin.objects.FileCatcher.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
-public class Advances extends BaseModule implements Listener {
+public class Advances extends Module implements Listener {
 
     private final SIRPlugin main;
 
@@ -55,16 +55,16 @@ public class Advances extends BaseModule implements Listener {
                     !isStarting("[cmd]", line)) LogUtils.doLog(line);
 
             if (isStarting("[cmd]", line)) {
-                String cmd = getTextUtils().parsePrefix("cmd", line.replace("&r", ""));
+                String cmd = textUtils().parsePrefix("cmd", line.replace("&r", ""));
                 boolean isLine = isStarting("[player]", cmd);
 
-                cmd = isLine ? getTextUtils().parsePrefix("player", cmd) : cmd;
+                cmd = isLine ? textUtils().parsePrefix("player", cmd) : cmd;
                 Bukkit.dispatchCommand(isLine ? player : Bukkit.getConsoleSender(), cmd);
             }
             else {
                 if (!isStarting("[player]", line))
-                    for (Player p : Bukkit.getOnlinePlayers()) getTextUtils().sendMessage(p, player, line);
-                else getTextUtils().sendMessage(null, player, getTextUtils().parsePrefix("player", line));
+                    for (Player p : Bukkit.getOnlinePlayers()) textUtils().sendMessage(p, player, line);
+                else textUtils().sendMessage(null, player, textUtils().parsePrefix("player", line));
             }
         }
 

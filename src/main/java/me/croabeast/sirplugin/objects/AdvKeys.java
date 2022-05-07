@@ -113,7 +113,7 @@ public class AdvKeys {
         StringBuilder output = new StringBuilder(desc.length());
 
         int lineLen = 0;
-        String delimiter = SIRPlugin.getTextUtils().lineSeparator();
+        String delimiter = SIRPlugin.textUtils().lineSeparator();
 
         while (tok.hasMoreTokens()) {
             String word = tok.nextToken();

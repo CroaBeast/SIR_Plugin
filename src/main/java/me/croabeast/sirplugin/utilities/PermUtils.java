@@ -8,7 +8,7 @@ import org.bukkit.command.*;
 import org.bukkit.entity.*;
 import org.bukkit.metadata.*;
 
-import static me.croabeast.sirplugin.utilities.Files.*;
+import static me.croabeast.sirplugin.objects.FileCatcher.*;
 
 public final class PermUtils {
 

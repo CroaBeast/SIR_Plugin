@@ -4,14 +4,13 @@ import me.croabeast.beanslib.*;
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.objects.*;
-import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
 import org.bukkit.plugin.java.*;
 import org.jetbrains.annotations.*;
 
 import java.util.regex.*;
 
-import static me.croabeast.sirplugin.utilities.Files.*;
+import static me.croabeast.sirplugin.objects.FileCatcher.*;
 
 public class TextUtils extends BeansLib {
 
@@ -26,29 +25,29 @@ public class TextUtils extends BeansLib {
         return main;
     }
 
-    private String tryString(@Nullable ConfigurationSection section, String path, String def) {
+    private String tryString(@Nullable YMLFile section, String path, String def) {
         if (section == null) return def;
-        return tryCatch(section.getString(path, def), def);
+        return section.getFile().getString(path, def);
     }
 
     @Override
     public @NotNull String langPrefixKey() {
-        return tryString(CONFIG.initialFile(), "values.lang-prefix-key", "<P>");
+        return tryString(CONFIG.initialSource(), "values.lang-prefix-key", "<P>");
     }
 
     @Override
     public @NotNull String langPrefix() {
-        return tryString(LANG.initialFile(), "main-prefix", " &e&lSIR &8>");
+        return tryString(LANG.initialSource(), "main-prefix", " &e&lSIR &8>");
     }
 
     @Override
     public @NotNull String centerPrefix() {
-        return tryString(CONFIG.initialFile(), "values.center-prefix", "<C>");
+        return tryString(CONFIG.initialSource(), "values.center-prefix", "<C>");
     }
 
     @Override
     public @NotNull String lineSeparator() {
-        return Pattern.quote(tryString(CONFIG.initialFile(), "values.line-separator", "<n>"));
+        return Pattern.quote(tryString(CONFIG.initialSource(), "values.line-separator", "<n>"));
     }
 
     @Override
@@ -63,7 +62,7 @@ public class TextUtils extends BeansLib {
 
     @Override
     public String colorize(@Nullable Player player, String line) {
-        if (BaseModule.isEnabled(BaseModule.Identifier.EMOJIS))
+        if (Module.isEnabled(Module.Identifier.EMOJIS))
             line = main.getEmParser().parseEmojis(line);
         return IridiumAPI.process(parsePAPI(player, parseChars(line)));
     }
@@ -88,14 +87,6 @@ public class TextUtils extends BeansLib {
         }
         else i = defaultTitleTicks();
         sendTitle(player, message, i[0], i[1], i[2]);
-    }
-
-    public static <T> T tryCatch(T originalValue, T defaultValue) {
-        try {
-            return originalValue;
-        } catch (Exception e) {
-            return defaultValue;
-        }
     }
 
     public static String parseInsensitiveEach(String line, String[] keys, String[] values) {

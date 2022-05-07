@@ -115,7 +115,7 @@ public final class SIRPlugin extends JavaPlugin {
     public static SIRPlugin getInstance() {
         return instance;
     }
-    public static TextUtils getTextUtils() {
+    public static TextUtils textUtils() {
         return text;
     }
     public static String pluginVersion() {
@@ -137,10 +137,10 @@ public final class SIRPlugin extends JavaPlugin {
     }
 
     public Reporter getReporter() {
-        return (Reporter) Initializer.getModules().get(BaseModule.Identifier.ANNOUNCES);
+        return (Reporter) Initializer.getModules().get(Module.Identifier.ANNOUNCES);
     }
     public EmParser getEmParser() {
-        return (EmParser) Initializer.getModules().get(BaseModule.Identifier.EMOJIS);
+        return (EmParser) Initializer.getModules().get(Module.Identifier.EMOJIS);
     }
 
     public static void registerListener(Listener... listeners) {

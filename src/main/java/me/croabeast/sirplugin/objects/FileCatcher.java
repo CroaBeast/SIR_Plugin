@@ -1,13 +1,12 @@
-package me.croabeast.sirplugin.utilities;
+package me.croabeast.sirplugin.objects;
 
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.objects.YMLFile;
 import org.bukkit.configuration.file.*;
 import org.jetbrains.annotations.*;
 
 import java.util.Objects;
 
-public enum Files {
+public enum FileCatcher {
     // Main files.
     CONFIG,
     LANG,
@@ -37,14 +36,8 @@ public enum Files {
         return Objects.requireNonNull(initialSource());
     }
 
-    @Nullable
-    public FileConfiguration initialFile() {
-        YMLFile file = initialSource();
-        return file == null ? null : file.getFile();
-    }
-
     @NotNull
     public FileConfiguration toFile() {
-        return Objects.requireNonNull(initialFile());
+        return fromSource().getFile();
     }
 }

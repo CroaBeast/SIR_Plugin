@@ -1,15 +1,14 @@
 package me.croabeast.sirplugin.modules;
 
-import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.objects.*;
 import org.bukkit.configuration.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.utilities.Files.*;
+import static me.croabeast.sirplugin.objects.FileCatcher.*;
 
-public class EmParser extends BaseModule {
+public class EmParser extends Module {
 
     protected List<Emoticon> emoticonList = new ArrayList<>();
 

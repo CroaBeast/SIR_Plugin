@@ -13,9 +13,9 @@ import java.util.*;
 import java.util.stream.*;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
-import static me.croabeast.sirplugin.utilities.Files.*;
+import static me.croabeast.sirplugin.objects.FileCatcher.*;
 
-public class Reporter extends BaseModule {
+public class Reporter extends Module {
 
     private final SIRPlugin main;
     private final EventUtils utils;
@@ -66,8 +66,8 @@ public class Reporter extends BaseModule {
         if (!msgs.isEmpty()) {
             if (main.getConfig().getBoolean("options.send-console")) {
                 for (String line : msgs) {
-                    String logLine = getTextUtils().centeredText(null, getTextUtils().stripPrefix(line));
-                    String splitter = getTextUtils().lineSeparator();
+                    String logLine = textUtils().centeredText(null, textUtils().stripPrefix(line));
+                    String splitter = textUtils().lineSeparator();
                     LogUtils.doLog(logLine.replace(splitter, "&f" + splitter));
                 }
             }

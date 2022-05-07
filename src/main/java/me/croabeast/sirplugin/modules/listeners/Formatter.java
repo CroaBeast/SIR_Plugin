@@ -18,10 +18,10 @@ import java.util.*;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
 import static me.croabeast.sirplugin.modules.listeners.Formatter.KeysHandler.*;
-import static me.croabeast.sirplugin.utilities.Files.*;
+import static me.croabeast.sirplugin.objects.FileCatcher.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
-public class Formatter extends BaseModule implements Listener {
+public class Formatter extends Module implements Listener {
 
     private final SIRPlugin main;
     private final EventUtils utils;
@@ -54,7 +54,7 @@ public class Formatter extends BaseModule implements Listener {
         if (!getColored(id, "rgb")) line = IridiumAPI.stripRGB(line);
         if (!getColored(id, "special")) line = IridiumAPI.stripSpecial(line);
         line = line.replace("\\", "\\\\");
-        return getTextUtils().removeSpace(line.replace("$", "\\$"));
+        return textUtils().removeSpace(line.replace("$", "\\$"));
     }
 
     @EventHandler
@@ -67,7 +67,7 @@ public class Formatter extends BaseModule implements Listener {
                 utils.getSection(FORMATS.toFile(), player, "formats");
 
         if (id == null) {
-            getTextUtils().sendMessageList(player, toList(LANG.toFile(), "chat.invalid-format"));
+            textUtils().sendMessageList(player, toList(LANG.toFile(), "chat.invalid-format"));
             return;
         }
 
@@ -93,7 +93,7 @@ public class Formatter extends BaseModule implements Listener {
         if (StringUtils.isBlank(message) &&
                 !MODULES.toFile().getBoolean("chat.allow-empty")) {
             event.setCancelled(true);
-            getTextUtils().sendMessageList(player, toList(LANG.toFile(), "chat.empty-message"));
+            textUtils().sendMessageList(player, toList(LANG.toFile(), "chat.empty-message"));
             return;
         }
 
@@ -131,18 +131,18 @@ public class Formatter extends BaseModule implements Listener {
                 String path = "cooldown.message";
 
                 List<String> list = toList(isDef(id, path), path);
-                getTextUtils().sendMessageList(player, list,
+                textUtils().sendMessageList(player, list,
                         new String[] {"time"}, new String[] {time + ""});
                 return;
             }
         }
 
-        String result = parseInsensitiveEach(getTextUtils().removeSpace(format), keys, values);
+        String result = parseInsensitiveEach(textUtils().removeSpace(format), keys, values);
         boolean isDefault = MODULES.toFile().getBoolean("chat.default-format");
 
         if (isDefault && !IS_JSON.apply(result) && hover.isEmpty() && click == null &&
                 world == null && (radius == null || radius <= 0) && !Initializer.hasIntChat()) {
-            event.setFormat(getTextUtils().centeredText(player, result.replace("%", "%%")));
+            event.setFormat(textUtils().centeredText(player, result.replace("%", "%%")));
             return;
         }
 
@@ -157,7 +157,7 @@ public class Formatter extends BaseModule implements Listener {
         if (Initializer.hasDiscord())
             new Message(player, "chat", keys, values).sendMessage();
 
-        BaseComponent[] component = getTextUtils().stringToJson(player, result, click, hover);
+        BaseComponent[] component = textUtils().stringToJson(player, result, click, hover);
         players.forEach(p -> p.spigot().sendMessage(component));
 
         if (timer != null && timer > 0) timedPlayers.put(player, System.currentTimeMillis());

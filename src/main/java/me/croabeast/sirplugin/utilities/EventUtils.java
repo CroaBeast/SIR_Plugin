@@ -174,8 +174,7 @@ public class EventUtils {
             Matcher match = Pattern.compile("(?i)<ADD_EMPTY:(\\d+)>").matcher(line);
             if (match.find()) {
                 for (int i = 0; i < Integer.parseInt(match.group(1)); i++) {
-                    if (isPublic)
-                        Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(""));
+                    if (isPublic) Bukkit.getOnlinePlayers().forEach(p -> p.sendMessage(""));
                     else sender.sendMessage("");
                 }
                 continue;
@@ -184,21 +183,21 @@ public class EventUtils {
             line = parseInsensitiveEach(line, new String[] {"player", "world"},
                     new String[] {sender.getName(), sender.getWorld().getName()});
 
-            boolean isNot = !BaseModule.isEnabled(BaseModule.Identifier.FORMATS);
+            boolean isNot = !Module.isEnabled(Module.Identifier.FORMATS);
             String[] values = {isNot ? null : getChatValue(sender, "prefix", ""),
                     isNot ? null : getChatValue(sender, "suffix", "")};
 
             line = parseInsensitiveEach(line, new String[] {"prefix", "suffix"}, values);
-            line = getTextUtils().removeSpace(line);
+            line = textUtils().removeSpace(line);
 
             if (doLog && main.getConfig().getBoolean("options.send-console")) {
-                String logLine = getTextUtils().centeredText(sender, getTextUtils().stripPrefix(line));
-                String splitter = getTextUtils().lineSeparator();
+                String logLine = textUtils().centeredText(sender, textUtils().stripPrefix(line));
+                String splitter = textUtils().lineSeparator();
                 LogUtils.doLog(logLine.replace(splitter, "&f" + splitter));
             }
 
-            if (!isPublic) getTextUtils().sendMessage(null, sender, line);
-            else for (Player p : Bukkit.getOnlinePlayers()) getTextUtils().sendMessage(p, sender, line);
+            if (!isPublic) textUtils().sendMessage(null, sender, line);
+            else for (Player p : Bukkit.getOnlinePlayers()) textUtils().sendMessage(p, sender, line);
         }
     }
     
@@ -211,7 +210,7 @@ public class EventUtils {
 
         for (String line : commands) {
             if (line == null || line.equals("")) continue;
-            line = getTextUtils().removeSpace(line);
+            line = textUtils().removeSpace(line);
             boolean isPlayer = isStarting("[player]", line) && player != null;
 
             if (player != null) {
@@ -220,7 +219,7 @@ public class EventUtils {
             }
 
             CommandSender sender = isPlayer ? player : Bukkit.getConsoleSender();
-            String cmd = isPlayer ? getTextUtils().parsePrefix("player", line) : line;
+            String cmd = isPlayer ? textUtils().parsePrefix("player", line) : line;
             Bukkit.dispatchCommand(sender, cmd);
         }
     }

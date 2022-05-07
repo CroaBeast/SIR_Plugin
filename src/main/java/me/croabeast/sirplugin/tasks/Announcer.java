@@ -9,7 +9,7 @@ import org.bukkit.configuration.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.utilities.Files.*;
+import static me.croabeast.sirplugin.objects.FileCatcher.*;
 
 public class Announcer extends BaseCmd {
 

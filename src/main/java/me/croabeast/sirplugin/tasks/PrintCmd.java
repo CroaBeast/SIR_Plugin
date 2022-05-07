@@ -26,8 +26,8 @@ public class PrintCmd extends BaseCmd {
             if (hasNoPerm("print.*")) return true;
             if (args.length == 0) return oneMessage("commands.print.help.main");
 
-            String center = getTextUtils().centerPrefix();
-            String split = getTextUtils().lineSeparator();
+            String center = textUtils().centerPrefix();
+            String split = textUtils().lineSeparator();
 
             if (args[0].matches("(?i)targets")) {
                 if (hasNoPerm("print.targets")) return true;
@@ -56,8 +56,8 @@ public class PrintCmd extends BaseCmd {
 
                 sendReminder(args[1]);
                 if (!targets(args[1]).isEmpty()) {
-                    targets(args[1]).forEach(p -> getTextUtils().
-                            sendActionBar(p, getTextUtils().colorize(p, message)));
+                    targets(args[1]).forEach(p -> textUtils().
+                            sendActionBar(p, textUtils().colorize(p, message)));
                     messageLogger("ACTION-BAR", message);
                 }
             }
@@ -88,7 +88,7 @@ public class PrintCmd extends BaseCmd {
                                     break;
                                 case "MIXED": break;
                             }
-                            p.spigot().sendMessage(getTextUtils().stringToJson(p, s));
+                            p.spigot().sendMessage(textUtils().stringToJson(p, s));
                         }
                     }
 
@@ -108,8 +108,8 @@ public class PrintCmd extends BaseCmd {
                 if (!targets(args[1]).isEmpty()) {
                     targets(args[1]).forEach(p -> {
                         String[] array = args[2].matches("(?i)DEFAULT") ? null : args[2].split(","),
-                                msg = getTextUtils().colorize(p, stripJson(noFormat)).split(split);
-                        getTextUtils().sendTitle(p, msg, array);
+                                msg = textUtils().colorize(p, stripJson(noFormat)).split(split);
+                        textUtils().sendTitle(p, msg, array);
                     });
                     messageLogger("TITLE", noFormat.replace(split, "&r" + split));
                 }

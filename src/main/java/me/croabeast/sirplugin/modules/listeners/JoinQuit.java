@@ -18,10 +18,10 @@ import org.bukkit.scheduler.*;
 import java.util.*;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
-import static me.croabeast.sirplugin.utilities.Files.*;
+import static me.croabeast.sirplugin.objects.FileCatcher.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
-public class JoinQuit extends BaseModule implements Listener {
+public class JoinQuit extends Module implements Listener {
 
     private final SIRPlugin main;
     private final EventUtils utils;

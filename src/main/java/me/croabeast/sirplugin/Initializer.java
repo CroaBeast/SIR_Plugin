@@ -15,7 +15,7 @@ import org.bukkit.plugin.*;
 import java.util.*;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
-import static me.croabeast.sirplugin.utilities.Files.*;
+import static me.croabeast.sirplugin.objects.FileCatcher.*;
 
 public final class Initializer {
 
@@ -29,7 +29,7 @@ public final class Initializer {
             vanishHooks = new ArrayList<>();
 
     static Map<Advancement, AdvKeys> keys = new HashMap<>();
-    static Map<BaseModule.Identifier, BaseModule> moduleMap = new HashMap<>();
+    static Map<Module.Identifier, Module> moduleMap = new HashMap<>();
 
     public Initializer(SIRPlugin main) {
         this.main = main;
@@ -63,7 +63,7 @@ public final class Initializer {
     public static boolean hasDiscord() {
         return Bukkit.getPluginManager().isPluginEnabled("DiscordSRV") &&
                 getInstance().getInitializer().getGuild() != null &&
-                BaseModule.isEnabled(BaseModule.Identifier.DISCORD);
+                Module.isEnabled(Module.Identifier.DISCORD);
     }
 
     public static boolean hasLogin() {
@@ -180,7 +180,7 @@ public final class Initializer {
             LogUtils.doLog("&bRegistering all the advancement values...");
         }
 
-        if (BaseModule.isEnabled(BaseModule.Identifier.ADVANCES)) {
+        if (Module.isEnabled(Module.Identifier.ADVANCES)) {
             for (World world : main.getServer().getWorlds()) {
                 if (MAJOR_VERSION == 12) {
                     world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "false");
@@ -203,9 +203,7 @@ public final class Initializer {
 
             if (key.contains("root") || key.contains("recipes")) continue;
 
-            FileConfiguration advances = ADVANCES.initialFile();
-            if (advances == null) continue;
-
+            FileConfiguration advances = ADVANCES.toFile();
             boolean notContained = !advances.contains(key);
 
             switch (type.toUpperCase()) {
@@ -261,7 +259,7 @@ public final class Initializer {
     @SuppressWarnings("deprecation")
     public void unloadAdvances(boolean reload) {
         if (MAJOR_VERSION < 12) return;
-        if (BaseModule.isEnabled(BaseModule.Identifier.ADVANCES) && reload) return;
+        if (Module.isEnabled(Module.Identifier.ADVANCES) && reload) return;
 
         for (World world : main.getServer().getWorlds()) {
             if (MAJOR_VERSION == 12) {
@@ -274,10 +272,10 @@ public final class Initializer {
         LogUtils.doLog("&eAll worlds have default advancements enabled.");
     }
 
-    public void registerModules(BaseModule... baseModules) {
-        for (BaseModule baseModule : baseModules) {
-            moduleMap.put(baseModule.getIdentifier(), baseModule);
-            baseModule.registerModule();
+    public void registerModules(Module... modules) {
+        for (Module module : modules) {
+            moduleMap.put(module.getIdentifier(), module);
+            module.registerModule();
         }
     }
 
@@ -294,7 +292,7 @@ public final class Initializer {
         return permProvider;
     }
 
-    public static Map<BaseModule.Identifier, BaseModule> getModules() {
+    public static Map<Module.Identifier, Module> getModules() {
         return moduleMap;
     }
 

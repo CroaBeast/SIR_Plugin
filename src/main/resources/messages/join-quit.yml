@@ -2,9 +2,7 @@ first-join:
   1:
     sound: 'ENTITY_PLAYER_LEVELUP' # 1.17 sound, check above for more sounds.
     public:
-      - '&7[+] &#652155Welcome {PLAYER} to this server for the first time.'
-    private:
-      - '<C>Welcome, {PLAYER}. u r butiful'
+      - '&8[&6NEW&8] &7Welcome &e{player} &7to the server for the first time!'
     invulnerable: 3
     spawn:
       world: world
@@ -13,13 +11,7 @@ join:
     permission: DEFAULT
     sound: 'ENTITY_PLAYER_LEVELUP' # 1.17 sound, check above for more sounds.
     public:
-      - '&7[+] <G:af1231>Welcome {player} to this server.</G:909872>'
-      - '<C><hover=[&7Hover me pls<n>&#D23ab0Works with RGB]>This is a text component owo.</text> <suggest=[/say hi]><R:1>Click me pls</R></text>'
-    private:
-      - '<C><R:1>Check out all my socials :D</R>'
-    commands:
-      - '[PLAYER] me hi me, I''m {player}'
-      - 'say hello {PLAYER} from {world}'
+      - '&8[&a+&8] &7Welcome &e{player} &7to the server!'
     invulnerable: 3
     spawn:
       world: world
@@ -28,17 +20,17 @@ join:
   2:
     permission: join.vip
     public:
-      - '[ACTION-BAR] &7Hello VIP {PLAYER} from world {WORLD}.'
+      - '&8[&a+&8] &7Welcome &b&lVIP &e{player} &7to the server!'
     private:
-      - '&7Please be a good person.'
+      - '<R:1>Thanks for playing here :D</R>'
   3:
     permission: join.pro
     priority: 2
     public:
-      - '[TITLE] <G:2C08BA>Hello PRO {PLAYER}</G:028A97><n><G:2C08BA>from world {WORLD}.</G:028A97>'
+      - '&8[&a+&8] &7Welcome &d&lPRO &e{player} &7to the server!'
     private:
-      - '&7You are extraordinary, please continue.'
+      - '[TITLE] <G:2C08BA>Hello PRO {PLAYER}</G:028A97><n><G:2C08BA>from world {WORLD}.</G:028A97>'
 quit:
   1:
     public:
-      - '&7[-] {#AFF66A}The player {PLAYER} has left the server :c'
+      - '&8[&c-&8] &e{player} &7has left the server.'

@@ -12,9 +12,9 @@ import org.bukkit.event.player.*;
 import java.util.*;
 import java.util.regex.*;
 
-import static me.croabeast.sirplugin.utilities.Files.*;
+import static me.croabeast.sirplugin.objects.FileCatcher.*;
 
-public class ChatFilter extends BaseModule implements Listener {
+public class ChatFilter extends Module implements Listener {
 
     private final SIRPlugin main;
 

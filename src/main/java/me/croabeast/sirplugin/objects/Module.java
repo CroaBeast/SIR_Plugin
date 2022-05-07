@@ -1,11 +1,11 @@
 package me.croabeast.sirplugin.objects;
 
-import static me.croabeast.sirplugin.utilities.Files.MODULES;
+import static me.croabeast.sirplugin.objects.FileCatcher.MODULES;
 
 /**
  * This class represents a module used for each feature.
  */
-public abstract class BaseModule {
+public abstract class Module {
 
     /**
      * Checks if the module is enabled in modules.yml
@@ -43,7 +43,7 @@ public abstract class BaseModule {
         /**
          * For join and quit messages.
          */
-        JOIN_QUIT("join-quit"),
+        JOIN_QUIT,
         /**
          * For global announcements.
          */
@@ -74,32 +74,12 @@ public abstract class BaseModule {
         FILTERS;
 
         /**
-         * The module's name.
-         */
-        private final String name;
-
-        /**
-         * Basic Identifier constructor.
-         */
-        Identifier() {
-            this.name = name().toLowerCase();
-        }
-
-        /**
-         * Basic Identifier constructor.
-         * @param name the module's name.
-         */
-        Identifier(String name) {
-            this.name = name;
-        }
-
-        /**
          * Converts the identifier to its name.
          * @return the module's name.
          */
         @Override
         public String toString() {
-            return name;
+            return name().toLowerCase().replace("_", "-");
         }
     }
 }

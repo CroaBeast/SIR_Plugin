@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.stream.*;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
-import static me.croabeast.sirplugin.utilities.Files.*;
+import static me.croabeast.sirplugin.objects.FileCatcher.*;
 
 public class CmdUtils {
 
@@ -31,11 +31,11 @@ public class CmdUtils {
     }
     
     protected void sendMessage(String path, String key, String value) {
-        getTextUtils().sendMessageList(sender, LANG.toFile(), path, new String[] {key}, new String[] {value});
+        textUtils().sendMessageList(sender, LANG.toFile(), path, new String[] {key}, new String[] {value});
     }
 
     protected boolean oneMessage(String path, String[] keys, String[] values) {
-        getTextUtils().sendMessageList(sender, LANG.toFile(), path, keys, values);
+        textUtils().sendMessageList(sender, LANG.toFile(), path, keys, values);
         return true;
     }
 
@@ -120,7 +120,7 @@ public class CmdUtils {
     protected void messageLogger(String type, String line) {
         String start = LANG.toFile().getString("logger.header");
         if (start == null || start.equals("")) return;
-        line = getTextUtils().colorize(null, line);
+        line = textUtils().colorize(null, line);
         LogUtils.doLog(start, "&7[" + type + "] " + line);
     }
 

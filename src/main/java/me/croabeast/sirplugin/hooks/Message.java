@@ -14,7 +14,7 @@ import org.jetbrains.annotations.*;
 import java.time.*;
 import java.util.*;
 
-import static me.croabeast.sirplugin.utilities.Files.*;
+import static me.croabeast.sirplugin.objects.FileCatcher.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
 public class Message {
@@ -57,9 +57,17 @@ public class Message {
         return line != null && StringUtils.isBlank(line);
     }
 
+    private <T> T tryCatch(T originalValue, T defaultValue) {
+        try {
+            return originalValue;
+        } catch (Exception e) {
+            return defaultValue;
+        }
+    }
+
     @Nullable
     private TextChannel getChannel() {
-        return TextUtils.tryCatch(Objects.requireNonNull(main.getInitializer().
+        return tryCatch(Objects.requireNonNull(main.getInitializer().
                 getGuild()).getTextChannelById(MODULES.toFile().
                 getString("discord.channels." + this.channel, "")), null);
     }
@@ -68,7 +76,7 @@ public class Message {
         int color = Color.BLACK.asRGB();
         String rgb = DISCORD.toFile().getString(embedPath + ".color", "BLACK");
         try {
-            return TextUtils.tryCatch(java.awt.Color.decode(rgb).getRGB(),
+            return tryCatch(java.awt.Color.decode(rgb).getRGB(),
                     ((Color) Class.forName("org.bukkit.Color").getField(rgb).get(null)).asRGB());
         } catch (Exception e) {
             LogUtils.doLog(

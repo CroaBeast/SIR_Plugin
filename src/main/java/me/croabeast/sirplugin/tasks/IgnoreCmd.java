@@ -1,7 +1,6 @@
 package me.croabeast.sirplugin.tasks;
 
 import com.google.common.collect.*;
-import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
@@ -11,7 +10,7 @@ import org.jetbrains.annotations.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.utilities.Files.*;
+import static me.croabeast.sirplugin.objects.FileCatcher.*;
 
 public class IgnoreCmd extends BaseCmd {
 
@@ -25,7 +24,7 @@ public class IgnoreCmd extends BaseCmd {
         uuid += "." + (isChat ? "all-chat" : "all-msg");
 
         IGNORE.toFile().set("data." + uuid, value);
-        IGNORE.fromSource().saveFile();
+        IGNORE.fromSource().saveFile(false);
 
         String path = "commands.ignore." + (value ? "success" : "remove");
         return oneMessage(path + ".all", "type", key);
@@ -40,7 +39,7 @@ public class IgnoreCmd extends BaseCmd {
         else list.remove(target);
 
         IGNORE.toFile().set("data." + uuid, list);
-        IGNORE.fromSource().saveFile();
+        IGNORE.fromSource().saveFile(false);
 
         String path = "commands.ignore." + (add ? "success" : "remove");
         return oneMessage(path + "player", keys, values);

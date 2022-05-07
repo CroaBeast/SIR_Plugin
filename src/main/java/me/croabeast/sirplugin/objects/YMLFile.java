@@ -76,7 +76,7 @@ public class YMLFile {
      * Gets the raw file inside the plugin's folder.
      * @return the requested file.
      */
-    private File catchFile() {
+    public File catchFile() {
         if (folder != null) {
             File file = new File(main.getDataFolder(), folder);
             if (!file.exists()) file.mkdirs();
@@ -103,25 +103,36 @@ public class YMLFile {
     /**
      * Saves the file to update new set values.
      * It will delete all the file's comments.
+     * @param doLog if you want to show output when the file is saved
      */
-    public void saveFile() {
+    public void saveFile(boolean doLog) {
         if (this.file == null || this.rawYmlFile == null) return;
 
         try {
             this.getFile().save(this.catchFile());
         }
         catch (Exception e) {
-            LogUtils.doLog("&7The &e" + location + "&7 file&c couldn't be saved&7.");
-            e.printStackTrace();
+            if (doLog) {
+                LogUtils.doLog("&7The &e" + location + "&7 file&c couldn't be saved&7.");
+                e.printStackTrace();
+            }
         }
 
-        LogUtils.doLog("&7The &e" + location + "&7 file has been&a saved&7.");
+        if (doLog) LogUtils.doLog("&7The &e" + location + "&7 file has been&a saved&7.");
+    }
+
+    /**
+     * Saves the file to update new set values.
+     * It will delete all the file's comments.
+     */
+    public void saveFile() {
+        saveFile(true);
     }
 
     /**
      * Tries the file to change all the old values from older versions to newer versions.
      */
-    private void updatingFile() {
+    public void updateFile() {
         try {
             ConfigUpdater.update(main, location, catchFile());
             if (SIRPlugin.MAJOR_VERSION < 13)
@@ -146,12 +157,8 @@ public class YMLFile {
         main.saveResource(location, false);
     }
 
-    /**
-     * Updates the file if its update is enabled.
-     */
-    public void updateInitFile() {
-        if (main.getConfig().getStringList("updater.files").
-                contains(name)) updatingFile();
-        reloadFile();
+    @Override
+    public String toString() {
+        return name;
     }
 }

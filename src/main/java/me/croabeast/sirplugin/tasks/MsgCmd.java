@@ -8,7 +8,7 @@ import org.bukkit.entity.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.utilities.Files.*;
+import static me.croabeast.sirplugin.objects.FileCatcher.*;
 
 public class MsgCmd extends BaseCmd {
 
@@ -52,9 +52,9 @@ public class MsgCmd extends BaseCmd {
             String[] values1 = {args[0], message};
             String[] values2 = {isConsole(sender), message};
 
-            SIRPlugin.getTextUtils().sendMessageList(sender, LANG.toFile(),
+            SIRPlugin.textUtils().sendMessageList(sender, LANG.toFile(),
                     path + "sender", new String[] {"receiver", "message"}, values1);
-            SIRPlugin.getTextUtils().sendMessageList(target, LANG.toFile(),
+            SIRPlugin.textUtils().sendMessageList(target, LANG.toFile(),
                     path + "receiver", new String[] {"sender", "message"}, values2);
             return false;
         };
