@@ -121,7 +121,7 @@ public class Reporter extends Module {
     }
 
     public int getDelay() {
-        return ANNOUNCES.toFile().getInt("announces.interval", 1200);
+        return MODULES.toFile().getInt("announces.interval");
     }
 
     public void cancelTask() {

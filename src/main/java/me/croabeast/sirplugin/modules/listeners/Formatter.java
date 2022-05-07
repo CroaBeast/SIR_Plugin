@@ -1,5 +1,6 @@
 package me.croabeast.sirplugin.modules.listeners;
 
+import com.Zrips.CMI.Containers.CMIUser;
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.hooks.*;
@@ -61,6 +62,9 @@ public class Formatter extends Module implements Listener {
     private void onChat(AsyncPlayerChatEvent event) {
         if (event.isCancelled()) return;
         if (!isEnabled()) return;
+
+        if (Bukkit.getPluginManager().isPluginEnabled("CMI") &&
+                CMIUser.getUser(event.getPlayer()).isMuted()) return;
 
         Player player = event.getPlayer();
         ConfigurationSection id =
