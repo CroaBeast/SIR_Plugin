@@ -1,9 +1,9 @@
 package me.croabeast.sirplugin.modules.listeners;
 
-import com.Zrips.CMI.Containers.CMIUser;
+import com.Zrips.CMI.Containers.*;
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.hooks.*;
+import me.croabeast.sirplugin.hooks.discord.Message;
 import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.utilities.*;
 import net.md_5.bungee.api.chat.*;
@@ -19,7 +19,7 @@ import java.util.*;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
 import static me.croabeast.sirplugin.modules.listeners.Formatter.KeysHandler.*;
-import static me.croabeast.sirplugin.objects.FileCatcher.*;
+import static me.croabeast.sirplugin.objects.FileCache.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
 public class Formatter extends Module implements Listener {
@@ -145,7 +145,8 @@ public class Formatter extends Module implements Listener {
         boolean isDefault = MODULES.toFile().getBoolean("chat.default-format");
 
         if (isDefault && !IS_JSON.apply(result) && hover.isEmpty() && click == null &&
-                world == null && (radius == null || radius <= 0) && !Initializer.hasIntChat()) {
+                world == null && (radius == null || radius <= 0) &&
+                !Bukkit.getPluginManager().isPluginEnabled("InteractiveChat")) {
             event.setFormat(textUtils().centeredText(player, result.replace("%", "%%")));
             return;
         }

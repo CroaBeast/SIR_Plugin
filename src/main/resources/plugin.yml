@@ -25,7 +25,7 @@ commands:
   announcer:
     aliases: [ broadcast, bc ]
   msg:
-    aliases: [ m ]
+    aliases: [ m, tell ]
   reply:
     aliases: [ r ]
   ignore:

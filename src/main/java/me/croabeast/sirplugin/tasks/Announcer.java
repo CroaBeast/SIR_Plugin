@@ -9,7 +9,7 @@ import org.bukkit.configuration.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.objects.FileCatcher.*;
+import static me.croabeast.sirplugin.objects.FileCache.*;
 
 public class Announcer extends BaseCmd {
 
@@ -86,11 +86,11 @@ public class Announcer extends BaseCmd {
     protected TabCompleter getCompleter() {
         return (sender, command, alias, args) -> {
             setArgs(args);
-            if (args.length == 1) return resultTab("start", "preview", "cancel", "reboot");
+            if (args.length == 1) return resultList("start", "preview", "cancel", "reboot");
 
             if(args.length == 2 && args[0].matches("(?i)preview")) {
                 ConfigurationSection id = ANNOUNCES.toFile().getConfigurationSection("announces");
-                return id == null ? resultTab("NOT_FOUND") : resultTab(id.getKeys(false));
+                return id == null ? resultList("NOT_FOUND") : resultList(id.getKeys(false));
             }
 
             return new ArrayList<>();

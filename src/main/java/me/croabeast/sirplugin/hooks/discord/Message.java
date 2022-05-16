@@ -1,5 +1,6 @@
-package me.croabeast.sirplugin.hooks;
+package me.croabeast.sirplugin.hooks.discord;
 
+import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.*;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
 import github.scarsz.discordsrv.util.*;
@@ -12,14 +13,11 @@ import org.bukkit.entity.*;
 import org.jetbrains.annotations.*;
 
 import java.time.*;
-import java.util.*;
 
-import static me.croabeast.sirplugin.objects.FileCatcher.*;
+import static me.croabeast.sirplugin.objects.FileCache.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
 public class Message {
-
-    private final SIRPlugin main = SIRPlugin.getInstance();
 
     private final Player player;
     private final String channel, embedPath;
@@ -67,8 +65,11 @@ public class Message {
 
     @Nullable
     private TextChannel getChannel() {
-        return tryCatch(Objects.requireNonNull(main.getInitializer().
-                getGuild()).getTextChannelById(MODULES.toFile().
+        String guildName = MODULES.toFile().getString("discord.server-id", "");
+        Guild guild = DiscordSRV.getPlugin().getJda().getGuildById(guildName);
+
+        if (guild == null) return null;
+        return tryCatch(guild.getTextChannelById(MODULES.toFile().
                 getString("discord.channels." + this.channel, "")), null);
     }
 

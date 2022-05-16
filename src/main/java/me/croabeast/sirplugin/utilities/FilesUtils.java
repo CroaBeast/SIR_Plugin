@@ -9,7 +9,7 @@ import org.jetbrains.annotations.*;
 import java.io.*;
 import java.util.*;
 
-import static me.croabeast.sirplugin.objects.FileCatcher.*;
+import static me.croabeast.sirplugin.objects.FileCache.*;
 import static me.croabeast.sirplugin.utilities.FilesUtils.Folder.*;
 import static me.croabeast.sirplugin.utilities.LogUtils.*;
 

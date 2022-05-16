@@ -12,7 +12,7 @@ import org.bukkit.event.player.*;
 import java.util.*;
 import java.util.regex.*;
 
-import static me.croabeast.sirplugin.objects.FileCatcher.*;
+import static me.croabeast.sirplugin.objects.FileCache.*;
 
 public class ChatFilter extends Module implements Listener {
 

@@ -45,7 +45,6 @@ options:
 
 # You can delete the values' section if you want to use the hard-coded values!
 values:
-  # ONLY FOR lang.yml file!!
   # Every message that start with this string, will have the main-prefix.
   lang-prefix-key: '<P>'
   # Valid only in SIR files or inputs that accept centered messages.

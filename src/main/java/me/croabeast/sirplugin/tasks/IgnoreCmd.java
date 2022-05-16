@@ -10,7 +10,7 @@ import org.jetbrains.annotations.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.objects.FileCatcher.*;
+import static me.croabeast.sirplugin.objects.FileCache.*;
 
 public class IgnoreCmd extends BaseCmd {
 
@@ -32,7 +32,7 @@ public class IgnoreCmd extends BaseCmd {
 
     private boolean setList(List<String> list, String[] values, String target, String uuid, boolean isChat) {
         boolean add = list.isEmpty() || !list.contains(target);
-        String[] keys = {"target", "type"};
+        String[] keys = {"{target}", "{type}"};
         uuid += "." + (isChat ? "chat" : "msg");
 
         if (add) list.add(target);
@@ -42,7 +42,8 @@ public class IgnoreCmd extends BaseCmd {
         IGNORE.fromSource().saveFile(false);
 
         String path = "commands.ignore." + (add ? "success" : "remove");
-        return oneMessage(path + "player", keys, values);
+        oneMessage(path + "player", keys, values);
+        return true;
     }
 
     @Override
@@ -106,8 +107,8 @@ public class IgnoreCmd extends BaseCmd {
     protected TabCompleter getCompleter() {
         return (sender, command, alias, args) -> {
             setArgs(args);
-            if (args.length == 1) return resultTab("chat", "msg");
-            if (args.length == 2) return resultTab(onlinePlayers(), Lists.newArrayList("@a"));
+            if (args.length == 1) return resultList("chat", "msg");
+            if (args.length == 2) return resultList(onlinePlayers(), Lists.newArrayList("@a"));
             return new ArrayList<>();
         };
     }

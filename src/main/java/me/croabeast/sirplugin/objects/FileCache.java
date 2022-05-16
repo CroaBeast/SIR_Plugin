@@ -6,7 +6,7 @@ import org.jetbrains.annotations.*;
 
 import java.util.Objects;
 
-public enum FileCatcher {
+public enum FileCache {
     // Main files.
     CONFIG,
     LANG,

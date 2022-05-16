@@ -1,6 +1,6 @@
 package me.croabeast.sirplugin.objects;
 
-import static me.croabeast.sirplugin.objects.FileCatcher.MODULES;
+import static me.croabeast.sirplugin.objects.FileCache.MODULES;
 
 /**
  * This class represents a module used for each feature.
@@ -13,8 +13,7 @@ public abstract class Module {
      * @return if the specified module is enabled.
      */
     public static boolean isEnabled(Identifier identifier) {
-        String name = identifier.toString().toLowerCase();
-        return MODULES.toFile().getStringList("modules").contains(name);
+        return MODULES.toFile().getStringList("modules").contains(identifier + "");
     }
 
     /**

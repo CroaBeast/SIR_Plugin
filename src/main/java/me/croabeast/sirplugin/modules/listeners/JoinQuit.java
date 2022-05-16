@@ -3,7 +3,7 @@ package me.croabeast.sirplugin.modules.listeners;
 import me.croabeast.beanslib.terminals.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.events.*;
-import me.croabeast.sirplugin.hooks.*;
+import me.croabeast.sirplugin.hooks.discord.Message;
 import me.croabeast.sirplugin.hooks.login.*;
 import me.croabeast.sirplugin.hooks.vanish.*;
 import me.croabeast.sirplugin.objects.*;
@@ -18,7 +18,7 @@ import org.bukkit.scheduler.*;
 import java.util.*;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
-import static me.croabeast.sirplugin.objects.FileCatcher.*;
+import static me.croabeast.sirplugin.objects.FileCache.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
 public class JoinQuit extends Module implements Listener {
@@ -263,7 +263,7 @@ public class JoinQuit extends Module implements Listener {
                     utils.sendMessages(player, toList(id, "public"), true);
                     if (isJoin) {
                         utils.sendMessages(player, toList(id, "private"), false);
-                        utils.playSound(player, id.getString("sound"));
+                        EventUtils.playSound(player, id.getString("sound"));
                         utils.giveInvulnerable(player, id.getInt("invulnerable"));
                         if (doSpawn) utils.teleportPlayer(id, player);
                     }

@@ -16,7 +16,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import static me.croabeast.sirplugin.objects.FileCatcher.*;
+import static me.croabeast.sirplugin.objects.FileCache.*;
 
 public class ServerList extends Module implements Listener {
 
@@ -50,7 +50,7 @@ public class ServerList extends Module implements Listener {
 
     @Nullable
     private ConfigurationSection getList() {
-        return FileCatcher.MOTD.toFile().getConfigurationSection("motds");
+        return FileCache.MOTD.toFile().getConfigurationSection("motds");
     }
 
     private Player getPlayerFromIP() {

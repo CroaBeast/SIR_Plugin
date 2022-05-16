@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.stream.*;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
-import static me.croabeast.sirplugin.objects.FileCatcher.*;
+import static me.croabeast.sirplugin.objects.FileCache.*;
 
 public class Reporter extends Module {
 

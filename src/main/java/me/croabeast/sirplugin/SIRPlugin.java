@@ -6,6 +6,8 @@ import me.croabeast.sirplugin.modules.listeners.*;
 import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.objects.analytics.*;
 import me.croabeast.sirplugin.tasks.*;
+import me.croabeast.sirplugin.tasks.message.MsgCmd;
+import me.croabeast.sirplugin.tasks.message.ReplyCmd;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.boss.*;
@@ -16,8 +18,6 @@ import org.bukkit.plugin.java.*;
 public final class SIRPlugin extends JavaPlugin {
 
     private static SIRPlugin instance;
-
-    private Initializer init;
 
     private FilesUtils files;
     private EventUtils utils;
@@ -42,7 +42,7 @@ public final class SIRPlugin extends JavaPlugin {
         files = new FilesUtils(this);
         utils = new EventUtils(this);
 
-        init = new Initializer(this);
+        Initializer init = new Initializer(this);
         amender = new Amender(this);
 
         pluginHeader();
@@ -78,7 +78,7 @@ public final class SIRPlugin extends JavaPlugin {
         LogUtils.rawLog("");
 
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
-            init.loadAdvances(true);
+            Initializer.loadAdvances(true);
             amender.initUpdater(null);
         });
     }
@@ -87,7 +87,7 @@ public final class SIRPlugin extends JavaPlugin {
     public void onDisable() {
         pluginHeader();
 
-        init.unloadAdvances(false);
+        Initializer.unloadAdvances(false);
         getReporter().cancelTask();
 
         for (Player player : Bukkit.getOnlinePlayers()) {
@@ -97,9 +97,9 @@ public final class SIRPlugin extends JavaPlugin {
 
         LogUtils.doLog(
                 "&7The announcement task has been stopped.",
-                "&7SIR &c" + pluginVersion + "&7 was totally disabled.",
-                "&7Hope we can see you again&c nwn"
+                "&7SIR &c" + pluginVersion + "&7 was totally disabled."
         );
+        LogUtils.rawLog("");
 
         instance = null;
     }
@@ -118,13 +118,11 @@ public final class SIRPlugin extends JavaPlugin {
     public static TextUtils textUtils() {
         return text;
     }
+
     public static String pluginVersion() {
         return pluginVersion;
     }
 
-    public Initializer getInitializer() {
-        return init;
-    }
     public Amender getAmender() {
         return amender;
     }
@@ -148,7 +146,7 @@ public final class SIRPlugin extends JavaPlugin {
             Bukkit.getPluginManager().registerEvents(listener, instance);
     }
 
-    public void registerCommands(BaseCmd... cmds) {
+    private void registerCommands(BaseCmd... cmds) {
         for (BaseCmd cmd : cmds) cmd.registerCommand();
     }
 }

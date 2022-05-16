@@ -1,8 +1,7 @@
 package me.croabeast.sirplugin;
 
 import com.google.common.collect.*;
-import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
-import github.scarsz.discordsrv.util.*;
+import me.croabeast.advancementinfo.AdvancementInfo;
 import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.objects.analytics.*;
 import me.croabeast.sirplugin.utilities.*;
@@ -15,7 +14,7 @@ import org.bukkit.plugin.*;
 import java.util.*;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
-import static me.croabeast.sirplugin.objects.FileCatcher.*;
+import static me.croabeast.sirplugin.objects.FileCache.*;
 
 public final class Initializer {
 
@@ -28,7 +27,7 @@ public final class Initializer {
     static List<String> loginHooks = new ArrayList<>(),
             vanishHooks = new ArrayList<>();
 
-    static Map<Advancement, AdvKeys> keys = new HashMap<>();
+    static Map<Advancement, AdvancementInfo> keys = new HashMap<>();
     static Map<Module.Identifier, Module> moduleMap = new HashMap<>();
 
     public Initializer(SIRPlugin main) {
@@ -50,20 +49,15 @@ public final class Initializer {
         return true;
     }
 
-    public static boolean hasPAPI() {
+    private boolean hasPAPI() {
         return Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
     }
     public static boolean hasVault() {
         return Bukkit.getPluginManager().isPluginEnabled("Vault");
     }
-    public static boolean hasIntChat() {
-        return Bukkit.getPluginManager().isPluginEnabled("InteractiveChat");
-    }
 
     public static boolean hasDiscord() {
-        return Bukkit.getPluginManager().isPluginEnabled("DiscordSRV") &&
-                getInstance().getInitializer().getGuild() != null &&
-                Module.isEnabled(Module.Identifier.DISCORD);
+        return Bukkit.getPluginManager().isPluginEnabled("DiscordSRV") && Module.isEnabled(Module.Identifier.DISCORD);
     }
 
     public static boolean hasLogin() {
@@ -78,6 +72,7 @@ public final class Initializer {
 
         metrics.addCustomChart(new Metrics.SimplePie("hasPAPI", () -> hasPAPI() + ""));
         metrics.addCustomChart(new Metrics.SimplePie("hasVault", () -> hasVault() + ""));
+
         metrics.addCustomChart(new Metrics.SimplePie("hasDiscord", () ->
                 (Bukkit.getPluginManager().isPluginEnabled("DiscordSRV")) + ""));
 
@@ -146,10 +141,7 @@ public final class Initializer {
         }
 
         if (hasDiscord()) {
-            LogUtils.doLog("&7DiscordSRV: " + "&eFound v. " + pluginVersion("DiscordSRV") +
-                    (getGuild() != null ? " &7[" + getGuild().getName() + " by " +
-                            Objects.requireNonNull(getGuild().getOwner()).getEffectiveName() + "]" :
-                            " &c[Invalid SERVER_ID]"));
+            LogUtils.doLog("&7DiscordSRV: " + "&eFound v. " + pluginVersion("DiscordSRV"));
             logLines++;
         }
 
@@ -170,7 +162,7 @@ public final class Initializer {
     }
 
     @SuppressWarnings("deprecation")
-    public void loadAdvances(boolean debug) {
+    public static void loadAdvances(boolean debug) {
         if (MAJOR_VERSION < 12) return;
         if (!keys.isEmpty()) keys.clear();
 
@@ -181,7 +173,7 @@ public final class Initializer {
         }
 
         if (Module.isEnabled(Module.Identifier.ADVANCES)) {
-            for (World world : main.getServer().getWorlds()) {
+            for (World world : Bukkit.getServer().getWorlds()) {
                 if (MAJOR_VERSION == 12) {
                     world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "false");
                     continue;
@@ -196,7 +188,7 @@ public final class Initializer {
                 challenges = new ArrayList<>(), errors = new ArrayList<>(), keys = new ArrayList<>();
 
         for (Advancement adv : getAdvancements()) {
-            Initializer.keys.put(adv, new AdvKeys(adv));
+            Initializer.keys.put(adv, new AdvancementInfo(adv));
 
             String key = TextUtils.stringKey(adv.getKey().toString());
             final String type = Initializer.keys.get(adv).getFrameType();
@@ -257,11 +249,11 @@ public final class Initializer {
     }
 
     @SuppressWarnings("deprecation")
-    public void unloadAdvances(boolean reload) {
+    public static void unloadAdvances(boolean reload) {
         if (MAJOR_VERSION < 12) return;
         if (Module.isEnabled(Module.Identifier.ADVANCES) && reload) return;
 
-        for (World world : main.getServer().getWorlds()) {
+        for (World world : Bukkit.getServer().getWorlds()) {
             if (MAJOR_VERSION == 12) {
                 world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "true");
                 continue;
@@ -279,11 +271,6 @@ public final class Initializer {
         }
     }
 
-    public Guild getGuild() {
-        String guild = MODULES.toFile().getString("discord.server-id", "");
-        return DiscordUtil.getJda().getGuildById(guild);
-    }
-
     public static List<Advancement> getAdvancements() {
         return Lists.newArrayList(Bukkit.getServer().advancementIterator());
     }
@@ -296,7 +283,7 @@ public final class Initializer {
         return moduleMap;
     }
 
-    public static Map<Advancement, AdvKeys> getKeys() {
+    public static Map<Advancement, AdvancementInfo> getKeys() {
         return keys;
     }
 }

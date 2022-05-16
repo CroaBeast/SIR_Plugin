@@ -26,13 +26,7 @@ public class YMLFile {
     /**
      * The location of the file with its extension.
      */
-    private String location;
-
-    /**
-     * The file's folder. If the file is in a custom folder,
-     * it will return its name, otherwise will be null.
-     */
-    private String folder = null;
+    private final String location;
 
     /**
      * The configuration file used to get the values.
@@ -65,8 +59,11 @@ public class YMLFile {
     public YMLFile(JavaPlugin main, String name, String folder) {
         this.main = main;
         this.name = name;
-        this.location = name + ".yml";
-        this.folder = folder;
+
+        File folderFile = new File(main.getDataFolder(), folder);
+        if (folderFile.exists()) folderFile.mkdirs();
+
+        this.location = folder + File.separator + name + ".yml";
 
         saveDefaultFile();
         file = YamlConfiguration.loadConfiguration(catchFile());
@@ -77,11 +74,6 @@ public class YMLFile {
      * @return the requested file.
      */
     public File catchFile() {
-        if (folder != null) {
-            File file = new File(main.getDataFolder(), folder);
-            if (!file.exists()) file.mkdirs();
-            return new File(file, location);
-        }
         return new File(main.getDataFolder(), location);
     }
 
@@ -152,7 +144,6 @@ public class YMLFile {
         if (rawYmlFile == null) rawYmlFile = catchFile();
         if (rawYmlFile.exists()) return;
 
-        if (folder != null) location = folder + File.separator + location;
         LogUtils.doLog("&cFile " + location + " missing... &7Generating!");
         main.saveResource(location, false);
     }

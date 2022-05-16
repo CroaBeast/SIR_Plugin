@@ -10,7 +10,7 @@ import org.jetbrains.annotations.*;
 
 import java.util.regex.*;
 
-import static me.croabeast.sirplugin.objects.FileCatcher.*;
+import static me.croabeast.sirplugin.objects.FileCache.*;
 
 public class TextUtils extends BeansLib {
 

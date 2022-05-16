@@ -1,7 +1,8 @@
 package me.croabeast.sirplugin.modules.listeners;
 
+import me.croabeast.advancementinfo.*;
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.hooks.*;
+import me.croabeast.sirplugin.hooks.discord.*;
 import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.apache.commons.lang.*;
@@ -10,11 +11,12 @@ import org.bukkit.advancement.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.player.*;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
-import static me.croabeast.sirplugin.objects.FileCatcher.*;
+import static me.croabeast.sirplugin.objects.FileCache.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
 public class Advances extends Module implements Listener {
@@ -35,14 +37,14 @@ public class Advances extends Module implements Listener {
         SIRPlugin.registerListener(this);
     }
 
-    private void sendAdvSection(Player player, String path, String type, String name, String desc) {
+    private void sendAdvSection(Player player, String... args) {
         String[] keys = {"player", "adv", "description", "type", "low-type", "cap-type"};
         String[] values = {
-                player.getName() + "&r", name + "&r", desc + "&r", type + "&r",
-                type.toLowerCase() + "&r", WordUtils.capitalizeFully(type) + "&r"
+                player.getName() + "&r", args[2] + "&r", args[3] + "&r", args[1] + "&r",
+                args[1].toLowerCase() + "&r", WordUtils.capitalizeFully(args[1]) + "&r"
         };
 
-        List<String> messages = toList(ADVANCES.toFile(), path);
+        List<String> messages = toList(ADVANCES.toFile(), args[0]);
         if (messages.isEmpty()) return;
 
         for (String line : messages) {
@@ -96,7 +98,7 @@ public class Advances extends Module implements Listener {
         Advancement adv = event.getAdvancement();
         if (!Initializer.getAdvancements().contains(adv)) return;
 
-        AdvKeys handler = Initializer.getKeys().get(adv);
+        AdvancementInfo info = Initializer.getKeys().get(adv);
         String key = adv.getKey().toString();
 
         if (key.contains("root") || key.contains("recipes")) return;
@@ -124,6 +126,7 @@ public class Advances extends Module implements Listener {
                     description = format.length == 2 ? format[1] : null;
                     frameType = format.length == 3 ? format[2] : null;
                 }
+
                 messageKey = messageKey.split("-\\(")[0];
             }
             catch (IndexOutOfBoundsException e) {
@@ -138,13 +141,14 @@ public class Advances extends Module implements Listener {
         if (advName == null) {
             String replacement = key.substring(key.lastIndexOf('/') + 1);
             replacement = StringUtils.replace(replacement, "_", " ");
-            advName = handler == null || handler.getTitle() == null ?
-                    WordUtils.capitalizeFully(replacement) : handler.getTitle();
+            advName = info == null || info.getTitle() == null ?
+                    WordUtils.capitalizeFully(replacement) : info.getTitle();
         }
+
         if (frameType == null)
-            frameType = handler == null ? "PROGRESS" : handler.getFrameType();
+            frameType = info == null ? "PROGRESS" : info.getFrameType();
         if (description == null)
-            description = handler == null ? "No description." : handler.getDescription();
+            description = info == null ? "No description." : info.getDescription();
 
         sendAdvSection(player, messageKey, frameType, advName, description);
     }

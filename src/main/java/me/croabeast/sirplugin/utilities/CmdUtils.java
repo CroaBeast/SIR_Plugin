@@ -11,13 +11,12 @@ import java.util.*;
 import java.util.stream.*;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
-import static me.croabeast.sirplugin.objects.FileCatcher.*;
+import static me.croabeast.sirplugin.objects.FileCache.*;
 
 public class CmdUtils {
 
     private CommandSender sender;
     private String[] args;
-    protected static HashMap<CommandSender, CommandSender> receivers = new HashMap<>();
 
     public void setSender(CommandSender sender) {
         this.sender = sender;
@@ -25,18 +24,17 @@ public class CmdUtils {
     public void setArgs(String[] args) {
         this.args = args;
     }
-
-    public static HashMap<CommandSender, CommandSender> getReceivers() {
-        return receivers;
-    }
     
     protected void sendMessage(String path, String key, String value) {
-        textUtils().sendMessageList(sender, LANG.toFile(), path, new String[] {key}, new String[] {value});
+        textUtils().sendMessageList(sender, LANG.toFile(), path, new String[] {"{" + key + "}"}, new String[] {value});
     }
 
-    protected boolean oneMessage(String path, String[] keys, String[] values) {
+    protected void oneMessage(CommandSender sender, String path, String[] keys, String[] values) {
         textUtils().sendMessageList(sender, LANG.toFile(), path, keys, values);
-        return true;
+    }
+
+    protected void oneMessage(String path, String[] keys, String[] values) {
+        oneMessage(sender, path, keys, values);
     }
 
     protected boolean oneMessage(String path, String key, String value) {
@@ -45,8 +43,7 @@ public class CmdUtils {
     }
 
     protected boolean oneMessage(String path) {
-        sendMessage(path, null, null);
-        return true;
+        return oneMessage(path, (String) null, null);
     }
 
     protected boolean hasNoPerm(String perm) {
@@ -60,7 +57,7 @@ public class CmdUtils {
         return true;
     }
 
-    protected Set<Player> targets(String input) {
+    protected Set<Player> catchTargets(String input) {
         Player player = Bukkit.getPlayer(input);
         Set<Player> players = new HashSet<>();
 
@@ -105,40 +102,34 @@ public class CmdUtils {
     }
 
     protected void sendReminder(String input) {
-        Set<Player> set = targets(input);
+        Set<Player> set = catchTargets(input);
         if (sender instanceof Player && set.size() == 1 &&
                 set.contains((Player) sender)) return;
 
-        if (set.isEmpty()) sendMessage("reminder.empty", "TARGET", input);
+        if (set.isEmpty()) sendMessage("reminder.empty", "target", input);
         else if (set.size() == 1) {
             String playerName = set.toArray(new Player[1])[0].getName();
-            sendMessage("reminder.success", "TARGET", playerName);
+            sendMessage("reminder.success", "target", playerName);
         }
-        else sendMessage("reminder.success", "TARGET", input);
+        else sendMessage("reminder.success", "target", input);
     }
 
     protected void messageLogger(String type, String line) {
         String start = LANG.toFile().getString("logger.header");
         if (start == null || start.equals("")) return;
-        line = textUtils().colorize(null, line);
-        LogUtils.doLog(start, "&7[" + type + "] " + line);
-    }
-
-    protected String isConsole(CommandSender sender) {
-        return sender instanceof ConsoleCommandSender ?
-                LANG.toFile().getString("commands.msg-reply.console-name") : sender.getName();
+        LogUtils.doLog(start, "&7[" + type + "] " + textUtils().colorize(null, line));
     }
 
     @SafeVarargs
-    protected final List<String> resultTab(Collection<String>... lists) {
+    protected final List<String> resultList(Collection<String>... lists) {
         List<String> tab = new ArrayList<>();
         for (Collection<String> list : lists) tab.addAll(list);
         return StringUtil.copyPartialMatches(
                 args[args.length - 1], tab, new ArrayList<>());
     }
 
-    protected List<String> resultTab(String... array) {
-        return resultTab(Lists.newArrayList(array));
+    protected List<String> resultList(String... array) {
+        return resultList(Lists.newArrayList(array));
     }
 
     protected List<String> onlinePlayers() {

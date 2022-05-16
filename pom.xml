@@ -6,7 +6,7 @@
 
     <groupId>me.croabeast</groupId>
     <artifactId>SIR_Plugin</artifactId>
-    <version>2.0-R1</version>
+    <version>2.0-R5</version>
     <packaging>jar</packaging>
 
     <name>SIR_Plugin</name> <!--Simple In-game Receptionist-->
@@ -49,6 +49,10 @@
                         <relocation>
                             <pattern>com.tchristofferson.configupdater</pattern>
                             <shadedPattern>me.croabeast.cupdater</shadedPattern>
+                        </relocation>
+                        <relocation>
+                            <pattern>me.croabeast.advancementinfo</pattern>
+                            <shadedPattern>me.croabeast.sirplugin.objects.advance</shadedPattern>
                         </relocation>
                     </relocations>
 
@@ -143,10 +147,6 @@
             <id>codemc-repo</id>
             <url>https://repo.codemc.org/repository/maven-public/</url>
         </repository>
-        <repository>
-            <id>loohp-repo</id>
-            <url>https://repo.loohpjames.com/repository</url>
-        </repository>
     </repositories>
 
     <dependencies>
@@ -165,7 +165,13 @@
         <dependency>
             <groupId>com.github.CroaBeast</groupId>
             <artifactId>BeansLib</artifactId>
-            <version>2.1.4</version>
+            <version>2.1.9</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.CroaBeast</groupId>
+            <artifactId>AdvancementInfo</artifactId>
+            <version>2.0.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -214,12 +220,6 @@
             <groupId>com.elchologamer</groupId>
             <artifactId>UserLogin</artifactId>
             <version>2.0</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.loohp</groupId>
-            <artifactId>InteractiveChat</artifactId>
-            <version>4.1.4.3</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

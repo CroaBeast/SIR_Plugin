@@ -42,8 +42,8 @@ public class MainCmd extends BaseCmd {
                     main.getEmParser().registerModule();
                     main.getReporter().registerModule();
 
-                    main.getInitializer().unloadAdvances(true);
-                    main.getInitializer().loadAdvances(false);
+                    Initializer.unloadAdvances(true);
+                    Initializer.loadAdvances(false);
 
                     Reporter reporter = main.getReporter();
                     if (reporter.isEnabled() && !reporter.isRunning()) reporter.startTask();
@@ -55,7 +55,7 @@ public class MainCmd extends BaseCmd {
 
                 case "support":
                     if (hasNoPerm("admin.support")) return true;
-                    return oneMessage("commands.sir.support", "LINK",
+                    return oneMessage("commands.sir.support", "link",
                             "https://discord.gg/s9YFGMrjyF");
 
                 default: return notArgument(args[0]);
@@ -67,7 +67,7 @@ public class MainCmd extends BaseCmd {
     protected TabCompleter getCompleter() {
         return (sender, command, alias, args) -> {
             setArgs(args);
-            return args.length == 1 ? resultTab("reload", "help", "support") : new ArrayList<>();
+            return args.length == 1 ? resultList("reload", "help", "support") : new ArrayList<>();
         };
     }
 }

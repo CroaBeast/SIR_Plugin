@@ -74,7 +74,7 @@ public class EventUtils {
         return resultSection;
     }
     
-    public void playSound(Player player, @Nullable String rawSound) {
+    public static void playSound(Player player, @Nullable String rawSound) {
         if (rawSound == null) return;
         Sound sound;
 

@@ -55,8 +55,8 @@ public class PrintCmd extends BaseCmd {
                 String message = rawMessage(args, 2);
 
                 sendReminder(args[1]);
-                if (!targets(args[1]).isEmpty()) {
-                    targets(args[1]).forEach(p -> textUtils().
+                if (!catchTargets(args[1]).isEmpty()) {
+                    catchTargets(args[1]).forEach(p -> textUtils().
                             sendActionBar(p, textUtils().colorize(p, message)));
                     messageLogger("ACTION-BAR", message);
                 }
@@ -75,8 +75,8 @@ public class PrintCmd extends BaseCmd {
 
                 sendReminder(args[1]);
 
-                if (!targets(args[1]).isEmpty()) {
-                    for (Player p : targets(args[1])) {
+                if (!catchTargets(args[1]).isEmpty()) {
+                    for (Player p : catchTargets(args[1])) {
                         for (String s : message) {
                             switch (args[2].toUpperCase()) {
                                 case "CENTERED":
@@ -105,8 +105,8 @@ public class PrintCmd extends BaseCmd {
                 String noFormat = rawMessage(args, 3);
 
                 sendReminder(args[1]);
-                if (!targets(args[1]).isEmpty()) {
-                    targets(args[1]).forEach(p -> {
+                if (!catchTargets(args[1]).isEmpty()) {
+                    catchTargets(args[1]).forEach(p -> {
                         String[] array = args[2].matches("(?i)DEFAULT") ? null : args[2].split(","),
                                 msg = textUtils().colorize(p, stripJson(noFormat)).split(split);
                         textUtils().sendTitle(p, msg, array);
@@ -125,23 +125,23 @@ public class PrintCmd extends BaseCmd {
         return (sender, command, alias, args) -> {
             setArgs(args);
             if (args.length == 1)
-                return resultTab("targets", "ACTION-BAR", "CHAT", "TITLE");
+                return resultList("targets", "ACTION-BAR", "CHAT", "TITLE");
 
             if (args.length == 2 && args[0].matches("(?i)ACTION-BAR|CHAT|TITLE")) {
                 String group = Initializer.hasVault() ? "GROUP:" : null;
-                return resultTab(Arrays.asList("@a", "PERM:", "WORLD:", group), onlinePlayers());
+                return resultList(Arrays.asList("@a", "PERM:", "WORLD:", group), onlinePlayers());
             }
 
             if (args.length == 3) {
-                if (args[0].matches("(?i)ACTION-BAR")) return resultTab("<message>");
+                if (args[0].matches("(?i)ACTION-BAR")) return resultList("<message>");
                 else if (args[0].matches("(?i)TITLE"))
-                    return resultTab("DEFAULT", "10,50,10");
+                    return resultList("DEFAULT", "10,50,10");
                 else if (args[0].matches("(?i)CHAT"))
-                    return resultTab("DEFAULT", "CENTERED", "MIXED");
+                    return resultList("DEFAULT", "CENTERED", "MIXED");
             }
 
             if (args.length == 4 && args[0].matches("(?i)CHAT|TITLE"))
-                return resultTab("<message>");
+                return resultList("<message>");
 
             return new ArrayList<>();
         };

@@ -20,6 +20,7 @@ chat:
   empty-message: '<P> &cYou can not send an empty message.'
   invalid-format: '<P> &cCould not found any valid chat format, check your chat.yml'
 
+# Messages for the plugin's commands.
 commands:
   # The main command (/sir) of the plugin.
   sir:
@@ -73,7 +74,7 @@ commands:
   announcer:
     help:
       - '&7'
-      - '&8----------&r &e/announcer &6Help Menu &8----------&r'
+      - ' &6>> &eAnnouncer command Help'
       - '  &7- &b/announcer&7: Shows this help menu.'
       - '  &7- &b/announcer start&7: Starts the task.'
       - '  &7- &b/announcer cancel&7: Cancels the task.'
@@ -90,20 +91,25 @@ commands:
   # The /msg and /reply commands.
   msg-reply:
     need-player: '<P> &cYou need a player to use this command.'
-    not-player: '<P> &cThe player {TARGET} does not exist.'
+    not-player: '<P> &cThe player {target} does not exist.'
     not-replied: '<P> &cYou did not send a message to a player before.'
     not-yourself: '<P> &cYou can not send a message to yourself.'
-    sender: ' &eME &8> &6{RECEIVER}&7: &f{MESSAGE}'
-    receiver: ' &6{SENDER} &8> &eME&7: &f{MESSAGE}'
+    for-sender: # lol
+      message: ' &eME &8> &6{receiver}&7: &f{message}'
+      sound: ENTITY_PLAYER_LEVELUP # Disable the sound setting it like this: ''
+    for-receiver: # lol
+      message: ' &6{sender} &8> &eME&7: &f{message}'
+      sound: ENTITY_PLAYER_LEVELUP # Disable the sound setting it like this: ''
     console-name: '&cConsole'
   # The /ignore command.
   ignore:
     help:
-      - '&8-----------&r &e/ignore &6Help Menu &8-----------&r'
-      - ' &7- &b/ignore chat [player]&7: Ignores/un-ignores the player in chat.'
-      - ' &7- &b/ignore msg [player]&7: Ignores/un-ignores the messages of the player.'
-      - ' &7- &b/ignore all [player]&7: Ignores/un-ignores the player in chat and msgs.'
-      - '&8------------------------------------&r'
+      - '&7'
+      - ' &6>> &eIgnore command Help'
+      - '  &7- &b/ignore chat [player]&7: Ignores/un-ignores the player in chat.'
+      - '  &7- &b/ignore msg [player]&7: Ignores/un-ignores the messages of the player.'
+      - '  &7- &b/ignore all [player]&7: Ignores/un-ignores the player in chat and msgs.'
+      - '&7'
     need-player: '<P> &cYou need a player to use this command.'
     not-yourself: '<P> &cYou can not ignore yourself.'
     not-player: '<P> &cThe player {target} does not exist.'
