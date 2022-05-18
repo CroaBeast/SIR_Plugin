@@ -24,13 +24,11 @@ import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
 public class Formatter extends Module implements Listener {
 
-    private final SIRPlugin main;
     private final EventUtils utils;
     
     HashMap<Player, Long> timedPlayers = new HashMap<>();
 
     public Formatter(SIRPlugin main) {
-        this.main = main;
         this.utils = main.getEventUtils();
     }
 
@@ -153,7 +151,7 @@ public class Formatter extends Module implements Listener {
 
         event.setCancelled(true);
 
-        String path = "chat.simple-logger.", s = main.getConfig().getString(path + "format");
+        String path = "chat.simple-logger.", s = CONFIG.toFile().getString(path + "format");
         LogUtils.doLog(
                 parsePAPI(player, !MODULES.toFile().getBoolean(path + "enabled")
                         ? result : parseInsensitiveEach(s, keys, values))

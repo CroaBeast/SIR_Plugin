@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
 import static me.croabeast.sirplugin.modules.listeners.Formatter.KeysHandler.*;
+import static me.croabeast.sirplugin.objects.FileCache.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
 public class EventUtils {
@@ -190,7 +191,7 @@ public class EventUtils {
             line = parseInsensitiveEach(line, new String[] {"prefix", "suffix"}, values);
             line = textUtils().removeSpace(line);
 
-            if (doLog && main.getConfig().getBoolean("options.send-console")) {
+            if (doLog && CONFIG.toFile().getBoolean("options.send-console")) {
                 String logLine = textUtils().centeredText(sender, textUtils().stripPrefix(line));
                 String splitter = textUtils().lineSeparator();
                 LogUtils.doLog(logLine.replace(splitter, "&f" + splitter));

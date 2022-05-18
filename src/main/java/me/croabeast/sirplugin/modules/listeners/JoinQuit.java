@@ -154,6 +154,8 @@ public class JoinQuit extends Module implements Listener {
             Player player = event.getPlayer();
             UUID uuid = player.getUniqueId();
 
+            if (!isEnabled()) return;
+
             if (!MODULES.toFile().getBoolean("join-quit.login.enabled")) return;
             if (JoinQuit.this.isVanished(player, true)) return;
 
@@ -196,6 +198,8 @@ public class JoinQuit extends Module implements Listener {
         private void onVanish(VanishEvent event) {
             Player player = event.getPlayer();
             UUID uuid = player.getUniqueId();
+
+            if (!isEnabled()) return;
 
             if (!Initializer.hasVanish() ||
                     !MODULES.toFile().getBoolean("join-quit.vanish.enabled")) return;

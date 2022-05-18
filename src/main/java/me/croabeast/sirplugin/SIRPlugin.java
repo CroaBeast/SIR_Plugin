@@ -15,6 +15,8 @@ import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.plugin.java.*;
 
+import static me.croabeast.sirplugin.objects.Module.Identifier.*;
+
 public final class SIRPlugin extends JavaPlugin {
 
     private static SIRPlugin instance;
@@ -64,7 +66,7 @@ public final class SIRPlugin extends JavaPlugin {
 
         init.registerModules(
                 new EmParser(), new Reporter(this), new JoinQuit(this),
-                new Advances(this), new ServerList(this), new Formatter(this),
+                new Advances(), new ServerList(this), new Formatter(this),
                 new ChatFilter(this)
         );
 
@@ -135,10 +137,10 @@ public final class SIRPlugin extends JavaPlugin {
     }
 
     public Reporter getReporter() {
-        return (Reporter) Initializer.getModules().get(Module.Identifier.ANNOUNCES);
+        return (Reporter) Initializer.getModules().get(ANNOUNCES);
     }
     public EmParser getEmParser() {
-        return (EmParser) Initializer.getModules().get(Module.Identifier.EMOJIS);
+        return (EmParser) Initializer.getModules().get(EMOJIS);
     }
 
     public static void registerListener(Listener... listeners) {

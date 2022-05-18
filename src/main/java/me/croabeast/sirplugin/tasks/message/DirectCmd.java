@@ -39,8 +39,8 @@ public abstract class DirectCmd extends BaseCmd {
 
         String[] sendValues = {isMsg ? args[0] : isConsole(target), message},
                 recValues = {isConsole(sender), message},
-                toSender = {"receiver", "message"},
-                toReceiver = {"sender", "message"};
+                toSender = {"{receiver}", "{message}"},
+                toReceiver = {"{sender}", "{message}"};
 
         oneMessage(sender, path + "sender.message", toSender, sendValues);
         if (sender instanceof Player) playSound((Player) sender, toSound("sender"));

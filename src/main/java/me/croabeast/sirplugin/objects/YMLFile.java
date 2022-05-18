@@ -1,10 +1,10 @@
 package me.croabeast.sirplugin.objects;
 
-import com.tchristofferson.configupdater.ConfigUpdater;
+import com.tchristofferson.configupdater.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.configuration.file.*;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.plugin.java.*;
 
 import java.io.*;
 
@@ -40,6 +40,7 @@ public class YMLFile {
 
     /**
      * Basic file constructor.
+     * @param main the plugin's instance
      * @param name the file's name without its extension.
      */
     public YMLFile(JavaPlugin main, String name) {
@@ -53,6 +54,7 @@ public class YMLFile {
 
     /**
      * File constructor with the file's name and its folder.
+     * @param main the plugin's instance
      * @param name the file's name without its extension.
      * @param folder the specified custom folder.
      */

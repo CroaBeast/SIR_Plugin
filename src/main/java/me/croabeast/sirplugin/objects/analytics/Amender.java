@@ -8,6 +8,8 @@ import org.jetbrains.annotations.*;
 
 import java.util.*;
 
+import static me.croabeast.sirplugin.objects.FileCache.*;
+
 public class Amender {
 
     private final SIRPlugin main;
@@ -81,11 +83,11 @@ public class Amender {
 
     public void initUpdater(@Nullable Player player) {
         if (player == null) {
-            if (!main.getConfig().getBoolean("updater.plugin.on-start")) return;
+            if (!CONFIG.toFile().getBoolean("updater.plugin.on-start")) return;
             runUpdater(null);
         }
         else {
-            if (!main.getConfig().getBoolean("updater.plugin.send-op") ||
+            if (!CONFIG.toFile().getBoolean("updater.plugin.send-op") ||
                     !PermUtils.hasPerm(player, "sir.admin.updater")) return;
             runUpdater(player);
         }

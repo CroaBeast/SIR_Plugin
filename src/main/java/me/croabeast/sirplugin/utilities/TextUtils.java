@@ -51,6 +51,11 @@ public class TextUtils extends BeansLib {
     }
 
     @Override
+    public boolean fixColorLogger() {
+        return CONFIG.initialSource() != null && CONFIG.toFile().getBoolean("options.fix-logger");
+    }
+
+    @Override
     public boolean isHardSpacing() {
         return CONFIG.toFile().getBoolean("options.hard-spacing", true);
     }

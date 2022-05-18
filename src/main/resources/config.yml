@@ -32,6 +32,10 @@ options:
   # If enabled, it will remove all unnecessary spaces for every
   # message to send. Recommended leaving this 'true'.
   hard-spacing: true
+  # Fix a color format bug when RGB is applied to the console.
+  # It's recommended to leave it to false if you don't have
+  # this visual bug.
+  fix-logger: false
   # If enabled, it will check if the permission is set to that
   # player; then if true, it will check if the player has the perm
   # value set to true. Recommended leaving this 'false'.

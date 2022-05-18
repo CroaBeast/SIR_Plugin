@@ -11,7 +11,6 @@ import org.bukkit.advancement.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.player.*;
-import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
 
@@ -20,12 +19,6 @@ import static me.croabeast.sirplugin.objects.FileCache.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
 public class Advances extends Module implements Listener {
-
-    private final SIRPlugin main;
-
-    public Advances(SIRPlugin main) {
-        this.main = main;
-    }
 
     @Override
     public Identifier getIdentifier() {
@@ -53,7 +46,7 @@ public class Advances extends Module implements Listener {
             line = parseInsensitiveEach(line, keys, values);
             line = parseInsensitiveEach(line, "world", player.getWorld().getName());
 
-            if (main.getConfig().getBoolean("options.send-console") &&
+            if (CONFIG.toFile().getBoolean("options.send-console") &&
                     !isStarting("[cmd]", line)) LogUtils.doLog(line);
 
             if (isStarting("[cmd]", line)) {

@@ -64,7 +64,7 @@ public class Reporter extends Module {
         List<String> msgs = TextUtils.toList(id, "lines"), cmds = TextUtils.toList(id, "commands");
 
         if (!msgs.isEmpty()) {
-            if (main.getConfig().getBoolean("options.send-console")) {
+            if (CONFIG.toFile().getBoolean("options.send-console")) {
                 for (String line : msgs) {
                     String logLine = textUtils().centeredText(null, textUtils().stripPrefix(line));
                     String splitter = textUtils().lineSeparator();
