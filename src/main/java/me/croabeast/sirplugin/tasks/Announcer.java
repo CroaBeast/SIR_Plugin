@@ -2,7 +2,7 @@ package me.croabeast.sirplugin.tasks;
 
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.modules.*;
-import me.croabeast.sirplugin.objects.*;
+import me.croabeast.sirplugin.objects.extensions.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.command.*;
 import org.bukkit.configuration.*;

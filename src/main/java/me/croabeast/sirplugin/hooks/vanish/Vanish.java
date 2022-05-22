@@ -1,18 +1,17 @@
 package me.croabeast.sirplugin.hooks.vanish;
 
 import de.myzelyam.api.vanish.*;
-import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.events.*;
+import me.croabeast.sirplugin.objects.extensions.*;
 import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
 
-public class Vanish implements Listener {
+public class Vanish implements RawViewer {
 
     public Vanish() {
         if (Bukkit.getPluginManager().isPluginEnabled("SuperVanish") ||
-                Bukkit.getPluginManager().isPluginEnabled("PremiumVanish"))
-            SIRPlugin.registerListener(this);
+                Bukkit.getPluginManager().isPluginEnabled("PremiumVanish")) registerListener();
     }
 
     @EventHandler

@@ -1,7 +1,7 @@
 package me.croabeast.sirplugin.tasks;
 
 import com.google.common.collect.*;
-import me.croabeast.sirplugin.objects.*;
+import me.croabeast.sirplugin.objects.extensions.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.command.*;

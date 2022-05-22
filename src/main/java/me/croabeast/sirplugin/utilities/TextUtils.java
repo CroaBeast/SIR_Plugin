@@ -4,6 +4,7 @@ import me.croabeast.beanslib.*;
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.objects.*;
+import me.croabeast.sirplugin.objects.extensions.BaseModule;
 import org.bukkit.entity.*;
 import org.bukkit.plugin.java.*;
 import org.jetbrains.annotations.*;
@@ -26,8 +27,7 @@ public class TextUtils extends BeansLib {
     }
 
     private String tryString(@Nullable YMLFile section, String path, String def) {
-        if (section == null) return def;
-        return section.getFile().getString(path, def);
+        return section == null ? def : section.getFile().getString(path, def);
     }
 
     @Override
@@ -67,7 +67,7 @@ public class TextUtils extends BeansLib {
 
     @Override
     public String colorize(@Nullable Player player, String line) {
-        if (Module.isEnabled(Module.Identifier.EMOJIS))
+        if (BaseModule.isEnabled(BaseModule.Identifier.EMOJIS))
             line = main.getEmParser().parseEmojis(line);
         return IridiumAPI.process(parsePAPI(player, parseChars(line)));
     }

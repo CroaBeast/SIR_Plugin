@@ -1,6 +1,9 @@
 motds:
+  # a random number or a custom name
   first:
+    # first line
     1: '<R:1>Check out my server!</R>'
+    # second line
     2: '&7IP:&e play.my-server.com'
   custom-name:
     1: '               &7A Minecraft Server'

@@ -1,30 +1,41 @@
 first-join:
+  # a random number or a custom name
   1:
-    sound: 'ENTITY_PLAYER_LEVELUP' # 1.17 sound, check above for more sounds.
+    # if you want to play a sound
+    sound: ENTITY_PLAYER_LEVELUP
+    # public messages to send to all players
     public:
       - '&8[&6NEW&8] &7Welcome &e{player} &7to the server for the first time!'
+    # if you want to set invulnerability for some time
     invulnerable: 3
+    # teleports a player when join
     spawn:
       world: world
 join:
   1:
+    # a random number or custom name
     permission: DEFAULT
-    sound: 'ENTITY_PLAYER_LEVELUP' # 1.17 sound, check above for more sounds.
+    sound: ENTITY_PLAYER_LEVELUP
     public:
       - '&8[&a+&8] &7Welcome &e{player} &7to the server!'
     invulnerable: 3
     spawn:
+      # the world
       world: world
+      # the coordinates
       x-y-z: 0,80,0
+      # the direction
       yaw-pitch: 0,-90
   2:
     permission: join.vip
     public:
       - '&8[&a+&8] &7Welcome &b&lVIP &e{player} &7to the server!'
+    # private messages to send to the player
     private:
       - '<R:1>Thanks for playing here :D</R>'
   3:
     permission: join.pro
+    # the priority if you have more custom permission formats
     priority: 2
     public:
       - '&8[&a+&8] &7Welcome &d&lPRO &e{player} &7to the server!'

@@ -15,6 +15,7 @@ public enum FileCache {
     EMOJIS,
     FILTERS,
     FORMATS,
+    MENTIONS,
     // Data files.
     IGNORE,
     // Messages files.

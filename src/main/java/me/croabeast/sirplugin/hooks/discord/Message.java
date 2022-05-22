@@ -1,13 +1,11 @@
 package me.croabeast.sirplugin.hooks.discord;
 
-import github.scarsz.discordsrv.DiscordSRV;
+import github.scarsz.discordsrv.*;
 import github.scarsz.discordsrv.dependencies.jda.api.*;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
 import github.scarsz.discordsrv.util.*;
 import me.croabeast.iridiumapi.*;
-import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.utilities.*;
-import org.apache.commons.lang.*;
 import org.bukkit.*;
 import org.bukkit.entity.*;
 import org.jetbrains.annotations.*;
@@ -16,6 +14,7 @@ import java.time.*;
 
 import static me.croabeast.sirplugin.objects.FileCache.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
+import static org.apache.commons.lang.StringUtils.*;
 
 public class Message {
 
@@ -23,11 +22,13 @@ public class Message {
     private final String channel, embedPath;
 
     private String[] keys, values;
+    @Nullable private final TextChannel textChannel;
 
     public Message(Player player, String channel) {
         this.player = player;
         this.channel = channel;
-        this.embedPath = "channels." + channel + ".embed";
+        embedPath = "channels." + channel + ".embed";
+        textChannel = getChannel();
     }
 
     public Message(Player player, String channel, String[] keys, String[] values) {
@@ -39,7 +40,7 @@ public class Message {
             this.values[i] = IridiumAPI.stripAll(stripJson(values[i]));
     }
 
-    private String parse(String line) {
+    private String parseValues(String line) {
         String[] keys = {"player", "uuid"};
         String[] values = {player.getName(), player.getUniqueId().toString()};
 
@@ -51,34 +52,32 @@ public class Message {
         return DiscordUtil.translateEmotes(line);
     }
 
-    private boolean check(@Nullable String line) {
-        return line != null && StringUtils.isBlank(line);
-    }
-
-    private <T> T tryCatch(T originalValue, T defaultValue) {
-        try {
-            return originalValue;
-        } catch (Exception e) {
-            return defaultValue;
-        }
-    }
-
     @Nullable
     private TextChannel getChannel() {
-        String guildName = MODULES.toFile().getString("discord.server-id", "");
-        Guild guild = DiscordSRV.getPlugin().getJda().getGuildById(guildName);
+        String guildName = MODULES.toFile().getString("discord.server-id", ""),
+                id = MODULES.toFile().getString("discord.channels." + channel, "");
 
-        if (guild == null) return null;
-        return tryCatch(guild.getTextChannelById(MODULES.toFile().
-                getString("discord.channels." + this.channel, "")), null);
+        Guild guild = null;
+        try {
+            guild = DiscordSRV.getPlugin().getJda().getGuildById(guildName);
+        } catch (Exception ignored) {}
+
+        try {
+            return guild == null ? null : guild.getTextChannelById(id);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private int embedColor() {
         int color = Color.BLACK.asRGB();
         String rgb = DISCORD.toFile().getString(embedPath + ".color", "BLACK");
         try {
-            return tryCatch(java.awt.Color.decode(rgb).getRGB(),
-                    ((Color) Class.forName("org.bukkit.Color").getField(rgb).get(null)).asRGB());
+            try {
+                return java.awt.Color.decode(rgb).getRGB();
+            } catch (Exception e) {
+                return ((Color) Class.forName("org.bukkit.Color").getField(rgb).get(null)).asRGB();
+            }
         } catch (Exception e) {
             LogUtils.doLog(
                     "<P> &cThe color " + rgb + " is not a valid color.",
@@ -92,23 +91,23 @@ public class Message {
         EmbedBuilder embed = new EmbedBuilder();
         embed.setColor(embedColor());
 
-        String authorName = DISCORD.toFile().getString(embedPath + ".author.name");
+        String author = DISCORD.toFile().getString(embedPath + ".author.name");
         String url = DISCORD.toFile().getString(embedPath + ".author.url");
         String icon = DISCORD.toFile().getString(embedPath + ".author.iconURL");
 
         embed.setAuthor(
-                parse(authorName), check(url) && url.startsWith("http") ? parse(url) : null,
-                check(icon) && icon.startsWith("http") ? parse(icon) : null
+                parseValues(author), isNotBlank(url) && url.startsWith("http") ? parseValues(url) : null,
+                isNotBlank(icon) && icon.startsWith("http") ? parseValues(icon) : null
         );
 
         String title = DISCORD.toFile().getString(embedPath + ".title");
-        if (check(title)) embed.setTitle(parse(title));
+        if (isNotBlank(title)) embed.setTitle(parseValues(title));
 
         String description = DISCORD.toFile().getString(embedPath + ".description");
-        if (check(description)) embed.setDescription(parse(description));
+        if (isNotBlank(description)) embed.setDescription(parseValues(description));
 
         String image = DISCORD.toFile().getString(embedPath + ".thumbnail");
-        if (check(image) && image.startsWith("http")) embed.setThumbnail(parse(image));
+        if (isNotBlank(image) && image.startsWith("http")) embed.setThumbnail(parseValues(image));
 
         if (DISCORD.toFile().getBoolean(embedPath + ".timeStamp"))
             embed.setTimestamp(Instant.now());
@@ -118,11 +117,11 @@ public class Message {
 
     @SuppressWarnings("deprecation")
     public void sendMessage() {
-        if (getChannel() == null) return;
+        if (textChannel == null) return;
         String text = DISCORD.toFile().getString("channels." + channel + ".text");
 
         if ((text != null && !text.equals("")) || embedMessage().isEmpty())
-            getChannel().sendMessage(parse(text)).queue();
-        else getChannel().sendMessage(embedMessage()).queue();
+            textChannel.sendMessage(parseValues(text)).queue();
+        else textChannel.sendMessage(embedMessage()).queue();
     }
 }

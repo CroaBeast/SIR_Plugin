@@ -1,11 +1,13 @@
-package me.croabeast.sirplugin.objects;
+package me.croabeast.sirplugin.objects.extensions;
 
-import static me.croabeast.sirplugin.objects.FileCache.MODULES;
+import org.jetbrains.annotations.*;
+
+import static me.croabeast.sirplugin.objects.FileCache.*;
 
 /**
  * This class represents a module used for each feature.
  */
-public abstract class Module {
+public abstract class BaseModule {
 
     /**
      * Checks if the module is enabled in modules.yml
@@ -28,6 +30,7 @@ public abstract class Module {
      * The name of the module identifier in modules.yml file.
      * @return the identifier's name
      */
+    @NotNull
     public abstract Identifier getIdentifier();
 
     /**
@@ -70,7 +73,11 @@ public abstract class Module {
         /**
          * Denies some words in the chat.
          */
-        FILTERS;
+        FILTERS,
+        /**
+         * Mentions a player in chat.
+         */
+        MENTIONS;
 
         /**
          * Converts the identifier to its name.

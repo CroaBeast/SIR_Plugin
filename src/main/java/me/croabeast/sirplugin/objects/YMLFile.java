@@ -1,7 +1,6 @@
 package me.croabeast.sirplugin.objects;
 
 import com.tchristofferson.configupdater.*;
-import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.configuration.file.*;
 import org.bukkit.plugin.java.*;
@@ -129,7 +128,7 @@ public class YMLFile {
     public void updateFile() {
         try {
             ConfigUpdater.update(main, location, catchFile());
-            if (SIRPlugin.MAJOR_VERSION < 13)
+            if (TextUtils.majorVersion() < 13)
                 ConfigUpdater.update(main, location, catchFile());
         }
         catch (Exception e) {

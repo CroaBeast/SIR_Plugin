@@ -1,16 +1,15 @@
 package me.croabeast.sirplugin.hooks.vanish;
 
 import com.Zrips.CMI.events.*;
-import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.events.*;
+import me.croabeast.sirplugin.objects.extensions.*;
 import org.bukkit.*;
 import org.bukkit.event.*;
 
-public class CMI implements Listener {
+public class CMI implements RawViewer {
 
     public CMI() {
-        if (Bukkit.getPluginManager().isPluginEnabled("CMI"))
-            SIRPlugin.registerListener(this);
+        if (Bukkit.getPluginManager().isPluginEnabled("CMI")) registerListener();
     }
 
     @EventHandler

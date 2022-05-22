@@ -1,4 +1,4 @@
-package me.croabeast.sirplugin.objects;
+package me.croabeast.sirplugin.objects.extensions;
 
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.utilities.*;

@@ -1,7 +1,11 @@
+# see modules.yml discord section to check all the available channels
 channels:
   first-join:
+    # plain text, if empty or null, will be set an embed message
     text: ''
+    # the embed builder
     embed:
+      # color, can be a main color or hex
       color: YELLOW
       author:
         name: 'Made by CroaBeast'

@@ -3,6 +3,7 @@ package me.croabeast.sirplugin.modules.listeners;
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.objects.*;
+import me.croabeast.sirplugin.objects.extensions.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.configuration.*;
@@ -18,7 +19,7 @@ import java.util.*;
 
 import static me.croabeast.sirplugin.objects.FileCache.*;
 
-public class ServerList extends Module implements Listener {
+public class ServerList extends BaseViewer {
 
     private final SIRPlugin main;
 
@@ -39,13 +40,8 @@ public class ServerList extends Module implements Listener {
     }
 
     @Override
-    public Identifier getIdentifier() {
+    public @NotNull Identifier getIdentifier() {
         return Identifier.MOTD;
-    }
-
-    @Override
-    public void registerModule() {
-        SIRPlugin.registerListener(this);
     }
 
     @Nullable

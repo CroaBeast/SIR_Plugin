@@ -1,15 +1,14 @@
 package me.croabeast.sirplugin.hooks.login;
 
 import com.elchologamer.userlogin.api.event.*;
-import me.croabeast.sirplugin.*;
+import me.croabeast.sirplugin.objects.extensions.*;
 import org.bukkit.*;
 import org.bukkit.event.*;
 
-public class UserLogin implements Listener {
+public class UserLogin implements RawViewer {
 
     public UserLogin() {
-        if (Bukkit.getPluginManager().isPluginEnabled("UserLogin"))
-            SIRPlugin.registerListener(this);
+        if (Bukkit.getPluginManager().isPluginEnabled("UserLogin")) registerListener();
     }
 
     @EventHandler

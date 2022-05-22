@@ -1,7 +1,7 @@
 package me.croabeast.sirplugin.utilities;
 
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.objects.*;
+import me.croabeast.sirplugin.objects.extensions.BaseModule;
 import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.configuration.*;
@@ -21,23 +21,17 @@ import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
 public class EventUtils {
 
-    private final SIRPlugin main;
-
-    public EventUtils(SIRPlugin main) {
-        this.main = main;
+    static Set<Player> godPlayers = new HashSet<>();
+    public static Set<Player> getGodPlayers() {
+        return godPlayers;
     }
 
-    protected Set<Player> loggedPlayers = new HashSet<>();
-    public Set<Player> getLoggedPlayers() {
-        return loggedPlayers;
-    }
-
-    private boolean certainPerm(Player player, String perm) {
+    private static boolean certainPerm(Player player, String perm) {
         return perm != null && !perm.matches("(?i)DEFAULT") && PermUtils.hasPerm(player, perm);
     }
 
     @Nullable
-    public ConfigurationSection getSection(FileConfiguration file, Player player, String path) {
+    public static ConfigurationSection getSection(FileConfiguration file, Player player, String path) {
         ConfigurationSection resultSection = null;
 
         String maxPerm = null;
@@ -80,38 +74,30 @@ public class EventUtils {
         Sound sound;
 
         try {
-            sound = Enum.valueOf(Sound.class, rawSound);
-        }
-        catch (IllegalArgumentException | NullPointerException e) {
-            LogUtils.doLog(player, "<P> The sound you input is invalid.");
+            sound = Sound.valueOf(rawSound);
+        } catch (Exception e) {
             return;
         }
 
         player.playSound(player.getLocation(), sound, 1, 1);
     }
 
-    public void giveInvulnerable(Player player, int godTime) {
-        if (SIRPlugin.MAJOR_VERSION <= 8 | godTime <= 0) return;
+    public static void giveInvulnerable(Player player, int godTime) {
+        if (TextUtils.majorVersion() <= 8 | godTime <= 0) return;
 
         player.setInvulnerable(true);
+        getGodPlayers().add(player);
+
         new BukkitRunnable() {
             @Override
             public void run() {
                 player.setInvulnerable(false);
+                getGodPlayers().remove(player);
             }
-        }.runTaskLater(main, godTime);
-    }
-
-    private void syncTeleport(Player player, Location location) {
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                player.teleport(location);
-            }
-        }.runTask(main);
+        }.runTaskLater(SIRPlugin.getInstance(), godTime);
     }
     
-    public void teleportPlayer(Player player, String name, String path, String rotation) {
+    public static void teleportPlayer(Player player, String name, String path, String rotation) {
         World world = Bukkit.getWorld(name);
         if (world == null) return;
 
@@ -127,11 +113,11 @@ public class EventUtils {
                 z = Double.parseDouble(coordinates[2]);
             }
             catch (NumberFormatException e) {
-                LogUtils.doLog(player,
+                LogUtils.doLog(
                         "<P> &cThe coordinates are invalid, " +
                                 "teleporting to the world's spawn."
                 );
-                syncTeleport(player, world.getSpawnLocation());
+                player.teleport(world.getSpawnLocation());
                 return;
             }
 
@@ -144,11 +130,11 @@ public class EventUtils {
                     pitch = Float.parseFloat(rotations[1]);
                 }
                 catch (NumberFormatException e) {
-                    LogUtils.doLog(player,
+                    LogUtils.doLog(
                             "<P> &cThe rotation numbers are invalid, " +
                                     "teleporting to the default location."
                     );
-                    syncTeleport(player, new Location(world, x, y, z));
+                    player.teleport(new Location(world, x, y, z));
                     return;
                 }
 
@@ -157,16 +143,16 @@ public class EventUtils {
         }
         else location = world.getSpawnLocation();
 
-        syncTeleport(player, location);
+        player.teleport(location);
     }
 
-    public void teleportPlayer(ConfigurationSection id, Player player) {
+    public static void teleportPlayer(ConfigurationSection id, Player player) {
         teleportPlayer(player, id.getString("spawn.world", ""),
                 id.getString("spawn.x-y-z", ""),
                 id.getString("spawn.yaw-pitch", ""));
     }
 
-    public void sendMessages(Player sender, List<String> messages, boolean isPublic, boolean doLog) {
+    public static void sendMessages(Player sender, List<String> messages, boolean isPublic, boolean doLog) {
         if (messages.isEmpty()) return;
 
         for (String line : messages) {
@@ -184,7 +170,7 @@ public class EventUtils {
             line = parseInsensitiveEach(line, new String[] {"player", "world"},
                     new String[] {sender.getName(), sender.getWorld().getName()});
 
-            boolean isNot = !Module.isEnabled(Module.Identifier.FORMATS);
+            boolean isNot = !BaseModule.isEnabled(BaseModule.Identifier.FORMATS);
             String[] values = {isNot ? null : getChatValue(sender, "prefix", ""),
                     isNot ? null : getChatValue(sender, "suffix", "")};
 
@@ -202,11 +188,11 @@ public class EventUtils {
         }
     }
     
-    public void sendMessages(Player sender, List<String> messages, boolean isPublic) {
+    public static void sendMessages(Player sender, List<String> messages, boolean isPublic) {
         sendMessages(sender, messages, isPublic, true);
     }
 
-    public void runCommands(@Nullable Player player, List<String> commands) {
+    public static void runCommands(@Nullable Player player, List<String> commands) {
         if (commands.isEmpty()) return;
 
         for (String line : commands) {

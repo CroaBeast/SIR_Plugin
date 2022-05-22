@@ -1,35 +1,24 @@
 package me.croabeast.sirplugin.modules.listeners;
 
-import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.objects.*;
+import me.croabeast.sirplugin.objects.extensions.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.apache.commons.lang.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.player.*;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 import java.util.regex.*;
 
 import static me.croabeast.sirplugin.objects.FileCache.*;
 
-public class ChatFilter extends Module implements Listener {
-
-    private final SIRPlugin main;
-
-    public ChatFilter(SIRPlugin main) {
-        this.main = main;
-    }
+public class ChatFilter extends BaseViewer {
 
     @Override
-    public Identifier getIdentifier() {
+    public @NotNull Identifier getIdentifier() {
         return Identifier.FILTERS;
-    }
-
-    @Override
-    public void registerModule() {
-        SIRPlugin.registerListener(this);
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -39,8 +28,7 @@ public class ChatFilter extends Module implements Listener {
         Player player = event.getPlayer();
         String message = event.getMessage();
 
-        ConfigurationSection id =
-                main.getEventUtils().getSection(FILTERS.toFile(), player, "filters");
+        ConfigurationSection id = EventUtils.getSection(FILTERS.toFile(), player, "filters");
         if (id == null) return;
 
         List<String> words = TextUtils.toList(id, "words");
@@ -55,13 +43,14 @@ public class ChatFilter extends Module implements Listener {
 
                 String matcher = match.group();
                 String filter = StringUtils.repeat(replacer, matcher.length());
+
                 message = message.replace(matcher, filter);
+                continue;
             }
-            else {
-                if (!message.contains(word)) continue;
-                String filter = StringUtils.repeat(replacer, word.length());
-                message = message.replace(word, filter);
-            }
+
+            if (!message.contains(word)) continue;
+            String filter = StringUtils.repeat(replacer, word.length());
+            message = message.replace(word, filter);
         }
 
         event.setMessage(message);

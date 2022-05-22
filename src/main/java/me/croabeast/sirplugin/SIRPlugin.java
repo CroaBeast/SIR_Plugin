@@ -3,36 +3,28 @@ package me.croabeast.sirplugin;
 import me.croabeast.beanslib.terminals.*;
 import me.croabeast.sirplugin.modules.*;
 import me.croabeast.sirplugin.modules.listeners.*;
-import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.objects.analytics.*;
+import me.croabeast.sirplugin.objects.extensions.BaseCmd;
 import me.croabeast.sirplugin.tasks.*;
-import me.croabeast.sirplugin.tasks.message.MsgCmd;
-import me.croabeast.sirplugin.tasks.message.ReplyCmd;
+import me.croabeast.sirplugin.tasks.message.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.boss.*;
 import org.bukkit.entity.*;
-import org.bukkit.event.*;
 import org.bukkit.plugin.java.*;
 
-import static me.croabeast.sirplugin.objects.Module.Identifier.*;
+import static me.croabeast.sirplugin.objects.extensions.BaseModule.Identifier.*;
 
 public final class SIRPlugin extends JavaPlugin {
 
     private static SIRPlugin instance;
 
     private FilesUtils files;
-    private EventUtils utils;
 
     private Amender amender;
 
     private static TextUtils text;
-
-    private static final String MC_VERSION = Bukkit.getBukkitVersion().split("-")[0];
     private static String pluginVersion;
-
-    public static final String MC_FORK = Bukkit.getVersion().split("-")[1] + " " + MC_VERSION;
-    public static final int MAJOR_VERSION = Integer.parseInt(MC_VERSION.split("\\.")[1]);
 
     @Override
     public void onEnable() {
@@ -42,7 +34,6 @@ public final class SIRPlugin extends JavaPlugin {
 
         text = new TextUtils(this);
         files = new FilesUtils(this);
-        utils = new EventUtils(this);
 
         Initializer init = new Initializer(this);
         amender = new Amender(this);
@@ -50,7 +41,7 @@ public final class SIRPlugin extends JavaPlugin {
         pluginHeader();
         LogUtils.rawLog(
                 "&0* &7Developer: " + getDescription().getAuthors().get(0),
-                "&0* &7Software: " + MC_FORK, // haha empty spaces goes brr
+                "&0* &7Software: " + TextUtils.serverFork(),
                 "&0* &7Java Version: " + System.getProperty("java.version"), ""
         );
 
@@ -60,14 +51,13 @@ public final class SIRPlugin extends JavaPlugin {
         init.setPluginHooks();
 
         registerCommands(
-                new MainCmd(this), new Announcer(this), new PrintCmd(),
-                new MsgCmd(), new ReplyCmd(), new IgnoreCmd()
+                new MainCmd(this), new Announcer(this), new PrintCmd(), new MsgCmd(),
+                new ReplyCmd(), new IgnoreCmd()
         );
 
         init.registerModules(
-                new EmParser(), new Reporter(this), new JoinQuit(this),
-                new Advances(), new ServerList(this), new Formatter(this),
-                new ChatFilter(this)
+                new EmParser(), new Reporter(this), new JoinQuit(this), new Advances(), 
+                new ServerList(this), new Formatter(), new ChatFilter(), new Mentions()
         );
 
         if (getReporter().isEnabled()) getReporter().startTask();
@@ -132,20 +122,12 @@ public final class SIRPlugin extends JavaPlugin {
     public FilesUtils getFiles() {
         return files;
     }
-    public EventUtils getEventUtils() {
-        return utils;
-    }
 
     public Reporter getReporter() {
         return (Reporter) Initializer.getModules().get(ANNOUNCES);
     }
     public EmParser getEmParser() {
         return (EmParser) Initializer.getModules().get(EMOJIS);
-    }
-
-    public static void registerListener(Listener... listeners) {
-        for (Listener listener : listeners) if (listener != null)
-            Bukkit.getPluginManager().registerEvents(listener, instance);
     }
 
     private void registerCommands(BaseCmd... cmds) {

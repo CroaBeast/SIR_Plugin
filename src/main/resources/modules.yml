@@ -7,7 +7,7 @@
 # This file is to edit every module option available for SIR.
 # You can enable/disable every module putting its name on the list.
 # Available modules: join-quit, announces, motd, formats, discord,
-#                    advances, emojis, filters
+#                    advances, emojis, filters, mentions
 modules:
   - 'join-quit'
   - 'announces'
@@ -17,6 +17,7 @@ modules:
   - 'advances'
   - 'emojis'
   - 'filters'
+  - 'mentions'
 
 join-quit:
   # Manages the cooldown between join-quit messages to not show those

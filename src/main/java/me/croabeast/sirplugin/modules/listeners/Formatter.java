@@ -3,8 +3,8 @@ package me.croabeast.sirplugin.modules.listeners;
 import com.Zrips.CMI.Containers.*;
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.hooks.discord.Message;
-import me.croabeast.sirplugin.objects.*;
+import me.croabeast.sirplugin.hooks.discord.*;
+import me.croabeast.sirplugin.objects.extensions.*;
 import me.croabeast.sirplugin.utilities.*;
 import net.md_5.bungee.api.chat.*;
 import org.apache.commons.lang.*;
@@ -22,24 +22,13 @@ import static me.croabeast.sirplugin.modules.listeners.Formatter.KeysHandler.*;
 import static me.croabeast.sirplugin.objects.FileCache.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
-public class Formatter extends Module implements Listener {
+public class Formatter extends BaseViewer {
 
-    private final EventUtils utils;
-    
     HashMap<Player, Long> timedPlayers = new HashMap<>();
 
-    public Formatter(SIRPlugin main) {
-        this.utils = main.getEventUtils();
-    }
-
     @Override
-    public Identifier getIdentifier() {
+    public @NotNull Identifier getIdentifier() {
         return Identifier.FORMATS;
-    }
-
-    @Override
-    public void registerModule() {
-        SIRPlugin.registerListener(this);
     }
 
     @NotNull
@@ -66,7 +55,7 @@ public class Formatter extends Module implements Listener {
 
         Player player = event.getPlayer();
         ConfigurationSection id =
-                utils.getSection(FORMATS.toFile(), player, "formats");
+                EventUtils.getSection(FORMATS.toFile(), player, "formats");
 
         if (id == null) {
             textUtils().sendMessageList(player, toList(LANG.toFile(), "chat.invalid-format"));
@@ -151,11 +140,13 @@ public class Formatter extends Module implements Listener {
 
         event.setCancelled(true);
 
-        String path = "chat.simple-logger.", s = CONFIG.toFile().getString(path + "format");
-        LogUtils.doLog(
-                parsePAPI(player, !MODULES.toFile().getBoolean(path + "enabled")
-                        ? result : parseInsensitiveEach(s, keys, values))
-        );
+        String loggerPath = "chat.simple-logger.", logger = result;
+        if (MODULES.toFile().getBoolean(loggerPath + "enabled")) {
+            logger = MODULES.toFile().getString(loggerPath + "format", "");
+            logger = parseInsensitiveEach(logger, keys, values);
+        }
+
+        LogUtils.doLog(parsePAPI(player, logger));
 
         if (Initializer.hasDiscord())
             new Message(player, "chat", keys, values).sendMessage();
@@ -167,9 +158,6 @@ public class Formatter extends Module implements Listener {
     }
 
     public static class KeysHandler {
-
-        private static final SIRPlugin main = SIRPlugin.getInstance();
-        private static final EventUtils utils = main.getEventUtils();
 
         @Nullable
         public static ConfigurationSection isDef(ConfigurationSection id, String path) {
@@ -184,15 +172,15 @@ public class Formatter extends Module implements Listener {
         }
 
         @Nullable
-        public static Object getValue(ConfigurationSection id, String path, @Nullable Object def) {
+        public static Object getValue(ConfigurationSection id, String path, Object def) {
             ConfigurationSection d = isDef(id, path);
             return d != null && d.isSet(path) ? d.get(path, def) : def;
         }
 
         @Nullable
         public static String getChatValue(Player player, String path, Object def) {
-            String value = (String) getValue(utils.getSection(
-                    FORMATS.toFile(), player, "formats"), path, def);
+            ConfigurationSection id = EventUtils.getSection(FORMATS.toFile(), player, "formats");
+            String value = (String) getValue(id, path, def);
             return StringUtils.isBlank(value) ? null : value;
         }
     }

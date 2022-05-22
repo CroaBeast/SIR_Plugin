@@ -21,23 +21,22 @@ public class MsgCmd extends DirectCmd {
             setSender(sender);
             if (hasNoPerm("message.default")) return true;
 
-            String path = "commands.msg-reply.";
+            String path = "commands.msg-reply.", path1 = "commands.ignore.";
             if (args.length == 0) return oneMessage(path + "need-player");
 
             Player target = Bukkit.getPlayer(args[0]);
             if (target == null) return oneMessage(path + "not-player", "target", args[0]);
             if (target == sender) return oneMessage(path + "not-yourself");
 
-            String path1 = "commands.ignore.",
-                    key = LANG.toFile().getString(path1 + "channels.msg");
+            String key = LANG.toFile().getString(path1 + "channels.msg");
 
             if (IGNORE.toFile().getBoolean("data." + target.getUniqueId() + ".all-msg"))
                 return oneMessage(path1 + "ignoring.all", "type", key);
 
-            if (sender instanceof Player) return isPlayer(sender, target, key);
+            if (sender instanceof Player && isPlayer(sender, target, key)) return true;
 
-            receivers.put(sender, target);
-            receivers.put(target, sender);
+            getReceivers().put(sender, target);
+            getReceivers().put(target, sender);
 
             return sendResult(sender, target, args, true);
         };

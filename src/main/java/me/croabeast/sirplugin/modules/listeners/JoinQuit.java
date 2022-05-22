@@ -3,10 +3,10 @@ package me.croabeast.sirplugin.modules.listeners;
 import me.croabeast.beanslib.terminals.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.events.*;
-import me.croabeast.sirplugin.hooks.discord.Message;
+import me.croabeast.sirplugin.hooks.discord.*;
 import me.croabeast.sirplugin.hooks.login.*;
 import me.croabeast.sirplugin.hooks.vanish.*;
-import me.croabeast.sirplugin.objects.*;
+import me.croabeast.sirplugin.objects.extensions.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.boss.*;
 import org.bukkit.configuration.*;
@@ -14,36 +14,37 @@ import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.player.*;
 import org.bukkit.scheduler.*;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.SIRPlugin.*;
 import static me.croabeast.sirplugin.objects.FileCache.*;
+import static me.croabeast.sirplugin.utilities.EventUtils.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
-public class JoinQuit extends Module implements Listener {
+public class JoinQuit extends BaseViewer {
 
     private final SIRPlugin main;
-    private final EventUtils utils;
+    Set<Player> loggedPlayers = new HashSet<>();
 
-    Map<UUID, Long> joinMap = new HashMap<>(), quitMap = new HashMap<>(), playMap = new HashMap<>();
-
+    Map<UUID, Long> joinMap = new HashMap<>(),
+            quitMap = new HashMap<>(),
+            playMap = new HashMap<>();
 
     public JoinQuit(SIRPlugin main) {
         this.main = main;
-        this.utils = main.getEventUtils();
     }
 
     @Override
-    public Identifier getIdentifier() {
+    public @NotNull Identifier getIdentifier() {
         return Identifier.JOIN_QUIT;
     }
 
     @Override
     public void registerModule() {
-        registerListener(this);
-        if (Initializer.hasLogin()) registerListener(new LoginHook(main));
-        if (Initializer.hasVanish()) registerListener(new VanishHook());
+        registerListener();
+        if (Initializer.hasLogin()) new LoginHook().registerListener();
+        if (Initializer.hasVanish()) new VanishHook().registerListener();
     }
 
     private boolean isVanished(Player player, boolean isJoin) {
@@ -55,11 +56,13 @@ public class JoinQuit extends Module implements Listener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
+        if (player.isInvulnerable()) player.setInvulnerable(false);
+
         main.getAmender().initUpdater(player);
         if (!isEnabled()) return;
 
         String path = !player.hasPlayedBefore() ? "first-join" : "join";
-        ConfigurationSection id = utils.getSection(JOIN_QUIT.toFile(), player, path);
+        ConfigurationSection id = getSection(JOIN_QUIT.toFile(), player, path);
 
         if (id == null) {
             LogUtils.doLog(player,
@@ -80,11 +83,10 @@ public class JoinQuit extends Module implements Listener {
         }
 
         if (isVanished(player, true)) return;
+        String p = "join-quit.login.";
 
-        if (Initializer.hasLogin() &&
-                MODULES.toFile().getBoolean("join-quit.login.enabled")) {
-            if (MODULES.toFile().getBoolean("join-quit.login.spawn-before"))
-                utils.teleportPlayer(id, player);
+        if (Initializer.hasLogin() && MODULES.toFile().getBoolean(p + "enabled")) {
+            if (MODULES.toFile().getBoolean(p + "spawn-before")) teleportPlayer(id, player);
             return;
         }
 
@@ -106,8 +108,13 @@ public class JoinQuit extends Module implements Listener {
             Bossbar.getBossbarMap().remove(player);
         }
 
+        if (getGodPlayers().contains(player)) {
+            player.setInvulnerable(false);
+            getGodPlayers().remove(player);
+        }
+
         if (!isEnabled()) return;
-        ConfigurationSection id = utils.getSection(JOIN_QUIT.toFile(), player, "quit");
+        ConfigurationSection id = getSection(JOIN_QUIT.toFile(), player, "quit");
 
         if (id == null) {
             LogUtils.doLog(player,
@@ -130,21 +137,19 @@ public class JoinQuit extends Module implements Listener {
                 now - playMap.get(uuid) < playTime * 1000L) return;
 
         if (isVanished(player, false)) return;
+
         if (Initializer.hasLogin()) {
-            if (!utils.getLoggedPlayers().contains(player)) return;
-            utils.getLoggedPlayers().remove(player);
+            if (!loggedPlayers.contains(player)) return;
+            loggedPlayers.remove(player);
         }
 
         new Section(event, id, player).runTasks();
         if (quitCooldown > 0) quitMap.put(uuid, System.currentTimeMillis());
     }
 
-    public class LoginHook implements Listener {
+    public class LoginHook implements RawViewer {
 
-        private final SIRPlugin main;
-
-        public LoginHook(SIRPlugin main) {
-            this.main = main;
+        public LoginHook() {
             new AuthMe();
             new UserLogin();
         }
@@ -159,8 +164,9 @@ public class JoinQuit extends Module implements Listener {
             if (!MODULES.toFile().getBoolean("join-quit.login.enabled")) return;
             if (JoinQuit.this.isVanished(player, true)) return;
 
-            ConfigurationSection id = utils.getSection(
-                    JOIN_QUIT.toFile(), player, !player.hasPlayedBefore() ? "first-join" : "join");
+            ConfigurationSection id = getSection(JOIN_QUIT.toFile(),
+                    player, !player.hasPlayedBefore() ? "first-join" : "join");
+
             if (id == null) {
                 LogUtils.doLog(player,
                         "<P> &cA valid message group isn't found...",
@@ -177,7 +183,7 @@ public class JoinQuit extends Module implements Listener {
                 if (rest < joinCooldown * 1000L) return;
             }
 
-            main.getEventUtils().getLoggedPlayers().add(player);
+            loggedPlayers.add(player);
             new Section(event, id, player).runTasks();
 
             final long data = System.currentTimeMillis();
@@ -186,7 +192,7 @@ public class JoinQuit extends Module implements Listener {
         }
     }
 
-    public class VanishHook implements Listener {
+    public class VanishHook implements RawViewer {
 
         public VanishHook() {
             new CMI();
@@ -205,13 +211,13 @@ public class JoinQuit extends Module implements Listener {
                     !MODULES.toFile().getBoolean("join-quit.vanish.enabled")) return;
 
             if (Initializer.hasLogin()) {
-                if (event.isVanished() & !utils.getLoggedPlayers().contains(player))
-                    utils.getLoggedPlayers().add(player);
-                else utils.getLoggedPlayers().remove(player);
+                if (event.isVanished() & !loggedPlayers.contains(player))
+                    loggedPlayers.add(player);
+                else loggedPlayers.remove(player);
             }
 
             String path = event.isVanished() ? "join" : "quit";
-            ConfigurationSection id = utils.getSection(JOIN_QUIT.toFile(), player, path);
+            ConfigurationSection id = getSection(JOIN_QUIT.toFile(), player, path);
 
             if (id == null) {
                 LogUtils.doLog(player,
@@ -237,7 +243,6 @@ public class JoinQuit extends Module implements Listener {
     public static class Section {
 
         private final SIRPlugin main = SIRPlugin.getInstance();
-        private final EventUtils utils = main.getEventUtils();
 
         private final ConfigurationSection id;
         private final Player player;
@@ -264,18 +269,19 @@ public class JoinQuit extends Module implements Listener {
             BukkitRunnable runnable = new BukkitRunnable() {
                 @Override
                 public void run() {
-                    utils.sendMessages(player, toList(id, "public"), true);
+                    sendMessages(player, toList(id, "public"), true);
                     if (isJoin) {
-                        utils.sendMessages(player, toList(id, "private"), false);
-                        EventUtils.playSound(player, id.getString("sound"));
-                        utils.giveInvulnerable(player, id.getInt("invulnerable"));
-                        if (doSpawn) utils.teleportPlayer(id, player);
+                        sendMessages(player, toList(id, "private"), false);
+                        playSound(player, id.getString("sound"));
+                        giveInvulnerable(player, id.getInt("invulnerable"));
+                        if (doSpawn) teleportPlayer(id, player);
                     }
-                    utils.runCommands(isJoin ? player : null, toList(id, "commands"));
+                    runCommands(isJoin ? player : null, toList(id, "commands"));
 
                     if (!Initializer.hasDiscord()) return;
-                    String path = isJoin ? (player.hasPlayedBefore() ? "" : "first-") + "join" : "quit";
-                    new Message(player, path).sendMessage();
+
+                    String path = player.hasPlayedBefore() ? "" : "first-";
+                    new Message(player, isJoin ? path + "join" : "quit").sendMessage();
                 }
             };
 

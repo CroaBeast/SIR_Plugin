@@ -1,16 +1,25 @@
+# check your modules.yml chat section to see the default format
 formats:
+  # a random number or custom name
   default:
-    format: '&7 {player}&8: <hover=[<R:1>First line</R><n>&aClick me]|run=[/msg {player} hi]>{#C0C0C0}{message}</text>'
+    # the chat format
+    # available placeholders: {player}, {prefix}, {suffix}, {message}
+    format: '&7 {player}&8: {#C0C0C0}{message}'
   vip:
+    # can be DEFAULT, null or custom
     permission: chat.vip
+    # the prefix
     prefix: '&e&l VIP'
+    # if you want to use colors in this format
     color:
       normal: true
     format: '{prefix} &7{player}&8: &#FFFF99{message}'
   mvp:
     permission: chat.mvp
+    # the priority if you have more custom permission formats
     priority: 2
     prefix: '&6&l MVP'
+    # the suffix
     suffix: '&eB)'
     color:
       normal: true
@@ -21,7 +30,10 @@ formats:
     priority: 100
     prefix: '&c&l ADMIN'
     color:
+      # minecraft colors
       normal: true
+      # special formatting (bold, underlined, etc)
       special: true
+      # rgb, gradient, etc
       rgb: true
     format: '{prefix} &7{player}&8: #FF9999{message}'

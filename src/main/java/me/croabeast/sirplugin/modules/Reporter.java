@@ -1,7 +1,7 @@
 package me.croabeast.sirplugin.modules;
 
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.objects.*;
+import me.croabeast.sirplugin.objects.extensions.BaseModule;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.configuration.*;
@@ -15,10 +15,9 @@ import java.util.stream.*;
 import static me.croabeast.sirplugin.SIRPlugin.*;
 import static me.croabeast.sirplugin.objects.FileCache.*;
 
-public class Reporter extends Module {
+public class Reporter extends BaseModule {
 
     private final SIRPlugin main;
-    private final EventUtils utils;
 
     private int ORDER = 0;
     private boolean isRunning = false;
@@ -28,11 +27,10 @@ public class Reporter extends Module {
 
     public Reporter(SIRPlugin main) {
         this.main = main;
-        this.utils = main.getEventUtils();
     }
 
     @Override
-    public Identifier getIdentifier() {
+    public @NotNull Identifier getIdentifier() {
         return Identifier.ANNOUNCES;
     }
 
@@ -71,10 +69,10 @@ public class Reporter extends Module {
                     LogUtils.doLog(logLine.replace(splitter, "&f" + splitter));
                 }
             }
-            players.forEach(p -> utils.sendMessages(p, msgs, false, false));
+            players.forEach(p -> EventUtils.sendMessages(p, msgs, false, false));
         }
 
-        if (!cmds.isEmpty()) utils.runCommands(null, cmds);
+        if (!cmds.isEmpty()) EventUtils.runCommands(null, cmds);
     }
 
     public void startTask() {

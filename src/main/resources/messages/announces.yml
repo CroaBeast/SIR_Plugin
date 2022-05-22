@@ -1,6 +1,9 @@
 announces:
+  # a random number or a custom name
   1:
+    # if you want to play a sound
     sound: ENTITY_PLAYER_LEVELUP
+    # the messages you want to send
     lines:
       - '&7'
       - '<C>&aThis is a S.I.R announcement'
@@ -10,6 +13,7 @@ announces:
     lines:
       - '[ACTION-BAR] &7Look, an action-bar S.I.R. announcement'
       - '[TITLE] {#321ABA}A S.I.R. title<n>&#869021A S.I.R. subtitle'
+    # if you want to use server commands in your announces
     commands:
       - 'say hi server this is a command'
   3:

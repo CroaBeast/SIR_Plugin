@@ -1,0 +1,38 @@
+# You can have multiple mentions
+mentions:
+  default:
+    # Change DEFAULT to a custom permission if you don't want all players to use mentions
+    permission: DEFAULT
+    # The prefix to use in chat. Example: @CroaBeast
+    # THIS CAN NOT BE NULL OR EMPTY.
+    prefix: '@'
+    # A click line that will apply only for the mention.
+    # Can be null or empty.
+    # THIS WON'T WORK IF YOU ARE USING HOVER AND CLICK SECTION IN YOUR CHAT FORMAT
+    # OR IF YOUR MESSAGE IS SURROUNDED IN A JSON FORMAT
+    click: 'RUN:/msg {sender} hi buddy'
+    # A hover list that will apply only for the mention.
+    # Can be null or empty.
+    # THIS WON'T WORK IF YOU ARE USING HOVER AND CLICK SECTION IN YOUR CHAT FORMAT
+    # OR IF YOUR MESSAGE IS SURROUNDED IN A JSON FORMAT
+    hover:
+      - '&7Sender: &e{sender}'
+      - '<R:1>Click to send a message</R>'
+    sound:
+      # Sound that will be play to the sender.
+      # Can be null or empty.
+      sender: ''
+      # Sound that will be play to the receiver.
+      # Can be null or empty.
+      receiver: ENTITY_PLAYER_LEVELUP
+    messages:
+      # Messages that will be sent to the sender.
+      # Can be null or empty.
+      sender: []
+      # Messages that will be sent to the receiver.
+      # Can be null or empty.
+      receiver:
+        - '[title:3] &bHi, {receiver}!<n>&7{sender} mentions you'
+        - '[action-bar] &eReply to your friend!'
+    # The output value that will be shown in the chat.
+    value: '&b{prefix}{receiver}'

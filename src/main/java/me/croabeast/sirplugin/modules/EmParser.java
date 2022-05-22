@@ -1,6 +1,6 @@
 package me.croabeast.sirplugin.modules;
 
-import me.croabeast.sirplugin.objects.*;
+import me.croabeast.sirplugin.objects.extensions.BaseModule;
 import org.bukkit.configuration.*;
 import org.jetbrains.annotations.*;
 
@@ -8,12 +8,12 @@ import java.util.*;
 
 import static me.croabeast.sirplugin.objects.FileCache.*;
 
-public class EmParser extends Module {
+public class EmParser extends BaseModule {
 
     protected List<Emoticon> emoticonList = new ArrayList<>();
 
     @Override
-    public Identifier getIdentifier() {
+    public @NotNull Identifier getIdentifier() {
         return Identifier.EMOJIS;
     }
 

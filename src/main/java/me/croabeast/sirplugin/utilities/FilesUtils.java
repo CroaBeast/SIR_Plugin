@@ -78,7 +78,7 @@ public final class FilesUtils {
 
         addFiles("config", "lang", "modules");
 
-        addFiles(CHAT, "emojis", "formats", "filters");
+        addFiles(CHAT, "emojis", "formats", "filters", "mentions");
         addFiles(MESSAGES, "advances", "announces", "join-quit");
 
         addFiles(DATA, "ignore");

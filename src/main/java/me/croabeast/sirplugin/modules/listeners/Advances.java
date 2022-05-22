@@ -3,7 +3,7 @@ package me.croabeast.sirplugin.modules.listeners;
 import me.croabeast.advancementinfo.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.hooks.discord.*;
-import me.croabeast.sirplugin.objects.*;
+import me.croabeast.sirplugin.objects.extensions.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.apache.commons.lang.*;
 import org.bukkit.*;
@@ -11,6 +11,7 @@ import org.bukkit.advancement.*;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.player.*;
+import org.jetbrains.annotations.*;
 
 import java.util.*;
 
@@ -18,16 +19,11 @@ import static me.croabeast.sirplugin.SIRPlugin.*;
 import static me.croabeast.sirplugin.objects.FileCache.*;
 import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
-public class Advances extends Module implements Listener {
+public class Advances extends BaseViewer {
 
     @Override
-    public Identifier getIdentifier() {
+    public @NotNull Identifier getIdentifier() {
         return Identifier.ADVANCES;
-    }
-
-    @Override
-    public void registerModule() {
-        SIRPlugin.registerListener(this);
     }
 
     private void sendAdvSection(Player player, String... args) {

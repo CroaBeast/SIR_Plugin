@@ -1,9 +1,9 @@
 package me.croabeast.sirplugin;
 
 import com.google.common.collect.*;
-import me.croabeast.advancementinfo.AdvancementInfo;
-import me.croabeast.sirplugin.objects.*;
+import me.croabeast.advancementinfo.*;
 import me.croabeast.sirplugin.objects.analytics.*;
+import me.croabeast.sirplugin.objects.extensions.*;
 import me.croabeast.sirplugin.utilities.*;
 import net.milkbowl.vault.permission.*;
 import org.bukkit.*;
@@ -13,7 +13,6 @@ import org.bukkit.plugin.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.SIRPlugin.*;
 import static me.croabeast.sirplugin.objects.FileCache.*;
 
 public final class Initializer {
@@ -28,7 +27,7 @@ public final class Initializer {
             vanishHooks = new ArrayList<>();
 
     static Map<Advancement, AdvancementInfo> keys = new HashMap<>();
-    static Map<Module.Identifier, Module> moduleMap = new HashMap<>();
+    static Map<BaseModule.Identifier, BaseModule> moduleMap = new HashMap<>();
 
     public Initializer(SIRPlugin main) {
         this.main = main;
@@ -57,7 +56,7 @@ public final class Initializer {
     }
 
     public static boolean hasDiscord() {
-        return Bukkit.getPluginManager().isPluginEnabled("DiscordSRV") && Module.isEnabled(Module.Identifier.DISCORD);
+        return Bukkit.getPluginManager().isPluginEnabled("DiscordSRV") && BaseModule.isEnabled(BaseModule.Identifier.DISCORD);
     }
 
     public static boolean hasLogin() {
@@ -157,13 +156,12 @@ public final class Initializer {
             logLines++;
         }
 
-        if (logLines == 0)
-            LogUtils.doLog("&cThere is no compatible hooks available at the moment.");
+        if (logLines == 0) LogUtils.doLog("&cThere is no compatible hooks available.");
     }
 
     @SuppressWarnings("deprecation")
     public static void loadAdvances(boolean debug) {
-        if (MAJOR_VERSION < 12) return;
+        if (TextUtils.majorVersion() < 12) return;
         if (!keys.isEmpty()) keys.clear();
 
         long time = System.currentTimeMillis();
@@ -172,9 +170,9 @@ public final class Initializer {
             LogUtils.doLog("&bRegistering all the advancement values...");
         }
 
-        if (Module.isEnabled(Module.Identifier.ADVANCES)) {
+        if (BaseModule.isEnabled(BaseModule.Identifier.ADVANCES)) {
             for (World world : Bukkit.getServer().getWorlds()) {
-                if (MAJOR_VERSION == 12) {
+                if (TextUtils.majorVersion() == 12) {
                     world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "false");
                     continue;
                 }
@@ -250,11 +248,11 @@ public final class Initializer {
 
     @SuppressWarnings("deprecation")
     public static void unloadAdvances(boolean reload) {
-        if (MAJOR_VERSION < 12) return;
-        if (Module.isEnabled(Module.Identifier.ADVANCES) && reload) return;
+        if (TextUtils.majorVersion() < 12) return;
+        if (BaseModule.isEnabled(BaseModule.Identifier.ADVANCES) && reload) return;
 
         for (World world : Bukkit.getServer().getWorlds()) {
-            if (MAJOR_VERSION == 12) {
+            if (TextUtils.majorVersion() == 12) {
                 world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "true");
                 continue;
             }
@@ -264,10 +262,10 @@ public final class Initializer {
         LogUtils.doLog("&eAll worlds have default advancements enabled.");
     }
 
-    public void registerModules(Module... modules) {
-        for (Module module : modules) {
-            moduleMap.put(module.getIdentifier(), module);
-            module.registerModule();
+    public void registerModules(BaseModule... baseModules) {
+        for (BaseModule baseModule : baseModules) {
+            moduleMap.put(baseModule.getIdentifier(), baseModule);
+            baseModule.registerModule();
         }
     }
 
@@ -279,7 +277,7 @@ public final class Initializer {
         return permProvider;
     }
 
-    public static Map<Module.Identifier, Module> getModules() {
+    public static Map<BaseModule.Identifier, BaseModule> getModules() {
         return moduleMap;
     }
 
