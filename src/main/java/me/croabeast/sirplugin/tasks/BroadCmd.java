@@ -1,23 +1,15 @@
 package me.croabeast.sirplugin.tasks;
 
-import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.modules.*;
 import me.croabeast.sirplugin.objects.extensions.*;
+import me.croabeast.sirplugin.objects.files.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.command.*;
 import org.bukkit.configuration.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.objects.FileCache.*;
-
-public class Announcer extends BaseCmd {
-
-    private final SIRPlugin main;
-
-    public Announcer(SIRPlugin main) {
-        this.main = main;
-    }
+public class BroadCmd extends SIRTask {
 
     @Override
     public String getName() {
@@ -28,7 +20,7 @@ public class Announcer extends BaseCmd {
     protected CommandExecutor getExecutor() {
         return (sender, command, label, args) -> {
             setSender(sender);
-            Reporter reporter = main.getReporter();
+            Announcer announcer = (Announcer) SIRModule.getModule(Identifier.ANNOUNCES);
 
             if (hasNoPerm("announcer.*")) return true;
             if (args.length == 0) return oneMessage("commands.announcer.help");
@@ -38,25 +30,25 @@ public class Announcer extends BaseCmd {
                 case "start":
                     if (hasNoPerm("announcer.start")) return true;
                     if (args.length > 1) return notArgument(args[args.length - 1]);
-                    if (reporter.isRunning())
+                    if (announcer.isRunning())
                         return oneMessage("commands.announcer.cant-start");
 
-                    reporter.startTask();
+                    announcer.startTask();
                     return oneMessage("commands.announcer.started");
 
                 case "cancel":
                     if (hasNoPerm("announcer.cancel")) return true;
                     if (args.length > 1) return notArgument(args[args.length - 1]);
-                    if (!reporter.isRunning())
+                    if (!announcer.isRunning())
                         return oneMessage("commands.announcer.cant-stop");
 
-                    reporter.cancelTask();
+                    announcer.cancelTask();
                     return oneMessage("commands.announcer.stopped");
 
                 case "reboot":
                     if (hasNoPerm("announcer.reboot")) return true;
                     if (args.length > 1) return notArgument(args[args.length - 1]);
-                    if (!reporter.isRunning()) reporter.startTask();
+                    if (!announcer.isRunning()) announcer.startTask();
 
                     return oneMessage("commands.announcer.rebooted");
 
@@ -68,13 +60,13 @@ public class Announcer extends BaseCmd {
                         return true;
                     }
 
-                    if (args.length == 1 || reporter.getSection() == null)
+                    if (args.length == 1 || announcer.getSection() == null)
                         return oneMessage("commands.announcer.select");
 
-                    ConfigurationSection id = reporter.getSection().getConfigurationSection(args[1]);
+                    ConfigurationSection id = announcer.getSection().getConfigurationSection(args[1]);
                     if (id == null) return oneMessage("commands.announcer.select");
 
-                    reporter.runSection(id);
+                    announcer.runSection(id);
                     return true;
 
                 default: return notArgument(args[args.length - 1]);
@@ -89,7 +81,7 @@ public class Announcer extends BaseCmd {
             if (args.length == 1) return resultList("start", "preview", "cancel", "reboot");
 
             if(args.length == 2 && args[0].matches("(?i)preview")) {
-                ConfigurationSection id = ANNOUNCES.toFile().getConfigurationSection("announces");
+                ConfigurationSection id = FileCache.ANNOUNCES.get().getConfigurationSection("announces");
                 return id == null ? resultList("NOT_FOUND") : resultList(id.getKeys(false));
             }
 

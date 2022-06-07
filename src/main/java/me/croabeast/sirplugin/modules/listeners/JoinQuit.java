@@ -1,13 +1,16 @@
 package me.croabeast.sirplugin.modules.listeners;
 
 import me.croabeast.beanslib.terminals.*;
+import me.croabeast.beanslib.utilities.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.events.*;
 import me.croabeast.sirplugin.hooks.discord.*;
 import me.croabeast.sirplugin.hooks.login.*;
 import me.croabeast.sirplugin.hooks.vanish.*;
 import me.croabeast.sirplugin.objects.extensions.*;
+import me.croabeast.sirplugin.objects.files.*;
 import me.croabeast.sirplugin.utilities.*;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.boss.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
@@ -17,12 +20,12 @@ import org.bukkit.scheduler.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
+import java.util.regex.*;
 
-import static me.croabeast.sirplugin.objects.FileCache.*;
+import static me.croabeast.sirplugin.SIRPlugin.*;
 import static me.croabeast.sirplugin.utilities.EventUtils.*;
-import static me.croabeast.sirplugin.utilities.TextUtils.*;
 
-public class JoinQuit extends BaseViewer {
+public class JoinQuit extends SIRViewer {
 
     private final SIRPlugin main;
     Set<Player> loggedPlayers = new HashSet<>();
@@ -48,7 +51,7 @@ public class JoinQuit extends BaseViewer {
     }
 
     private boolean isVanished(Player player, boolean isJoin) {
-        return Initializer.hasVanish() && PermUtils.isVanished(player, isJoin);
+        return Initializer.hasVanish() && PlayerUtils.isVanished(player, isJoin);
     }
 
     @EventHandler
@@ -62,7 +65,7 @@ public class JoinQuit extends BaseViewer {
         if (!isEnabled()) return;
 
         String path = !player.hasPlayedBefore() ? "first-join" : "join";
-        ConfigurationSection id = getSection(JOIN_QUIT.toFile(), player, path);
+        ConfigurationSection id = getSection(FileCache.JOIN_QUIT.get(), player, path);
 
         if (id == null) {
             LogUtils.doLog(player,
@@ -74,8 +77,8 @@ public class JoinQuit extends BaseViewer {
 
         event.setJoinMessage(null);
 
-        int playTime = MODULES.toFile().getInt("join-quit.cooldown.between"),
-                joinCooldown = MODULES.toFile().getInt("join-quit.cooldown.join");
+        int playTime = FileCache.MODULES.get().getInt("join-quit.cooldown.between"),
+                joinCooldown = FileCache.MODULES.get().getInt("join-quit.cooldown.join");
 
         if (joinCooldown > 0 && joinMap.containsKey(uuid)) {
             long rest = System.currentTimeMillis() - joinMap.get(uuid);
@@ -85,8 +88,8 @@ public class JoinQuit extends BaseViewer {
         if (isVanished(player, true)) return;
         String p = "join-quit.login.";
 
-        if (Initializer.hasLogin() && MODULES.toFile().getBoolean(p + "enabled")) {
-            if (MODULES.toFile().getBoolean(p + "spawn-before")) teleportPlayer(id, player);
+        if (Initializer.hasLogin() && FileCache.MODULES.get().getBoolean(p + "enabled")) {
+            if (FileCache.MODULES.get().getBoolean(p + "spawn-before")) teleportPlayer(id, player);
             return;
         }
 
@@ -114,7 +117,7 @@ public class JoinQuit extends BaseViewer {
         }
 
         if (!isEnabled()) return;
-        ConfigurationSection id = getSection(JOIN_QUIT.toFile(), player, "quit");
+        ConfigurationSection id = getSection(FileCache.JOIN_QUIT.get(), player, "quit");
 
         if (id == null) {
             LogUtils.doLog(player,
@@ -126,8 +129,8 @@ public class JoinQuit extends BaseViewer {
 
         event.setQuitMessage(null);
 
-        int playTime = MODULES.toFile().getInt("join-quit.cooldown.between"),
-                quitCooldown = MODULES.toFile().getInt("join-quit.cooldown.quit");
+        int playTime = FileCache.MODULES.get().getInt("join-quit.cooldown.between"),
+                quitCooldown = FileCache.MODULES.get().getInt("join-quit.cooldown.quit");
 
         final long now = System.currentTimeMillis();
 
@@ -161,10 +164,10 @@ public class JoinQuit extends BaseViewer {
 
             if (!isEnabled()) return;
 
-            if (!MODULES.toFile().getBoolean("join-quit.login.enabled")) return;
+            if (!FileCache.MODULES.get().getBoolean("join-quit.login.enabled")) return;
             if (JoinQuit.this.isVanished(player, true)) return;
 
-            ConfigurationSection id = getSection(JOIN_QUIT.toFile(),
+            ConfigurationSection id = getSection(FileCache.JOIN_QUIT.get(),
                     player, !player.hasPlayedBefore() ? "first-join" : "join");
 
             if (id == null) {
@@ -175,8 +178,8 @@ public class JoinQuit extends BaseViewer {
                 return;
             }
 
-            int playTime = MODULES.toFile().getInt("join-quit.cooldown.between"),
-                    joinCooldown = MODULES.toFile().getInt("join-quit.cooldown.join");
+            int playTime = FileCache.MODULES.get().getInt("join-quit.cooldown.between"),
+                    joinCooldown = FileCache.MODULES.get().getInt("join-quit.cooldown.join");
 
             if (joinCooldown > 0 && joinMap.containsKey(uuid)) {
                 long rest = System.currentTimeMillis() - joinMap.get(uuid);
@@ -208,7 +211,7 @@ public class JoinQuit extends BaseViewer {
             if (!isEnabled()) return;
 
             if (!Initializer.hasVanish() ||
-                    !MODULES.toFile().getBoolean("join-quit.vanish.enabled")) return;
+                    !FileCache.MODULES.get().getBoolean("join-quit.vanish.enabled")) return;
 
             if (Initializer.hasLogin()) {
                 if (event.isVanished() & !loggedPlayers.contains(player))
@@ -217,7 +220,7 @@ public class JoinQuit extends BaseViewer {
             }
 
             String path = event.isVanished() ? "join" : "quit";
-            ConfigurationSection id = getSection(JOIN_QUIT.toFile(), player, path);
+            ConfigurationSection id = getSection(FileCache.JOIN_QUIT.get(), player, path);
 
             if (id == null) {
                 LogUtils.doLog(player,
@@ -227,7 +230,7 @@ public class JoinQuit extends BaseViewer {
                 return;
             }
 
-            int timer = MODULES.toFile().getInt("join-quit.cooldown." + path);
+            int timer = FileCache.MODULES.get().getInt("join-quit.cooldown." + path);
             Map<UUID, Long> players = event.isVanished() ? joinMap : quitMap;
 
             if (timer > 0 && players.containsKey(uuid)) {
@@ -237,6 +240,41 @@ public class JoinQuit extends BaseViewer {
 
             new Section(event, id, player).runTasks();
             if (timer > 0) players.put(uuid, System.currentTimeMillis());
+        }
+
+        @EventHandler(priority = EventPriority.LOW)
+        private void onChat(AsyncPlayerChatEvent event) {
+            String path = "join-quit.vanish.chat-key";
+            if (event.isCancelled()) return;
+
+            String key = FileCache.MODULES.get().getString(path + "key");
+            if (StringUtils.isBlank(key)) return;
+
+            String message = event.getMessage();
+            Player player = event.getPlayer();
+
+            if (FileCache.MODULES.get().getBoolean(path + "regex")) {
+                Matcher match = Pattern.compile(key).matcher(message);
+
+                if (!match.find()) {
+                    textUtils().sendMessageList(player, FileCache.MODULES.get(), path + "not-allowed");
+                    event.setCancelled(true);
+                }
+                else event.setMessage(message.replace(match.group(), ""));
+                return;
+            }
+
+            String place = FileCache.MODULES.get().getString(path + "place", "");
+            boolean isPrefix = !place.matches("(?i)suffix");
+
+            String pattern = (isPrefix ? "^" : "") + Pattern.quote(key) + (isPrefix ? "" : "$");
+            Matcher match = Pattern.compile(pattern).matcher(message);
+
+            if (!match.find()) {
+                textUtils().sendMessageList(player, FileCache.MODULES.get(), path + "not-allowed");
+                event.setCancelled(true);
+            }
+            else event.setMessage(message.replace(match.group(), ""));
         }
     }
 
@@ -256,11 +294,11 @@ public class JoinQuit extends BaseViewer {
             if (event instanceof PlayerJoinEvent) isLogged = false;
             else if (event instanceof PlayerQuitEvent) isJoin = doSpawn = isLogged = false;
             else if (event instanceof LoginEvent) {
-                doSpawn = !MODULES.toFile().getBoolean("join-quit.login.enabled");
+                doSpawn = !FileCache.MODULES.get().getBoolean("join-quit.login.enabled");
             }
             else if (event instanceof VanishEvent) {
                 isJoin = ((VanishEvent) event).isVanished();
-                doSpawn = MODULES.toFile().getBoolean("join-quit.vanish.use-spawn");
+                doSpawn = FileCache.MODULES.get().getBoolean("join-quit.vanish.use-spawn");
                 isLogged = false;
             }
         }
@@ -269,14 +307,14 @@ public class JoinQuit extends BaseViewer {
             BukkitRunnable runnable = new BukkitRunnable() {
                 @Override
                 public void run() {
-                    sendMessages(player, toList(id, "public"), true);
+                    sendMessages(player, TextUtils.toList(id, "public"), true);
                     if (isJoin) {
-                        sendMessages(player, toList(id, "private"), false);
+                        sendMessages(player, TextUtils.toList(id, "private"), false);
                         playSound(player, id.getString("sound"));
                         giveInvulnerable(player, id.getInt("invulnerable"));
                         if (doSpawn) teleportPlayer(id, player);
                     }
-                    runCommands(isJoin ? player : null, toList(id, "commands"));
+                    runCommands(isJoin ? player : null, TextUtils.toList(id, "commands"));
 
                     if (!Initializer.hasDiscord()) return;
 
@@ -285,7 +323,7 @@ public class JoinQuit extends BaseViewer {
                 }
             };
 
-            int ticks = MODULES.toFile().getInt("login.ticks-after");
+            int ticks = FileCache.MODULES.get().getInt("login.ticks-after");
 
             if (!isLogged || ticks <= 0) runnable.runTask(main);
             else runnable.runTaskLater(main, ticks);

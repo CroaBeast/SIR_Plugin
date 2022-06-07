@@ -9,7 +9,7 @@ import javax.annotation.*;
 /**
  * This class represents the base of every command used in this plugin.
  */
-public abstract class BaseCmd extends CmdUtils {
+public abstract class SIRTask extends CmdUtils {
 
     /**
      * The command's name from plugin.yml file

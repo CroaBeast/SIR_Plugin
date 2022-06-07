@@ -5,6 +5,7 @@ import github.scarsz.discordsrv.dependencies.jda.api.*;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
 import github.scarsz.discordsrv.util.*;
 import me.croabeast.iridiumapi.*;
+import me.croabeast.sirplugin.objects.files.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.entity.*;
@@ -12,8 +13,8 @@ import org.jetbrains.annotations.*;
 
 import java.time.*;
 
-import static me.croabeast.sirplugin.objects.FileCache.*;
-import static me.croabeast.sirplugin.utilities.TextUtils.*;
+import static me.croabeast.beanslib.utilities.TextUtils.*;
+import static me.croabeast.sirplugin.utilities.LangUtils.*;
 import static org.apache.commons.lang.StringUtils.*;
 
 public class Message {
@@ -44,9 +45,9 @@ public class Message {
         String[] keys = {"player", "uuid"};
         String[] values = {player.getName(), player.getUniqueId().toString()};
 
-        line = parseInsensitiveEach(line, keys, values);
+        line = parseInternalKeys(line, keys, values);
         if (this.keys != null && this.values != null)
-            line = parseInsensitiveEach(line, this.keys, this.values);
+            line = parseInternalKeys(line, this.keys, this.values);
 
         line = IridiumAPI.stripAll(parsePAPI(player, line));
         return DiscordUtil.translateEmotes(line);
@@ -54,8 +55,8 @@ public class Message {
 
     @Nullable
     private TextChannel getChannel() {
-        String guildName = MODULES.toFile().getString("discord.server-id", ""),
-                id = MODULES.toFile().getString("discord.channels." + channel, "");
+        String guildName = FileCache.MODULES.get().getString("discord.server-id", ""),
+                id = FileCache.MODULES.get().getString("discord.channels." + channel, "");
 
         Guild guild = null;
         try {
@@ -71,7 +72,7 @@ public class Message {
 
     private int embedColor() {
         int color = Color.BLACK.asRGB();
-        String rgb = DISCORD.toFile().getString(embedPath + ".color", "BLACK");
+        String rgb = FileCache.DISCORD.get().getString(embedPath + ".color", "BLACK");
         try {
             try {
                 return java.awt.Color.decode(rgb).getRGB();
@@ -91,25 +92,25 @@ public class Message {
         EmbedBuilder embed = new EmbedBuilder();
         embed.setColor(embedColor());
 
-        String author = DISCORD.toFile().getString(embedPath + ".author.name");
-        String url = DISCORD.toFile().getString(embedPath + ".author.url");
-        String icon = DISCORD.toFile().getString(embedPath + ".author.iconURL");
+        String author = FileCache.DISCORD.get().getString(embedPath + ".author.name");
+        String url = FileCache.DISCORD.get().getString(embedPath + ".author.url");
+        String icon = FileCache.DISCORD.get().getString(embedPath + ".author.iconURL");
 
         embed.setAuthor(
                 parseValues(author), isNotBlank(url) && url.startsWith("http") ? parseValues(url) : null,
                 isNotBlank(icon) && icon.startsWith("http") ? parseValues(icon) : null
         );
 
-        String title = DISCORD.toFile().getString(embedPath + ".title");
+        String title = FileCache.DISCORD.get().getString(embedPath + ".title");
         if (isNotBlank(title)) embed.setTitle(parseValues(title));
 
-        String description = DISCORD.toFile().getString(embedPath + ".description");
+        String description = FileCache.DISCORD.get().getString(embedPath + ".description");
         if (isNotBlank(description)) embed.setDescription(parseValues(description));
 
-        String image = DISCORD.toFile().getString(embedPath + ".thumbnail");
+        String image = FileCache.DISCORD.get().getString(embedPath + ".thumbnail");
         if (isNotBlank(image) && image.startsWith("http")) embed.setThumbnail(parseValues(image));
 
-        if (DISCORD.toFile().getBoolean(embedPath + ".timeStamp"))
+        if (FileCache.DISCORD.get().getBoolean(embedPath + ".timeStamp"))
             embed.setTimestamp(Instant.now());
 
         return embed.build();
@@ -118,7 +119,7 @@ public class Message {
     @SuppressWarnings("deprecation")
     public void sendMessage() {
         if (textChannel == null) return;
-        String text = DISCORD.toFile().getString("channels." + channel + ".text");
+        String text = FileCache.DISCORD.get().getString("channels." + channel + ".text");
 
         if ((text != null && !text.equals("")) || embedMessage().isEmpty())
             textChannel.sendMessage(parseValues(text)).queue();

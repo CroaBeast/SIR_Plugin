@@ -4,6 +4,7 @@ import com.google.common.collect.*;
 import me.croabeast.advancementinfo.*;
 import me.croabeast.sirplugin.objects.analytics.*;
 import me.croabeast.sirplugin.objects.extensions.*;
+import me.croabeast.sirplugin.objects.files.FileCache;
 import me.croabeast.sirplugin.utilities.*;
 import net.milkbowl.vault.permission.*;
 import org.bukkit.*;
@@ -12,8 +13,6 @@ import org.bukkit.configuration.file.*;
 import org.bukkit.plugin.*;
 
 import java.util.*;
-
-import static me.croabeast.sirplugin.objects.FileCache.*;
 
 public final class Initializer {
 
@@ -27,7 +26,6 @@ public final class Initializer {
             vanishHooks = new ArrayList<>();
 
     static Map<Advancement, AdvancementInfo> keys = new HashMap<>();
-    static Map<BaseModule.Identifier, BaseModule> moduleMap = new HashMap<>();
 
     public Initializer(SIRPlugin main) {
         this.main = main;
@@ -56,7 +54,7 @@ public final class Initializer {
     }
 
     public static boolean hasDiscord() {
-        return Bukkit.getPluginManager().isPluginEnabled("DiscordSRV") && BaseModule.isEnabled(BaseModule.Identifier.DISCORD);
+        return Bukkit.getPluginManager().isPluginEnabled("DiscordSRV") && Identifier.DISCORD.isEnabled();
     }
 
     public static boolean hasLogin() {
@@ -161,7 +159,7 @@ public final class Initializer {
 
     @SuppressWarnings("deprecation")
     public static void loadAdvances(boolean debug) {
-        if (TextUtils.majorVersion() < 12) return;
+        if (LangUtils.majorVersion() < 12) return;
         if (!keys.isEmpty()) keys.clear();
 
         long time = System.currentTimeMillis();
@@ -170,9 +168,9 @@ public final class Initializer {
             LogUtils.doLog("&bRegistering all the advancement values...");
         }
 
-        if (BaseModule.isEnabled(BaseModule.Identifier.ADVANCES)) {
+        if (Identifier.ADVANCES.isEnabled()) {
             for (World world : Bukkit.getServer().getWorlds()) {
-                if (TextUtils.majorVersion() == 12) {
+                if (LangUtils.majorVersion() == 12) {
                     world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "false");
                     continue;
                 }
@@ -188,12 +186,12 @@ public final class Initializer {
         for (Advancement adv : getAdvancements()) {
             Initializer.keys.put(adv, new AdvancementInfo(adv));
 
-            String key = TextUtils.stringKey(adv.getKey().toString());
+            String key = LangUtils.stringKey(adv.getKey().toString());
             final String type = Initializer.keys.get(adv).getFrameType();
 
             if (key.contains("root") || key.contains("recipes")) continue;
 
-            FileConfiguration advances = ADVANCES.toFile();
+            FileConfiguration advances = FileCache.ADVANCES.get();
             boolean notContained = !advances.contains(key);
 
             switch (type.toUpperCase()) {
@@ -231,7 +229,7 @@ public final class Initializer {
             }
         }
 
-        if (keys.size() > 0) ADVANCES.fromSource().saveFile();
+        if (keys.size() > 0) FileCache.ADVANCES.source().saveFile();
 
         String error = errors.size() == 0 ? null : "&7Unknowns: &c" + errors.size() +
                 "&7. Check your advances.yml file!";
@@ -248,11 +246,11 @@ public final class Initializer {
 
     @SuppressWarnings("deprecation")
     public static void unloadAdvances(boolean reload) {
-        if (TextUtils.majorVersion() < 12) return;
-        if (BaseModule.isEnabled(BaseModule.Identifier.ADVANCES) && reload) return;
+        if (LangUtils.majorVersion() < 12) return;
+        if (Identifier.ADVANCES.isEnabled() && reload) return;
 
         for (World world : Bukkit.getServer().getWorlds()) {
-            if (TextUtils.majorVersion() == 12) {
+            if (LangUtils.majorVersion() == 12) {
                 world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "true");
                 continue;
             }
@@ -262,23 +260,12 @@ public final class Initializer {
         LogUtils.doLog("&eAll worlds have default advancements enabled.");
     }
 
-    public void registerModules(BaseModule... baseModules) {
-        for (BaseModule baseModule : baseModules) {
-            moduleMap.put(baseModule.getIdentifier(), baseModule);
-            baseModule.registerModule();
-        }
-    }
-
     public static List<Advancement> getAdvancements() {
         return Lists.newArrayList(Bukkit.getServer().advancementIterator());
     }
 
     public static Permission getPerms() {
         return permProvider;
-    }
-
-    public static Map<BaseModule.Identifier, BaseModule> getModules() {
-        return moduleMap;
     }
 
     public static Map<Advancement, AdvancementInfo> getKeys() {

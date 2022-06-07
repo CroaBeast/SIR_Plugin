@@ -1,6 +1,8 @@
 package me.croabeast.sirplugin.modules.listeners;
 
+import me.croabeast.beanslib.utilities.*;
 import me.croabeast.sirplugin.objects.extensions.*;
+import me.croabeast.sirplugin.objects.files.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.apache.commons.lang.*;
 import org.bukkit.configuration.*;
@@ -12,9 +14,7 @@ import org.jetbrains.annotations.*;
 import java.util.*;
 import java.util.regex.*;
 
-import static me.croabeast.sirplugin.objects.FileCache.*;
-
-public class ChatFilter extends BaseViewer {
+public class ChatFilter extends SIRViewer {
 
     @Override
     public @NotNull Identifier getIdentifier() {
@@ -28,7 +28,7 @@ public class ChatFilter extends BaseViewer {
         Player player = event.getPlayer();
         String message = event.getMessage();
 
-        ConfigurationSection id = EventUtils.getSection(FILTERS.toFile(), player, "filters");
+        ConfigurationSection id = EventUtils.getSection(FileCache.FILTERS.get(), player, "filters");
         if (id == null) return;
 
         List<String> words = TextUtils.toList(id, "words");

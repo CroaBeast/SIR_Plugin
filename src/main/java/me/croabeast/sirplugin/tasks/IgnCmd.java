@@ -2,17 +2,17 @@ package me.croabeast.sirplugin.tasks;
 
 import com.google.common.collect.*;
 import me.croabeast.sirplugin.objects.extensions.*;
+import me.croabeast.sirplugin.objects.files.FileCache;
 import me.croabeast.sirplugin.utilities.*;
-import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.entity.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.objects.FileCache.*;
+public class IgnCmd extends SIRTask {
 
-public class IgnoreCmd extends BaseCmd {
+    private final String PATH = "commands.ignore.";
 
     @Override
     public String getName() {
@@ -23,10 +23,10 @@ public class IgnoreCmd extends BaseCmd {
         boolean value = obj == null || !obj;
         uuid += "." + (isChat ? "all-chat" : "all-msg");
 
-        IGNORE.toFile().set("data." + uuid, value);
-        IGNORE.fromSource().saveFile(false);
+        FileCache.IGNORE.get().set("data." + uuid, value);
+        FileCache.IGNORE.source().saveFile(false);
 
-        String path = "commands.ignore." + (value ? "success" : "remove");
+        String path = PATH + (value ? "success" : "remove");
         return oneMessage(path + ".all", "type", key);
     }
 
@@ -38,11 +38,11 @@ public class IgnoreCmd extends BaseCmd {
         if (add) list.add(target);
         else list.remove(target);
 
-        IGNORE.toFile().set("data." + uuid, list);
-        IGNORE.fromSource().saveFile(false);
+        FileCache.IGNORE.get().set("data." + uuid, list);
+        FileCache.IGNORE.source().saveFile(false);
 
-        String path = "commands.ignore." + (add ? "success" : "remove");
-        oneMessage(path + "player", keys, values);
+        String path = PATH + (add ? "success" : "remove");
+        oneMessage(path + ".player", keys, values);
         return true;
     }
 
@@ -56,25 +56,24 @@ public class IgnoreCmd extends BaseCmd {
                 return true;
             }
 
-            String path = "commands.ignore.";
             if (hasNoPerm("ignore")) return true;
 
-            if (args.length == 0) return oneMessage(path + "help");
-            if (args.length == 1) return oneMessage(path + "need-player");
+            if (args.length == 0) return oneMessage(PATH + "help");
+            if (args.length == 1) return oneMessage(PATH + "need-player");
             if (args.length > 2) return notArgument(args[args.length - 1]);
 
-            String chatKey = LANG.toFile().getString(path + "channels.chat"),
-                    msgKey = LANG.toFile().getString(path + "channels.msg");
+            String chatKey = FileCache.LANG.get().getString(PATH + "channels.chat"),
+                    msgKey = FileCache.LANG.get().getString(PATH + "channels.msg");
 
             String uuid = ((Player) sender).getUniqueId().toString();
 
-            Boolean allChat = IGNORE.toFile().contains("data." + uuid + ".all-chat") ?
-                    IGNORE.toFile().getBoolean("data." + uuid + ".all-chat") : null;
-            Boolean allMsg = IGNORE.toFile().contains("data." + uuid + ".all-msg") ?
-                    IGNORE.toFile().getBoolean("data." + uuid + ".all-msg") : null;
+            Boolean allChat = FileCache.IGNORE.get().contains("data." + uuid + ".all-chat") ?
+                    FileCache.IGNORE.get().getBoolean("data." + uuid + ".all-chat") : null;
+            Boolean allMsg = FileCache.IGNORE.get().contains("data." + uuid + ".all-msg") ?
+                    FileCache.IGNORE.get().getBoolean("data." + uuid + ".all-msg") : null;
 
-            List<String> chatList = IGNORE.toFile().getStringList("data." + uuid + ".chat");
-            List<String> msgList = IGNORE.toFile().getStringList("data." + uuid + ".msg");
+            List<String> chatList = FileCache.IGNORE.get().getStringList("data." + uuid + ".chat");
+            List<String> msgList = FileCache.IGNORE.get().getStringList("data." + uuid + ".msg");
 
             if (args[1].matches("(?i)@a")) {
                 switch (args[0].toLowerCase()) {
@@ -84,11 +83,11 @@ public class IgnoreCmd extends BaseCmd {
                 }
             }
 
-            Player target = Bukkit.getPlayer(args[1]);
+            Player target = PlayerUtils.getClosestPlayer(args[1]);
 
             if (target == null)
-                return oneMessage(path + "not-player", "target", args[1]);
-            if (target == sender) return oneMessage(path + "not-yourself");
+                return oneMessage(PATH + "not-player", "target", args[1]);
+            if (target == sender) return oneMessage(PATH + "not-yourself");
 
             String targetUUID = target.getUniqueId().toString();
 

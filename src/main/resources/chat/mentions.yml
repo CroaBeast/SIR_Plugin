@@ -8,13 +8,9 @@ mentions:
     prefix: '@'
     # A click line that will apply only for the mention.
     # Can be null or empty.
-    # THIS WON'T WORK IF YOU ARE USING HOVER AND CLICK SECTION IN YOUR CHAT FORMAT
-    # OR IF YOUR MESSAGE IS SURROUNDED IN A JSON FORMAT
     click: 'RUN:/msg {sender} hi buddy'
     # A hover list that will apply only for the mention.
     # Can be null or empty.
-    # THIS WON'T WORK IF YOU ARE USING HOVER AND CLICK SECTION IN YOUR CHAT FORMAT
-    # OR IF YOUR MESSAGE IS SURROUNDED IN A JSON FORMAT
     hover:
       - '&7Sender: &e{sender}'
       - '<R:1>Click to send a message</R>'

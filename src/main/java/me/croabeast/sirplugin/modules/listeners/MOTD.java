@@ -1,9 +1,10 @@
 package me.croabeast.sirplugin.modules.listeners;
 
+import me.croabeast.beanslib.utilities.*;
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.objects.extensions.*;
+import me.croabeast.sirplugin.objects.files.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.configuration.*;
@@ -17,9 +18,7 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-import static me.croabeast.sirplugin.objects.FileCache.*;
-
-public class ServerList extends BaseViewer {
+public class MOTD extends SIRViewer {
 
     private final SIRPlugin main;
 
@@ -27,7 +26,7 @@ public class ServerList extends BaseViewer {
 
     private int MOTD = 0, ICON = 0;
 
-    public ServerList(SIRPlugin main) {
+    public MOTD(SIRPlugin main) {
         this.main = main;
 
         String path = "misc" + File.separator + "icons";
@@ -46,7 +45,7 @@ public class ServerList extends BaseViewer {
 
     @Nullable
     private ConfigurationSection getList() {
-        return FileCache.MOTD.toFile().getConfigurationSection("motds");
+        return FileCache.MOTD.get().getConfigurationSection("motds");
     }
 
     private Player getPlayerFromIP() {
@@ -76,7 +75,7 @@ public class ServerList extends BaseViewer {
         );
 
 
-        if (!MODULES.toFile().getBoolean("motd.random-motds")) {
+        if (!FileCache.MODULES.get().getBoolean("motd.random-motds")) {
             if (MOTD < count) MOTD++;
             else MOTD = 0;
         }
@@ -97,14 +96,14 @@ public class ServerList extends BaseViewer {
     }
 
     private String usageType() {
-        return MODULES.toFile().getString("motd.server-icon.usage", "DISABLED").toUpperCase();
+        return FileCache.MODULES.get().getString("motd.server-icon.usage", "DISABLED").toUpperCase();
     }
 
     private void setServerIcon() {
         if (usageType().equals("DISABLED")) return;
 
         File folder = new File(main.getDataFolder() + File.separator + "misc" + File.separator + "icons");
-        File single = new File(folder, MODULES.toFile().getString("motd.server-icon.image", ""));
+        File single = new File(folder, FileCache.MODULES.get().getString("motd.server-icon.image", ""));
 
         File[] icons = folder.listFiles((dir, name) -> name.endsWith(".png"));
         if (icons == null) {
@@ -144,7 +143,7 @@ public class ServerList extends BaseViewer {
     }
 
     private String maxType() {
-        return MODULES.toFile().getString("motd.max-players.type", "DEFAULT").toUpperCase();
+        return FileCache.MODULES.get().getString("motd.max-players.type", "DEFAULT").toUpperCase();
     }
 
     @EventHandler
@@ -161,7 +160,7 @@ public class ServerList extends BaseViewer {
                 break;
 
             case "CUSTOM":
-                event.setMaxPlayers(MODULES.toFile().getInt("motd.max-players.count"));
+                event.setMaxPlayers(FileCache.MODULES.get().getInt("motd.max-players.count"));
                 break;
 
             case "DEFAULT": default:

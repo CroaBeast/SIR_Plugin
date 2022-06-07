@@ -2,13 +2,13 @@ package me.croabeast.sirplugin.objects.analytics;
 
 import com.google.common.collect.*;
 import me.croabeast.sirplugin.*;
+import me.croabeast.sirplugin.objects.files.FileCache;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.entity.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.objects.FileCache.*;
 
 public class Amender {
 
@@ -83,12 +83,12 @@ public class Amender {
 
     public void initUpdater(@Nullable Player player) {
         if (player == null) {
-            if (!CONFIG.toFile().getBoolean("updater.plugin.on-start")) return;
+            if (!FileCache.CONFIG.get().getBoolean("updater.plugin.on-start")) return;
             runUpdater(null);
         }
         else {
-            if (!CONFIG.toFile().getBoolean("updater.plugin.send-op") ||
-                    !PermUtils.hasPerm(player, "sir.admin.updater")) return;
+            if (!FileCache.CONFIG.get().getBoolean("updater.plugin.send-op") ||
+                    !PlayerUtils.hasPerm(player, "sir.admin.updater")) return;
             runUpdater(player);
         }
     }

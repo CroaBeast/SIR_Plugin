@@ -1,6 +1,7 @@
 package me.croabeast.sirplugin.tasks;
 
 import com.google.common.collect.*;
+import me.croabeast.beanslib.utilities.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.objects.extensions.*;
 import me.croabeast.sirplugin.utilities.*;
@@ -9,10 +10,9 @@ import org.bukkit.entity.*;
 
 import java.util.*;
 
-import static me.croabeast.beanslib.BeansLib.*;
 import static me.croabeast.sirplugin.SIRPlugin.*;
 
-public class PrintCmd extends BaseCmd {
+public class PrintCmd extends SIRTask {
 
     @Override
     public String getName() {
@@ -108,7 +108,7 @@ public class PrintCmd extends BaseCmd {
                 if (!catchTargets(args[1]).isEmpty()) {
                     catchTargets(args[1]).forEach(p -> {
                         String[] array = args[2].matches("(?i)DEFAULT") ? null : args[2].split(","),
-                                msg = textUtils().colorize(p, stripJson(noFormat)).split(split);
+                                msg = textUtils().colorize(p, TextUtils.stripJson(noFormat)).split(split);
                         textUtils().sendTitle(p, msg, array);
                     });
                     messageLogger("TITLE", noFormat.replace(split, "&r" + split));

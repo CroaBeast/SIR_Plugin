@@ -1,7 +1,8 @@
 package me.croabeast.sirplugin.utilities;
 
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.objects.extensions.BaseModule;
+import me.croabeast.sirplugin.objects.extensions.*;
+import me.croabeast.sirplugin.objects.files.*;
 import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.configuration.*;
@@ -15,9 +16,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
-import static me.croabeast.sirplugin.modules.listeners.Formatter.KeysHandler.*;
-import static me.croabeast.sirplugin.objects.FileCache.*;
-import static me.croabeast.sirplugin.utilities.TextUtils.*;
+import static me.croabeast.sirplugin.modules.listeners.Formats.*;
+import static me.croabeast.sirplugin.utilities.LangUtils.*;
 
 public class EventUtils {
 
@@ -27,7 +27,7 @@ public class EventUtils {
     }
 
     private static boolean certainPerm(Player player, String perm) {
-        return perm != null && !perm.matches("(?i)DEFAULT") && PermUtils.hasPerm(player, perm);
+        return perm != null && !perm.matches("(?i)DEFAULT") && PlayerUtils.hasPerm(player, perm);
     }
 
     @Nullable
@@ -83,7 +83,7 @@ public class EventUtils {
     }
 
     public static void giveInvulnerable(Player player, int godTime) {
-        if (TextUtils.majorVersion() <= 8 | godTime <= 0) return;
+        if (LangUtils.majorVersion() <= 8 | godTime <= 0) return;
 
         player.setInvulnerable(true);
         getGodPlayers().add(player);
@@ -167,17 +167,17 @@ public class EventUtils {
                 continue;
             }
 
-            line = parseInsensitiveEach(line, new String[] {"player", "world"},
+            line = parseInternalKeys(line, new String[] {"player", "world"},
                     new String[] {sender.getName(), sender.getWorld().getName()});
 
-            boolean isNot = !BaseModule.isEnabled(BaseModule.Identifier.FORMATS);
+            boolean isNot = !Identifier.FORMATS.isEnabled();
             String[] values = {isNot ? null : getChatValue(sender, "prefix", ""),
                     isNot ? null : getChatValue(sender, "suffix", "")};
 
-            line = parseInsensitiveEach(line, new String[] {"prefix", "suffix"}, values);
+            line = parseInternalKeys(line, new String[] {"prefix", "suffix"}, values);
             line = textUtils().removeSpace(line);
 
-            if (doLog && CONFIG.toFile().getBoolean("options.send-console")) {
+            if (doLog && FileCache.CONFIG.get().getBoolean("options.send-console")) {
                 String logLine = textUtils().centeredText(sender, textUtils().stripPrefix(line));
                 String splitter = textUtils().lineSeparator();
                 LogUtils.doLog(logLine.replace(splitter, "&f" + splitter));
@@ -201,7 +201,7 @@ public class EventUtils {
             boolean isPlayer = isStarting("[player]", line) && player != null;
 
             if (player != null) {
-                line = parseInsensitiveEach(line, new String[] {"player", "world"},
+                line = parseInternalKeys(line, new String[] {"player", "world"},
                         new String[] {player.getName(), player.getWorld().getName()});
             }
 

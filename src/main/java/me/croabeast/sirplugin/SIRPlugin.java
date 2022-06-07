@@ -2,9 +2,10 @@ package me.croabeast.sirplugin;
 
 import me.croabeast.beanslib.terminals.*;
 import me.croabeast.sirplugin.modules.*;
+import me.croabeast.sirplugin.modules.Announcer;
 import me.croabeast.sirplugin.modules.listeners.*;
 import me.croabeast.sirplugin.objects.analytics.*;
-import me.croabeast.sirplugin.objects.extensions.BaseCmd;
+import me.croabeast.sirplugin.objects.extensions.*;
 import me.croabeast.sirplugin.tasks.*;
 import me.croabeast.sirplugin.tasks.message.*;
 import me.croabeast.sirplugin.utilities.*;
@@ -13,7 +14,7 @@ import org.bukkit.boss.*;
 import org.bukkit.entity.*;
 import org.bukkit.plugin.java.*;
 
-import static me.croabeast.sirplugin.objects.extensions.BaseModule.Identifier.*;
+import static me.croabeast.sirplugin.objects.extensions.Identifier.*;
 
 public final class SIRPlugin extends JavaPlugin {
 
@@ -23,7 +24,7 @@ public final class SIRPlugin extends JavaPlugin {
 
     private Amender amender;
 
-    private static TextUtils text;
+    private static LangUtils text;
     private static String pluginVersion;
 
     @Override
@@ -32,16 +33,18 @@ public final class SIRPlugin extends JavaPlugin {
         instance = this;
         pluginVersion = getDescription().getVersion();
 
-        text = new TextUtils(this);
+        text = new LangUtils(this);
         files = new FilesUtils(this);
 
         Initializer init = new Initializer(this);
         amender = new Amender(this);
 
-        pluginHeader();
         LogUtils.rawLog(
+                "&0* *&e____ &0* &e___ &0* &e____",
+                "&0* &e(___&0 * * &e|&0* * &e|___)",
+                "&0* &e____) . _|_ . | &0* &e\\ . &fv" + pluginVersion, "",
                 "&0* &7Developer: " + getDescription().getAuthors().get(0),
-                "&0* &7Software: " + TextUtils.serverFork(),
+                "&0* &7Software: " + LangUtils.serverFork(),
                 "&0* &7Java Version: " + System.getProperty("java.version"), ""
         );
 
@@ -51,17 +54,19 @@ public final class SIRPlugin extends JavaPlugin {
         init.setPluginHooks();
 
         registerCommands(
-                new MainCmd(this), new Announcer(this), new PrintCmd(), new MsgCmd(),
-                new ReplyCmd(), new IgnoreCmd()
+                new MainCmd(this), new BroadCmd(), new PrintCmd(), new MsgCmd(),
+                new ReplyCmd(), new IgnCmd()
         );
 
-        init.registerModules(
-                new EmParser(), new Reporter(this), new JoinQuit(this), new Advances(), 
-                new ServerList(this), new Formatter(), new ChatFilter(), new Mentions()
+        SIRModule.registerModules(
+                new EmParser(), new Announcer(this), new JoinQuit(this), new Advances(),
+                new MOTD(this), new Formats(), new ChatFilter()
         );
 
-        if (getReporter().isEnabled()) getReporter().startTask();
-        LogUtils.doLog("&7The announcement task has been started.");
+        if (ANNOUNCES.isEnabled()) {
+            ((Announcer) SIRModule.getModule(ANNOUNCES)).startTask();
+            LogUtils.doLog("&7The announcement task has been started.");
+        }
 
         LogUtils.doLog("",
                 "&7SIR " + pluginVersion + " was&a loaded&7 in " +
@@ -77,10 +82,14 @@ public final class SIRPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        pluginHeader();
+        LogUtils.rawLog("" +
+                        "&0* *&e____ &0* &e___ &0* &e____",
+                "&0* &e(___&0 * * &e|&0* * &e|___)",
+                "&0* &e____) . _|_ . | &0* &e\\ . &fv" + pluginVersion, ""
+        );
 
         Initializer.unloadAdvances(false);
-        getReporter().cancelTask();
+        ((Announcer) SIRModule.getModule(ANNOUNCES)).cancelTask();
 
         for (Player player : Bukkit.getOnlinePlayers()) {
             BossBar bar = Bossbar.getBossbar(player);
@@ -96,18 +105,10 @@ public final class SIRPlugin extends JavaPlugin {
         instance = null;
     }
 
-    private void pluginHeader() {
-        LogUtils.rawLog("" +
-                        "&0* *&e____ &0* &e___ &0* &e____",
-                "&0* &e(___&0 * * &e|&0* * &e|___)",
-                "&0* &e____) . _|_ . | &0* &e\\ . &fv" + pluginVersion, ""
-        );
-    }
-
     public static SIRPlugin getInstance() {
         return instance;
     }
-    public static TextUtils textUtils() {
+    public static LangUtils textUtils() {
         return text;
     }
 
@@ -118,19 +119,11 @@ public final class SIRPlugin extends JavaPlugin {
     public Amender getAmender() {
         return amender;
     }
-
     public FilesUtils getFiles() {
         return files;
     }
 
-    public Reporter getReporter() {
-        return (Reporter) Initializer.getModules().get(ANNOUNCES);
-    }
-    public EmParser getEmParser() {
-        return (EmParser) Initializer.getModules().get(EMOJIS);
-    }
-
-    private void registerCommands(BaseCmd... cmds) {
-        for (BaseCmd cmd : cmds) cmd.registerCommand();
+    private void registerCommands(SIRTask... cmds) {
+        for (SIRTask cmd : cmds) cmd.registerCommand();
     }
 }

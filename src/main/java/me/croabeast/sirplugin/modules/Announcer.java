@@ -1,7 +1,9 @@
 package me.croabeast.sirplugin.modules;
 
+import me.croabeast.beanslib.utilities.*;
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.objects.extensions.BaseModule;
+import me.croabeast.sirplugin.objects.extensions.*;
+import me.croabeast.sirplugin.objects.files.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.*;
 import org.bukkit.configuration.*;
@@ -13,9 +15,8 @@ import java.util.*;
 import java.util.stream.*;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
-import static me.croabeast.sirplugin.objects.FileCache.*;
 
-public class Reporter extends BaseModule {
+public class Announcer extends SIRModule {
 
     private final SIRPlugin main;
 
@@ -25,7 +26,7 @@ public class Reporter extends BaseModule {
     private BukkitRunnable runnable;
     Map<Integer, ConfigurationSection> sections = new HashMap<>();
 
-    public Reporter(SIRPlugin main) {
+    public Announcer(SIRPlugin main) {
         this.main = main;
     }
 
@@ -49,7 +50,7 @@ public class Reporter extends BaseModule {
             return new ArrayList<>(Bukkit.getOnlinePlayers());
         else
             return Bukkit.getOnlinePlayers().stream().
-                    filter(p -> PermUtils.hasPerm(p, perm)).
+                    filter(p -> PlayerUtils.hasPerm(p, perm)).
                     collect(Collectors.toList());
     }
 
@@ -62,7 +63,7 @@ public class Reporter extends BaseModule {
         List<String> msgs = TextUtils.toList(id, "lines"), cmds = TextUtils.toList(id, "commands");
 
         if (!msgs.isEmpty()) {
-            if (CONFIG.toFile().getBoolean("options.send-console")) {
+            if (FileCache.CONFIG.get().getBoolean("options.send-console")) {
                 for (String line : msgs) {
                     String logLine = textUtils().centeredText(null, textUtils().stripPrefix(line));
                     String splitter = textUtils().lineSeparator();
@@ -94,7 +95,7 @@ public class Reporter extends BaseModule {
 
         runSection(sections.get(ORDER));
 
-        if (!ANNOUNCES.toFile().getBoolean("random")) {
+        if (!FileCache.ANNOUNCES.get().getBoolean("random")) {
             if (ORDER < count) ORDER++;
             else ORDER = 0;
         }
@@ -115,11 +116,11 @@ public class Reporter extends BaseModule {
 
     @Nullable
     public ConfigurationSection getSection() {
-        return ANNOUNCES.toFile().getConfigurationSection("announces");
+        return FileCache.ANNOUNCES.get().getConfigurationSection("announces");
     }
 
     public int getDelay() {
-        return MODULES.toFile().getInt("announces.interval");
+        return FileCache.MODULES.get().getInt("announces.interval");
     }
 
     public void cancelTask() {

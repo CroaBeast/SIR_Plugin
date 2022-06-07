@@ -2,35 +2,29 @@ package me.croabeast.sirplugin.utilities;
 
 import com.Zrips.CMI.Containers.*;
 import com.earth2me.essentials.*;
-import me.croabeast.sirplugin.*;
+import me.croabeast.sirplugin.objects.files.FileCache;
 import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.entity.*;
 import org.bukkit.metadata.*;
 
-import static me.croabeast.sirplugin.objects.FileCache.*;
 
-public final class PermUtils {
-
-    private final static SIRPlugin main = SIRPlugin.getInstance();
+public final class PlayerUtils {
 
     public static boolean hasPerm(CommandSender sender, String perm) {
-        boolean isSet = CONFIG.toFile().getBoolean("options.hard-perm-check");
+        boolean isSet = FileCache.CONFIG.get().getBoolean("options.hard-perm-check");
         isSet = (!isSet || sender.isPermissionSet(perm)) && sender.hasPermission(perm);
         return (sender instanceof ConsoleCommandSender) || isSet;
     }
 
     private static boolean essVanish(Player player, boolean isJoin) {
-        Essentials ess = (Essentials)
-                Bukkit.getPluginManager().getPlugin("Essentials");
-        if (ess == null) return false;
-        return ess.getUser(player).isVanished() ||
-                (isJoin && hasPerm(player, "essentials.silentjoin.vanish"));
+        Essentials ess = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
+        return ess != null && (ess.getUser(player).isVanished() ||
+                (isJoin && hasPerm(player, "essentials.silentjoin.vanish")));
     }
 
     private static boolean cmiVanish(Player player) {
-        if (Bukkit.getPluginManager().getPlugin("CMI") == null) return false;
-        return CMIUser.getUser(player).isVanished();
+        return Bukkit.getPluginManager().getPlugin("CMI") != null && CMIUser.getUser(player).isVanished();
     }
 
     private static boolean normalVanish(Player player) {
@@ -41,5 +35,13 @@ public final class PermUtils {
 
     public static boolean isVanished(Player p, boolean isJoin) {
         return essVanish(p, isJoin) || cmiVanish(p) || normalVanish(p);
+    }
+
+    public static Player getClosestPlayer(String input) {
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            if (!p.getName().matches("(?i)" + input)) continue;
+            return p;
+        }
+        return null;
     }
 }

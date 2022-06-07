@@ -7,7 +7,9 @@ import org.bukkit.command.*;
 
 import java.util.*;
 
-public class MainCmd extends BaseCmd {
+import static me.croabeast.sirplugin.objects.extensions.Identifier.*;
+
+public class MainCmd extends SIRTask {
 
     private final SIRPlugin main;
 
@@ -39,15 +41,15 @@ public class MainCmd extends BaseCmd {
                     long start = System.currentTimeMillis();
 
                     main.getFiles().loadFiles(false);
-                    main.getEmParser().registerModule();
-                    main.getReporter().registerModule();
+                    SIRModule.getModule(EMOJIS).registerModule();
+                    SIRModule.getModule(ANNOUNCES).registerModule();
 
                     Initializer.unloadAdvances(true);
                     Initializer.loadAdvances(false);
 
-                    Reporter reporter = main.getReporter();
-                    if (reporter.isEnabled() && !reporter.isRunning()) reporter.startTask();
-                    if (!reporter.isEnabled()) reporter.cancelTask();
+                    Announcer announcer = (Announcer) SIRModule.getModule(ANNOUNCES);
+                    if (announcer.isEnabled() && !announcer.isRunning()) announcer.startTask();
+                    if (!announcer.isEnabled()) announcer.cancelTask();
 
                     sendMessage("commands.sir.reload", "time",
                             (System.currentTimeMillis() - start) + "");

@@ -1,4 +1,4 @@
-package me.croabeast.sirplugin.objects;
+package me.croabeast.sirplugin.objects.files;
 
 import me.croabeast.sirplugin.*;
 import org.bukkit.configuration.file.*;
@@ -33,12 +33,12 @@ public enum FileCache {
     }
 
     @NotNull
-    public YMLFile fromSource() {
+    public YMLFile source() {
         return Objects.requireNonNull(initialSource());
     }
 
     @NotNull
-    public FileConfiguration toFile() {
-        return fromSource().getFile();
+    public FileConfiguration get() {
+        return source().getFile();
     }
 }

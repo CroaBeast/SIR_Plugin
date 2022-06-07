@@ -1,4 +1,4 @@
-package me.croabeast.sirplugin.objects;
+package me.croabeast.sirplugin.objects.files;
 
 import com.tchristofferson.configupdater.*;
 import me.croabeast.sirplugin.utilities.*;
@@ -128,7 +128,7 @@ public class YMLFile {
     public void updateFile() {
         try {
             ConfigUpdater.update(main, location, catchFile());
-            if (TextUtils.majorVersion() < 13)
+            if (LangUtils.majorVersion() < 13)
                 ConfigUpdater.update(main, location, catchFile());
         }
         catch (Exception e) {

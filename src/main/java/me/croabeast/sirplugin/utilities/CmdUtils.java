@@ -2,6 +2,7 @@ package me.croabeast.sirplugin.utilities;
 
 import com.google.common.collect.*;
 import me.croabeast.sirplugin.*;
+import me.croabeast.sirplugin.objects.files.*;
 import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.entity.*;
@@ -11,7 +12,6 @@ import java.util.*;
 import java.util.stream.*;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
-import static me.croabeast.sirplugin.objects.FileCache.*;
 
 public class CmdUtils {
 
@@ -26,11 +26,11 @@ public class CmdUtils {
     }
     
     protected void sendMessage(String path, String key, String value) {
-        textUtils().sendMessageList(sender, LANG.toFile(), path, new String[] {"{" + key + "}"}, new String[] {value});
+        textUtils().sendMessageList(sender, FileCache.LANG.get(), path, new String[] {"{" + key + "}"}, new String[] {value});
     }
 
     protected void oneMessage(CommandSender sender, String path, String[] keys, String[] values) {
-        textUtils().sendMessageList(sender, LANG.toFile(), path, keys, values);
+        textUtils().sendMessageList(sender, FileCache.LANG.get(), path, keys, values);
     }
 
     protected void oneMessage(String path, String[] keys, String[] values) {
@@ -47,7 +47,7 @@ public class CmdUtils {
     }
 
     protected boolean hasNoPerm(String perm) {
-        if (PermUtils.hasPerm(sender, "sir." + perm)) return false;
+        if (PlayerUtils.hasPerm(sender, "sir." + perm)) return false;
         sendMessage("no-permission", "perm", "sir." + perm);
         return true;
     }
@@ -75,7 +75,7 @@ public class CmdUtils {
         if (input.startsWith("PERM:")) {
             String perm = input.substring(5);
             Bukkit.getOnlinePlayers().stream().filter(p ->
-                    PermUtils.hasPerm(p, perm)).forEach(players::add);
+                    PlayerUtils.hasPerm(p, perm)).forEach(players::add);
             return players;
         }
 
@@ -115,7 +115,7 @@ public class CmdUtils {
     }
 
     protected void messageLogger(String type, String line) {
-        String start = LANG.toFile().getString("logger.header");
+        String start = FileCache.LANG.get().getString("logger.header");
         if (start == null || start.equals("")) return;
         LogUtils.doLog(start, "&7[" + type + "] " + textUtils().colorize(null, line));
     }

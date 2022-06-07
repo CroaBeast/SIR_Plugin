@@ -1,9 +1,11 @@
 package me.croabeast.sirplugin.modules.listeners;
 
 import me.croabeast.advancementinfo.*;
+import me.croabeast.beanslib.utilities.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.hooks.discord.*;
 import me.croabeast.sirplugin.objects.extensions.*;
+import me.croabeast.sirplugin.objects.files.*;
 import me.croabeast.sirplugin.utilities.*;
 import org.apache.commons.lang.*;
 import org.bukkit.*;
@@ -16,10 +18,9 @@ import org.jetbrains.annotations.*;
 import java.util.*;
 
 import static me.croabeast.sirplugin.SIRPlugin.*;
-import static me.croabeast.sirplugin.objects.FileCache.*;
-import static me.croabeast.sirplugin.utilities.TextUtils.*;
+import static me.croabeast.sirplugin.utilities.LangUtils.*;
 
-public class Advances extends BaseViewer {
+public class Advances extends SIRViewer {
 
     @Override
     public @NotNull Identifier getIdentifier() {
@@ -33,16 +34,16 @@ public class Advances extends BaseViewer {
                 args[1].toLowerCase() + "&r", WordUtils.capitalizeFully(args[1]) + "&r"
         };
 
-        List<String> messages = toList(ADVANCES.toFile(), args[0]);
+        List<String> messages = TextUtils.toList(FileCache.ADVANCES.get(), args[0]);
         if (messages.isEmpty()) return;
 
         for (String line : messages) {
             if (line == null || line.equals("")) continue;
 
-            line = parseInsensitiveEach(line, keys, values);
-            line = parseInsensitiveEach(line, "world", player.getWorld().getName());
+            line = parseInternalKeys(line, keys, values);
+            line = parseInternalKeys(line, "world", player.getWorld().getName());
 
-            if (CONFIG.toFile().getBoolean("options.send-console") &&
+            if (FileCache.CONFIG.get().getBoolean("options.send-console") &&
                     !isStarting("[cmd]", line)) LogUtils.doLog(line);
 
             if (isStarting("[cmd]", line)) {
@@ -64,7 +65,7 @@ public class Advances extends BaseViewer {
     }
 
     private List<String> advList(String path) {
-        return MODULES.toFile().getStringList("advancements.disabled-" + path);
+        return FileCache.MODULES.get().getStringList("advancements.disabled-" + path);
     }
 
     @EventHandler
@@ -101,7 +102,7 @@ public class Advances extends BaseViewer {
 
         String frameType = null, advName = null, description = null;
 
-        String messageKey = ADVANCES.toFile().getString(stringKey(key));
+        String messageKey = FileCache.ADVANCES.get().getString(stringKey(key));
         if (messageKey == null) return;
 
         if (messageKey.contains("-(")) {

@@ -1,7 +1,7 @@
 package me.croabeast.sirplugin.utilities;
 
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.objects.*;
+import me.croabeast.sirplugin.objects.files.*;
 import org.bukkit.configuration.*;
 import org.bukkit.configuration.file.*;
 import org.jetbrains.annotations.*;
@@ -9,7 +9,6 @@ import org.jetbrains.annotations.*;
 import java.io.*;
 import java.util.*;
 
-import static me.croabeast.sirplugin.objects.FileCache.*;
 import static me.croabeast.sirplugin.utilities.FilesUtils.Folder.*;
 import static me.croabeast.sirplugin.utilities.LogUtils.*;
 
@@ -129,7 +128,7 @@ public final class FilesUtils {
                     if (updater != null) {
                         for (String key : updater.getKeys(false)) {
                             Object value = updater.get(key);
-                            CONFIG.toFile().set("updater.plugin." + key, value);
+                            FileCache.CONFIG.get().set("updater.plugin." + key, value);
                         }
                     }
 
@@ -138,7 +137,7 @@ public final class FilesUtils {
                         for (String key : options.getKeys(false)) {
                             Object value = options.get(key);
                             if (key.equals("format-logger")) key = "log-format";
-                            CONFIG.toFile().set("options." + key, value);
+                            FileCache.CONFIG.get().set("options." + key, value);
                         }
                     }
 
@@ -147,7 +146,7 @@ public final class FilesUtils {
                         for (String key : values.getKeys(false)) {
                             Object value = values.get(key);
                             if (key.equals("config-prefix")) key = "lang-prefix-key";
-                            CONFIG.toFile().set("values." + key, value);
+                            FileCache.CONFIG.get().set("values." + key, value);
                         }
                     }
 
@@ -155,7 +154,7 @@ public final class FilesUtils {
                     if (login != null) {
                         for (String key : login.getKeys(false)) {
                             Object value = login.get(key);
-                            MODULES.toFile().set("join-quit.login." + key, value);
+                            FileCache.MODULES.get().set("join-quit.login." + key, value);
                         }
                     }
 
@@ -164,7 +163,7 @@ public final class FilesUtils {
                         for (String key : vanish.getKeys(false)) {
                             if (key.equals("silent")) continue;
                             Object value = vanish.get(key);
-                            MODULES.toFile().set("join-quit.vanish." + key, value);
+                            FileCache.MODULES.get().set("join-quit.vanish." + key, value);
                         }
                     }
 
@@ -172,7 +171,7 @@ public final class FilesUtils {
                     if (chat != null) {
                         for (String key : chat.getKeys(false)) {
                             Object value = chat.get(key);
-                            MODULES.toFile().set("chat." + key, value);
+                            FileCache.MODULES.get().set("chat." + key, value);
                         }
                     }
 
@@ -181,7 +180,7 @@ public final class FilesUtils {
                         for (String key : advances.getKeys(false)) {
                             if (key.equals("enabled")) continue;
                             Object value = advances.get(key);
-                            MODULES.toFile().set("advancements." + key, value);
+                            FileCache.MODULES.get().set("advancements." + key, value);
                         }
                     }
 
@@ -193,7 +192,7 @@ public final class FilesUtils {
                 if (oldJoinQuit != null) {
                     for (String s : new String[] {"first-join", "join", "quit"}) {
                         ConfigurationSection section = oldJoinQuit.getConfigurationSection(s);
-                        JOIN_QUIT.toFile().set(s, section);
+                        FileCache.JOIN_QUIT.get().set(s, section);
                     }
 
                     convertCount++;
@@ -204,11 +203,11 @@ public final class FilesUtils {
                 if (oldAnnounces != null) {
                     for (String key : new String[] {"interval", "random"}) {
                         Object value = oldAnnounces.get(key);
-                        MODULES.toFile().set("announces." + key, value);
+                        FileCache.MODULES.get().set("announces." + key, value);
                     }
 
                     ConfigurationSection s = oldAnnounces.getConfigurationSection("messages");
-                    if (s != null) ANNOUNCES.toFile().set("announces", s);
+                    if (s != null) FileCache.ANNOUNCES.get().set("announces", s);
 
                     convertCount++;
                     isAnnounces = true;
@@ -216,24 +215,24 @@ public final class FilesUtils {
 
                 FileConfiguration oldFormats = oldFiles.get("chat").getFile();
                 if (oldFormats != null) {
-                    FORMATS.toFile().set("formats", oldFormats.getConfigurationSection("formats"));
+                    FileCache.FORMATS.get().set("formats", oldFormats.getConfigurationSection("formats"));
                     convertCount++;
                     isFormats = true;
                 }
 
                 FileConfiguration oldMotd = oldFiles.get("motd").getFile();
                 if (oldMotd != null) {
-                    MOTD.toFile().set("motds", oldMotd.getConfigurationSection("motd-list"));
+                    FileCache.MOTD.get().set("motds", oldMotd.getConfigurationSection("motd-list"));
 
                     Object value = oldMotd.getBoolean("random-motds");
-                    MODULES.toFile().set("motd.random-motds", value);
+                    FileCache.MODULES.get().set("motd.random-motds", value);
 
                     String[] keys = new String[] {"max-players.type", "max-players.count",
                             "server-icon.usage", "server-icon.image"};
 
                     for (String key : keys) {
                         Object value1 = oldMotd.get(key);
-                        MODULES.toFile().set("motd." + key, value1);
+                        FileCache.MODULES.get().set("motd." + key, value1);
                     }
 
                     convertCount++;
@@ -243,31 +242,31 @@ public final class FilesUtils {
                 FileConfiguration oldDiscord = oldFiles.get("discord").getFile();
                 if (oldDiscord != null) {
                     Object server = oldDiscord.get("server-id");
-                    MODULES.toFile().set("discord.server-id", server);
+                    FileCache.MODULES.get().set("discord.server-id", server);
 
                     ConfigurationSection ids = oldDiscord.getConfigurationSection("channels");
                     if (ids != null) {
                         for (String key : ids.getKeys(false)) {
                             Object value = ids.get(key);
-                            MODULES.toFile().set("discord.channels." + key, value);
+                            FileCache.MODULES.get().set("discord.channels." + key, value);
                         }
                     }
 
-                    DISCORD.toFile().set("channels", oldDiscord.getConfigurationSection("formats"));
+                    FileCache.DISCORD.get().set("channels", oldDiscord.getConfigurationSection("formats"));
 
                     convertCount++;
                     isDiscord = true;
                 }
 
-                if (isConfig) CONFIG.fromSource().saveFile(false);
-                if (isAnnounces) ANNOUNCES.fromSource().saveFile(false);
-                if (isFormats) FORMATS.fromSource().saveFile(false);
-                if (isJoinQuit) JOIN_QUIT.fromSource().saveFile(false);
-                if (isMotd) MOTD.fromSource().saveFile(false);
-                if (isDiscord) DISCORD.fromSource().saveFile(false);
+                if (isConfig) FileCache.CONFIG.source().saveFile(false);
+                if (isAnnounces) FileCache.ANNOUNCES.source().saveFile(false);
+                if (isFormats) FileCache.FORMATS.source().saveFile(false);
+                if (isJoinQuit) FileCache.JOIN_QUIT.source().saveFile(false);
+                if (isMotd) FileCache.MOTD.source().saveFile(false);
+                if (isDiscord) FileCache.DISCORD.source().saveFile(false);
 
                 if (convertCount > 0) {
-                    MODULES.fromSource().saveFile(false);
+                    FileCache.MODULES.source().saveFile(false);
                     doLog("&7Transferred &e" + convertCount + "&7 files in &e"
                             + (System.currentTimeMillis() - t) + "&7 ms.", "");
                 }

@@ -1,23 +1,21 @@
 package me.croabeast.sirplugin.utilities;
 
 import me.croabeast.beanslib.*;
-import me.croabeast.iridiumapi.*;
+import me.croabeast.beanslib.utilities.*;
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.objects.*;
-import me.croabeast.sirplugin.objects.extensions.BaseModule;
+import me.croabeast.sirplugin.modules.*;
+import me.croabeast.sirplugin.objects.files.*;
 import org.bukkit.entity.*;
 import org.bukkit.plugin.java.*;
 import org.jetbrains.annotations.*;
 
 import java.util.regex.*;
 
-import static me.croabeast.sirplugin.objects.FileCache.*;
-
-public class TextUtils extends BeansLib {
+public class LangUtils extends BeansLib {
 
     private static SIRPlugin main;
 
-    public TextUtils(SIRPlugin instance) {
+    public LangUtils(SIRPlugin instance) {
         main = instance;
     }
 
@@ -26,57 +24,56 @@ public class TextUtils extends BeansLib {
         return main;
     }
 
-    private String tryString(@Nullable YMLFile section, String path, String def) {
+    private String isSet(@Nullable YMLFile section, String path, String def) {
         return section == null ? def : section.getFile().getString(path, def);
     }
 
     @Override
     public @NotNull String langPrefixKey() {
-        return tryString(CONFIG.initialSource(), "values.lang-prefix-key", "<P>");
+        return isSet(FileCache.CONFIG.initialSource(), "values.lang-prefix-key", "<P>");
     }
 
     @Override
     public @NotNull String langPrefix() {
-        return tryString(LANG.initialSource(), "main-prefix", " &e&lSIR &8>");
+        return isSet(FileCache.LANG.initialSource(), "main-prefix", " &e&lSIR &8>");
     }
 
     @Override
     public @NotNull String centerPrefix() {
-        return tryString(CONFIG.initialSource(), "values.center-prefix", "<C>");
+        return isSet(FileCache.CONFIG.initialSource(), "values.center-prefix", "<C>");
     }
 
     @Override
     public @NotNull String lineSeparator() {
-        return Pattern.quote(tryString(CONFIG.initialSource(), "values.line-separator", "<n>"));
+        return Pattern.quote(isSet(FileCache.CONFIG.initialSource(), "values.line-separator", "<n>"));
     }
 
     @Override
     public boolean fixColorLogger() {
-        return CONFIG.initialSource() != null && CONFIG.toFile().getBoolean("options.fix-logger");
+        return FileCache.CONFIG.initialSource() != null &&
+                FileCache.CONFIG.get().getBoolean("options.fix-logger");
     }
 
     @Override
     public boolean isHardSpacing() {
-        return CONFIG.toFile().getBoolean("options.hard-spacing", true);
+        return FileCache.CONFIG.get().getBoolean("options.hard-spacing", true);
     }
 
     @Override
     public boolean isStripPrefix() {
-        return CONFIG.toFile().getBoolean("options.show-prefix", true);
+        return !FileCache.CONFIG.get().getBoolean("options.show-prefix", true);
     }
 
     @Override
     public String colorize(@Nullable Player player, String line) {
-        if (BaseModule.isEnabled(BaseModule.Identifier.EMOJIS))
-            line = main.getEmParser().parseEmojis(line);
-        return IridiumAPI.process(parsePAPI(player, parseChars(line)));
+        return super.colorize(player, EmParser.parseEmojis(line));
     }
 
     private boolean checkInts(@Nullable String[] array) {
         if (array == null) return false;
         for (String integer : array) {
             if (integer == null) return false;
-            if (!integer.matches("-?\\d+")) return false;
+            if (!integer.matches("\\d+")) return false;
         }
         return true;
     }
@@ -94,14 +91,14 @@ public class TextUtils extends BeansLib {
         sendTitle(player, message, i[0], i[1], i[2]);
     }
 
-    public static String parseInsensitiveEach(String line, String[] keys, String[] values) {
+    public static String parseInternalKeys(String line, String[] keys, String[] values) {
         String[] resultKeys = new String[keys.length];
         for (int i = 0; i < keys.length; i++) resultKeys[i] = "{" + keys[i] + "}";
-        return BeansLib.replaceInsensitiveEach(line, resultKeys, values);
+        return TextUtils.replaceInsensitiveEach(line, resultKeys, values);
     }
 
-    public static String parseInsensitiveEach(String line, String key, String value) {
-        return parseInsensitiveEach(line, new String[] {key}, new String[] {value});
+    public static String parseInternalKeys(String line, String key, String value) {
+        return parseInternalKeys(line, new String[] {key}, new String[] {value});
     }
 
     public static String stringKey(@Nullable String key) {
@@ -114,5 +111,26 @@ public class TextUtils extends BeansLib {
 
     public static boolean isStarting(String prefix, String line) {
         return line.regionMatches(true, 0, prefix, 0, prefix.length());
+    }
+
+    @NotNull
+    public static String getLastColor(@NotNull String string, @Nullable String key, boolean checkSpecial) {
+        if (string.length() < 1)
+            throw new IndexOutOfBoundsException("String can not be empty");
+
+        boolean hasKey = key != null && key.length() >= 1;
+        if (hasKey) key = Pattern.quote(key);
+
+        String rgb = "\\{#[\\dA-F]{6}}|<#[\\dA-F]{6}>|&#[\\dA-F]{6}|#[\\dA-F]{6}",
+                special = checkSpecial ? "([&§][k-or])*" : "",
+                regex = "(?i)(([&§][a-f\\d]|" + rgb + ")" + special + ")";
+
+        String input = hasKey ? string.split(regex + "?" + key)[0] : string,
+                lastColor = "";
+
+        Matcher match = Pattern.compile(regex).matcher(input);
+        while (match.find()) lastColor = match.group();
+
+        return lastColor;
     }
 }

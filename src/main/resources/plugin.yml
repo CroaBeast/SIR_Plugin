@@ -2,6 +2,7 @@ name: SIR # Simple In-game Receptionist
 version: '${project.version}'
 prefix: SIR
 authors: [ CroaBeast ]
+api-version: 1.13
 
 softdepend:
   - DiscordSRV
@@ -22,12 +23,12 @@ commands:
     aliases: []
   print:
     aliases: [ rawmsg, rm ]
-  announcer:
-    aliases: [ broadcast, bc ]
   msg:
     aliases: [ m, tell ]
   reply:
     aliases: [ r ]
+  announcer:
+    aliases: [ broadcast, bc ]
   ignore:
     aliases: [ ig ]
 

@@ -1,14 +1,13 @@
 package me.croabeast.sirplugin.tasks.message;
 
-import org.bukkit.*;
+import me.croabeast.sirplugin.objects.files.*;
+import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.command.*;
 import org.bukkit.entity.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.objects.FileCache.*;
-
-public class MsgCmd extends DirectCmd {
+public class MsgCmd extends DirectTask {
 
     @Override
     public String getName() {
@@ -24,13 +23,13 @@ public class MsgCmd extends DirectCmd {
             String path = "commands.msg-reply.", path1 = "commands.ignore.";
             if (args.length == 0) return oneMessage(path + "need-player");
 
-            Player target = Bukkit.getPlayer(args[0]);
+            Player target = PlayerUtils.getClosestPlayer(args[0]);
             if (target == null) return oneMessage(path + "not-player", "target", args[0]);
             if (target == sender) return oneMessage(path + "not-yourself");
 
-            String key = LANG.toFile().getString(path1 + "channels.msg");
+            String key = FileCache.LANG.get().getString(path1 + "channels.msg");
 
-            if (IGNORE.toFile().getBoolean("data." + target.getUniqueId() + ".all-msg"))
+            if (FileCache.IGNORE.get().getBoolean("data." + target.getUniqueId() + ".all-msg"))
                 return oneMessage(path1 + "ignoring.all", "type", key);
 
             if (sender instanceof Player && isPlayer(sender, target, key)) return true;
