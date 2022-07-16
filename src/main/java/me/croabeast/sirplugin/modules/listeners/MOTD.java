@@ -1,11 +1,11 @@
 package me.croabeast.sirplugin.modules.listeners;
 
-import me.croabeast.beanslib.utilities.*;
+import me.croabeast.beanslib.utilities.TextUtils;
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.objects.extensions.*;
 import me.croabeast.sirplugin.objects.files.*;
-import me.croabeast.sirplugin.utilities.*;
+import me.croabeast.sirplugin.utilities.LogUtils;
 import org.bukkit.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
@@ -45,7 +45,7 @@ public class MOTD extends SIRViewer {
 
     @Nullable
     private ConfigurationSection getList() {
-        return FileCache.MOTD.get().getConfigurationSection("motds");
+        return FileCache.MOTD.getSection("motds");
     }
 
     private Player getPlayerFromIP() {
@@ -69,7 +69,7 @@ public class MOTD extends SIRViewer {
         ConfigurationSection id = getList().getConfigurationSection(keys.get(MOTD));
 
         event.setMotd(id != null ?
-                (IridiumAPI.process(TextUtils.parsePAPI(getPlayerFromIP(), "" +
+                (IridiumAPI.process(TextUtils.parsePAPI(getPlayerFromIP(),
                 id.getString("1", "") + "\n" + id.getString("2", "")))) :
                 ("&cError getting the correct motd from SIR.")
         );

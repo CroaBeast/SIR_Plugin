@@ -24,44 +24,39 @@ public class LangUtils extends BeansLib {
         return main;
     }
 
-    private String isSet(@Nullable YMLFile section, String path, String def) {
-        return section == null ? def : section.getFile().getString(path, def);
-    }
-
     @Override
     public @NotNull String langPrefixKey() {
-        return isSet(FileCache.CONFIG.initialSource(), "values.lang-prefix-key", "<P>");
+        return FileCache.CONFIG.isSet("values.lang-prefix-key", "<P>");
     }
 
     @Override
     public @NotNull String langPrefix() {
-        return isSet(FileCache.LANG.initialSource(), "main-prefix", " &e&lSIR &8>");
+        return FileCache.LANG.isSet("main-prefix", " &e&lSIR &8>");
     }
 
     @Override
     public @NotNull String centerPrefix() {
-        return isSet(FileCache.CONFIG.initialSource(), "values.center-prefix", "<C>");
+        return FileCache.CONFIG.isSet("values.center-prefix", "<C>");
     }
 
     @Override
     public @NotNull String lineSeparator() {
-        return Pattern.quote(isSet(FileCache.CONFIG.initialSource(), "values.line-separator", "<n>"));
+        return Pattern.quote(FileCache.CONFIG.isSet("values.line-separator", "<n>"));
     }
 
     @Override
     public boolean fixColorLogger() {
-        return FileCache.CONFIG.initialSource() != null &&
-                FileCache.CONFIG.get().getBoolean("options.fix-logger");
+        return FileCache.CONFIG.isSet("options.fix-logger", false);
     }
 
     @Override
     public boolean isHardSpacing() {
-        return FileCache.CONFIG.get().getBoolean("options.hard-spacing", true);
+        return FileCache.CONFIG.isSet("options.hard-spacing", true);
     }
 
     @Override
     public boolean isStripPrefix() {
-        return !FileCache.CONFIG.get().getBoolean("options.show-prefix", true);
+        return !FileCache.CONFIG.isSet("options.show-prefix", true);
     }
 
     @Override
@@ -88,7 +83,7 @@ public class LangUtils extends BeansLib {
             }
         }
         else i = defaultTitleTicks();
-        sendTitle(player, message, i[0], i[1], i[2]);
+        TextUtils.sendTitle(player, message, i[0], i[1], i[2]);
     }
 
     public static String parseInternalKeys(String line, String[] keys, String[] values) {
@@ -103,34 +98,5 @@ public class LangUtils extends BeansLib {
 
     public static String stringKey(@Nullable String key) {
         return key == null ? "empty" : key.replace("/", ".").replace(":", ".");
-    }
-
-    public String parsePrefix(String type, String message) {
-        return removeSpace(message.substring(("[" + type.toUpperCase() + "]").length()));
-    }
-
-    public static boolean isStarting(String prefix, String line) {
-        return line.regionMatches(true, 0, prefix, 0, prefix.length());
-    }
-
-    @NotNull
-    public static String getLastColor(@NotNull String string, @Nullable String key, boolean checkSpecial) {
-        if (string.length() < 1)
-            throw new IndexOutOfBoundsException("String can not be empty");
-
-        boolean hasKey = key != null && key.length() >= 1;
-        if (hasKey) key = Pattern.quote(key);
-
-        String rgb = "\\{#[\\dA-F]{6}}|<#[\\dA-F]{6}>|&#[\\dA-F]{6}|#[\\dA-F]{6}",
-                special = checkSpecial ? "([&§][k-or])*" : "",
-                regex = "(?i)(([&§][a-f\\d]|" + rgb + ")" + special + ")";
-
-        String input = hasKey ? string.split(regex + "?" + key)[0] : string,
-                lastColor = "";
-
-        Matcher match = Pattern.compile(regex).matcher(input);
-        while (match.find()) lastColor = match.group();
-
-        return lastColor;
     }
 }

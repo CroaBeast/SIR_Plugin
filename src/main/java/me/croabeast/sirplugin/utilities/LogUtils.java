@@ -17,7 +17,7 @@ public class LogUtils {
      * @param lines the information to send
      */
     public static void playerLog(@NotNull Player player, String... lines) {
-        textUtils().playerLog(player, lines);
+        getUtils().playerLog(player, lines);
     }
 
     /**
@@ -25,7 +25,7 @@ public class LogUtils {
      * @param lines the information to send
      */
     public static void rawLog(String... lines) {
-        textUtils().rawLog(lines);
+        getUtils().rawLog(lines);
     }
 
     /**
@@ -34,7 +34,7 @@ public class LogUtils {
      * @param lines the information to send
      */
     public static void doLog(@Nullable CommandSender sender, String... lines) {
-        textUtils().doLog(sender, lines);
+        getUtils().doLog(sender, lines);
     }
 
     /**

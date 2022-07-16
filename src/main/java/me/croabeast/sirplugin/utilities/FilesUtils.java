@@ -136,7 +136,7 @@ public final class FilesUtils {
                     if (options != null) {
                         for (String key : options.getKeys(false)) {
                             Object value = options.get(key);
-                            if (key.equals("format-logger")) key = "log-format";
+                            if (key.equals("format-logger")) continue;
                             FileCache.CONFIG.get().set("options." + key, value);
                         }
                     }

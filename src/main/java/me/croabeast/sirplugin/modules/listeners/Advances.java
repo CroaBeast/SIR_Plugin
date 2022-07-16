@@ -1,9 +1,8 @@
 package me.croabeast.sirplugin.modules.listeners;
 
 import me.croabeast.advancementinfo.*;
-import me.croabeast.beanslib.utilities.*;
 import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.hooks.discord.*;
+import me.croabeast.sirplugin.objects.Transmitter;
 import me.croabeast.sirplugin.objects.extensions.*;
 import me.croabeast.sirplugin.objects.files.*;
 import me.croabeast.sirplugin.utilities.*;
@@ -17,7 +16,6 @@ import org.jetbrains.annotations.*;
 
 import java.util.*;
 
-import static me.croabeast.sirplugin.SIRPlugin.*;
 import static me.croabeast.sirplugin.utilities.LangUtils.*;
 
 public class Advances extends SIRViewer {
@@ -25,43 +23,6 @@ public class Advances extends SIRViewer {
     @Override
     public @NotNull Identifier getIdentifier() {
         return Identifier.ADVANCES;
-    }
-
-    private void sendAdvSection(Player player, String... args) {
-        String[] keys = {"player", "adv", "description", "type", "low-type", "cap-type"};
-        String[] values = {
-                player.getName() + "&r", args[2] + "&r", args[3] + "&r", args[1] + "&r",
-                args[1].toLowerCase() + "&r", WordUtils.capitalizeFully(args[1]) + "&r"
-        };
-
-        List<String> messages = TextUtils.toList(FileCache.ADVANCES.get(), args[0]);
-        if (messages.isEmpty()) return;
-
-        for (String line : messages) {
-            if (line == null || line.equals("")) continue;
-
-            line = parseInternalKeys(line, keys, values);
-            line = parseInternalKeys(line, "world", player.getWorld().getName());
-
-            if (FileCache.CONFIG.get().getBoolean("options.send-console") &&
-                    !isStarting("[cmd]", line)) LogUtils.doLog(line);
-
-            if (isStarting("[cmd]", line)) {
-                String cmd = textUtils().parsePrefix("cmd", line.replace("&r", ""));
-                boolean isLine = isStarting("[player]", cmd);
-
-                cmd = isLine ? textUtils().parsePrefix("player", cmd) : cmd;
-                Bukkit.dispatchCommand(isLine ? player : Bukkit.getConsoleSender(), cmd);
-            }
-            else {
-                if (!isStarting("[player]", line))
-                    for (Player p : Bukkit.getOnlinePlayers()) textUtils().sendMessage(p, player, line);
-                else textUtils().sendMessage(null, player, textUtils().parsePrefix("player", line));
-            }
-        }
-
-        if (Initializer.hasDiscord())
-            new Message(player, "advances", keys, values).sendMessage();
     }
 
     private List<String> advList(String path) {
@@ -140,6 +101,12 @@ public class Advances extends SIRViewer {
         if (description == null)
             description = info == null ? "No description." : info.getDescription();
 
-        sendAdvSection(player, messageKey, frameType, advName, description);
+        Transmitter.to(FileCache.ADVANCES.get(), messageKey)
+                .setKeys("{player}", "{adv}", "{description}", "{type}", "{low-type}", "{cap-type}")
+                .setValues(
+                        player.getName() + "&r", advName + "&r", description + "&r", frameType + "&r",
+                        frameType.toLowerCase() + "&r", WordUtils.capitalizeFully(frameType) + "&r"
+                )
+                .display(player);
     }
 }

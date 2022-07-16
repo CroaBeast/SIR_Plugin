@@ -81,7 +81,7 @@ public class BroadCmd extends SIRTask {
             if (args.length == 1) return resultList("start", "preview", "cancel", "reboot");
 
             if(args.length == 2 && args[0].matches("(?i)preview")) {
-                ConfigurationSection id = FileCache.ANNOUNCES.get().getConfigurationSection("announces");
+                ConfigurationSection id = FileCache.ANNOUNCES.getSection("announces");
                 return id == null ? resultList("NOT_FOUND") : resultList(id.getKeys(false));
             }
 

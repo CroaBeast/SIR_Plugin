@@ -1,16 +1,14 @@
 package me.croabeast.sirplugin.modules;
 
+import me.croabeast.iridiumapi.IridiumAPI;
 import me.croabeast.sirplugin.objects.extensions.*;
-import me.croabeast.sirplugin.objects.files.FileCache;
-import me.croabeast.sirplugin.utilities.LangUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import me.croabeast.sirplugin.objects.files.*;
+import me.croabeast.sirplugin.utilities.*;
 import org.bukkit.configuration.*;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.regex.*;
 
 public class EmParser extends SIRModule {
 
@@ -27,17 +25,14 @@ public class EmParser extends SIRModule {
         if (!emojiList.isEmpty()) emojiList.clear();
 
         ConfigurationSection section =
-                FileCache.EMOJIS.get().getConfigurationSection("emojis");
+                FileCache.EMOJIS.getSection("emojis");
         if (section == null) return;
 
         for (String key : section.getKeys(false)) {
             ConfigurationSection id = section.getConfigurationSection(key);
             if (id == null) continue;
 
-            emojiList.add(new Emoji(
-                    id.getString("key"),
-                    id.getString("value"))
-            );
+            emojiList.add(new Emoji(id.getString("key"), id.getString("value")));
         }
     }
 
@@ -64,7 +59,7 @@ public class EmParser extends SIRModule {
                 if (!match.find()) return line;
 
                 line = line.replace(match.group(), value +
-                        LangUtils.getLastColor(line, key, true));
+                        IridiumAPI.getLastColor(line, key, true));
             }
             return line;
         }

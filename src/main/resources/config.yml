@@ -26,9 +26,6 @@ options:
   # announces.yml, and the advancement messages from advances.yml
   # to the server's console.
   send-console: true
-  # This option is ONLY for the /print command.
-  # Enabling this will parse color and placeholders in the logger.
-  log-format: false
   # If enabled, it will remove all unnecessary spaces for every
   # message to send. Recommended leaving this 'true'.
   hard-spacing: true

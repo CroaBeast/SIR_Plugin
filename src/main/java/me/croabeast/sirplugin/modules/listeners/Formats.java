@@ -8,6 +8,7 @@ import me.croabeast.sirplugin.hooks.discord.*;
 import me.croabeast.sirplugin.objects.extensions.*;
 import me.croabeast.sirplugin.objects.files.*;
 import me.croabeast.sirplugin.utilities.*;
+import me.croabeast.sirplugin.utilities.LogUtils;
 import net.md_5.bungee.api.chat.*;
 import org.apache.commons.lang.*;
 import org.bukkit.*;
@@ -35,8 +36,12 @@ public class Formats extends SIRViewer {
 
     @Nullable
     private static ConfigurationSection isDef(ConfigurationSection id, String path) {
-        ConfigurationSection d = FileCache.MODULES.get().getConfigurationSection("chat.default");
-        return (d != null && d.getBoolean("enabled") && !id.contains(path)) ? d : id;
+        if (id == null) return null;
+
+        ConfigurationSection d = FileCache.MODULES.getSection("chat.default");
+        if (d == null) return id;
+
+        return d.getBoolean("enabled") && !id.contains(path) ? d : id;
     }
 
     @Nullable
@@ -46,9 +51,9 @@ public class Formats extends SIRViewer {
     }
 
     @Nullable
-    public static String getChatValue(Player player, String path, Object def) {
-        ConfigurationSection id = EventUtils.getSection(FileCache.FORMATS.get(), player, "formats");
-        String value = (String) getValue(id, path, def);
+    public static String getTag(Player player, String path) {
+        ConfigurationSection id = PlayerUtils.getSection(FileCache.FORMATS.get(), player, "formats");
+        String value = (String) getValue(id, path, "");
         return StringUtils.isBlank(value) ? null : value;
     }
 
@@ -63,21 +68,21 @@ public class Formats extends SIRViewer {
         if (notColor(id, "special")) line = IridiumAPI.stripSpecial(line);
 
         line = line.replace("\\", "\\\\");
-        return textUtils().removeSpace(line.replace("$", "\\$"));
+        return getUtils().removeSpace(line.replace("$", "\\$"));
     }
 
-    private String onMention(Player player, String message) {
-        if (!Identifier.MENTIONS.isEnabled()) return message;
+    private String onMention(Player player, String line) {
+        if (!Identifier.MENTIONS.isEnabled()) return line;
 
-        ConfigurationSection id = EventUtils.getSection(FileCache.MENTIONS.get(), player, "mentions");
-        if (id == null) return message;
+        ConfigurationSection id = PlayerUtils.getSection(FileCache.MENTIONS.get(), player, "mentions");
+        if (id == null) return line;
 
         String prefix = id.getString("prefix");
-        if (StringUtils.isBlank(prefix)) return message;
+        if (StringUtils.isBlank(prefix)) return line;
 
         Player target = null;
 
-        for (String word : message.split(" ")) {
+        for (String word : line.split(" ")) {
             Matcher matcher = Pattern.compile("(?i)" + prefix).matcher(word);
             if (!matcher.find()) continue;
 
@@ -86,16 +91,17 @@ public class Formats extends SIRViewer {
             target = PlayerUtils.getClosestPlayer(word);
         }
 
-        if (target == null || player == target) return message;
+        if (target == null || player == target) return line;
+        if (PlayerUtils.isIgnoredFrom(target, player, true)) return line;
 
         String[] keys = {"{sender}", "{receiver}", "{prefix}"},
                 values = {player.getName(), target.getName(), prefix};
 
-        textUtils().sendMessageList(player, id, "messages.sender", keys, values);
-        textUtils().sendMessageList(target, id, "messages.receiver", keys, values);
+        getUtils().sendMessageList(player, id, "messages.sender", keys, values);
+        getUtils().sendMessageList(target, id, "messages.receiver", keys, values);
 
-        EventUtils.playSound(player, id.getString("sound.sender"));
-        EventUtils.playSound(target, id.getString("sound.receiver"));
+        PlayerUtils.playSound(player, id.getString("sound.sender"));
+        PlayerUtils.playSound(target, id.getString("sound.receiver"));
 
         String output = id.getString("value", "&b{prefix}{receiver}");
 
@@ -106,8 +112,8 @@ public class Formats extends SIRViewer {
             String format = "";
 
             if (!hoverList.isEmpty()) {
-                String joinList = String.join(textUtils().lineSeparator(), hoverList);
-                format += "<hover=[" + joinList.replaceAll("\\\\Q", "").replaceAll("\\\\E", "") + "]";
+                String list = String.join(getUtils().lineSeparator(), hoverList);
+                format += "<hover=[" + list.replaceAll("\\\\Q", "").replaceAll("\\\\E", "") + "]";
             }
 
             if (click != null) {
@@ -120,15 +126,13 @@ public class Formats extends SIRViewer {
         }
 
         String result = TextUtils.replaceInsensitiveEach(output, keys, values),
-                regexKey = prefix + target.getName();
+                regex = prefix + target.getName();
 
-        Matcher matcher = Pattern.compile("(?i)" + regexKey).matcher(message);
-        if (matcher.find()) {
-            message = message.replace(matcher.group(), result
-                    + LangUtils.getLastColor(message, regexKey, true));
-        }
+        Matcher match = Pattern.compile("(?i)" + regex).matcher(line);
+        if (match.find())
+            line = line.replace(match.group(), result + IridiumAPI.getLastColor(line, regex, true));
 
-        return message;
+        return line;
     }
 
     @EventHandler
@@ -141,10 +145,10 @@ public class Formats extends SIRViewer {
 
         Player player = event.getPlayer();
         ConfigurationSection id =
-                EventUtils.getSection(FileCache.FORMATS.get(), player, "formats");
+                PlayerUtils.getSection(FileCache.FORMATS.get(), player, "formats");
 
         if (id == null) {
-            textUtils().sendMessageList(player, toList(FileCache.LANG.get(), "chat.invalid-format"));
+            getUtils().sendMessageList(player, toList(FileCache.LANG.get(), "chat.invalid-format"));
             return;
         }
 
@@ -170,7 +174,7 @@ public class Formats extends SIRViewer {
         if (StringUtils.isBlank(message) &&
                 !FileCache.MODULES.get().getBoolean("chat.allow-empty")) {
             event.setCancelled(true);
-            textUtils().sendMessageList(player, toList(FileCache.LANG.get(), "chat.empty-message"));
+            getUtils().sendMessageList(player, toList(FileCache.LANG.get(), "chat.empty-message"));
             return;
         }
 
@@ -189,12 +193,8 @@ public class Formats extends SIRViewer {
 
         for (Player target : targets) {
             if (target == player) continue;
-
-            String s = "data." + target.getUniqueId() + ".", x = player.getUniqueId() + "";
-            List<String> list = FileCache.IGNORE.get().getStringList(s + "chat");
-
-            if (FileCache.IGNORE.get().getBoolean(s + "all-chat") ||
-                    (!list.isEmpty() && list.contains(x))) players.remove(target);
+            if (PlayerUtils.isIgnoredFrom(target, player, true))
+                players.remove(target);
         }
 
         Integer timer = (Integer) getValue(id, "cooldown.time", 0);
@@ -208,13 +208,13 @@ public class Formats extends SIRViewer {
                 String path = "cooldown.message";
 
                 List<String> list = toList(isDef(id, path), path);
-                textUtils().sendMessageList(player, list,
+                getUtils().sendMessageList(player, list,
                         new String[] {"{time}"}, new String[] {time + ""});
                 return;
             }
         }
 
-        String result = parseInternalKeys(textUtils().removeSpace(format), keys, values);
+        String result = parseInternalKeys(getUtils().removeSpace(format), keys, values);
         result = onMention(player, result);
 
         boolean isDefault = FileCache.MODULES.get().getBoolean("chat.default-format");
@@ -222,7 +222,7 @@ public class Formats extends SIRViewer {
         if (isDefault && !IS_JSON.apply(result) && hover.isEmpty() && click == null &&
                 world == null && (radius == null || radius <= 0) &&
                 !Bukkit.getPluginManager().isPluginEnabled("InteractiveChat")) {
-            event.setFormat(textUtils().centeredText(player, result.replace("%", "%%")));
+            event.setFormat(getUtils().centeredText(player, result.replace("%", "%%")));
             return;
         }
 
@@ -239,7 +239,7 @@ public class Formats extends SIRViewer {
         if (Initializer.hasDiscord())
             new Message(player, "chat", keys, values).sendMessage();
 
-        BaseComponent[] component = textUtils().stringToJson(player, result, click, hover);
+        BaseComponent[] component = getUtils().stringToJson(player, result, click, hover);
         players.forEach(p -> p.spigot().sendMessage(component));
 
         if (timer != null && timer > 0) timedPlayers.put(player, System.currentTimeMillis());

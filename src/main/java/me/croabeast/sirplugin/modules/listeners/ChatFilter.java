@@ -28,7 +28,7 @@ public class ChatFilter extends SIRViewer {
         Player player = event.getPlayer();
         String message = event.getMessage();
 
-        ConfigurationSection id = EventUtils.getSection(FileCache.FILTERS.get(), player, "filters");
+        ConfigurationSection id = PlayerUtils.getSection(FileCache.FILTERS.get(), player, "filters");
         if (id == null) return;
 
         List<String> words = TextUtils.toList(id, "words");

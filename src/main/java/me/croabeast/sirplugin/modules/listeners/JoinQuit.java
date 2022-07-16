@@ -1,16 +1,18 @@
 package me.croabeast.sirplugin.modules.listeners;
 
-import me.croabeast.beanslib.terminals.*;
-import me.croabeast.beanslib.utilities.*;
+import me.croabeast.beanslib.objects.Bossbar;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.events.*;
 import me.croabeast.sirplugin.hooks.discord.*;
 import me.croabeast.sirplugin.hooks.login.*;
 import me.croabeast.sirplugin.hooks.vanish.*;
+import me.croabeast.sirplugin.objects.*;
 import me.croabeast.sirplugin.objects.extensions.*;
 import me.croabeast.sirplugin.objects.files.*;
+import me.croabeast.sirplugin.tasks.message.*;
 import me.croabeast.sirplugin.utilities.*;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.*;
+import org.bukkit.*;
 import org.bukkit.boss.*;
 import org.bukkit.configuration.*;
 import org.bukkit.entity.*;
@@ -22,8 +24,7 @@ import org.jetbrains.annotations.*;
 import java.util.*;
 import java.util.regex.*;
 
-import static me.croabeast.sirplugin.SIRPlugin.*;
-import static me.croabeast.sirplugin.utilities.EventUtils.*;
+import static me.croabeast.sirplugin.utilities.PlayerUtils.*;
 
 public class JoinQuit extends SIRViewer {
 
@@ -58,8 +59,6 @@ public class JoinQuit extends SIRViewer {
     private void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
-
-        if (player.isInvulnerable()) player.setInvulnerable(false);
 
         main.getAmender().initUpdater(player);
         if (!isEnabled()) return;
@@ -115,6 +114,9 @@ public class JoinQuit extends SIRViewer {
             player.setInvulnerable(false);
             getGodPlayers().remove(player);
         }
+
+        DirectTask.getReceivers().remove(Bukkit.getConsoleSender(), player);
+        DirectTask.getReceivers().remove(player);
 
         if (!isEnabled()) return;
         ConfigurationSection id = getSection(FileCache.JOIN_QUIT.get(), player, "quit");
@@ -257,7 +259,7 @@ public class JoinQuit extends SIRViewer {
                 Matcher match = Pattern.compile(key).matcher(message);
 
                 if (!match.find()) {
-                    textUtils().sendMessageList(player, FileCache.MODULES.get(), path + "not-allowed");
+                    Transmitter.to(FileCache.MODULES.get(), path + "not-allowed").display(player);
                     event.setCancelled(true);
                 }
                 else event.setMessage(message.replace(match.group(), ""));
@@ -271,7 +273,7 @@ public class JoinQuit extends SIRViewer {
             Matcher match = Pattern.compile(pattern).matcher(message);
 
             if (!match.find()) {
-                textUtils().sendMessageList(player, FileCache.MODULES.get(), path + "not-allowed");
+                Transmitter.to(FileCache.MODULES.get(), path + "not-allowed").display(player);
                 event.setCancelled(true);
             }
             else event.setMessage(message.replace(match.group(), ""));
@@ -307,17 +309,16 @@ public class JoinQuit extends SIRViewer {
             BukkitRunnable runnable = new BukkitRunnable() {
                 @Override
                 public void run() {
-                    sendMessages(player, TextUtils.toList(id, "public"), true);
+                    Transmitter.to(id, "public").display(Bukkit.getOnlinePlayers(), player);
                     if (isJoin) {
-                        sendMessages(player, TextUtils.toList(id, "private"), false);
+                        Transmitter.to(id, "private").display(player);
                         playSound(player, id.getString("sound"));
-                        giveInvulnerable(player, id.getInt("invulnerable"));
+                        giveImmunity(player, id.getInt("invulnerable"));
                         if (doSpawn) teleportPlayer(id, player);
                     }
-                    runCommands(isJoin ? player : null, TextUtils.toList(id, "commands"));
+                    Transmitter.to(id, "commands").runCommands(isJoin ? player : null);
 
                     if (!Initializer.hasDiscord()) return;
-
                     String path = player.hasPlayedBefore() ? "" : "first-";
                     new Message(player, isJoin ? path + "join" : "quit").sendMessage();
                 }

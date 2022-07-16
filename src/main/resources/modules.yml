@@ -100,6 +100,7 @@ chat:
       normal: false
       special: false
       rgb: false
+    world: ''
     radius: 0
     cooldown:
       time: 5

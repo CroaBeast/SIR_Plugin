@@ -26,11 +26,11 @@ public class CmdUtils {
     }
     
     protected void sendMessage(String path, String key, String value) {
-        textUtils().sendMessageList(sender, FileCache.LANG.get(), path, new String[] {"{" + key + "}"}, new String[] {value});
+        getUtils().sendMessageList(sender, FileCache.LANG.get(), path, new String[] {"{" + key + "}"}, new String[] {value});
     }
 
     protected void oneMessage(CommandSender sender, String path, String[] keys, String[] values) {
-        textUtils().sendMessageList(sender, FileCache.LANG.get(), path, keys, values);
+        getUtils().sendMessageList(sender, FileCache.LANG.get(), path, keys, values);
     }
 
     protected void oneMessage(String path, String[] keys, String[] values) {
@@ -117,7 +117,7 @@ public class CmdUtils {
     protected void messageLogger(String type, String line) {
         String start = FileCache.LANG.get().getString("logger.header");
         if (start == null || start.equals("")) return;
-        LogUtils.doLog(start, "&7[" + type + "] " + textUtils().colorize(null, line));
+        LogUtils.doLog(start, "&7[" + type + "] " + getUtils().colorize(null, line));
     }
 
     @SafeVarargs

@@ -4,7 +4,7 @@ import com.google.common.collect.*;
 import me.croabeast.beanslib.utilities.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.objects.extensions.*;
-import me.croabeast.sirplugin.utilities.*;
+import me.croabeast.sirplugin.utilities.LogUtils;
 import org.bukkit.command.*;
 import org.bukkit.entity.*;
 
@@ -26,8 +26,8 @@ public class PrintCmd extends SIRTask {
             if (hasNoPerm("print.*")) return true;
             if (args.length == 0) return oneMessage("commands.print.help.main");
 
-            String center = textUtils().centerPrefix();
-            String split = textUtils().lineSeparator();
+            String center = getUtils().centerPrefix();
+            String split = getUtils().lineSeparator();
 
             if (args[0].matches("(?i)targets")) {
                 if (hasNoPerm("print.targets")) return true;
@@ -56,8 +56,8 @@ public class PrintCmd extends SIRTask {
 
                 sendReminder(args[1]);
                 if (!catchTargets(args[1]).isEmpty()) {
-                    catchTargets(args[1]).forEach(p -> textUtils().
-                            sendActionBar(p, textUtils().colorize(p, message)));
+                    catchTargets(args[1]).forEach(p ->
+                            TextUtils.sendActionBar(p, getUtils().colorize(p, message)));
                     messageLogger("ACTION-BAR", message);
                 }
             }
@@ -76,23 +76,15 @@ public class PrintCmd extends SIRTask {
                 sendReminder(args[1]);
 
                 if (!catchTargets(args[1]).isEmpty()) {
-                    for (Player p : catchTargets(args[1])) {
-                        for (String s : message) {
-                            switch (args[2].toUpperCase()) {
-                                case "CENTERED":
-                                    if (!s.startsWith(center)) s = center + s;
-                                    break;
-                                case "DEFAULT":
-                                    if (s.startsWith(center))
-                                        s = s.substring(center.length());
-                                    break;
-                                case "MIXED": break;
-                            }
-                            p.spigot().sendMessage(textUtils().stringToJson(p, s));
-                        }
-                    }
+                    catchTargets(args[1]).forEach(p -> message.forEach(s -> {
+                        if (args[2].matches("(?i)CENTERED") && !s.startsWith(center))
+                            s = center + s;
+                        else if (args[2].matches("(?i)DEFAULT") && s.startsWith(center))
+                            s = s.substring(center.length());
+                        p.spigot().sendMessage(getUtils().stringToJson(p, s));
+                    }));
 
-                    messageLogger("CHAT", noFormat.replace(split, "&r" + split));
+                    messageLogger("CHAT", noFormat);
                 }
             }
 
@@ -108,8 +100,8 @@ public class PrintCmd extends SIRTask {
                 if (!catchTargets(args[1]).isEmpty()) {
                     catchTargets(args[1]).forEach(p -> {
                         String[] array = args[2].matches("(?i)DEFAULT") ? null : args[2].split(","),
-                                msg = textUtils().colorize(p, TextUtils.stripJson(noFormat)).split(split);
-                        textUtils().sendTitle(p, msg, array);
+                                msg = getUtils().colorize(p, TextUtils.stripJson(noFormat)).split(split);
+                        getUtils().sendTitle(p, msg, array);
                     });
                     messageLogger("TITLE", noFormat.replace(split, "&r" + split));
                 }
@@ -127,9 +119,13 @@ public class PrintCmd extends SIRTask {
             if (args.length == 1)
                 return resultList("targets", "ACTION-BAR", "CHAT", "TITLE");
 
-            if (args.length == 2 && args[0].matches("(?i)ACTION-BAR|CHAT|TITLE")) {
-                String group = Initializer.hasVault() ? "GROUP:" : null;
-                return resultList(Arrays.asList("@a", "PERM:", "WORLD:", group), onlinePlayers());
+            if (args.length == 2) {
+                if (args[1].matches("(?i)targets"))
+                    return new ArrayList<>();
+
+                List<String> l = Arrays.asList("@a", "PERM:", "WORLD:");
+                if (Initializer.hasVault()) l.add("GROUP:");
+                return resultList(l, onlinePlayers());
             }
 
             if (args.length == 3) {
@@ -140,8 +136,10 @@ public class PrintCmd extends SIRTask {
                     return resultList("DEFAULT", "CENTERED", "MIXED");
             }
 
-            if (args.length == 4 && args[0].matches("(?i)CHAT|TITLE"))
+            if (args.length == 4) {
+                if (!args[0].matches("(?i)CHAT|TITLE")) return new ArrayList<>();
                 return resultList("<message>");
+            }
 
             return new ArrayList<>();
         };

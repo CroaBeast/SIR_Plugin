@@ -11,11 +11,7 @@ import static me.croabeast.sirplugin.objects.extensions.Identifier.*;
 
 public class MainCmd extends SIRTask {
 
-    private final SIRPlugin main;
-
-    public MainCmd(SIRPlugin main) {
-        this.main = main;
-    }
+    private final SIRPlugin main = SIRPlugin.getInstance();
 
     @Override
     public String getName() {

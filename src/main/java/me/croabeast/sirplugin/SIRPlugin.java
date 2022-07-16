@@ -1,6 +1,6 @@
 package me.croabeast.sirplugin;
 
-import me.croabeast.beanslib.terminals.*;
+import me.croabeast.beanslib.objects.Bossbar;
 import me.croabeast.sirplugin.modules.*;
 import me.croabeast.sirplugin.modules.Announcer;
 import me.croabeast.sirplugin.modules.listeners.*;
@@ -54,7 +54,7 @@ public final class SIRPlugin extends JavaPlugin {
         init.setPluginHooks();
 
         registerCommands(
-                new MainCmd(this), new BroadCmd(), new PrintCmd(), new MsgCmd(),
+                new MainCmd(), new BroadCmd(), new PrintCmd(), new MsgCmd(),
                 new ReplyCmd(), new IgnCmd()
         );
 
@@ -108,7 +108,7 @@ public final class SIRPlugin extends JavaPlugin {
     public static SIRPlugin getInstance() {
         return instance;
     }
-    public static LangUtils textUtils() {
+    public static LangUtils getUtils() {
         return text;
     }
 

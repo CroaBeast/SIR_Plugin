@@ -1,7 +1,7 @@
 package me.croabeast.sirplugin.modules;
 
-import me.croabeast.beanslib.utilities.*;
 import me.croabeast.sirplugin.*;
+import me.croabeast.sirplugin.objects.Transmitter;
 import me.croabeast.sirplugin.objects.extensions.*;
 import me.croabeast.sirplugin.objects.files.*;
 import me.croabeast.sirplugin.utilities.*;
@@ -13,8 +13,6 @@ import org.jetbrains.annotations.*;
 
 import java.util.*;
 import java.util.stream.*;
-
-import static me.croabeast.sirplugin.SIRPlugin.*;
 
 public class Announcer extends SIRModule {
 
@@ -55,25 +53,10 @@ public class Announcer extends SIRModule {
     }
 
     public void runSection(ConfigurationSection id) {
-        String perm = id.getString("permission", "DEFAULT");
-
-        List<Player> players = getPlayers(perm);
+        List<Player> players = getPlayers(id.getString("permission", "DEFAULT"));
         if (players.isEmpty()) return;
-
-        List<String> msgs = TextUtils.toList(id, "lines"), cmds = TextUtils.toList(id, "commands");
-
-        if (!msgs.isEmpty()) {
-            if (FileCache.CONFIG.get().getBoolean("options.send-console")) {
-                for (String line : msgs) {
-                    String logLine = textUtils().centeredText(null, textUtils().stripPrefix(line));
-                    String splitter = textUtils().lineSeparator();
-                    LogUtils.doLog(logLine.replace(splitter, "&f" + splitter));
-                }
-            }
-            players.forEach(p -> EventUtils.sendMessages(p, msgs, false, false));
-        }
-
-        if (!cmds.isEmpty()) EventUtils.runCommands(null, cmds);
+        Transmitter.to(id, "lines").display(players);
+        Transmitter.to(id, "commands").runCommands(players);
     }
 
     public void startTask() {
@@ -116,7 +99,7 @@ public class Announcer extends SIRModule {
 
     @Nullable
     public ConfigurationSection getSection() {
-        return FileCache.ANNOUNCES.get().getConfigurationSection("announces");
+        return FileCache.ANNOUNCES.getSection("announces");
     }
 
     public int getDelay() {
