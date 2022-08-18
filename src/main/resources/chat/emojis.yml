@@ -3,6 +3,13 @@ emojis:
   1:
     # the key to be replaced for the value
     key: ':3'
+    checks:
+      # If the key is using regex format
+      is-regex: false
+      # If the key will check only in every word
+      is-word: false
+      # If the key is case-sensitive
+      case-sensitive: false
     # the output value of the emoji
     value: '&5owo'
   2:

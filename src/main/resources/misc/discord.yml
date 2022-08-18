@@ -13,7 +13,7 @@ channels:
         iconURL: 'https://crafatar.com/avatars/{UUID}'
       thumbnail: 'https://crafatar.com/avatars/{UUID}'
       title: 'S.I.R. - Chat Plugin'
-      description: ':bell: `{PLAYER} has join the server for the first time`'
+      description: ':bell: `{player} has join the server for the first time`'
       timeStamp: true
   join:
     text: ''
@@ -25,10 +25,10 @@ channels:
         iconURL: 'https://crafatar.com/avatars/{UUID}'
       thumbnail: 'https://crafatar.com/avatars/{UUID}'
       title: 'S.I.R. - Chat Plugin'
-      description: ':white_check_mark: `{PLAYER} has join the server`:bangbang:'
+      description: ':white_check_mark: `{player} has join the server`:bangbang:'
       timeStamp: true
   quit:
-    text: ':x: `{PLAYER} has left the server` :broken_heart:'
+    text: ':x: `{player} has left the server` :broken_heart:'
     embed:
       color: RED
       author:
@@ -40,6 +40,6 @@ channels:
       description: ''
       timeStamp: true
   chat:
-    text: '**{PREFIX}** {PLAYER} `{SUFFIX}` :white_small_square: {MESSAGE}'
+    text: '**{prefix}** {player} `{suffix}` :white_small_square: {message}'
   advances:
-    text: '**{PLAYER}** has complete the {LOW-TYPE}: **{ADV}**'
+    text: '**{player}** has complete the {low-type}: **{adv}**'

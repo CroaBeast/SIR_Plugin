@@ -1,20 +1,20 @@
 package me.croabeast.sirplugin;
 
-import me.croabeast.beanslib.objects.Bossbar;
-import me.croabeast.sirplugin.modules.*;
-import me.croabeast.sirplugin.modules.Announcer;
-import me.croabeast.sirplugin.modules.listeners.*;
-import me.croabeast.sirplugin.objects.analytics.*;
-import me.croabeast.sirplugin.objects.extensions.*;
-import me.croabeast.sirplugin.tasks.*;
-import me.croabeast.sirplugin.tasks.message.*;
-import me.croabeast.sirplugin.utilities.*;
+import me.croabeast.beanslib.object.Bossbar;
+import me.croabeast.sirplugin.module.*;
+import me.croabeast.sirplugin.module.Announcer;
+import me.croabeast.sirplugin.module.listener.*;
+import me.croabeast.sirplugin.object.analytic.*;
+import me.croabeast.sirplugin.object.instance.*;
+import me.croabeast.sirplugin.task.*;
+import me.croabeast.sirplugin.task.message.*;
+import me.croabeast.sirplugin.utility.*;
 import org.bukkit.*;
-import org.bukkit.boss.*;
 import org.bukkit.entity.*;
+import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.*;
 
-import static me.croabeast.sirplugin.objects.extensions.Identifier.*;
+import static me.croabeast.sirplugin.object.instance.Identifier.*;
 
 public final class SIRPlugin extends JavaPlugin {
 
@@ -36,7 +36,7 @@ public final class SIRPlugin extends JavaPlugin {
         text = new LangUtils(this);
         files = new FilesUtils(this);
 
-        Initializer init = new Initializer(this);
+        Initializer init = new Initializer();
         amender = new Amender(this);
 
         LogUtils.rawLog(
@@ -59,8 +59,8 @@ public final class SIRPlugin extends JavaPlugin {
         );
 
         SIRModule.registerModules(
-                new EmParser(), new Announcer(this), new JoinQuit(this), new Advances(),
-                new MOTD(this), new Formats(), new ChatFilter()
+                new EmParser(), new Announcer(), new JoinQuit(), new Advances(),
+                new MOTD(), new Formats(), new ChatFilter()
         );
 
         if (ANNOUNCES.isEnabled()) {
@@ -74,6 +74,11 @@ public final class SIRPlugin extends JavaPlugin {
         );
         LogUtils.rawLog("");
 
+        if (!Bukkit.getOnlinePlayers().isEmpty() && Initializer.hasLogin())
+            Bukkit.getOnlinePlayers().stream().filter(p ->
+                    !JoinQuit.LOGGED_PLAYERS.contains(p)).
+                    forEach(JoinQuit.LOGGED_PLAYERS::add);
+
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
             Initializer.loadAdvances(true);
             amender.initUpdater(null);
@@ -82,8 +87,8 @@ public final class SIRPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        LogUtils.rawLog("" +
-                        "&0* *&e____ &0* &e___ &0* &e____",
+        LogUtils.rawLog(
+                "&0* *&e____ &0* &e___ &0* &e____",
                 "&0* &e(___&0 * * &e|&0* * &e|___)",
                 "&0* &e____) . _|_ . | &0* &e\\ . &fv" + pluginVersion, ""
         );
@@ -92,8 +97,8 @@ public final class SIRPlugin extends JavaPlugin {
         ((Announcer) SIRModule.getModule(ANNOUNCES)).cancelTask();
 
         for (Player player : Bukkit.getOnlinePlayers()) {
-            BossBar bar = Bossbar.getBossbar(player);
-            if (bar != null) bar.removePlayer(player);
+            Bossbar bar = Bossbar.getBossbar(player);
+            if (bar != null) bar.unregister();
         }
 
         LogUtils.doLog(
@@ -102,6 +107,7 @@ public final class SIRPlugin extends JavaPlugin {
         );
         LogUtils.rawLog("");
 
+        HandlerList.unregisterAll(this);
         instance = null;
     }
 
@@ -124,6 +130,12 @@ public final class SIRPlugin extends JavaPlugin {
     }
 
     private void registerCommands(SIRTask... cmds) {
-        for (SIRTask cmd : cmds) cmd.registerCommand();
+        for (SIRTask cmd : cmds) {
+            try {
+                cmd.registerCommand();
+            } catch (NullPointerException e) {
+                LogUtils.doLog("&c" + e.getMessage());
+            }
+        }
     }
 }

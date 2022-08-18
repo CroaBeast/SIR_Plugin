@@ -2,10 +2,10 @@ package me.croabeast.sirplugin;
 
 import com.google.common.collect.*;
 import me.croabeast.advancementinfo.*;
-import me.croabeast.sirplugin.objects.analytics.*;
-import me.croabeast.sirplugin.objects.extensions.*;
-import me.croabeast.sirplugin.objects.files.FileCache;
-import me.croabeast.sirplugin.utilities.*;
+import me.croabeast.sirplugin.object.analytic.*;
+import me.croabeast.sirplugin.object.instance.*;
+import me.croabeast.sirplugin.object.file.FileCache;
+import me.croabeast.sirplugin.utility.*;
 import net.milkbowl.vault.permission.*;
 import org.bukkit.*;
 import org.bukkit.advancement.*;
@@ -16,29 +16,23 @@ import java.util.*;
 
 public final class Initializer {
 
-    private final SIRPlugin main;
+    private final SIRPlugin MAIN = SIRPlugin.getInstance();
     private static Permission permProvider;
 
-    private final boolean userLogin, authMe, hasCMI,
-            essentials, srVanish, prVanish;
+    private final boolean
+            userLogin = isHooked("UserLogin", LOGIN_HOOKS),
+            authMe = isHooked("AuthMe", LOGIN_HOOKS),
+            hasCMI = isHooked("CMI", VANISH_HOOKS),
+            essentials = isHooked("Essentials", VANISH_HOOKS),
+            srVanish = isHooked("SuperVanish", VANISH_HOOKS),
+            prVanish = isHooked("PremiumVanish", VANISH_HOOKS);
 
-    static List<String> loginHooks = new ArrayList<>(),
-            vanishHooks = new ArrayList<>();
+    private static final List<String>
+            LOGIN_HOOKS = new ArrayList<>(),
+            VANISH_HOOKS = new ArrayList<>();
 
-    static Map<Advancement, AdvancementInfo> keys = new HashMap<>();
-
-    public Initializer(SIRPlugin main) {
-        this.main = main;
-
-        userLogin = isHooked("UserLogin", loginHooks);
-        authMe = isHooked("AuthMe", loginHooks);
-
-        hasCMI = isHooked("CMI", vanishHooks);
-        essentials = isHooked("Essentials", vanishHooks);
-
-        srVanish = isHooked("SuperVanish", vanishHooks);
-        prVanish = isHooked("PremiumVanish", vanishHooks);
-    }
+    private static final Map<Advancement, AdvancementInfo>
+            ADVANCEMENT_KEYS = new HashMap<>();
 
     private boolean isHooked(String name, List<String> hookList) {
         if (Bukkit.getPluginManager().getPlugin(name) == null) return false;
@@ -58,14 +52,14 @@ public final class Initializer {
     }
 
     public static boolean hasLogin() {
-        return loginHooks.size() == 1;
+        return LOGIN_HOOKS.size() == 1;
     }
     public static boolean hasVanish() {
-        return vanishHooks.size() == 1;
+        return VANISH_HOOKS.size() == 1;
     }
 
     public void startMetrics() {
-        Metrics metrics = new Metrics(main, 12806);
+        Metrics metrics = new Metrics(MAIN, 12806);
 
         metrics.addCustomChart(new Metrics.SimplePie("hasPAPI", () -> hasPAPI() + ""));
         metrics.addCustomChart(new Metrics.SimplePie("hasVault", () -> hasVault() + ""));
@@ -123,7 +117,7 @@ public final class Initializer {
         }
 
         if (hasVault()) {
-            ServicesManager servMngr = main.getServer().getServicesManager();
+            ServicesManager servMngr = MAIN.getServer().getServicesManager();
             RegisteredServiceProvider<Permission> rsp = servMngr.getRegistration(Permission.class);
 
             String hasVault;
@@ -144,13 +138,13 @@ public final class Initializer {
 
         if (hasLogin()) {
             LogUtils.doLog("&7Login Plugin: " +
-                    "&eFound " + loginHooks.get(0) + " v. " + pluginVersion(loginHooks.get(0)));
+                    "&eFound " + LOGIN_HOOKS.get(0) + " v. " + pluginVersion(LOGIN_HOOKS.get(0)));
             logLines++;
         }
 
         if (hasVanish()) {
             LogUtils.doLog("&7Vanish Plugin: " +
-                    "&eFound " + vanishHooks.get(0) + " v. " + pluginVersion(vanishHooks.get(0)));
+                    "&eFound " + VANISH_HOOKS.get(0) + " v. " + pluginVersion(VANISH_HOOKS.get(0)));
             logLines++;
         }
 
@@ -160,7 +154,7 @@ public final class Initializer {
     @SuppressWarnings("deprecation")
     public static void loadAdvances(boolean debug) {
         if (LangUtils.majorVersion() < 12) return;
-        if (!keys.isEmpty()) keys.clear();
+        if (!ADVANCEMENT_KEYS.isEmpty()) ADVANCEMENT_KEYS.clear();
 
         long time = System.currentTimeMillis();
         if (debug) {
@@ -184,10 +178,10 @@ public final class Initializer {
                 challenges = new ArrayList<>(), errors = new ArrayList<>(), keys = new ArrayList<>();
 
         for (Advancement adv : getAdvancements()) {
-            Initializer.keys.put(adv, new AdvancementInfo(adv));
+            Initializer.ADVANCEMENT_KEYS.put(adv, new AdvancementInfo(adv));
 
             String key = LangUtils.stringKey(adv.getKey().toString());
-            final String type = Initializer.keys.get(adv).getFrameType();
+            final String type = Initializer.ADVANCEMENT_KEYS.get(adv).getFrameType();
 
             if (key.contains("root") || key.contains("recipes")) continue;
 
@@ -269,6 +263,6 @@ public final class Initializer {
     }
 
     public static Map<Advancement, AdvancementInfo> getKeys() {
-        return keys;
+        return ADVANCEMENT_KEYS;
     }
 }
