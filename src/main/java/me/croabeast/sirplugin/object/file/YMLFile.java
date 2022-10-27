@@ -1,6 +1,7 @@
 package me.croabeast.sirplugin.object.file;
 
 import com.tchristofferson.configupdater.*;
+import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sirplugin.utility.*;
 import org.bukkit.configuration.file.*;
 import org.bukkit.plugin.java.*;
@@ -103,6 +104,8 @@ public class YMLFile {
 
         try {
             this.getFile().save(this.catchFile());
+            if (doLog)
+                LogUtils.doLog("&7The &e" + location + "&7 file has been&a saved&7.");
         }
         catch (Exception e) {
             if (doLog) {
@@ -110,8 +113,6 @@ public class YMLFile {
                 e.printStackTrace();
             }
         }
-
-        if (doLog) LogUtils.doLog("&7The &e" + location + "&7 file has been&a saved&7.");
     }
 
     /**
@@ -128,14 +129,15 @@ public class YMLFile {
     public void updateFile() {
         try {
             ConfigUpdater.update(main, location, catchFile());
-            if (LangUtils.majorVersion() < 13)
+            if (LibUtils.majorVersion() < 13)
                 ConfigUpdater.update(main, location, catchFile());
+
+            LogUtils.doLog("&7The &e" + location + "&7 file has been&a updated&7.");
         }
         catch (Exception e) {
             LogUtils.doLog("&7The &e" + location + "&7 file&c couldn't be updated&7.");
             e.printStackTrace();
         }
-        LogUtils.doLog("&7The &e" + location + "&7 file has been&a updated&7.");
     }
 
     /**

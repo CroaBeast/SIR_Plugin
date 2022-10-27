@@ -1,6 +1,7 @@
 package me.croabeast.sirplugin.module.listener;
 
 import me.croabeast.advancementinfo.*;
+import me.croabeast.beanslib.object.display.Displayer;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.hook.discord.DiscordMsg;
 import me.croabeast.sirplugin.object.Sender;
@@ -102,20 +103,24 @@ public class Advances extends SIRViewer {
         if (description == null)
             description = info == null ? "No description." : info.getDescription();
 
-        String[] keys = {"{player}", "{adv}", "{description}", "{type}", "{low-type}", "{cap-type}"},
+        String[] keys = {
+                        "{player}", "{adv}", "{description}",
+                        "{type}", "{low-type}", "{cap-type}"
+                },
                 values = {
-                        player.getName() + "&r", advName + "&r", description + "&r", frameType + "&r",
-                        frameType.toLowerCase() + "&r", WordUtils.capitalizeFully(frameType) + "&r"
+                        player.getName(), advName, description, frameType,
+                        frameType.toLowerCase(), WordUtils.capitalizeFully(frameType)
                 };
 
         if (messageKey.matches("(?i)null")) return;
 
-        Sender sender = Sender.to(FileCache.ADVANCES.get(), messageKey).
-                setKeys(keys).setValues(values);
+        LangUtils.create(Bukkit.getOnlinePlayers(), player,
+                FileCache.ADVANCES.toList(messageKey)).
+                setKeys(keys).setValues(values).display();
 
-        sender.send(Bukkit.getOnlinePlayers(), player);
-        sender.execute(player, true);
+        FileCache.ADVANCES.send(messageKey).execute(player, true);
 
-        if (Initializer.hasDiscord()) new DiscordMsg(player, "advances", keys, values).send();
+        if (Initializer.hasDiscord())
+            new DiscordMsg(player, "advances", keys, values).send();
     }
 }

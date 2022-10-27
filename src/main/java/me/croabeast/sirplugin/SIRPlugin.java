@@ -1,6 +1,7 @@
 package me.croabeast.sirplugin;
 
-import me.croabeast.beanslib.object.Bossbar;
+import me.croabeast.beanslib.object.display.Bossbar;
+import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sirplugin.module.*;
 import me.croabeast.sirplugin.module.Announcer;
 import me.croabeast.sirplugin.module.listener.*;
@@ -44,7 +45,7 @@ public final class SIRPlugin extends JavaPlugin {
                 "&0* &e(___&0 * * &e|&0* * &e|___)",
                 "&0* &e____) . _|_ . | &0* &e\\ . &fv" + pluginVersion, "",
                 "&0* &7Developer: " + getDescription().getAuthors().get(0),
-                "&0* &7Software: " + LangUtils.serverFork(),
+                "&0* &7Software: " + LibUtils.serverFork(),
                 "&0* &7Java Version: " + System.getProperty("java.version"), ""
         );
 
@@ -69,7 +70,7 @@ public final class SIRPlugin extends JavaPlugin {
         }
 
         LogUtils.doLog("",
-                "&7SIR " + pluginVersion + " was&a loaded&7 in " +
+                "&7SIR " + pluginVersion + " was&a loaded&7 in &e" +
                         (System.currentTimeMillis() - start) + " ms."
         );
         LogUtils.rawLog("");

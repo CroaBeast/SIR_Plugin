@@ -1,5 +1,6 @@
 package me.croabeast.sirplugin.hook.vanish;
 
+import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.sirplugin.event.*;
 import me.croabeast.sirplugin.object.instance.*;
 import net.ess3.api.*;
@@ -10,7 +11,7 @@ import org.bukkit.event.*;
 public class Essentials implements RawViewer {
 
     public Essentials() {
-        if (Bukkit.getPluginManager().isPluginEnabled("Essentials")) registerListener();
+        if (Exceptions.isPluginEnabled("Essentials")) registerListener();
     }
 
     @EventHandler

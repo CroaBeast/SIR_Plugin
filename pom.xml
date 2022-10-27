@@ -181,17 +181,17 @@
         </dependency>
 
         <dependency>
-            <groupId>me.croabeast</groupId>
+            <groupId>io.github.croabeast</groupId>
             <artifactId>BeansLib</artifactId>
-            <version>1.0</version>
+            <version>1.3-PRE-2</version>
             <scope>compile</scope>
         </dependency>
 
 <!--
         <dependency>
-            <groupId>io.github.croabeast</groupId>
+            <groupId>me.croabeast</groupId>
             <artifactId>BeansLib</artifactId>
-            <version>1.2.8</version>
+            <version>1.0</version>
             <scope>compile</scope>
         </dependency>
 -->

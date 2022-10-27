@@ -1,6 +1,8 @@
 package me.croabeast.sirplugin.module.listener;
 
-import me.croabeast.beanslib.object.Bossbar;
+import me.croabeast.beanslib.object.display.Bossbar;
+import me.croabeast.beanslib.object.display.Displayer;
+import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.event.*;
 import me.croabeast.sirplugin.hook.discord.*;
@@ -70,7 +72,8 @@ public class JoinQuit extends SIRViewer {
             return;
         }
 
-        event.setJoinMessage(null);
+        if (FileCache.MODULES.get().getBoolean("join-quit.default-messages.disable-join", true))
+            event.setJoinMessage(null);
 
         int playTime = FileCache.MODULES.get().getInt("join-quit.cooldown.between"),
                 joinCooldown = FileCache.MODULES.get().getInt("join-quit.cooldown.join");
@@ -123,7 +126,8 @@ public class JoinQuit extends SIRViewer {
             return;
         }
 
-        event.setQuitMessage(null);
+        if (FileCache.MODULES.get().getBoolean("join-quit.default-messages.disable-quit", true))
+            event.setQuitMessage(null);
 
         int playTime = FileCache.MODULES.get().getInt("join-quit.cooldown.between"),
                 quitCooldown = FileCache.MODULES.get().getInt("join-quit.cooldown.quit");
@@ -253,8 +257,7 @@ public class JoinQuit extends SIRViewer {
                 Matcher match = Pattern.compile(key).matcher(message);
 
                 if (!match.find()) {
-                    Sender.to(FileCache.MODULES.get(),
-                            path + "not-allowed").send(player);
+                    LangUtils.create(player, FileCache.MODULES.toList(path + "not-allowed")).display();
                     event.setCancelled(true);
                 }
                 else event.setMessage(message.replace(match.group(), ""));
@@ -268,7 +271,7 @@ public class JoinQuit extends SIRViewer {
             Matcher match = Pattern.compile(pattern).matcher(message);
 
             if (!match.find()) {
-                Sender.to(FileCache.MODULES.get(), path + "not-allowed").send(player);
+                LangUtils.create(player, FileCache.MODULES.toList(path + "not-allowed")).display();
                 event.setCancelled(true);
             }
             else event.setMessage(message.replace(match.group(), ""));
@@ -304,12 +307,14 @@ public class JoinQuit extends SIRViewer {
             BukkitRunnable runnable = new BukkitRunnable() {
                 @Override
                 public void run() {
-                    Sender.to(id, "public").send(Bukkit.getOnlinePlayers(), player);
+                    LangUtils.create(Bukkit.getOnlinePlayers(), player, TextUtils.toList(id, "public")).display();
 
                     if (isJoin) {
-                        Sender.to(id, "private").send(player);
+                        LangUtils.create(player, TextUtils.toList(id, "private")).display();
+
                         playSound(player, id.getString("sound"));
                         giveImmunity(player, id.getInt("invulnerable"));
+
                         if (doSpawn) teleportPlayer(id, player);
                     }
 

@@ -25,6 +25,10 @@ formats:
       normal: true
       special: true
     format: '{prefix} &7{player} {suffix}&8: <#FFCC33>{message}'
+    hover:
+      - "ded"
+      - "owo"
+    click: "SUGGEST:/click me owo algo xd"
   sir:
     permission: chat.sir
     priority: 100

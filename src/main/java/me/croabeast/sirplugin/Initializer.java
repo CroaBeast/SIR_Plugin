@@ -2,6 +2,8 @@ package me.croabeast.sirplugin;
 
 import com.google.common.collect.*;
 import me.croabeast.advancementinfo.*;
+import me.croabeast.beanslib.utility.Exceptions;
+import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sirplugin.object.analytic.*;
 import me.croabeast.sirplugin.object.instance.*;
 import me.croabeast.sirplugin.object.file.FileCache;
@@ -41,14 +43,14 @@ public final class Initializer {
     }
 
     private boolean hasPAPI() {
-        return Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI");
+        return Exceptions.isPluginEnabled("PlaceholderAPI");
     }
     public static boolean hasVault() {
-        return Bukkit.getPluginManager().isPluginEnabled("Vault");
+        return Exceptions.isPluginEnabled("Vault");
     }
 
     public static boolean hasDiscord() {
-        return Bukkit.getPluginManager().isPluginEnabled("DiscordSRV") && Identifier.DISCORD.isEnabled();
+        return Exceptions.isPluginEnabled("DiscordSRV") && Identifier.DISCORD.isEnabled();
     }
 
     public static boolean hasLogin() {
@@ -65,7 +67,7 @@ public final class Initializer {
         metrics.addCustomChart(new Metrics.SimplePie("hasVault", () -> hasVault() + ""));
 
         metrics.addCustomChart(new Metrics.SimplePie("hasDiscord", () ->
-                (Bukkit.getPluginManager().isPluginEnabled("DiscordSRV")) + ""));
+                (Exceptions.isPluginEnabled("DiscordSRV")) + ""));
 
         metrics.addCustomChart(new Metrics.DrilldownPie("loginPlugins", () -> {
             Map<String, Map<String, Integer>> map = new HashMap<>();
@@ -153,7 +155,7 @@ public final class Initializer {
 
     @SuppressWarnings("deprecation")
     public static void loadAdvances(boolean debug) {
-        if (LangUtils.majorVersion() < 12) return;
+        if (LibUtils.majorVersion() < 12) return;
         if (!ADVANCEMENT_KEYS.isEmpty()) ADVANCEMENT_KEYS.clear();
 
         long time = System.currentTimeMillis();
@@ -164,7 +166,7 @@ public final class Initializer {
 
         if (Identifier.ADVANCES.isEnabled()) {
             for (World world : Bukkit.getServer().getWorlds()) {
-                if (LangUtils.majorVersion() == 12) {
+                if (LibUtils.majorVersion() == 12) {
                     world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "false");
                     continue;
                 }
@@ -240,11 +242,11 @@ public final class Initializer {
 
     @SuppressWarnings("deprecation")
     public static void unloadAdvances(boolean reload) {
-        if (LangUtils.majorVersion() < 12) return;
+        if (LibUtils.majorVersion() < 12) return;
         if (Identifier.ADVANCES.isEnabled() && reload) return;
 
         for (World world : Bukkit.getServer().getWorlds()) {
-            if (LangUtils.majorVersion() == 12) {
+            if (LibUtils.majorVersion() == 12) {
                 world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "true");
                 continue;
             }

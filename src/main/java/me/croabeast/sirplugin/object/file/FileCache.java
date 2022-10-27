@@ -1,6 +1,8 @@
 package me.croabeast.sirplugin.object.file;
 
+import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.*;
+import me.croabeast.sirplugin.object.Sender;
 import me.croabeast.sirplugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
@@ -41,6 +43,10 @@ public enum FileCache {
         return Objects.requireNonNull(init());
     }
 
+    public List<String> toList(String path) {
+        return TextUtils.toList(get(), path);
+    }
+
     @NotNull
     public FileConfiguration get() {
         return source().getFile();
@@ -54,6 +60,10 @@ public enum FileCache {
     @Nullable
     public ConfigurationSection getSection(String path) {
         return get().getConfigurationSection(path);
+    }
+
+    public Sender send(String path) {
+        return Sender.to(get(), path);
     }
 
     @Nullable

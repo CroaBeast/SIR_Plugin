@@ -1,15 +1,20 @@
 package me.croabeast.sirplugin.utility;
 
 import me.croabeast.beanslib.BeansLib;
+import me.croabeast.beanslib.object.display.Displayer;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.module.EmParser;
 import me.croabeast.sirplugin.object.file.FileCache;
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class LangUtils extends BeansLib {
@@ -21,7 +26,7 @@ public class LangUtils extends BeansLib {
     }
 
     @Override
-    protected @NotNull JavaPlugin getPlugin() {
+    public @NotNull JavaPlugin getPlugin() {
         return main;
     }
 
@@ -51,44 +56,13 @@ public class LangUtils extends BeansLib {
     }
 
     @Override
-    public boolean isHardSpacing() {
-        return FileCache.CONFIG.value("options.hard-spacing", true);
+    public ConfigurationSection getWebhookSection() {
+        return null;
     }
 
     @Override
     public boolean isStripPrefix() {
         return !FileCache.CONFIG.value("options.show-prefix", true);
-    }
-
-    @Override
-    public void sendMessage(Player target, Player parser, String string) {
-        try {
-            string = EmParser.parseEmojis(string);
-        } catch (Exception ignored) {}
-
-        super.sendMessage(target, parser, string);
-    }
-
-    private static boolean checkInts(@Nullable String[] array) {
-        if (array == null) return false;
-        for (String integer : array) {
-            if (integer == null) return false;
-            if (!integer.matches("\\d+")) return false;
-        }
-        return true;
-    }
-
-    public static void sendTitle(Player player, String[] message, String[] times) {
-        int[] i = new int[] {10, 50, 10};
-
-        if (checkInts(times) && times.length == 3) {
-            for (int x = 0; x < times.length; x++) {
-                if (times[x] == null) continue;
-                i[x] = Integer.parseInt(times[x]);
-            }
-        }
-
-        TextUtils.sendTitle(player, message, i[0], i[1], i[2]);
     }
 
     public static String parseInternalKeys(String line, String[] keys, String[] values) {
@@ -99,5 +73,23 @@ public class LangUtils extends BeansLib {
 
     public static String stringKey(@Nullable String key) {
         return key == null ? "empty" : key.replace("/", ".").replace(":", ".");
+    }
+
+    public static Displayer create(Collection<? extends CommandSender> targets, Player p, List<String> list) {
+        return new Displayer(SIRPlugin.getUtils(), targets, p, list).
+                setLogger(FileCache.CONFIG.value("options.send-console", true)).
+                setCaseSensitive(false).
+                setOperators(EmParser::parseEmojis);
+    }
+
+    public static Displayer create(CommandSender t, Player p, List<String> list) {
+        return new Displayer(SIRPlugin.getUtils(), t, p, list).
+                setLogger(FileCache.CONFIG.value("options.send-console", true)).
+                setCaseSensitive(false).
+                setOperators();
+    }
+
+    public static Displayer create(Player p, List<String> list) {
+        return create((Collection<? extends CommandSender>) null, p, list);
     }
 }

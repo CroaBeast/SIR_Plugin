@@ -42,13 +42,16 @@ public class EmParser extends SIRModule {
     }
 
     public static String parseEmojis(String line) {
-        System.out.println(line);
+        try {
+            if (!Identifier.EMOJIS.isEnabled()) return line;
+            if (EMOJI_LIST.isEmpty()) return line;
 
-        if (!Identifier.EMOJIS.isEnabled()) return line;
-        if (EMOJI_LIST.isEmpty()) return line;
-
-        for (Emoji e : EMOJI_LIST) line = e.parseEmoji(line);
-        return line;
+            for (Emoji e : EMOJI_LIST) line = e.parseEmoji(line);
+            return line;
+        }
+        catch (Exception e) {
+            return line;
+        }
     }
 
     static class Emoji {
@@ -125,7 +128,7 @@ public class EmParser extends SIRModule {
 
         @Override
         public String toString() {
-            return TextUtils.classFormat(this, key, value, checks);
+            return TextUtils.classFormat(this, ":", true, key, value, checks);
         }
 
         @RequiredArgsConstructor

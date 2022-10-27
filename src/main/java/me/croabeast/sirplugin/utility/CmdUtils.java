@@ -1,6 +1,8 @@
 package me.croabeast.sirplugin.utility;
 
 import com.google.common.collect.*;
+import me.croabeast.beanslib.object.display.Displayer;
+import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.object.file.*;
 import org.bukkit.*;
 import org.bukkit.command.*;
@@ -15,7 +17,10 @@ import static me.croabeast.sirplugin.SIRPlugin.*;
 public class CmdUtils {
 
     protected void oneMessage(CommandSender sender, String path, String[] keys, String[] values) {
-        getUtils().sendMessageList(sender, FileCache.LANG.get(), path, keys, values);
+        LangUtils.create(sender, null, FileCache.LANG.toList(path)).
+                setKeys(keys).
+                setValues(values).
+                display();
     }
 
     protected void sendMessage(CommandSender sender, String path, String key, String value) {
@@ -45,12 +50,10 @@ public class CmdUtils {
     protected String rawMessage(String[] args, int initial) {
         if (initial >= args.length) return null;
 
-        StringBuilder builder = new StringBuilder();
+        StringBuilder b = new StringBuilder();
+        for (int i = initial; i < args.length; i++) b.append(args[i]).append(" ");
 
-        for (int i = initial; i < args.length; i++)
-            builder.append(args[i]).append(" ");
-
-        return builder.substring(0, builder.toString().length() - 1);
+        return b.substring(0, b.toString().length() - 1);
     }
 
     @SafeVarargs

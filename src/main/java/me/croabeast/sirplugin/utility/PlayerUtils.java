@@ -2,6 +2,7 @@ package me.croabeast.sirplugin.utility;
 
 import com.Zrips.CMI.Containers.*;
 import com.earth2me.essentials.*;
+import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.object.file.*;
 import org.apache.commons.lang.*;
@@ -24,11 +25,12 @@ public final class PlayerUtils {
 
     public static boolean hasPerm(CommandSender sender, String perm) {
         if (sender == null) return false;
-        if (sender instanceof ConsoleCommandSender) return true;
+        if (!(sender instanceof Player)) return true;
+
+        if (StringUtils.isBlank(perm)) return false;
 
         Player player = (Player) sender;
         if (player.isOp()) return true;
-        if (StringUtils.isBlank(perm)) return false;
 
         boolean isSet = FileCache.CONFIG.get().getBoolean("options.hard-perm-check");
         return (!isSet || sender.isPermissionSet(perm)) && sender.hasPermission(perm);
@@ -126,7 +128,7 @@ public final class PlayerUtils {
     }
 
     public static void giveImmunity(Player player, int time) {
-        if (LangUtils.majorVersion() <= 8 | time <= 0) return;
+        if (LibUtils.majorVersion() <= 8 | time <= 0) return;
 
         player.setInvulnerable(true);
         getGodPlayers().add(player);

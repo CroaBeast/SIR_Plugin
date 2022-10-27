@@ -1,13 +1,12 @@
 package me.croabeast.sirplugin.task;
 
 import com.google.common.collect.*;
-import me.croabeast.beanslib.object.JsonMessage;
+import me.croabeast.beanslib.object.display.JsonMessage;
 import me.croabeast.beanslib.utility.*;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.module.EmParser;
 import me.croabeast.sirplugin.object.instance.*;
 import me.croabeast.sirplugin.object.file.FileCache;
-import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.LogUtils;
 import me.croabeast.sirplugin.utility.PlayerUtils;
 import org.bukkit.Bukkit;
@@ -77,7 +76,9 @@ public class PrintCmd extends SIRTask {
     void messageLogger(String type, String line) {
         String start = FileCache.LANG.get().getString("logger.header");
         if (start == null || start.equals("")) return;
-        LogUtils.doLog(start, "&7[" + type + "] " + getUtils().colorize(null, line));
+
+        LogUtils.doLog(start, "&7[" + type + "] " +
+                getUtils().colorize(null, null, line));
     }
 
     @Override
@@ -85,8 +86,8 @@ public class PrintCmd extends SIRTask {
         if (hasNoPerm(sender, "print.*")) return true;
         if (args.length == 0) return oneMessage(sender, "commands.print.help.main");
 
-        String center = getUtils().centerPrefix();
-        String split = getUtils().lineSeparator();
+        final String center = getUtils().centerPrefix(),
+                split = getUtils().lineSeparator();
 
         if (args[0].matches("(?i)targets")) {
             if (hasNoPerm(sender, "print.targets")) return true;
@@ -116,7 +117,7 @@ public class PrintCmd extends SIRTask {
 
             if (!catchTargets(sender, args[1]).isEmpty()) {
                 catchTargets(sender, args[1]).forEach(p ->
-                        TextUtils.sendActionBar(p, getUtils().colorize(p, message)));
+                        TextUtils.sendActionBar(p, getUtils().colorize(null, p, message)));
                 messageLogger("ACTION-BAR", message);
             }
         }
@@ -140,7 +141,7 @@ public class PrintCmd extends SIRTask {
                         s = center + s;
                     else if (args[2].matches("(?i)DEFAULT") && s.startsWith(center))
                         s = s.substring(center.length());
-                    new JsonMessage(getUtils(), p, EmParser.parseEmojis(s)).send(p);
+                    new JsonMessage(getUtils(), p, p, EmParser.parseEmojis(s)).send();
                 }));
 
                 messageLogger("CHAT", noFormat);
@@ -158,15 +159,27 @@ public class PrintCmd extends SIRTask {
 
             if (!catchTargets(sender, args[1]).isEmpty()) {
                 catchTargets(sender, args[1]).forEach(p -> {
-                    String[] array = args[2].matches("(?i)DEFAULT") ? null : args[2].split(","),
-                            msg = getUtils().colorize(p, TextUtils.stripJson(noFormat)).split(split);
-                    LangUtils.sendTitle(p, msg, array);
+                    int[] i = new int[] {10, 50, 10};
+                    String[] array = args[2].split(",");
+
+                    if (!args[2].matches("(?i)DEFAULT") && array.length == 3) {
+                        for (int x = 0; x < array.length; x++) {
+                            try {
+                                i[x] = Integer.parseInt(array[x]);
+                            } catch (Exception ignored) {}
+                        }
+                    }
+
+                    String[] msg = getUtils().colorize(null, p,
+                            TextUtils.stripJson(noFormat)).split(split);
+                    TextUtils.sendTitle(p, msg[0], msg[1], i[0], i[1], i[2]);
                 });
+
                 messageLogger("TITLE", noFormat.replace(split, "&r" + split));
             }
         }
 
-        else return notArgument(sender, args[0]);
+        notArgument(sender, args[0]);
         return true;
     }
 

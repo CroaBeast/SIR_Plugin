@@ -1,7 +1,7 @@
 package me.croabeast.sirplugin.module.listener;
 
 import com.Zrips.CMI.Containers.*;
-import me.croabeast.beanslib.object.JsonMessage;
+import me.croabeast.beanslib.object.display.JsonMessage;
 import me.croabeast.beanslib.utility.*;
 import me.croabeast.iridiumapi.*;
 import me.croabeast.sirplugin.*;
@@ -26,6 +26,7 @@ import java.util.*;
 import java.util.regex.*;
 
 import static me.croabeast.beanslib.utility.TextUtils.*;
+import static me.croabeast.sirplugin.SIRPlugin.getUtils;
 import static me.croabeast.sirplugin.utility.LangUtils.*;
 
 public class Formats extends SIRViewer {
@@ -51,8 +52,7 @@ public class Formats extends SIRViewer {
         if (!format.isSpecialColored()) line = IridiumAPI.stripRGB(line);
         if (!format.isRgbColored()) line = IridiumAPI.stripSpecial(line);
 
-        return SIRPlugin.getUtils().
-                removeSpace(line.replace("\\", "\\\\").replace("$", "\\$"));
+        return TextUtils.removeSpace(line.replace("\\", "\\\\").replace("$", "\\$"));
     }
 
     private String onMention(Player player, String line) {
@@ -179,12 +179,10 @@ public class Formats extends SIRViewer {
         else players.addAll(world != null ?
                 world.getPlayers() : Bukkit.getOnlinePlayers());
 
-        List<Player> targets = new ArrayList<>(players);
-
-        for (Player target : targets) {
-            if (target == player) continue;
-            if (PlayerUtils.isIgnoredFrom(target, player, true))
-                players.remove(target);
+        for (Player t : new ArrayList<>(players)) {
+            if (t == player) continue;
+            if (PlayerUtils.isIgnoredFrom(t, player, true))
+                players.remove(t);
         }
 
         int timer = format.cooldownTime();
@@ -202,17 +200,17 @@ public class Formats extends SIRViewer {
             }
         }
 
-        String result = parseInternalKeys(utils.removeSpace(format.getFormat()), keys, values);
+        String result = parseInternalKeys(TextUtils.removeSpace(format.getFormat()), keys, values);
         result = onMention(player, EmParser.parseEmojis(result));
 
         boolean isDefault = FileCache.MODULES.get().getBoolean("chat.default-format");
 
         if (isDefault && !IS_JSON.apply(result) && hover.size() == 0 &&
                 click == null && world == null && radius <= 0 &&
-                !Bukkit.getPluginManager().isPluginEnabled("InteractiveChat")) {
+                !Exceptions.isPluginEnabled("InteractiveChat")) {
 
             result = parsePAPI(player, result);
-            event.setFormat(utils.centerMessage(player, result.replace("%", "%%")));
+            event.setFormat(getUtils().centerMessage(null, player, result.replace("%", "%%")));
             return;
         }
 
@@ -234,7 +232,7 @@ public class Formats extends SIRViewer {
 
         if (!result.matches("(?i)^\\[JSON]")) {
             String r = result, c = click;
-            players.forEach(p -> new JsonMessage(utils, player, r).send(p, c, hover));
+            players.forEach(p -> new JsonMessage(utils, p, player, r).send(c, hover));
         }
         else Bukkit.dispatchCommand(
                 Bukkit.getConsoleSender(), removeSpace(result.substring(6)));

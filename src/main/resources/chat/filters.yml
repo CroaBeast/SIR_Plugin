@@ -7,10 +7,12 @@ filters:
     replace-char: '*'
     # enable this if you know regex lol
     is-regex: true
-    # the patterns (regex) or words that can be filtered
+    cancel-event: false
+    # the regex patterns or words that can be filtered
     words:
-      - (?i)f(.)?ck
       - (?i)dumbass|idiot
+      - (?i)f(.)?ck
+      - CANCEL::normal
   vip:
     permission: chat.vip
     replace-char: '*'

@@ -20,6 +20,14 @@ modules:
   - 'mentions'
 
 join-quit:
+  # This option handles if you want to disable the default join-quit messages.
+  # WARNING: This option DOES NOT disable the custom join-quit SIR messages,
+  #          only manages the default messages if those should appear or not.
+  default-messages:
+    # Disables the default join message. Enabled by default
+    disable-join: true
+    # Disables the default quit message. Enabled by default
+    disable-quit: true
   # Manages the cooldown between join-quit messages to not show those
   # messages if the players joins/leaves the server really quick.
   cooldown:

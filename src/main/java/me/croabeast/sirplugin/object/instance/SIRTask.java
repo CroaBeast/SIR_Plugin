@@ -33,7 +33,7 @@ public abstract class SIRTask extends CmdUtils {
      * Registers the command in the server.
      * @throws NullPointerException if command is null
      */
-    public void registerCommand() {
+    public final void registerCommand() {
         PluginCommand command = SIRPlugin.getInstance().getCommand(getName());
         if (command == null)
             throw new NullPointerException("Command \"/" + getName() + "\" is null");

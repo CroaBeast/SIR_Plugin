@@ -2,7 +2,7 @@ emojis:
   # a random number or a custom name
   1:
     # the key to be replaced for the value
-    key: ':3'
+    key: ':admin:'
     checks:
       # If the key is using regex format
       is-regex: false

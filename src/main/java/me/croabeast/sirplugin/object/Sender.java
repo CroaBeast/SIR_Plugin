@@ -4,16 +4,14 @@ import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.module.listener.Formats;
 import me.croabeast.sirplugin.object.file.FileCache;
+import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.LogUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class Sender {
@@ -36,7 +34,7 @@ public final class Sender {
     }
 
     private void display(Player target, Player parser, String line) {
-        SIRPlugin.getUtils().sendMessage(target, parser, line);
+        LangUtils.create(target, parser, Collections.singletonList(line)).display();
     }
 
     public Sender setKeys(String... array) {
@@ -82,7 +80,7 @@ public final class Sender {
 
     private void messageLogger(String line) {
         if (!FileCache.CONFIG.value("options.send-console", true)) return;
-        if (!isStarting("[cmd]", line)) LogUtils.doLog(TextUtils.stripJson(line));
+        if (!isStarting("[cmd]", line)) LogUtils.doLog(line);
     }
 
     private void messageLogger(List<String> list) {
@@ -140,21 +138,20 @@ public final class Sender {
     }
 
     public void send(Collection<? extends Player> targets, Player parser) {
-        targets = targets.stream().filter(Objects::nonNull).collect(Collectors.toList());
-        if (targets.isEmpty()) return;
+        targets = targets.stream().
+                filter(Objects::nonNull).
+                collect(Collectors.toList());
 
-        for (Player player : targets) {
-            if (parser == null) send(null, player, false);
-            else send(player, parser, false);
+        if (!targets.isEmpty()) {
+            for (Player player : targets) {
+                if (parser == null) send(null, player, false);
+                else send(player, parser, false);
+            }
         }
         messageLogger(stringList);
     }
 
-    public static Sender to(List<String> stringList) {
-        return new Sender(stringList);
-    }
-
     public static Sender to(ConfigurationSection section, String path) {
-        return to(TextUtils.toList(section, path));
+        return new Sender(TextUtils.toList(section, path));
     }
 }

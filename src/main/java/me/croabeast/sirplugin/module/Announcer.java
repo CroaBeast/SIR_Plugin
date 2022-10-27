@@ -1,5 +1,7 @@
 package me.croabeast.sirplugin.module;
 
+import me.croabeast.beanslib.object.display.Displayer;
+import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.object.Sender;
 import me.croabeast.sirplugin.object.instance.*;
@@ -52,7 +54,8 @@ public class Announcer extends SIRModule {
         List<Player> players = getPlayers(id.getString("permission", "DEFAULT"));
         if (players.isEmpty()) return;
 
-        Sender.to(id, "lines").send(players, null);
+        LangUtils.create(players, null, TextUtils.toList(id, "lines")).display();
+
         Sender.to(id, "commands").execute(null);
     }
 

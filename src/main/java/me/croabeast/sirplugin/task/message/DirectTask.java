@@ -2,6 +2,7 @@ package me.croabeast.sirplugin.task.message;
 
 import me.croabeast.sirplugin.object.instance.*;
 import me.croabeast.sirplugin.object.file.*;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.*;
 import org.bukkit.entity.*;
 
@@ -35,9 +36,11 @@ public abstract class DirectTask extends SIRTask {
 
     boolean sendResult(CommandSender sender, CommandSender target, String[] args, boolean isMsg) {
         String path = "commands.msg-reply.", key = isMsg ? args[0] : isConsole(target),
-                message = rawMessage(args, isMsg || !receivers.containsKey(sender) ? 1 : 0);
+                message = rawMessage(args, (isMsg || !receivers.containsKey(sender)) ? 1 : 0);
 
-        if (message != null) message = message.replace("$", "\\$").replace("%", "%%");
+        if (StringUtils.isBlank(message)) return oneMessage(sender, path + "empty-message");
+
+        message = message.replace("$", "\\$").replace("%", "%%");
 
         String[] sendValues = {key, message}, recValues = {isConsole(sender), message},
                 toSender = {"{receiver}", "{message}"}, toReceiver = {"{sender}", "{message}"};

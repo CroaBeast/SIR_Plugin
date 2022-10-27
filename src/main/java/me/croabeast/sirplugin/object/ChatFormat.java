@@ -38,8 +38,8 @@ public class ChatFormat {
         Cooldown cooldown = new Cooldown(new ArrayList<>(), 0);
 
         try {
-            checker = new ColorChecker(section.getConfigurationSection("color"));
-            cooldown = new Cooldown(section.getConfigurationSection("cooldown"));
+            checker = new ColorChecker(section);
+            cooldown = new Cooldown(section);
         } catch (NullPointerException ignored) {}
 
         this.checker = checker;
@@ -50,8 +50,7 @@ public class ChatFormat {
 
         this.hover =
                 TextUtils.toList(section, "hover").
-                stream().
-                filter(Objects::nonNull).
+                stream().filter(Objects::nonNull).
                 collect(Collectors.toList());
 
         click = section.getString("click");
@@ -140,6 +139,10 @@ public class ChatFormat {
             if (id == null)
                 throw new NullPointerException();
 
+            id = id.getConfigurationSection("color");
+            if (id == null)
+                throw new NullPointerException();
+
             normal = id.getBoolean("normal");
             special = id.getBoolean("special");
             rgb = id.getBoolean("rgb");
@@ -154,6 +157,10 @@ public class ChatFormat {
         private final int time;
 
         public Cooldown(ConfigurationSection id) {
+            if (id == null)
+                throw new NullPointerException();
+
+            id = id.getConfigurationSection("cooldown");
             if (id == null)
                 throw new NullPointerException();
 
