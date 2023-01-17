@@ -80,7 +80,7 @@ public class IgnCmd extends SIRTask {
         List<String> msgList = ig.getStringList("data." + uuid + ".msg");
 
         if (args[1].matches("(?i)@a")) {
-            switch (args[0].toLowerCase()) {
+            switch (args[0].toLowerCase(Locale.ENGLISH)) {
                 case "msg": return setBoolean(sender, uuid, msgKey, allMsg, false);
                 case "chat": return setBoolean(sender, uuid, chatKey, allChat, true);
                 default: return notArgument(sender, args[args.length - 1]);
@@ -99,7 +99,7 @@ public class IgnCmd extends SIRTask {
         String[] chatValues = {target.getName(), chatKey};
         String[] msgValues = {target.getName(), msgKey};
 
-        switch (args[0].toLowerCase()) {
+        switch (args[0].toLowerCase(Locale.ENGLISH)) {
             case "msg": return setList(sender, msgList, msgValues, targetUUID, uuid, false);
             case "chat": return setList(sender, chatList, chatValues, targetUUID, uuid, true);
             default: return notArgument(sender, args[args.length - 1]);

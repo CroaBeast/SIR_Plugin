@@ -24,7 +24,7 @@ public class BroadCmd extends SIRTask {
         if (args.length == 0) return oneMessage(sender, "commands.announcer.help");
         if (args.length > 2) return notArgument(sender, args[args.length - 1]);
 
-        switch (args[0].toLowerCase()) {
+        switch (args[0].toLowerCase(Locale.ENGLISH)) {
             case "start":
                 if (hasNoPerm(sender, "announcer.start")) return true;
                 if (args.length > 1) return notArgument(sender, args[args.length - 1]);

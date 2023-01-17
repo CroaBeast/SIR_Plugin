@@ -190,7 +190,7 @@ public final class Initializer {
             FileConfiguration advances = FileCache.ADVANCES.get();
             boolean notContained = !advances.contains(key);
 
-            switch (type.toUpperCase()) {
+            switch (type.toUpperCase(Locale.ENGLISH)) {
                 case "TASK":
                     tasks.add(adv);
                     if (notContained) {

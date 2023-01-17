@@ -77,7 +77,7 @@ public class Formats extends SIRViewer {
         }
 
         if (target == null || player == target) return line;
-        if (PlayerUtils.isIgnoredFrom(target, player, true)) return line;
+        if (PlayerUtils.isIgnoring(target, player, true)) return line;
 
         String[] keys = {"{sender}", "{receiver}", "{prefix}"},
                 values = {player.getName(), target.getName(), prefix};
@@ -137,6 +137,9 @@ public class Formats extends SIRViewer {
         if (Exceptions.isPluginEnabled("CMI") &&
                 CMIUser.getUser(player).isMuted()) return;
 
+        if (Initializer.hasLogin() &&
+                !JoinQuit.LOGGED_PLAYERS.contains(player)) return;
+
         ChatFormat format;
 
         try {
@@ -166,14 +169,14 @@ public class Formats extends SIRViewer {
             return;
         }
 
-        int radius = format.getRadius();
+        int r = format.getRadius();
         String worldName = format.getWorld();
 
         List<Player> players = new ArrayList<>();
         World world = worldName != null ? Bukkit.getWorld(worldName) : null;
 
-        if (radius > 0) {
-            for (Entity ent : player.getNearbyEntities(radius, radius, radius))
+        if (r > 0) {
+            for (Entity ent : player.getNearbyEntities(r, r, r))
                 if (ent instanceof Player) players.add((Player) ent);
         }
         else players.addAll(world != null ?
@@ -181,7 +184,7 @@ public class Formats extends SIRViewer {
 
         for (Player t : new ArrayList<>(players)) {
             if (t == player) continue;
-            if (PlayerUtils.isIgnoredFrom(t, player, true))
+            if (PlayerUtils.isIgnoring(t, player, true))
                 players.remove(t);
         }
 
@@ -201,12 +204,12 @@ public class Formats extends SIRViewer {
         }
 
         String result = parseInternalKeys(TextUtils.removeSpace(format.getFormat()), keys, values);
-        result = onMention(player, EmParser.parseEmojis(result));
+        result = onMention(player, EmParser.parseEmojis(player, result));
 
         boolean isDefault = FileCache.MODULES.get().getBoolean("chat.default-format");
 
         if (isDefault && !IS_JSON.apply(result) && hover.size() == 0 &&
-                click == null && world == null && radius <= 0 &&
+                click == null && world == null && r <= 0 &&
                 !Exceptions.isPluginEnabled("InteractiveChat")) {
 
             result = parsePAPI(player, result);
@@ -231,8 +234,9 @@ public class Formats extends SIRViewer {
             new DiscordMsg(player, "chat", keys, values).send();
 
         if (!result.matches("(?i)^\\[JSON]")) {
-            String r = result, c = click;
-            players.forEach(p -> new JsonMessage(utils, p, player, r).send(c, hover));
+            String rt = result, c = click;
+
+            players.forEach(p -> new JsonMessage(utils, p, player, rt).send(c, hover));
         }
         else Bukkit.dispatchCommand(
                 Bukkit.getConsoleSender(), removeSpace(result.substring(6)));

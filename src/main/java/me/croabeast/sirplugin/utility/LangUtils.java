@@ -2,6 +2,7 @@ package me.croabeast.sirplugin.utility;
 
 import me.croabeast.beanslib.BeansLib;
 import me.croabeast.beanslib.object.display.Displayer;
+import me.croabeast.beanslib.object.key.PlayerKeys;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.module.EmParser;
@@ -57,7 +58,14 @@ public class LangUtils extends BeansLib {
 
     @Override
     public ConfigurationSection getWebhookSection() {
-        return null;
+        return FileCache.WEBHOOKS.getSection("webhooks");
+    }
+
+    @Override
+    public @NotNull PlayerKeys playerKeys() {
+        return super.playerKeys().setUuidKey("{uuid}").
+                setWorldKey("{world}").
+                setDisplayKey("{displayName}");
     }
 
     @Override
@@ -79,17 +87,17 @@ public class LangUtils extends BeansLib {
         return new Displayer(SIRPlugin.getUtils(), targets, p, list).
                 setLogger(FileCache.CONFIG.value("options.send-console", true)).
                 setCaseSensitive(false).
-                setOperators(EmParser::parseEmojis);
+                setOperators(s -> EmParser.parseEmojis(p, s));
     }
 
     public static Displayer create(CommandSender t, Player p, List<String> list) {
         return new Displayer(SIRPlugin.getUtils(), t, p, list).
                 setLogger(FileCache.CONFIG.value("options.send-console", true)).
                 setCaseSensitive(false).
-                setOperators();
+                setOperators(s -> EmParser.parseEmojis(p, s));
     }
 
     public static Displayer create(Player p, List<String> list) {
-        return create((Collection<? extends CommandSender>) null, p, list);
+        return create(p, p, list);
     }
 }

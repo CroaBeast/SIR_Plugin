@@ -2,6 +2,8 @@ package me.croabeast.sirplugin.object.instance;
 
 import me.croabeast.sirplugin.object.file.FileCache;
 
+import java.util.Locale;
+
 /**
  * The Identifier enum class identifies the module based on its feature.
  */
@@ -53,7 +55,7 @@ public enum Identifier {
      */
     @Override
     public String toString() {
-        return name().toLowerCase().replace("_", "-");
+        return name().toLowerCase(Locale.ENGLISH).replace("_", "-");
     }
 
     /**

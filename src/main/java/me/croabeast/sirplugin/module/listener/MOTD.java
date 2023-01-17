@@ -93,7 +93,7 @@ public class MOTD extends SIRViewer {
     }
 
     private String usageType() {
-        return FileCache.MODULES.get().getString("motd.server-icon.usage", "DISABLED").toUpperCase();
+        return FileCache.MODULES.get().getString("motd.server-icon.usage", "DISABLED").toUpperCase(Locale.ENGLISH);
     }
 
     private void setServerIcon() {
@@ -140,7 +140,7 @@ public class MOTD extends SIRViewer {
     }
 
     private String maxType() {
-        return FileCache.MODULES.get().getString("motd.max-players.type", "DEFAULT").toUpperCase();
+        return FileCache.MODULES.get().getString("motd.max-players.type", "DEFAULT").toUpperCase(Locale.ENGLISH);
     }
 
     @EventHandler

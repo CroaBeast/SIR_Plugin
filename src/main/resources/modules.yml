@@ -144,7 +144,7 @@ advancements:
 discord:
   # Copy your Server ID and paste it here.
   # If the SERVER ID is invalid or is empty, this module will be disabled.
-  server-id: SERVER_ID
+  default-server: SERVER_ID
   # Put every channel you want to receive a message type.
   # Or just put the same channel for every message type lol
   channels:

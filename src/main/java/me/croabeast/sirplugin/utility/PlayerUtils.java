@@ -2,6 +2,7 @@ package me.croabeast.sirplugin.utility;
 
 import com.Zrips.CMI.Containers.*;
 import com.earth2me.essentials.*;
+import lombok.Getter;
 import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.object.file.*;
@@ -18,22 +19,24 @@ import java.util.*;
 
 public final class PlayerUtils {
 
-    static Set<Player> godPlayers = new HashSet<>();
-    public static Set<Player> getGodPlayers() {
-        return godPlayers;
-    }
+    @Getter
+    private static final Set<Player> godPlayers = new HashSet<>();
 
-    public static boolean hasPerm(CommandSender sender, String perm) {
+    public static boolean hasPerm(CommandSender sender, String perm, boolean checkOP) {
         if (sender == null) return false;
         if (!(sender instanceof Player)) return true;
 
         if (StringUtils.isBlank(perm)) return false;
 
         Player player = (Player) sender;
-        if (player.isOp()) return true;
+        if (player.isOp() && checkOP) return true;
 
         boolean isSet = FileCache.CONFIG.get().getBoolean("options.hard-perm-check");
         return (!isSet || sender.isPermissionSet(perm)) && sender.hasPermission(perm);
+    }
+
+    public static boolean hasPerm(CommandSender sender, String perm) {
+        return hasPerm(sender, perm, true);
     }
 
     private static boolean essVanish(Player player, boolean isJoin) {
@@ -64,16 +67,15 @@ public final class PlayerUtils {
         return null;
     }
 
-    public static boolean isIgnoredFrom(Player target, Player player, boolean isChat) {
+    public static boolean isIgnoring(Player target, Player player, boolean isChat) {
         String data = "data." + target.getUniqueId() + ".",
                 path = isChat ? "chat" : "msg";
 
         FileConfiguration file = FileCache.IGNORE.get();
-
         List<String> list = file.getStringList(data + path);
-        boolean inList = !list.isEmpty() && list.contains(player.getUniqueId() + "");
 
-        return file.getBoolean(data + "all-" + path) || inList;
+        return file.getBoolean(data + "all-" + path) ||
+                list.contains(player.getUniqueId() + "");
     }
 
     public static void teleport(Player player, World world, double[] c, float[] d) {

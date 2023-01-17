@@ -81,17 +81,17 @@ public final class FilesUtils {
         addFiles(MESSAGES, "advances", "announces", "join-quit");
 
         addFiles(DATA, "ignore");
-        addFiles(MISC, "discord", "motd");
+        addFiles(MISC, "discord", "motd", "webhooks");
 
-        files.values().forEach(file -> {
+        for (YMLFile file : files.values()) {
             YMLFile config = getObject("config");
-            if (config == null) return;
+            if (config == null) break;
 
             List<String> list = config.getFile().getStringList("updater.files");
             if (list.contains(file + "")) file.updateFile();
 
             file.reloadFile();
-        });
+        }
 
         files.values().forEach(YMLFile::reloadFile);
 
@@ -311,7 +311,7 @@ public final class FilesUtils {
 
         @Override
         public String toString() {
-            return name().toLowerCase();
+            return name().toLowerCase(Locale.ENGLISH);
         }
     }
 }

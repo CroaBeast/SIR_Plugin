@@ -16,7 +16,7 @@ public class LogUtils {
         String[] results = new String[lines.length];
         for (int i = 0; i < lines.length; i++) {
             try {
-                results[i] = EmParser.parseEmojis(lines[i]);
+                results[i] = EmParser.parseEmojis(null, lines[i]);
             }
             catch (Exception e) {
                 results[i] = lines[i];

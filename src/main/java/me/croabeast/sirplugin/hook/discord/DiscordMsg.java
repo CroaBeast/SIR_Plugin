@@ -4,15 +4,19 @@ import github.scarsz.discordsrv.dependencies.jda.api.*;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.*;
 import github.scarsz.discordsrv.util.*;
 import me.croabeast.iridiumapi.*;
+import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.object.file.*;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.*;
 import org.bukkit.configuration.*;
 import org.bukkit.configuration.file.*;
 import org.bukkit.entity.*;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 import java.time.*;
+import java.util.List;
+import java.util.Locale;
 
 import static me.croabeast.beanslib.utility.TextUtils.*;
 import static org.apache.commons.lang.StringUtils.*;
@@ -23,13 +27,11 @@ public class DiscordMsg {
     private final String channel, embedPath;
 
     private String[] keys, values;
-    private final TextChannel textChannel;
 
     public DiscordMsg(Player player, String channel) {
         this.player = player;
         this.channel = channel;
         embedPath = "channels." + channel + ".embed";
-        textChannel = getChannel();
     }
 
     public DiscordMsg(Player player, String channel, String[] keys, String[] values) {
@@ -42,21 +44,20 @@ public class DiscordMsg {
     }
 
     private String parseValues(String line) {
-        String[] keys = {"{player}", "{uuid}"};
-        String[] values = {player.getName(), player.getUniqueId().toString()};
+        if (StringUtils.isBlank(line)) return line;
 
-        line = replaceInsensitiveEach(line, keys, values);
+        line = SIRPlugin.getUtils().parsePlayerKeys(player, line, false);
 
         if (this.keys != null && this.values != null) {
-            String[] formatKeys = new String[this.keys.length];
+            String[] fKeys = new String[this.keys.length];
 
             for (int i = 0; i < this.keys.length; i++) {
                 String oldKey = this.keys[i];
                 if (!oldKey.startsWith("{")) oldKey = "{" + oldKey + "}";
-                formatKeys[i] = oldKey.toUpperCase();
+                fKeys[i] = oldKey.toUpperCase(Locale.ENGLISH);
             }
 
-            line = replaceInsensitiveEach(line, formatKeys, this.values);
+            line = replaceInsensitiveEach(line, fKeys, this.values);
         }
 
         line = IridiumAPI.stripAll(parsePAPI(player, line));
@@ -75,26 +76,7 @@ public class DiscordMsg {
         return FileCache.DISCORD.get();
     }
 
-    private TextChannel getChannel() {
-        String guildName = file().getString("discord.server-id", ""),
-                id = file().getString("discord.channels." + channel, "");
-
-        Guild guild;
-        try {
-            guild = DiscordUtil.getJda().getGuildById(guildName);
-        } catch (Exception ignored) {
-            return null;
-        }
-
-        if (guild == null) return null;
-
-        try {
-            return guild.getTextChannelById(id);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
+    @NotNull
     private Integer embedColor() {
         String rgb = disc().getString(embedPath + ".color", "BLACK");
         try {
@@ -105,7 +87,7 @@ public class DiscordMsg {
                 return ((Color) color.get(null)).asRGB();
             }
         } catch (Exception e) {
-            return null;
+            return Color.BLACK.asRGB();
         }
     }
 
@@ -119,8 +101,7 @@ public class DiscordMsg {
                 url = id.getString("author.url"),
                 icon = id.getString("author.iconURL");
 
-        Integer color = embedColor();
-        if (color != null) embed.setColor(color);
+        embed.setColor(embedColor());
 
         embed.setAuthor(
                 parseValues(author), checkURL(url) ? parseValues(url) : null,
@@ -130,8 +111,8 @@ public class DiscordMsg {
         String title = id.getString("title");
         if (isNotBlank(title)) embed.setTitle(parseValues(title));
 
-        String description = id.getString("description");
-        if (isNotBlank(description)) embed.setDescription(parseValues(description));
+        String desc = id.getString("description");
+        if (isNotBlank(desc)) embed.setDescription(parseValues(desc));
 
         String image = id.getString("thumbnail");
         if (checkURL(image)) embed.setThumbnail(parseValues(image));
@@ -143,15 +124,42 @@ public class DiscordMsg {
 
     @SuppressWarnings("deprecation")
     public void send() {
+        String p = file().getString("discord.server-id");
+        if (p == null)
+            p = file().getString("discord.default-server", "");
+
+        List<String> list = toList(file(), "discord.channels." + channel);
+        if (list.isEmpty()) return;
+
         String text = disc().getString("channels." + channel + ".text");
-        if (textChannel == null) return;
 
-        if (StringUtils.isNotBlank(text)) {
-            textChannel.sendMessage(parseValues(text)).queue();
-            return;
+        for (String s : list) {
+            String gName = p, cName;
+
+            if (s.contains(":")) {
+                String[] sp = s.split(":", 2);
+                gName = sp[0];
+                cName = sp[1];
+            }
+            else cName = s;
+
+            Guild guild = null;
+            try {
+                guild = DiscordUtil.getJda().getGuildById(gName);
+            } catch (Exception ignored) {}
+
+            if (guild == null) continue;
+
+            TextChannel channel = guild.getTextChannelById(cName);
+            if (channel == null) continue;
+
+            if (StringUtils.isNotBlank(text)) {
+                channel.sendMessage(parseValues(text)).queue();
+                continue;
+            }
+
+            MessageEmbed embed = embedMessage();
+            if (embed != null) channel.sendMessage(embed).queue();
         }
-
-        MessageEmbed embed = embedMessage();
-        if (embed != null) textChannel.sendMessage(embed).queue();
     }
 }

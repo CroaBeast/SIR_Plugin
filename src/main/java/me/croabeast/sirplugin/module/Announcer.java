@@ -55,7 +55,6 @@ public class Announcer extends SIRModule {
         if (players.isEmpty()) return;
 
         LangUtils.create(players, null, TextUtils.toList(id, "lines")).display();
-
         Sender.to(id, "commands").execute(null);
     }
 

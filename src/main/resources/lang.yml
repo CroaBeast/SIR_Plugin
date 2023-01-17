@@ -18,7 +18,7 @@ wrong-arg: '<P> The argument &c{arg} &7is invalid or does not exist.'
 # Some messages for the chat formatter feature. Use them wisely
 chat:
   empty-message: '<P> &cYou can not send an empty message.'
-  invalid-format: '<P> &cCould not found any valid chat format, check your chat.yml'
+  invalid-format: '<P> &cCould not found any valid chat format, check your formats.yml'
 
 # Messages for the plugin's commands.
 commands:
@@ -102,6 +102,7 @@ commands:
       message: ' &6{sender} &8> &eME&7: &f{message}'
       sound: ENTITY_PLAYER_LEVELUP # Disable the sound setting it like this: ''
     console-name: '&cConsole'
+    console-format: ' &6{sender} &8> &e{receiver}&7: &f{message}'
   # The /ignore command.
   ignore:
     help:

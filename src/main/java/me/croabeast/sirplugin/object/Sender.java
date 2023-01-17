@@ -47,7 +47,7 @@ public final class Sender {
         return this;
     }
 
-    private boolean isStarting(String prefix, String line) {
+    public static boolean isStarting(String prefix, String line) {
         return line.regionMatches(true, 0, prefix, 0, prefix.length());
     }
 
@@ -57,9 +57,9 @@ public final class Sender {
                 v = {
                         Formats.getTag(parser, true),
                         Formats.getTag(parser, false),
-                        parser.getName(), parser.getWorld().getName()
                 };
-        return replace(line, k, v);
+        return SIRPlugin.getUtils().
+                parsePlayerKeys(parser, replace(line, k, v), false);
     }
 
     private void registerKeys(Player parser) {

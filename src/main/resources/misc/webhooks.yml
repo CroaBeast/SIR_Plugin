@@ -1,0 +1,36 @@
+webhooks:
+  # You should pass in a configuration section like the
+  # one below into the constructor of DiscordWebhook.
+  #
+  # Each section MUST have data fully filled out or the
+  # webhook will throw an IllegalArgumentException!!!
+  webhook-1:
+    enabled: false
+    url: 'https://discord.com/api/webhooks/000000000000000000/I5VrzXGjEudoezM3pTfFri6kS87Ryt3e6rZBzFdOUA4DGUBUJfF1Zv0qaaS4p7IH142v'
+    content: ''
+    username: 'CyberWorldReset'
+    avatar-url: 'https://dev.zerotoil.net/images/cwr_premium_borderless.png'
+    tts: false
+    embeds:
+      embed-1:
+        title: 'Come get some fresh resources!'
+        description: '{message}'
+        url: ''
+        footer:
+          text: 'ZeroToil Development'
+          icon-url: 'https://dev.zerotoil.net/images/ZeroToil_BLUE.PNG'
+        thumbnail-url: ''
+        image-url: ''
+        author:
+          name: 'Example CyberWorldReset Webhook'
+          url: 'https://www.spigotmc.org/resources/99431/'
+          icon-url: 'https://dev.zerotoil.net/images/cwr_premium_borderless.png'
+        fields: [ ]
+        #  field-1:
+        #    name: 'Subheading'
+        #    value: 'Message goes here'
+        #    inline: true
+
+  # This would be a new configuration section and thus,
+  # the start of a new DiscordWebhook constructor.
+  another-webhook: [ ]

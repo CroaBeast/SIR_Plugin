@@ -30,11 +30,12 @@ public enum FileCache {
     JOIN_QUIT,
     // Misc files.
     DISCORD,
-    MOTD;
+    MOTD,
+    WEBHOOKS;
 
     @Nullable
     public YMLFile init() {
-        String name = name().toLowerCase().replace("_", "-");
+        String name = name().toLowerCase(Locale.ENGLISH).replace("_", "-");
         return SIRPlugin.getInstance().getFiles().getObject(name);
     }
 
@@ -96,7 +97,7 @@ public enum FileCache {
 
             int p = i.getInt("priority", perm.matches("(?i)DEFAULT") ? 0 : 1);
 
-            if (PlayerUtils.hasPerm(player, perm) && p > highestPriority) {
+            if (PlayerUtils.hasPerm(player, perm, false) && p > highestPriority) {
                 maxSection = i;
                 maxPerm = perm;
                 highestPriority = p;

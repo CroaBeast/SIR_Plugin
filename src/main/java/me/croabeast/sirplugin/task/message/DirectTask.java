@@ -45,8 +45,13 @@ public abstract class DirectTask extends SIRTask {
         String[] sendValues = {key, message}, recValues = {isConsole(sender), message},
                 toSender = {"{receiver}", "{message}"}, toReceiver = {"{sender}", "{message}"};
 
-        oneMessage(sender, path + "for-sender.message", toSender, sendValues);
-        oneMessage(target, path + "for-receiver.message", toReceiver, recValues);
+        oneMessage(sender, path + "for-sender.message", toSender, sendValues, false);
+        oneMessage(target, path + "for-receiver.message", toReceiver, recValues, false);
+
+        oneMessage(null, path + "console-format",
+                new String[] {"{receiver}", "{sender}", "{message}"},
+                new String[] {key, isConsole(sender), message}
+        );
 
         if (sender instanceof Player) playSound((Player) sender, toSound("sender"));
         if (target instanceof Player) playSound((Player) target, toSound("receiver"));

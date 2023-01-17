@@ -1,7 +1,6 @@
 package me.croabeast.sirplugin.module.listener;
 
 import me.croabeast.beanslib.object.display.Bossbar;
-import me.croabeast.beanslib.object.display.Displayer;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.*;
 import me.croabeast.sirplugin.event.*;
@@ -285,21 +284,20 @@ public class JoinQuit extends SIRViewer {
         private final ConfigurationSection id;
         private final Player player;
 
-        private boolean isJoin = true, doSpawn = true, isLogged = true;
+        private boolean isJoin = true, doSpawn = true, isLogged = false;
 
         public Section(Event event, ConfigurationSection id, Player player) {
             this.id = id;
             this.player = player;
 
-            if (event instanceof PlayerJoinEvent) isLogged = false;
-            else if (event instanceof PlayerQuitEvent) isJoin = doSpawn = isLogged = false;
+            if (event instanceof PlayerQuitEvent) isJoin = doSpawn = false;
             else if (event instanceof LoginEvent) {
                 doSpawn = !FileCache.MODULES.get().getBoolean("join-quit.login.enabled");
+                isLogged = true;
             }
             else if (event instanceof VanishEvent) {
                 isJoin = ((VanishEvent) event).isVanished();
                 doSpawn = FileCache.MODULES.get().getBoolean("join-quit.vanish.use-spawn");
-                isLogged = false;
             }
         }
 

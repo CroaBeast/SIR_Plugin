@@ -2,20 +2,28 @@ package me.croabeast.sirplugin;
 
 import me.croabeast.beanslib.object.display.Bossbar;
 import me.croabeast.beanslib.utility.LibUtils;
-import me.croabeast.sirplugin.module.*;
 import me.croabeast.sirplugin.module.Announcer;
+import me.croabeast.sirplugin.module.EmParser;
 import me.croabeast.sirplugin.module.listener.*;
-import me.croabeast.sirplugin.object.analytic.*;
-import me.croabeast.sirplugin.object.instance.*;
-import me.croabeast.sirplugin.task.*;
-import me.croabeast.sirplugin.task.message.*;
-import me.croabeast.sirplugin.utility.*;
-import org.bukkit.*;
-import org.bukkit.entity.*;
+import me.croabeast.sirplugin.object.analytic.Amender;
+import me.croabeast.sirplugin.object.instance.SIRModule;
+import me.croabeast.sirplugin.object.instance.SIRTask;
+import me.croabeast.sirplugin.task.BroadCmd;
+import me.croabeast.sirplugin.task.IgnCmd;
+import me.croabeast.sirplugin.task.MainCmd;
+import me.croabeast.sirplugin.task.PrintCmd;
+import me.croabeast.sirplugin.task.message.MsgCmd;
+import me.croabeast.sirplugin.task.message.ReplyCmd;
+import me.croabeast.sirplugin.utility.FilesUtils;
+import me.croabeast.sirplugin.utility.LangUtils;
+import me.croabeast.sirplugin.utility.LogUtils;
+import org.apache.commons.lang.SystemUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
-import org.bukkit.plugin.java.*;
+import org.bukkit.plugin.java.JavaPlugin;
 
-import static me.croabeast.sirplugin.object.instance.Identifier.*;
+import static me.croabeast.sirplugin.object.instance.Identifier.ANNOUNCES;
 
 public final class SIRPlugin extends JavaPlugin {
 
@@ -46,7 +54,7 @@ public final class SIRPlugin extends JavaPlugin {
                 "&0* &e____) . _|_ . | &0* &e\\ . &fv" + pluginVersion, "",
                 "&0* &7Developer: " + getDescription().getAuthors().get(0),
                 "&0* &7Software: " + LibUtils.serverFork(),
-                "&0* &7Java Version: " + System.getProperty("java.version"), ""
+                "&0* &7Java Version: " + SystemUtils.JAVA_VERSION, ""
         );
 
         init.startMetrics();
@@ -131,12 +139,11 @@ public final class SIRPlugin extends JavaPlugin {
     }
 
     private void registerCommands(SIRTask... cmds) {
-        for (SIRTask cmd : cmds) {
+        for (SIRTask cmd : cmds)
             try {
                 cmd.registerCommand();
             } catch (NullPointerException e) {
                 LogUtils.doLog("&c" + e.getMessage());
             }
-        }
     }
 }

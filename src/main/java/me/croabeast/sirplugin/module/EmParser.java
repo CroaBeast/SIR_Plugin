@@ -6,6 +6,7 @@ import me.croabeast.iridiumapi.*;
 import me.croabeast.sirplugin.object.instance.*;
 import me.croabeast.sirplugin.object.file.*;
 import org.bukkit.configuration.*;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.*;
 
 import java.util.*;
@@ -41,12 +42,13 @@ public class EmParser extends SIRModule {
         }
     }
 
-    public static String parseEmojis(String line) {
+    public static String parseEmojis(Player player, String line) {
         try {
             if (!Identifier.EMOJIS.isEnabled()) return line;
             if (EMOJI_LIST.isEmpty()) return line;
 
-            for (Emoji e : EMOJI_LIST) line = e.parseEmoji(line);
+            for (Emoji e : EMOJI_LIST)
+                line = e.parseEmoji(player, line);
             return line;
         }
         catch (Exception e) {
@@ -56,11 +58,13 @@ public class EmParser extends SIRModule {
 
     static class Emoji {
 
-        private final String key, value;
+        private final String permission, key, value;
         private final Checks checks;
 
         public Emoji(ConfigurationSection section) {
             if (section == null) throw new NullPointerException();
+
+            permission = section.getString("permission", "DEFAULT");
 
             key = section.getString("key");
             value = section.getString("value");
@@ -75,8 +79,8 @@ public class EmParser extends SIRModule {
         }
 
         private String convertValue(String line) {
-            return (value == null ? "" : value) +
-                    IridiumAPI.getLastColor(line, key, true, true);
+            String v = value == null ? "" : value;
+            return v + IridiumAPI.getLastColor(line, key, true, true);
         }
 
         private Matcher getMatcher(String line, boolean add) {
@@ -87,8 +91,12 @@ public class EmParser extends SIRModule {
             return Pattern.compile(inCase + k).matcher(line);
         }
 
-        public String parseEmoji(String line) {
+        public String parseEmoji(Player player, String line) {
             if (key == null) return line;
+
+            if (player != null &&
+                    !permission.matches("(?i)DEFAULT") &&
+                    !player.hasPermission(permission)) return line;
 
             if (checks.isWord()) {
                 StringBuilder builder = new StringBuilder();
@@ -150,7 +158,7 @@ public class EmParser extends SIRModule {
 
             @Override
             public String toString() {
-                return "<" + regex + ":" + isWord + ":" + sensitive + ">";
+                return TextUtils.classFormat(this, ":", true, regex, isWord, sensitive);
             }
         }
     }

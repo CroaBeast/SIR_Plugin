@@ -83,12 +83,12 @@ public class Amender {
 
     public void initUpdater(@Nullable Player player) {
         if (player == null) {
-            if (!FileCache.CONFIG.get().getBoolean("updater.plugin.on-start")) return;
+            if (!FileCache.CONFIG.value("updater.plugin.on-start", false)) return;
             runUpdater(null);
         }
         else {
-            if (!FileCache.CONFIG.get().getBoolean("updater.plugin.send-op") ||
-                    !PlayerUtils.hasPerm(player, "sir.admin.updater")) return;
+            if (!FileCache.CONFIG.value("updater.plugin.send-op", false) ||
+                    !PlayerUtils.hasPerm(player, "sir.admin.updater", false)) return;
             runUpdater(player);
         }
     }

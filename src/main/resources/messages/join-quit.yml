@@ -12,8 +12,8 @@ first-join:
     spawn:
       world: world
 join:
+  # a random number or custom name
   1:
-    # a random number or custom name
     permission: DEFAULT
     sound: ENTITY_PLAYER_LEVELUP
     public:

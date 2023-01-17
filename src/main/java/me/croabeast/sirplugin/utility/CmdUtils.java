@@ -16,11 +16,13 @@ import static me.croabeast.sirplugin.SIRPlugin.*;
 
 public class CmdUtils {
 
-    protected void oneMessage(CommandSender sender, String path, String[] keys, String[] values) {
+    protected void oneMessage(CommandSender sender, String path, String[] k, String[] v, boolean b) {
         LangUtils.create(sender, null, FileCache.LANG.toList(path)).
-                setKeys(keys).
-                setValues(values).
-                display();
+                setKeys(k).setValues(v).setLogger(b).display();
+    }
+
+    protected void oneMessage(CommandSender sender, String path, String[] keys, String[] values) {
+        oneMessage(sender, path, keys, values, true);
     }
 
     protected void sendMessage(CommandSender sender, String path, String key, String value) {

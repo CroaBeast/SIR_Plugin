@@ -42,7 +42,7 @@ public class Advances extends SIRViewer {
         if (!advList("modes").isEmpty()) {
             for (String s : advList("modes")) {
                 try {
-                    if (player.getGameMode() == GameMode.valueOf(s.toUpperCase())) return;
+                    if (player.getGameMode() == GameMode.valueOf(s.toUpperCase(Locale.ENGLISH))) return;
                 }
                 catch (IllegalArgumentException ignored) {}
             }
@@ -51,7 +51,7 @@ public class Advances extends SIRViewer {
         Advancement adv = event.getAdvancement();
         if (!Initializer.getAdvancements().contains(adv)) return;
 
-        AdvancementInfo info = Initializer.getKeys().get(adv);
+        @Nullable AdvancementInfo info = Initializer.getKeys().getOrDefault(adv, null);
         String key = adv.getKey().toString();
 
         if (key.contains("root") || key.contains("recipes")) return;
@@ -109,13 +109,17 @@ public class Advances extends SIRViewer {
                 },
                 values = {
                         player.getName(), advName, description, frameType,
-                        frameType.toLowerCase(), WordUtils.capitalizeFully(frameType)
+                        frameType.toLowerCase(Locale.ENGLISH), WordUtils.capitalizeFully(frameType)
                 };
 
         if (messageKey.matches("(?i)null")) return;
 
-        LangUtils.create(Bukkit.getOnlinePlayers(), player,
-                FileCache.ADVANCES.toList(messageKey)).
+        List<String> messages = FileCache.ADVANCES.toList(messageKey),
+                list = new ArrayList<>();
+
+        for (String s : messages) if (!Sender.isStarting("[cmd]", s)) list.add(s);
+
+        LangUtils.create(Bukkit.getOnlinePlayers(), player, list).
                 setKeys(keys).setValues(values).display();
 
         FileCache.ADVANCES.send(messageKey).execute(player, true);

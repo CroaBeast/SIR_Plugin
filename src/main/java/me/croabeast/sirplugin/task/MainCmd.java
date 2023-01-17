@@ -25,7 +25,7 @@ public class MainCmd extends SIRTask {
             return oneMessage(sender, "commands.sir.help", "version", SIRPlugin.pluginVersion());
         if (args.length > 1) return notArgument(sender, args[args.length - 1]);
 
-        switch (args[0].toLowerCase()) {
+        switch (args[0].toLowerCase(Locale.ENGLISH)) {
             case "help":
                 if (hasNoPerm(sender, "admin.help")) return true;
                 return oneMessage(sender, "commands.sir.help", "version", SIRPlugin.pluginVersion());

@@ -32,7 +32,7 @@ public class PrintCmd extends SIRTask {
         if (player == sender || player != null) return Collections.singleton(player);
         if (input.matches("(?i)@a")) return new HashSet<>(Bukkit.getOnlinePlayers());
 
-        input = input.toUpperCase();
+        input = input.toUpperCase(Locale.ENGLISH);
 
         if (input.startsWith("WORLD:")) {
             World w = Bukkit.getWorld(input.substring(6));
@@ -141,7 +141,7 @@ public class PrintCmd extends SIRTask {
                         s = center + s;
                     else if (args[2].matches("(?i)DEFAULT") && s.startsWith(center))
                         s = s.substring(center.length());
-                    new JsonMessage(getUtils(), p, p, EmParser.parseEmojis(s)).send();
+                    new JsonMessage(getUtils(), p, p, EmParser.parseEmojis(p, s)).send();
                 }));
 
                 messageLogger("CHAT", noFormat);
