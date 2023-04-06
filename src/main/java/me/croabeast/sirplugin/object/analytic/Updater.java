@@ -19,7 +19,9 @@ public class Updater {
         if (firstSplit == null || secondSplit == null) return null;
 
         for (int i = 0; i < Math.min(firstSplit.length, secondSplit.length); i++) {
-            int currentValue = NumberUtils.toInt(firstSplit[i]), newestValue = NumberUtils.toInt(secondSplit[i]);
+            int currentValue = NumberUtils.toInt(firstSplit[i]),
+                    newestValue = NumberUtils.toInt(secondSplit[i]);
+
             if (newestValue > currentValue) return second;
             else if (newestValue < currentValue) return first;
         }
@@ -75,7 +77,7 @@ public class Updater {
                             UpdateReason.UNRELEASED_VERSION
                     );
                 else if (latest.equals(currentVersion))
-                    return new UpdateResult(UpdateReason.NEW_UPDATE, latest);
+                    return new UpdateResult(latest);
             }
             catch (IOException e) {
                 return new UpdateResult(UpdateReason.COULD_NOT_CONNECT);
@@ -138,8 +140,8 @@ public class Updater {
         private final UpdateReason reason;
         private final String newestVersion;
 
-        private UpdateResult(@NotNull UpdateReason reason, @NotNull String newestVersion) {
-            this.reason = reason;
+        private UpdateResult(@NotNull String newestVersion) {
+            this.reason = UpdateReason.NEW_UPDATE;
             this.newestVersion = newestVersion;
         }
 

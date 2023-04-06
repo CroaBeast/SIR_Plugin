@@ -1,71 +1,72 @@
 package me.croabeast.sirplugin.module.listener;
 
-import me.croabeast.advancementinfo.*;
-import me.croabeast.beanslib.object.display.Displayer;
-import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.hook.discord.DiscordMsg;
-import me.croabeast.sirplugin.object.Sender;
-import me.croabeast.sirplugin.object.instance.*;
-import me.croabeast.sirplugin.object.file.*;
-import me.croabeast.sirplugin.utility.*;
-import org.apache.commons.lang.*;
-import org.bukkit.*;
-import org.bukkit.advancement.*;
-import org.bukkit.entity.*;
-import org.bukkit.event.*;
-import org.bukkit.event.player.*;
-import org.jetbrains.annotations.*;
+import lombok.var;
+import me.croabeast.sirplugin.Initializer;
+import me.croabeast.sirplugin.hook.DiscordSender;
+import me.croabeast.sirplugin.object.file.FileCache;
+import me.croabeast.sirplugin.object.instance.SIRViewer;
+import me.croabeast.sirplugin.utility.LangUtils;
+import me.croabeast.sirplugin.utility.LogUtils;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.WordUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
-import static me.croabeast.sirplugin.utility.LangUtils.*;
+import static me.croabeast.sirplugin.utility.LangUtils.stringKey;
 
 public class Advances extends SIRViewer {
 
-    @Override
-    public @NotNull Identifier getIdentifier() {
-        return Identifier.ADVANCES;
+    public Advances() {
+        super("advances");
     }
 
     private List<String> advList(String path) {
-        return FileCache.MODULES.get().getStringList("advancements.disabled-" + path);
+        return LangUtils.toList(FileCache.MODULES, "advancements.disabled-" + path);
     }
 
     @EventHandler
     private void onDone(PlayerAdvancementDoneEvent event) {
-        Player player = event.getPlayer();
+        final Player player = event.getPlayer();
         if (!isEnabled()) return;
 
-        if (!advList("worlds").isEmpty() &&
-                advList("worlds").contains(player.getWorld().getName())) return;
+        var worlds = advList("worlds");
+        if (!worlds.isEmpty() && worlds.contains(player.getWorld().getName())) return;
 
-        if (!advList("modes").isEmpty()) {
-            for (String s : advList("modes")) {
+        var modes = advList("modes");
+        if (!modes.isEmpty()) {
+            for (var s : modes) {
                 try {
-                    if (player.getGameMode() == GameMode.valueOf(s.toUpperCase(Locale.ENGLISH))) return;
-                }
-                catch (IllegalArgumentException ignored) {}
+                    if (player.getGameMode() == GameMode.valueOf(
+                            s.toUpperCase(Locale.ENGLISH))) return;
+                } catch (IllegalArgumentException ignored) {}
             }
         }
 
-        Advancement adv = event.getAdvancement();
+        var adv = event.getAdvancement();
         if (!Initializer.getAdvancements().contains(adv)) return;
 
-        @Nullable AdvancementInfo info = Initializer.getKeys().getOrDefault(adv, null);
-        String key = adv.getKey().toString();
+        var info = Initializer.getKeys().getOrDefault(adv, null);
+        var key = adv.getKey().toString();
 
         if (key.contains("root") || key.contains("recipes")) return;
         if (!advList("advs").isEmpty() && advList("advs").contains(key)) return;
 
-        List<String> norms = new ArrayList<>(adv.getCriteria());
+        var norms = new ArrayList<>(adv.getCriteria());
         if (norms.isEmpty()) return;
 
-        Date date = player.getAdvancementProgress(adv).getDateAwarded(norms.get(norms.size() - 1));
+        var date = player.getAdvancementProgress(adv).getDateAwarded(norms.get(norms.size() - 1));
         if (date != null && date.getTime() < System.currentTimeMillis() - 5 * 1000) return;
 
         String frameType = null, advName = null, description = null;
 
-        String messageKey = FileCache.ADVANCES.get().getString(stringKey(key));
+        var messageKey = FileCache.ADVANCEMENTS.getValue(stringKey(key), String.class);
         if (messageKey == null) return;
 
         if (messageKey.contains("-(")) {
@@ -108,23 +109,32 @@ public class Advances extends SIRViewer {
                         "{type}", "{low-type}", "{cap-type}"
                 },
                 values = {
-                        player.getName(), advName, description, frameType,
-                        frameType.toLowerCase(Locale.ENGLISH), WordUtils.capitalizeFully(frameType)
+                        player.getName(), advName,
+                        description, frameType,
+                        frameType.toLowerCase(Locale.ENGLISH),
+                        WordUtils.capitalizeFully(frameType)
                 };
 
         if (messageKey.matches("(?i)null")) return;
 
-        List<String> messages = FileCache.ADVANCES.toList(messageKey),
-                list = new ArrayList<>();
+        List<String> messages = LangUtils.toList(FileCache.ADVANCEMENTS, messageKey),
+                mList = new ArrayList<>(), cList = new ArrayList<>();
 
-        for (String s : messages) if (!Sender.isStarting("[cmd]", s)) list.add(s);
+        for (var s : messages) {
+            if (s.matches("(?i)^\\[cmd]")) {
+                cList.add(s.substring(5));
+                continue;
+            }
+            mList.add(s);
+        }
 
-        LangUtils.create(Bukkit.getOnlinePlayers(), player, list).
-                setKeys(keys).setValues(values).display();
+        LangUtils.getSender().setTargets(Bukkit.getOnlinePlayers()).
+                setParser(player).
+                setKeys(keys).setValues(values).send(mList);
 
-        FileCache.ADVANCES.send(messageKey).execute(player, true);
+        LangUtils.executeCommands(player, cList);
 
         if (Initializer.hasDiscord())
-            new DiscordMsg(player, "advances", keys, values).send();
+            new DiscordSender(player, "advances").setKeys(keys).setValues(values).send();
     }
 }

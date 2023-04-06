@@ -5,7 +5,8 @@
 # Want to use unicode characters? Check this site: https://coolsymbol.com
 
 # This file is to edit every module option available for SIR.
-# You can enable/disable every module putting its name on the list.
+
+# This list can enable/disable every module putting its name on the list.
 # Available modules: join-quit, announces, motd, formats, discord,
 #                    advances, emojis, filters, mentions
 modules:
@@ -52,7 +53,6 @@ join-quit:
     # a message group has a "spawn:" section.
     # Disabling it will teleport AFTER the player log-in/register.
     spawn-before: true
-
   # If a vanish plugin is installed, this section will be activated.
   # Compatible vanish plugins: [ CMI, EssentialsX, SuperVanish, etc ]
   vanish:
@@ -83,8 +83,8 @@ chat:
   # If enabled, it will allow players to send blank messages using
   # spaces ' '. Recommended leaving this 'false'.
   allow-empty: false
-  # If enabled, it will send only the player's name and message in the
-  # console, just to be it more simple. This option applies to ALL formats.
+  # If enabled, it will send a unique specific format to the console,
+  # just to be it more simple. This option applies to ALL formats.
   simple-logger:
     enabled: false
     # You can use PlaceholderAPI, {PREFIX} and {SUFFIX}
@@ -127,7 +127,7 @@ announces:
 advancements:
   # The worlds list that will not show any advancement messages.
   # Disable this using [].
-  disabled-worlds: [ a_world ]
+  disabled-worlds: [ custom_world ]
   # The game-modes list that will not show any advancement messages.
   # Disable this using [].
   disabled-modes: [ SPECTATOR ]

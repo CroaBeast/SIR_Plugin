@@ -1,24 +1,27 @@
 package me.croabeast.sirplugin.module;
 
-import lombok.*;
-import me.croabeast.beanslib.utility.*;
-import me.croabeast.iridiumapi.*;
-import me.croabeast.sirplugin.object.instance.*;
-import me.croabeast.sirplugin.object.file.*;
-import org.bukkit.configuration.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.var;
+import me.croabeast.beanslib.utility.TextUtils;
+import me.croabeast.iridiumapi.IridiumAPI;
+import me.croabeast.sirplugin.object.file.FileCache;
+import me.croabeast.sirplugin.object.instance.SIRModule;
+import me.croabeast.sirplugin.utility.PlayerUtils;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.*;
 
-import java.util.*;
-import java.util.regex.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class EmParser extends SIRModule {
+public class EmojiParser extends SIRModule {
 
-    public static final List<Emoji> EMOJI_LIST = new ArrayList<>();
+    private static final List<Emoji> EMOJI_LIST = new ArrayList<>();
 
-    @Override
-    public @NotNull Identifier getIdentifier() {
-        return Identifier.EMOJIS;
+    public EmojiParser() {
+        super("emojis");
     }
 
     @Override
@@ -26,7 +29,7 @@ public class EmParser extends SIRModule {
         if (!isEnabled()) return;
         if (!EMOJI_LIST.isEmpty()) EMOJI_LIST.clear();
 
-        ConfigurationSection section = FileCache.EMOJIS.getSection("emojis");
+        var section = FileCache.EMOJIS.getSection("emojis");
         if (section == null) return;
 
         for (String key : section.getKeys(false)) {
@@ -44,7 +47,7 @@ public class EmParser extends SIRModule {
 
     public static String parseEmojis(Player player, String line) {
         try {
-            if (!Identifier.EMOJIS.isEnabled()) return line;
+            if (!SIRModule.isEnabled("emojis")) return line;
             if (EMOJI_LIST.isEmpty()) return line;
 
             for (Emoji e : EMOJI_LIST)
@@ -61,7 +64,7 @@ public class EmParser extends SIRModule {
         private final String permission, key, value;
         private final Checks checks;
 
-        public Emoji(ConfigurationSection section) {
+        Emoji(ConfigurationSection section) {
             if (section == null) throw new NullPointerException();
 
             permission = section.getString("permission", "DEFAULT");
@@ -78,15 +81,16 @@ public class EmParser extends SIRModule {
             this.checks = checks;
         }
 
-        private String convertValue(String line) {
-            String v = value == null ? "" : value;
-            return v + IridiumAPI.getLastColor(line, key, true, true);
+        String convertValue(String line) {
+            return (value == null ? "" : value) + IridiumAPI.getLastColor(line, key, true, true);
         }
 
-        private Matcher getMatcher(String line, boolean add) {
+        Matcher getMatcher(String line, boolean add) {
             if (key == null) return null;
+
             String inCase = !checks.isSensitive() ? "(?i)" : "",
                     k = checks.isRegex() ? key : Pattern.quote(key);
+
             if (add) k = "^" + k + "$";
             return Pattern.compile(inCase + k).matcher(line);
         }
@@ -96,15 +100,15 @@ public class EmParser extends SIRModule {
 
             if (player != null &&
                     !permission.matches("(?i)DEFAULT") &&
-                    !player.hasPermission(permission)) return line;
+                    !PlayerUtils.hasPerm(player, permission)) return line;
 
             if (checks.isWord()) {
-                StringBuilder builder = new StringBuilder();
-                String[] words = line.split(" ");
+                var builder = new StringBuilder();
+                var words = line.split(" ");
 
                 for (int i = 0; i < words.length; i++) {
                     String w = words[i];
-                    Matcher match = getMatcher(IridiumAPI.stripAll(w), true);
+                    var match = getMatcher(IridiumAPI.stripAll(w), true);
 
                     if (match == null) {
                         if (i > 0) builder.append(" ");
@@ -125,7 +129,7 @@ public class EmParser extends SIRModule {
                 return builder.toString();
             }
 
-            Matcher match = getMatcher(line, false);
+            var match = getMatcher(line, false);
             if (match == null) return line;
 
             while (match.find())

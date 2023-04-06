@@ -1,28 +1,40 @@
 package me.croabeast.sirplugin.module.listener;
 
-import me.croabeast.beanslib.object.display.Bossbar;
+import lombok.var;
+import me.croabeast.beanslib.builder.BossbarBuilder;
 import me.croabeast.beanslib.utility.TextUtils;
-import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.event.*;
-import me.croabeast.sirplugin.hook.discord.*;
-import me.croabeast.sirplugin.hook.login.*;
-import me.croabeast.sirplugin.hook.vanish.*;
-import me.croabeast.sirplugin.object.Sender;
-import me.croabeast.sirplugin.object.instance.*;
-import me.croabeast.sirplugin.object.file.*;
-import me.croabeast.sirplugin.task.message.*;
-import me.croabeast.sirplugin.utility.*;
-import org.apache.commons.lang.*;
-import org.bukkit.*;
-import org.bukkit.configuration.*;
-import org.bukkit.entity.*;
-import org.bukkit.event.*;
-import org.bukkit.event.player.*;
-import org.bukkit.scheduler.*;
-import org.jetbrains.annotations.*;
+import me.croabeast.sirplugin.Initializer;
+import me.croabeast.sirplugin.SIRPlugin;
+import me.croabeast.sirplugin.event.SIRLoginEvent;
+import me.croabeast.sirplugin.event.SIRVanishEvent;
+import me.croabeast.sirplugin.hook.DiscordSender;
+import me.croabeast.sirplugin.hook.LoginHook;
+import me.croabeast.sirplugin.hook.VanishHook;
+import me.croabeast.sirplugin.object.analytic.Amender;
+import me.croabeast.sirplugin.object.file.FileCache;
+import me.croabeast.sirplugin.object.instance.SIRListener;
+import me.croabeast.sirplugin.object.instance.SIRViewer;
+import me.croabeast.sirplugin.task.message.DirectTask;
+import me.croabeast.sirplugin.utility.LangUtils;
+import me.croabeast.sirplugin.utility.LogUtils;
+import me.croabeast.sirplugin.utility.PlayerUtils;
+import org.apache.commons.lang.StringUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.*;
-import java.util.regex.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Pattern;
 
 import static me.croabeast.sirplugin.utility.PlayerUtils.*;
 
@@ -30,26 +42,19 @@ public class JoinQuit extends SIRViewer {
 
     public static final Set<Player> LOGGED_PLAYERS = new HashSet<>();
 
-    private final SIRPlugin main = SIRPlugin.getInstance();
+    private static final HashMap<UUID, Long> JOIN_MAP = new HashMap<>(),
+            QUIT_MAP = new HashMap<>(),
+            PLAY_MAP = new HashMap<>();
 
-    Map<UUID, Long> joinMap = new HashMap<>(),
-            quitMap = new HashMap<>(),
-            playMap = new HashMap<>();
-
-    @Override
-    public @NotNull Identifier getIdentifier() {
-        return Identifier.JOIN_QUIT;
+    public JoinQuit() {
+        super("join-quit");
     }
 
     @Override
     public void registerModule() {
-        registerListener();
-        if (Initializer.hasLogin()) new LoginHook().registerListener();
-        if (Initializer.hasVanish()) new VanishHook().registerListener();
-    }
-
-    private boolean isVanished(Player player, boolean isJoin) {
-        return Initializer.hasVanish() && PlayerUtils.isVanished(player, isJoin);
+        register();
+        if (LoginHook.isEnabled()) new SIRLoginHook().register();
+        if (VanishHook.isEnabled()) new SIRVanishHook().register();
     }
 
     @EventHandler
@@ -57,11 +62,11 @@ public class JoinQuit extends SIRViewer {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
-        main.getAmender().initUpdater(player);
+        Amender.initUpdater(player);
         if (!isEnabled()) return;
 
         String path = !player.hasPlayedBefore() ? "first-join" : "join";
-        ConfigurationSection id = FileCache.JOIN_QUIT.permSection(player, path);
+        var id = FileCache.JOIN_QUIT.permSection(player, path);
 
         if (id == null) {
             LogUtils.doLog(player,
@@ -71,30 +76,31 @@ public class JoinQuit extends SIRViewer {
             return;
         }
 
-        if (FileCache.MODULES.get().getBoolean("join-quit.default-messages.disable-join", true))
+        if (FileCache.MODULES.getValue("join-quit.default-messages.disable-join", true))
             event.setJoinMessage(null);
 
-        int playTime = FileCache.MODULES.get().getInt("join-quit.cooldown.between"),
-                joinCooldown = FileCache.MODULES.get().getInt("join-quit.cooldown.join");
+        int playTime = FileCache.MODULES.getValue("join-quit.cooldown.between", 0),
+                joinCooldown = FileCache.MODULES.getValue("join-quit.cooldown.join", 0);
 
-        if (joinCooldown > 0 && joinMap.containsKey(uuid)) {
-            long rest = System.currentTimeMillis() - joinMap.get(uuid);
+        if (joinCooldown > 0 && JOIN_MAP.containsKey(uuid)) {
+            long rest = System.currentTimeMillis() - JOIN_MAP.get(uuid);
             if (rest < joinCooldown * 1000L) return;
         }
 
-        if (isVanished(player, true)) return;
+        if (VanishHook.isVanished(player)) return;
         String p = "join-quit.login.";
 
-        if (Initializer.hasLogin() && FileCache.MODULES.get().getBoolean(p + "enabled")) {
-            if (FileCache.MODULES.get().getBoolean(p + "spawn-before")) teleportPlayer(id, player);
+        if (LoginHook.isEnabled() && FileCache.MODULES.getValue(p + "enabled", true)) {
+            if (FileCache.MODULES.getValue(p + "spawn-before", false))
+                PlayerUtils.teleport(id, player);
             return;
         }
 
         new Section(event, id, player).runTasks();
         final long data = System.currentTimeMillis();
 
-        if (joinCooldown > 0) joinMap.put(uuid, data);
-        if (playTime > 0) playMap.put(uuid, data);
+        if (joinCooldown > 0) JOIN_MAP.put(uuid, data);
+        if (playTime > 0) PLAY_MAP.put(uuid, data);
     }
 
     @EventHandler
@@ -102,7 +108,7 @@ public class JoinQuit extends SIRViewer {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
-        Bossbar bar = Bossbar.getBossbar(player);
+        var bar = BossbarBuilder.getBuilder(player);
         if (bar != null) bar.unregister();
 
         if (getGodPlayers().contains(player)) {
@@ -110,12 +116,12 @@ public class JoinQuit extends SIRViewer {
             getGodPlayers().remove(player);
         }
 
-        DirectTask.getReceivers().remove(Bukkit.getConsoleSender(), player);
-        DirectTask.getReceivers().remove(player);
+        DirectTask.RECEIVER_MAP.remove(Bukkit.getConsoleSender(), player);
+        DirectTask.RECEIVER_MAP.remove(player);
 
         if (!isEnabled()) return;
 
-        ConfigurationSection id = FileCache.JOIN_QUIT.permSection(player, "quit");
+        var id = FileCache.JOIN_QUIT.permSection(player, "quit");
 
         if (id == null) {
             LogUtils.doLog(player,
@@ -125,48 +131,45 @@ public class JoinQuit extends SIRViewer {
             return;
         }
 
-        if (FileCache.MODULES.get().getBoolean("join-quit.default-messages.disable-quit", true))
+        if (FileCache.MODULES.getValue("join-quit.default-messages.disable-quit", true))
             event.setQuitMessage(null);
 
-        int playTime = FileCache.MODULES.get().getInt("join-quit.cooldown.between"),
-                quitCooldown = FileCache.MODULES.get().getInt("join-quit.cooldown.quit");
+        int playTime = FileCache.MODULES.getValue("join-quit.cooldown.between", 0),
+                quitCooldown = FileCache.MODULES.getValue("join-quit.cooldown.quit", 0);
 
         final long now = System.currentTimeMillis();
 
-        if (quitCooldown > 0 && quitMap.containsKey(uuid) &&
-                now - quitMap.get(uuid) < quitCooldown * 1000L) return;
-        if (playTime > 0 && playMap.containsKey(uuid) &&
-                now - playMap.get(uuid) < playTime * 1000L) return;
+        if (quitCooldown > 0 && QUIT_MAP.containsKey(uuid) &&
+                now - QUIT_MAP.get(uuid) < quitCooldown * 1000L) return;
+        if (playTime > 0 && PLAY_MAP.containsKey(uuid) &&
+                now - PLAY_MAP.get(uuid) < playTime * 1000L) return;
 
-        if (isVanished(player, false)) return;
+        if (VanishHook.isVanished(player)) return;
 
-        if (Initializer.hasLogin()) {
+        if (LoginHook.isEnabled()) {
             if (!LOGGED_PLAYERS.contains(player)) return;
             LOGGED_PLAYERS.remove(player);
         }
 
         new Section(event, id, player).runTasks();
-        if (quitCooldown > 0) quitMap.put(uuid, System.currentTimeMillis());
+        if (quitCooldown > 0) QUIT_MAP.put(uuid, System.currentTimeMillis());
     }
 
-    public class LoginHook implements RawViewer {
-
-        public LoginHook() {
-            new AuthMe();
-            new UserLogin();
-        }
+    class SIRLoginHook implements SIRListener {
 
         @EventHandler
-        private void onLogin(LoginEvent event) {
+        private void onLogin(SIRLoginEvent event) {
             Player player = event.getPlayer();
+
             UUID uuid = player.getUniqueId();
+            LOGGED_PLAYERS.add(player);
 
             if (!isEnabled()) return;
 
-            if (!FileCache.MODULES.get().getBoolean("join-quit.login.enabled")) return;
-            if (JoinQuit.this.isVanished(player, true)) return;
+            if (!FileCache.MODULES.getValue("join-quit.login.enabled", false)) return;
+            if (VanishHook.isVanished(player)) return;
 
-            ConfigurationSection id = FileCache.JOIN_QUIT.permSection(
+            var id = FileCache.JOIN_QUIT.permSection(
                     player, !player.hasPlayedBefore() ? "first-join" : "join");
 
             if (id == null) {
@@ -177,49 +180,41 @@ public class JoinQuit extends SIRViewer {
                 return;
             }
 
-            int playTime = FileCache.MODULES.get().getInt("join-quit.cooldown.between"),
-                    joinCooldown = FileCache.MODULES.get().getInt("join-quit.cooldown.join");
+            int playTime = FileCache.MODULES.getValue("join-quit.cooldown.between", 0),
+                    joinCooldown = FileCache.MODULES.getValue("join-quit.cooldown.join", 0);
 
-            if (joinCooldown > 0 && joinMap.containsKey(uuid)) {
-                long rest = System.currentTimeMillis() - joinMap.get(uuid);
+            if (joinCooldown > 0 && JOIN_MAP.containsKey(uuid)) {
+                long rest = System.currentTimeMillis() - JOIN_MAP.get(uuid);
                 if (rest < joinCooldown * 1000L) return;
             }
 
-            LOGGED_PLAYERS.add(player);
             new Section(event, id, player).runTasks();
 
             final long data = System.currentTimeMillis();
-            if (joinCooldown > 0) joinMap.put(uuid, data);
-            if (playTime > 0) playMap.put(uuid, data);
+            if (joinCooldown > 0) JOIN_MAP.put(uuid, data);
+            if (playTime > 0) PLAY_MAP.put(uuid, data);
         }
     }
 
-    public class VanishHook implements RawViewer {
-
-        public VanishHook() {
-            new CMI();
-            new Essentials();
-            new Vanish();
-        }
+    class SIRVanishHook implements SIRListener {
 
         @EventHandler
-        private void onVanish(VanishEvent event) {
+        private void onVanish(SIRVanishEvent event) {
             Player player = event.getPlayer();
             UUID uuid = player.getUniqueId();
 
             if (!isEnabled()) return;
 
-            if (!Initializer.hasVanish() ||
-                    !FileCache.MODULES.get().getBoolean("join-quit.vanish.enabled")) return;
+            if (!VanishHook.isEnabled() ||
+                    !FileCache.MODULES.getValue("join-quit.vanish.enabled", false)) return;
 
-            if (Initializer.hasLogin()) {
-                if (event.isVanished() & !LOGGED_PLAYERS.contains(player))
-                    LOGGED_PLAYERS.add(player);
+            if (LoginHook.isEnabled()) {
+                if (event.isVanished()) LOGGED_PLAYERS.add(player);
                 else LOGGED_PLAYERS.remove(player);
             }
 
             String path = event.isVanished() ? "join" : "quit";
-            ConfigurationSection id = FileCache.JOIN_QUIT.permSection(player, path);
+            var id = FileCache.JOIN_QUIT.permSection(player, path);
 
             if (id == null) {
                 LogUtils.doLog(player,
@@ -229,8 +224,8 @@ public class JoinQuit extends SIRViewer {
                 return;
             }
 
-            int timer = FileCache.MODULES.get().getInt("join-quit.cooldown." + path);
-            Map<UUID, Long> players = event.isVanished() ? joinMap : quitMap;
+            int timer = FileCache.MODULES.getValue("join-quit.cooldown." + path, 0);
+            var players = event.isVanished() ? JOIN_MAP : QUIT_MAP;
 
             if (timer > 0 && players.containsKey(uuid)) {
                 long rest = System.currentTimeMillis() - players.get(uuid);
@@ -243,41 +238,50 @@ public class JoinQuit extends SIRViewer {
 
         @EventHandler(priority = EventPriority.LOW)
         private void onChat(AsyncPlayerChatEvent event) {
-            String path = "join-quit.vanish.chat-key";
-            if (event.isCancelled()) return;
+            var s = FileCache.MODULES.getSection("join-quit.vanish.chat-key");
+            if (s == null || event.isCancelled()) return;
 
-            String key = FileCache.MODULES.get().getString(path + "key");
+            var key = s.getString("key");
             if (StringUtils.isBlank(key)) return;
 
-            String message = event.getMessage();
-            Player player = event.getPlayer();
+            var message = event.getMessage();
+            var player = event.getPlayer();
 
-            if (FileCache.MODULES.get().getBoolean(path + "regex")) {
-                Matcher match = Pattern.compile(key).matcher(message);
+            var notAllow = TextUtils.toList(s, "not-allowed");
+
+            if (s.getBoolean("regex")) {
+                var match = Pattern.compile(key).matcher(message);
 
                 if (!match.find()) {
-                    LangUtils.create(player, FileCache.MODULES.toList(path + "not-allowed")).display();
+                    LangUtils.getSender().setTargets(player).send(notAllow);
                     event.setCancelled(true);
+                    return;
                 }
-                else event.setMessage(message.replace(match.group(), ""));
+
+                event.setMessage(message.replace(match.group(), ""));
                 return;
             }
 
-            String place = FileCache.MODULES.get().getString(path + "place", "");
-            boolean isPrefix = !place.matches("(?i)suffix");
+            var place = s.getString("place", "");
+            var isPrefix = !place.matches("(?i)suffix");
 
-            String pattern = (isPrefix ? "^" : "") + Pattern.quote(key) + (isPrefix ? "" : "$");
-            Matcher match = Pattern.compile(pattern).matcher(message);
+            var pattern = (isPrefix ? "^" : "") +
+                    Pattern.quote(key) +
+                    (isPrefix ? "" : "$");
+
+            var match = Pattern.compile(pattern).matcher(message);
 
             if (!match.find()) {
-                LangUtils.create(player, FileCache.MODULES.toList(path + "not-allowed")).display();
+                LangUtils.getSender().setTargets(player).send(notAllow);
                 event.setCancelled(true);
+                return;
             }
-            else event.setMessage(message.replace(match.group(), ""));
+
+            event.setMessage(message.replace(match.group(), ""));
         }
     }
 
-    public static class Section {
+    static class Section {
 
         private final SIRPlugin main = SIRPlugin.getInstance();
 
@@ -291,13 +295,13 @@ public class JoinQuit extends SIRViewer {
             this.player = player;
 
             if (event instanceof PlayerQuitEvent) isJoin = doSpawn = false;
-            else if (event instanceof LoginEvent) {
-                doSpawn = !FileCache.MODULES.get().getBoolean("join-quit.login.enabled");
+            else if (event instanceof SIRLoginEvent) {
+                doSpawn = !FileCache.MODULES.getValue("join-quit.login.enabled", false);
                 isLogged = true;
             }
-            else if (event instanceof VanishEvent) {
-                isJoin = ((VanishEvent) event).isVanished();
-                doSpawn = FileCache.MODULES.get().getBoolean("join-quit.vanish.use-spawn");
+            else if (event instanceof SIRVanishEvent) {
+                isJoin = ((SIRVanishEvent) event).isVanished();
+                doSpawn = FileCache.MODULES.getValue("join-quit.vanish.use-spawn", false);
             }
         }
 
@@ -305,26 +309,31 @@ public class JoinQuit extends SIRViewer {
             BukkitRunnable runnable = new BukkitRunnable() {
                 @Override
                 public void run() {
-                    LangUtils.create(Bukkit.getOnlinePlayers(), player, TextUtils.toList(id, "public")).display();
+                    LangUtils.getSender().setTargets(Bukkit.getOnlinePlayers()).
+                            setParser(player).
+                            send(TextUtils.toList(id, "public"));
 
                     if (isJoin) {
-                        LangUtils.create(player, TextUtils.toList(id, "private")).display();
+                        LangUtils.getSender().setTargets(player).
+                                send(TextUtils.toList(id, "private"));
 
                         playSound(player, id.getString("sound"));
                         giveImmunity(player, id.getInt("invulnerable"));
 
-                        if (doSpawn) teleportPlayer(id, player);
+                        if (doSpawn) PlayerUtils.teleport(id, player);
                     }
 
-                    Sender.to(id, "commands").execute(isJoin ? player : null);
+                    LangUtils.executeCommands(isJoin ? player : null,
+                            TextUtils.toList(id, "commands"));
+
                     if (!Initializer.hasDiscord()) return;
 
                     String path = player.hasPlayedBefore() ? "" : "first-";
-                    new DiscordMsg(player, isJoin ? path + "join" : "quit").send();
+                    new DiscordSender(player, isJoin ? path + "join" : "quit").send();
                 }
             };
 
-            int ticks = FileCache.MODULES.get().getInt("login.ticks-after");
+            int ticks = FileCache.MODULES.getValue("login.ticks-after", 0);
 
             if (!isLogged || ticks <= 0) runnable.runTask(main);
             else runnable.runTaskLater(main, ticks);

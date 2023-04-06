@@ -1,136 +1,126 @@
 package me.croabeast.sirplugin.utility;
 
-import com.Zrips.CMI.Containers.*;
-import com.earth2me.essentials.*;
 import lombok.Getter;
+import lombok.experimental.UtilityClass;
+import lombok.var;
 import me.croabeast.beanslib.utility.LibUtils;
-import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.object.file.*;
-import org.apache.commons.lang.*;
-import org.bukkit.*;
-import org.bukkit.command.*;
-import org.bukkit.configuration.*;
-import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.*;
-import org.bukkit.metadata.*;
-import org.bukkit.scheduler.*;
+import me.croabeast.sirplugin.SIRPlugin;
+import me.croabeast.sirplugin.object.file.FileCache;
+import me.croabeast.sirplugin.task.ignore.IgnoreTask;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Sound;
+import org.bukkit.World;
+import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.*;
+import java.lang.reflect.Method;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-public final class PlayerUtils {
+@UtilityClass
+public class PlayerUtils {
 
     @Getter
     private static final Set<Player> godPlayers = new HashSet<>();
 
-    public static boolean hasPerm(CommandSender sender, String perm, boolean checkOP) {
-        if (sender == null) return false;
-        if (!(sender instanceof Player)) return true;
+    public <T extends CommandSender> boolean hasPerm(T sender, String perm) {
+        final var b = sender.hasPermission(perm);
+        final var s = "options.override-op";
 
-        if (StringUtils.isBlank(perm)) return false;
-
-        Player player = (Player) sender;
-        if (player.isOp() && checkOP) return true;
-
-        boolean isSet = FileCache.CONFIG.get().getBoolean("options.hard-perm-check");
-        return (!isSet || sender.isPermissionSet(perm)) && sender.hasPermission(perm);
+        if (!FileCache.MAIN_CONFIG.getValue(s, false)) return b;
+        return (!sender.isOp() ||
+                sender.isPermissionSet(perm)) && b;
     }
 
-    public static boolean hasPerm(CommandSender sender, String perm) {
-        return hasPerm(sender, perm, true);
-    }
+    public Player getClosestPlayer(String input) {
+        for (var p : Bukkit.getOnlinePlayers())
+            if (p.getName().matches("(?i)" + input)) return p;
 
-    private static boolean essVanish(Player player, boolean isJoin) {
-        Essentials ess = (Essentials) Bukkit.getPluginManager().getPlugin("Essentials");
-        return ess != null && (ess.getUser(player).isVanished() ||
-                (isJoin && hasPerm(player, "essentials.silentjoin.vanish")));
-    }
-
-    private static boolean cmiVanish(Player player) {
-        return Bukkit.getPluginManager().getPlugin("CMI") != null && CMIUser.getUser(player).isVanished();
-    }
-
-    private static boolean normalVanish(Player player) {
-        for (MetadataValue meta : player.getMetadata("vanished"))
-            if (meta.asBoolean()) return true;
-        return false;
-    }
-
-    public static boolean isVanished(Player p, boolean isJoin) {
-        return essVanish(p, isJoin) || cmiVanish(p) || normalVanish(p);
-    }
-
-    public static Player getClosestPlayer(String input) {
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            if (!p.getName().matches("(?i)" + input)) continue;
-            return p;
-        }
         return null;
     }
 
-    public static boolean isIgnoring(Player target, Player player, boolean isChat) {
-        String data = "data." + target.getUniqueId() + ".",
-                path = isChat ? "chat" : "msg";
+    public boolean isIgnoring(Player source, Player target, boolean isChat) {
+        var s = IgnoreTask.getSettings(source);
+        if (s == null) return false;
 
-        FileConfiguration file = FileCache.IGNORE.get();
-        List<String> list = file.getStringList(data + path);
-
-        return file.getBoolean(data + "all-" + path) ||
-                list.contains(player.getUniqueId() + "");
+        var cache = isChat ? s.getChatCache() : s.getMsgCache();
+        return cache.isForAll() ||
+                (target != null && cache.contains(target));
     }
 
-    public static void teleport(Player player, World world, double[] c, float[] d) {
+    public void teleport(ConfigurationSection id, Player player) {
+        if (id == null) return;
+
+        String w = id.getString("world");
+        if (w == null) return;
+
+        World world = Bukkit.getWorld(w);
         if (world == null) return;
-        Location location = world.getSpawnLocation();
 
-        if (c != null && c.length == 3) {
-            location.setX(c[0]);
-            location.setY(c[1]);
-            location.setZ(c[2]);
+        Location loc = world.getSpawnLocation();
+
+        String coords = id.getString("coordinates");
+        String rot = id.getString("rotation");
+
+        double[] dC = {loc.getX(), loc.getY(), loc.getZ()},
+                c = new double[3];
+
+        float[] dD = {loc.getYaw(), loc.getPitch()},
+                d = new float[2];
+
+        if (coords != null) {
+            String[] mC = coords.split(",", 3);
+
+            c[0] = dC[0];
+            c[1] = dC[1];
+            c[2] = dC[2];
+
+            try {
+                c[0] = Double.parseDouble(mC[0]);
+            } catch (Exception ignored) {}
+            try {
+                c[1] = Double.parseDouble(mC[1]);
+            } catch (Exception ignored) {}
+            try {
+                c[2] = Double.parseDouble(mC[2]);
+            } catch (Exception ignored) {}
         }
 
-        if (d != null && d.length == 2) {
-            location.setYaw(d[0]);
-            location.setPitch(d[1]);
+        if (rot != null) {
+            String[] mD = rot.split(",", 2);
+
+            d[0] = dD[0];
+            d[1] = dD[1];
+
+            try {
+                d[0] = Float.parseFloat(mD[0]);
+            } catch (Exception ignored) {}
+            try {
+                d[1] = Float.parseFloat(mD[1]);
+            } catch (Exception ignored) {}
         }
 
-        if (player != null) player.teleport(location);
+        if (c != dC) {
+            loc.setX(c[0]);
+            loc.setY(c[1]);
+            loc.setZ(c[2]);
+        }
+
+        if (d != dD) {
+            loc.setYaw(d[0]);
+            loc.setPitch(d[1]);
+        }
+
+        player.teleport(loc);
     }
 
-    public static void teleport(Player player, String worldName, String coords, String direction) {
-        String[] coordinates = coords.split(","),
-                rotations = direction.split(",");
-
-        double[] c = new double[3];
-        float[] d = new float[2];
-
-        try {
-            c[0] = Double.parseDouble(coordinates[0]);
-            c[1] = Double.parseDouble(coordinates[1]);
-            c[2] = Double.parseDouble(coordinates[2]);
-        }
-        catch (Exception e) {
-            c = null;
-        }
-
-        try {
-            d[0] = Float.parseFloat(rotations[0]);
-            d[1] = Float.parseFloat(rotations[1]);
-        }
-        catch (NumberFormatException e) {
-            d = null;
-        }
-
-        teleport(player, Bukkit.getWorld(worldName), c, d);
-    }
-
-    public static void teleportPlayer(ConfigurationSection id, Player player) {
-        teleport(player, id.getString("spawn.world", ""),
-                id.getString("spawn.x-y-z", ""),
-                id.getString("spawn.yaw-pitch", ""));
-    }
-
-    public static void giveImmunity(Player player, int time) {
-        if (LibUtils.majorVersion() <= 8 | time <= 0) return;
+    public void giveImmunity(Player player, int time) {
+        if (LibUtils.getMainVersion() <= 8 | time <= 0) return;
 
         player.setInvulnerable(true);
         getGodPlayers().add(player);
@@ -144,7 +134,9 @@ public final class PlayerUtils {
         }.runTaskLater(SIRPlugin.getInstance(), time);
     }
 
-    public static void playSound(Player player, String rawSound) {
+    public <C extends CommandSender> void playSound(C sender, String rawSound) {
+        if (!(sender instanceof Player)) return;
+
         if (rawSound == null) return;
         Sound sound;
 
@@ -154,6 +146,29 @@ public final class PlayerUtils {
             return;
         }
 
-        player.playSound(player.getLocation(), sound, 1, 1);
+        var p = (Player) sender;
+        p.playSound(p.getLocation(), sound, 1, 1);
+    }
+
+    public void addChatCompletions(Player player, List<String> list) {
+        if (!LibUtils.isPaper()) return;
+        if (LibUtils.getMainVersion() < 19) return;
+
+        if (player == null) return;
+        if (list.isEmpty()) return;
+
+        final String m = "addAdditionalChatCompletions";
+        Method method = null;
+
+        try {
+            method = player.getClass().
+                    getDeclaredMethod(m, Collection.class);
+        } catch (Exception e) { e.printStackTrace(); }
+
+        if (method == null) return;
+
+        try {
+            method.invoke(player, list);
+        } catch (Exception e) { e.printStackTrace(); }
     }
 }

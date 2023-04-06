@@ -1,8 +1,17 @@
 package me.croabeast.sirplugin.object.instance;
 
-import org.jetbrains.annotations.*;
+import lombok.Getter;
+import lombok.var;
+import me.croabeast.sirplugin.SIRPlugin;
+import me.croabeast.sirplugin.object.file.FileCache;
+import me.croabeast.sirplugin.utility.LangUtils;
 
-import java.util.*;
+import java.io.File;
+import java.net.URLDecoder;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.jar.JarFile;
 
 /**
  * This class represents a module used for each feature.
@@ -12,14 +21,22 @@ public abstract class SIRModule {
     /**
      * The Map that stores all the plugin's modules.
      */
-    private static final Map<Identifier, SIRModule> MODULE_MAP = new HashMap<>();
+    public static final Map<String, SIRModule> MODULE_MAP = new HashMap<>();
 
-    /**
-     * The name of the module identifier in modules.yml file.
-     * @return the identifier's name
-     */
-    @NotNull
-    public abstract Identifier getIdentifier();
+    static {
+        new SIRModule("discord") {
+            @Override
+            public void registerModule() {}
+        };
+    }
+
+    @Getter
+    private final String name;
+
+    public SIRModule(String name) {
+        this.name = name;
+        MODULE_MAP.put(this.name, this);
+    }
 
     /**
      * Registers the module in the server.
@@ -28,29 +45,71 @@ public abstract class SIRModule {
 
     /**
      * Checks if the module is enabled in modules.yml
+     *
      * @return if the specified module is enabled.
      */
     public boolean isEnabled() {
-        return getIdentifier().isEnabled();
+        return LangUtils.toList(FileCache.MODULES, "modules").contains(name);
     }
 
-    /**
-     * Registers all the modules of the plugin.
-     * @param baseModules all modules
-     */
-    public static void registerModules(SIRModule... baseModules) {
-        for (SIRModule module : baseModules) {
-            MODULE_MAP.put(module.getIdentifier(), module);
-            module.registerModule();
+    public String toString() {
+        return "SIRModule{" + name + ", " + isEnabled() + "}";
+    }
+
+    static void createInstances(String pack) {
+        @SuppressWarnings("deprecation")
+        var file = new File(URLDecoder.decode(SIRPlugin.class.getProtectionDomain().
+                getCodeSource().getLocation().getPath()));
+
+        final var packPath = pack.replace(".", "/");
+
+        try (JarFile jarFile = new JarFile(file)) {
+            var entries = Collections.list(jarFile.entries());
+
+            for (var entry : entries) {
+                var name = entry.getName();
+                if (!name.startsWith(packPath)) continue;
+
+                if (name.endsWith(".class")) {
+                    String className = name.replace("/", ".").replace(".class", "");
+                    var clazz = Class.forName(className);
+
+                    var sup = clazz.getSuperclass();
+                    if (sup != SIRModule.class && sup != SIRViewer.class)
+                        continue;
+
+                    var constructor = clazz.getDeclaredConstructor();
+                    constructor.setAccessible(true);
+
+                    var instance = constructor.newInstance();
+                    ((SIRModule) instance).registerModule();
+                    continue;
+                }
+
+                if (name.endsWith("/")) {
+                    var subName = name.replace("/", ".").replaceFirst(packPath + "\\.", "");
+                    createInstances(pack + "." + subName);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
-    /**
-     * Gets the module from the {@link #MODULE_MAP} using an {@link Identifier}.
-     * @param identifier the identifier
-     * @return the requested module
-     */
-    public static SIRModule getModule(Identifier identifier) {
-        return MODULE_MAP.get(identifier);
+    public static void registerModules() {
+        try {
+            createInstances("me.croabeast.sirplugin.module");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static SIRModule get(String name) {
+        return MODULE_MAP.getOrDefault(name, null);
+    }
+
+    public static boolean isEnabled(String name) {
+        var m = get(name);
+        return m != null && m.isEnabled();
     }
 }

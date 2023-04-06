@@ -1,16 +1,16 @@
-package me.croabeast.sirplugin.object;
+package me.croabeast.sirplugin.object.chat;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.object.file.FileCache;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class ChatFormat {
 
@@ -48,10 +48,7 @@ public class ChatFormat {
         radius = section.getInt("radius");
         world = section.getString("world");
 
-        this.hover =
-                TextUtils.toList(section, "hover").
-                stream().filter(Objects::nonNull).
-                collect(Collectors.toList());
+        this.hover = TextUtils.toList(section, "hover", null);
 
         click = section.getString("click");
 
@@ -112,9 +109,10 @@ public class ChatFormat {
         return world == null ? getDefault().world : world;
     }
 
+    @Nullable
     public List<String> getHover() {
         if (getDefault() == null) return hover;
-        return hover.isEmpty() ? getDefault().hover : hover;
+        return hover == null ? getDefault().hover : hover;
     }
 
     public String getClick() {
@@ -125,6 +123,12 @@ public class ChatFormat {
     public String getFormat() {
         if (getDefault() == null) return format;
         return format == null ? getDefault().format : format;
+    }
+
+    public boolean isDefault() {
+        return (getHover() == null || getHover().isEmpty()) &&
+                StringUtils.isBlank(getClick()) && getRadius() < 0 &&
+                StringUtils.isBlank(getWorld());
     }
 
     @RequiredArgsConstructor
@@ -170,7 +174,7 @@ public class ChatFormat {
     }
 
     public static ChatFormat getDefault() {
-        if (!FileCache.MODULES.value("chat.default.enabled", true)) return null;
+        if (!FileCache.MODULES.getValue("chat.default.enabled", true)) return null;
         return new ChatFormat(FileCache.MODULES.getSection("chat.default"));
     }
 }

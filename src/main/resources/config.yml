@@ -26,19 +26,19 @@ options:
   # announces.yml, and the advancement messages from advances.yml
   # to the server's console.
   send-console: true
-  # If enabled, it will remove all unnecessary spaces for every
-  # message to send. Recommended leaving this 'true'.
-  hard-spacing: true
+  # If enabled, it will remove all unnecessary spaces for every chat
+  # message to send. Recommended leaving this 'false'.
+  strip-spaces: false
   # Fix a color format bug when RGB is applied to the console.
   # It's recommended to leave it to false if you don't have
   # this visual bug.
   fix-logger: false
-  # If enabled, it will check if the permission is set to that
-  # player; then if true, it will check if the player has the perm
-  # value set to true. Recommended leaving this 'false'.
-  # If enabled, it will not check if a player is OP and ALSO for
-  # wildcard-type permissions, like sir.* or worldedit.*.
-  hard-perm-check: false
+  # If enabled, it will check if the permission is set to that player,
+  # overriding the default OP permission system.
+  # In other words, it'll not check if a player is OP, only if a player
+  # HAVE SET that specific permission, avoiding wildcard permissions,
+  # like sir.* or worldedit.*. Recommended leaving this value on 'false'.
+  override-op: false
   # if enabled, it will show the prefix of the message type in
   # the console. Example:
   # [ACTION-BAR] My action bar message.

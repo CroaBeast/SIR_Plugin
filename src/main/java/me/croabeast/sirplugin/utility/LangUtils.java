@@ -1,103 +1,117 @@
 package me.croabeast.sirplugin.utility;
 
+import lombok.var;
 import me.croabeast.beanslib.BeansLib;
-import me.croabeast.beanslib.object.display.Displayer;
-import me.croabeast.beanslib.object.key.PlayerKeys;
+import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.SIRPlugin;
-import me.croabeast.sirplugin.module.EmParser;
+import me.croabeast.sirplugin.module.EmojiParser;
 import me.croabeast.sirplugin.object.file.FileCache;
-import org.bukkit.command.CommandSender;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
 public class LangUtils extends BeansLib {
 
-    private static SIRPlugin main;
+    @Nullable
+    private static MessageSender sender = null;
 
     public LangUtils(SIRPlugin instance) {
-        main = instance;
+        super(instance);
+        getKeyManager().setKey(2, "{uuid}").setKey(3, "{world}").
+                setKey(1, "{displayName}").setKey(5, "{x}").
+                setKey(6, "{y}").setKey(7, "{z}").
+                setKey(8, "{yaw}").setKey(9, "{pitch}");
     }
 
-    @Override
-    public @NotNull JavaPlugin getPlugin() {
-        return main;
+    public @NotNull String getLangPrefixKey() {
+        return FileCache.MAIN_CONFIG.getValue("values.lang-prefix-key", "<P>");
     }
 
-    @Override
-    public @NotNull String langPrefixKey() {
-        return FileCache.CONFIG.value("values.lang-prefix-key", "<P>");
+    public @NotNull String getLangPrefix() {
+        return FileCache.LANG.getValue("main-prefix", " &e&lSIR &8>");
     }
 
-    @Override
-    public @NotNull String langPrefix() {
-        return FileCache.LANG.value("main-prefix", " &e&lSIR &8>");
+    public @NotNull String getCenterPrefix() {
+        return FileCache.MAIN_CONFIG.getValue("values.center-prefix", "<C>");
     }
 
-    @Override
-    public @NotNull String centerPrefix() {
-        return FileCache.CONFIG.value("values.center-prefix", "<C>");
+    public @NotNull String getLineSeparator() {
+        return Pattern.quote(FileCache.MAIN_CONFIG.getValue("values.line-separator", "<n>"));
     }
 
-    @Override
-    public @NotNull String lineSeparator() {
-        return Pattern.quote(FileCache.CONFIG.value("values.line-separator", "<n>"));
+    public boolean isColoredConsole() {
+        return !FileCache.MAIN_CONFIG.getValue("options.fix-logger", false);
     }
 
-    @Override
-    public boolean fixColorLogger() {
-        return FileCache.CONFIG.value("options.fix-logger", false);
-    }
-
-    @Override
     public ConfigurationSection getWebhookSection() {
-        return FileCache.WEBHOOKS.getSection("webhooks");
+        return FileCache.WEBHOOKS_FILE.getSection("webhooks");
     }
 
-    @Override
-    public @NotNull PlayerKeys playerKeys() {
-        return super.playerKeys().setUuidKey("{uuid}").
-                setWorldKey("{world}").
-                setDisplayKey("{displayName}");
+    public ConfigurationSection getBossbarSection() {
+        return FileCache.BOSSBARS_FILE.getSection("bossbars");
     }
 
-    @Override
     public boolean isStripPrefix() {
-        return !FileCache.CONFIG.value("options.show-prefix", true);
-    }
-
-    public static String parseInternalKeys(String line, String[] keys, String[] values) {
-        String[] resultKeys = new String[keys.length];
-        for (int i = 0; i < keys.length; i++) resultKeys[i] = "{" + keys[i] + "}";
-        return TextUtils.replaceInsensitiveEach(line, resultKeys, values);
+        return !FileCache.MAIN_CONFIG.getValue("options.show-prefix", false);
     }
 
     public static String stringKey(@Nullable String key) {
         return key == null ? "empty" : key.replace("/", ".").replace(":", ".");
     }
 
-    public static Displayer create(Collection<? extends CommandSender> targets, Player p, List<String> list) {
-        return new Displayer(SIRPlugin.getUtils(), targets, p, list).
-                setLogger(FileCache.CONFIG.value("options.send-console", true)).
+    @NotNull
+    public static MessageSender setSender() {
+        final var config = FileCache.MAIN_CONFIG;
+
+        return sender = new MessageSender().
+                setLogger(config.getValue("options.send-console", true)).
                 setCaseSensitive(false).
-                setOperators(s -> EmParser.parseEmojis(p, s));
+                setNoFirstSpaces(config.getValue("options.strip-spaces", false)).
+                addFunctions(EmojiParser::parseEmojis);
     }
 
-    public static Displayer create(CommandSender t, Player p, List<String> list) {
-        return new Displayer(SIRPlugin.getUtils(), t, p, list).
-                setLogger(FileCache.CONFIG.value("options.send-console", true)).
-                setCaseSensitive(false).
-                setOperators(s -> EmParser.parseEmojis(p, s));
+    @NotNull
+    public static MessageSender getSender() {
+        return (sender == null ? setSender() : sender).clone();
     }
 
-    public static Displayer create(Player p, List<String> list) {
-        return create(p, p, list);
+    public static List<String> toList(FileCache cache, String path) {
+        var file = cache.getFile();
+        return file == null ? new ArrayList<>() : TextUtils.toList(file.get(), path);
+    }
+
+    public static void executeCommands(Player player, List<String> commands) {
+        if (commands.isEmpty()) return;
+
+        var cPattern = Pattern.compile("(?i)^\\[(global|console)]");
+        var pPattern = Pattern.compile("(?i)^\\[player]");
+
+        var operator = TextUtils.STRIP_FIRST_SPACES;
+
+        for (var c : commands) {
+            var pMatch = pPattern.matcher(c);
+            var cMatch = cPattern.matcher(c);
+
+            c = SIRPlugin.getUtils().
+                    getKeyManager().parseKeys(player, c, false);
+
+            if (pMatch.find() && player != null) {
+                Bukkit.dispatchCommand(player,
+                        operator.apply(c.replace(pMatch.group(), "")));
+                continue;
+            }
+
+            if (cMatch.find())
+                c = operator.apply(c.replace(cMatch.group(), ""));
+
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), c);
+        }
     }
 }

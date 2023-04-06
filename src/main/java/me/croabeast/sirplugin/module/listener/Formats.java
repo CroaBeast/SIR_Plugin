@@ -1,41 +1,46 @@
 package me.croabeast.sirplugin.module.listener;
 
-import com.Zrips.CMI.Containers.*;
-import me.croabeast.beanslib.object.display.JsonMessage;
-import me.croabeast.beanslib.utility.*;
-import me.croabeast.iridiumapi.*;
-import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.hook.discord.*;
-import me.croabeast.sirplugin.module.EmParser;
-import me.croabeast.sirplugin.object.ChatFormat;
-import me.croabeast.sirplugin.object.instance.*;
-import me.croabeast.sirplugin.object.file.*;
-import me.croabeast.sirplugin.utility.*;
+import com.Zrips.CMI.Containers.CMIUser;
+import lombok.var;
+import me.croabeast.beanslib.builder.JsonBuilder;
+import me.croabeast.beanslib.key.ValueReplacer;
+import me.croabeast.beanslib.utility.Exceptions;
+import me.croabeast.beanslib.utility.TextUtils;
+import me.croabeast.iridiumapi.IridiumAPI;
+import me.croabeast.sirplugin.Initializer;
+import me.croabeast.sirplugin.SIRPlugin;
+import me.croabeast.sirplugin.hook.DiscordSender;
+import me.croabeast.sirplugin.hook.LoginHook;
+import me.croabeast.sirplugin.module.EmojiParser;
+import me.croabeast.sirplugin.module.MentionParser;
+import me.croabeast.sirplugin.object.chat.ChatFormat;
+import me.croabeast.sirplugin.object.file.FileCache;
+import me.croabeast.sirplugin.object.instance.SIRViewer;
+import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.LogUtils;
+import me.croabeast.sirplugin.utility.PlayerUtils;
 import me.leoko.advancedban.manager.PunishmentManager;
 import me.leoko.advancedban.manager.UUIDManager;
-import org.apache.commons.lang.*;
-import org.bukkit.*;
-import org.bukkit.configuration.*;
-import org.bukkit.entity.*;
-import org.bukkit.event.*;
-import org.bukkit.event.player.*;
-import org.jetbrains.annotations.*;
+import org.apache.commons.lang.StringUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.jetbrains.annotations.Nullable;
 
-import java.util.*;
-import java.util.regex.*;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import static me.croabeast.beanslib.utility.TextUtils.*;
-import static me.croabeast.sirplugin.SIRPlugin.getUtils;
-import static me.croabeast.sirplugin.utility.LangUtils.*;
 
+@SuppressWarnings("deprecation")
 public class Formats extends SIRViewer {
 
-    private final HashMap<Player, Long> TIMED_PLAYERS = new HashMap<>();
+    private static final HashMap<Player, Long> TIMED_PLAYERS = new HashMap<>();
 
-    @Override
-    public @NotNull Identifier getIdentifier() {
-        return Identifier.FORMATS;
+    public Formats() {
+        super("formats");
     }
 
     @Nullable
@@ -45,80 +50,14 @@ public class Formats extends SIRViewer {
         return StringUtils.isBlank(value) ? null : value;
     }
 
-    private String parseMessage(ChatFormat format, String line) {
+    static String parseMessage(ChatFormat format, String line) {
         if (StringUtils.isBlank(line)) return line;
 
         if (!format.isNormalColored()) line = IridiumAPI.stripBukkit(line);
         if (!format.isSpecialColored()) line = IridiumAPI.stripRGB(line);
         if (!format.isRgbColored()) line = IridiumAPI.stripSpecial(line);
 
-        return TextUtils.removeSpace(line.replace("\\", "\\\\").replace("$", "\\$"));
-    }
-
-    private String onMention(Player player, String line) {
-        if (!Identifier.MENTIONS.isEnabled()) return line;
-        LangUtils utils = SIRPlugin.getUtils();
-
-        ConfigurationSection id = FileCache.MENTIONS.permSection(player, "mentions");
-        if (id == null) return line;
-
-        String prefix = id.getString("prefix");
-        if (StringUtils.isBlank(prefix)) return line;
-
-        Player target = null;
-
-        for (String word : line.split(" ")) {
-            Matcher matcher = Pattern.compile("(?i)" + prefix).matcher(word);
-            if (!matcher.find()) continue;
-
-            String match = matcher.group();
-            word = word.substring(word.lastIndexOf(match) + match.length());
-            target = PlayerUtils.getClosestPlayer(word);
-        }
-
-        if (target == null || player == target) return line;
-        if (PlayerUtils.isIgnoring(target, player, true)) return line;
-
-        String[] keys = {"{sender}", "{receiver}", "{prefix}"},
-                values = {player.getName(), target.getName(), prefix};
-
-        utils.sendMessageList(player, id, "messages.sender", keys, values);
-        utils.sendMessageList(target, id, "messages.receiver", keys, values);
-
-        PlayerUtils.playSound(player, id.getString("sound.sender"));
-        PlayerUtils.playSound(target, id.getString("sound.receiver"));
-
-        String output = id.getString("value", "&b{prefix}{receiver}");
-
-        List<String> hoverList = TextUtils.toList(id, "hover");
-        String click = id.getString("click");
-
-        if (!hoverList.isEmpty() || click != null) {
-            String format = "";
-
-            if (!hoverList.isEmpty()) {
-                String list = String.join(utils.lineSeparator(), hoverList);
-                format += "<hover:\"" + list.replaceAll("\\\\Q", "").replaceAll("\\\\E", "") + "\"";
-            }
-
-            if (click != null) {
-                String[] array = click.split(":", 2);
-                format += (!hoverList.isEmpty() ? "|" : "<") + array[0] + ":\"" + array[1] + "\">";
-            }
-            else format += ">";
-
-            if (StringUtils.isNotBlank(format)) output = format + output + "</text>";
-        }
-
-        String result = TextUtils.replaceInsensitiveEach(output, keys, values),
-                regex = prefix + target.getName();
-
-        Matcher match = Pattern.compile("(?i)" + regex).matcher(line);
-        if (match.find())
-            line = line.replace(match.group(), result +
-                    IridiumAPI.getLastColor(line, regex, true, true));
-
-        return line;
+        return TextUtils.removeSpace(line);
     }
 
     @EventHandler(priority = EventPriority.LOW)
@@ -126,69 +65,86 @@ public class Formats extends SIRViewer {
         if (event.isCancelled()) return;
         if (!isEnabled()) return;
 
-        LangUtils utils = SIRPlugin.getUtils();
-        Player player = event.getPlayer();
+        final var player = event.getPlayer();
 
         if (Exceptions.isPluginEnabled("AdvancedBan")) {
-            String id = UUIDManager.get().getUUID(player.getName());
-            if (PunishmentManager.get().isMuted(id)) return;
+            var id = UUIDManager.get().getUUID(player.getName());
+            if (PunishmentManager.get().isMuted(id)) {
+                event.setCancelled(true);
+                return;
+            }
         }
 
         if (Exceptions.isPluginEnabled("CMI") &&
-                CMIUser.getUser(player).isMuted()) return;
+                CMIUser.getUser(player).isMuted()) {
+            event.setCancelled(true);
+            return;
+        }
 
-        if (Initializer.hasLogin() &&
-                !JoinQuit.LOGGED_PLAYERS.contains(player)) return;
+        if (LoginHook.isEnabled() &&
+                !JoinQuit.LOGGED_PLAYERS.contains(player)) {
+            event.setCancelled(true);
+            return;
+        }
 
-        ChatFormat format;
+        ChatFormat chatFormat;
 
         try {
-            format = new ChatFormat(player);
+            chatFormat = new ChatFormat(player);
         } catch (Exception e) {
-            utils.sendMessageList(player, FileCache.LANG.get(), "chat.invalid-format");
+            var list = TextUtils.toList(FileCache.LANG.get(), "chat.invalid-format");
+            event.setCancelled(true);
+
+            LangUtils.getSender().setTargets(player).send(list);
             return;
         }
 
-        String message = parseMessage(format, event.getMessage());
+        var message = parseMessage(chatFormat, event.getMessage());
 
-        String[] keys = {"prefix", "suffix", "player", "message"},
-                values = {format.getPrefix(), format.getSuffix(), player.getName(), message};
+        String[] keys = {"{prefix}", "{suffix}", "{player}", "{message}"},
+                values = {chatFormat.getPrefix(), chatFormat.getSuffix(), player.getName(), message};
 
-        List<String> hover = format.getHover();
-        if (!hover.isEmpty())
-            hover.replaceAll(line -> parseInternalKeys(line, keys, values));
+        var hover = chatFormat.getHover();
+        if (hover != null && !hover.isEmpty())
+            hover.replaceAll(s -> ValueReplacer.forEach(s, keys, values));
 
-        String click = format.getClick();
+        var click = chatFormat.getClick();
         if (click != null)
-            click = parsePAPI(player, parseInternalKeys(click, keys, values));
+            click = parsePAPI(player, ValueReplacer.forEach(click, keys, values));
 
         if (StringUtils.isBlank(message) &&
-                !FileCache.MODULES.get().getBoolean("chat.allow-empty")) {
+                !FileCache.MODULES.getValue("chat.allow-empty", false))
+        {
+            var list = TextUtils.toList(
+                    FileCache.LANG.get(),
+                    "chat.empty-message"
+            );
             event.setCancelled(true);
-            utils.sendMessageList(player, FileCache.LANG.get(), "chat.empty-message");
+
+            LangUtils.getSender().setTargets(player).send(list);
             return;
         }
 
-        int r = format.getRadius();
-        String worldName = format.getWorld();
+        int r = chatFormat.getRadius();
+        var worldName = chatFormat.getWorld();
 
-        List<Player> players = new ArrayList<>();
-        World world = worldName != null ? Bukkit.getWorld(worldName) : null;
+        var players = new ArrayList<Player>();
+        var world = worldName != null ? Bukkit.getWorld(worldName) : null;
 
         if (r > 0) {
-            for (Entity ent : player.getNearbyEntities(r, r, r))
+            for (var ent : player.getNearbyEntities(r, r, r))
                 if (ent instanceof Player) players.add((Player) ent);
         }
         else players.addAll(world != null ?
                 world.getPlayers() : Bukkit.getOnlinePlayers());
 
-        for (Player t : new ArrayList<>(players)) {
+        for (var t : new ArrayList<>(players)) {
             if (t == player) continue;
             if (PlayerUtils.isIgnoring(t, player, true))
                 players.remove(t);
         }
 
-        int timer = format.cooldownTime();
+        int timer = chatFormat.cooldownTime();
 
         if (timer > 0 && TIMED_PLAYERS.containsKey(player)) {
             long rest = System.currentTimeMillis() - TIMED_PLAYERS.get(player);
@@ -197,33 +153,37 @@ public class Formats extends SIRViewer {
                 event.setCancelled(true);
                 int time = timer - ((int) (Math.round(rest / 100D) / 10));
 
-                utils.sendMessageList(player, format.cooldownMessage(),
-                        new String[] {"{time}"}, new String[] {time + ""});
+                LangUtils.getSender().setTargets(player).
+                        setKeys("{time}").setValues(time).
+                        send(chatFormat.cooldownMessage());
                 return;
             }
         }
 
-        String result = parseInternalKeys(TextUtils.removeSpace(format.getFormat()), keys, values);
-        result = onMention(player, EmParser.parseEmojis(player, result));
+        var format = TextUtils.STRIP_FIRST_SPACES.apply(chatFormat.getFormat());
 
-        boolean isDefault = FileCache.MODULES.get().getBoolean("chat.default-format");
+        String result = MentionParser.parseMention(player,
+                EmojiParser.parseEmojis(player,
+                ValueReplacer.forEach(format, keys, values))
+        );
 
-        if (isDefault && !IS_JSON.apply(result) && hover.size() == 0 &&
-                click == null && world == null && r <= 0 &&
-                !Exceptions.isPluginEnabled("InteractiveChat")) {
+        if (FileCache.MODULES.getValue("chat.default-format", false) ||
+                chatFormat.isDefault())
+        {
+            result = result.replace("\\", "\\\\").replace("$", "\\$");
+            result = parsePAPI(player, stripJson(result));
 
-            result = parsePAPI(player, result);
-            event.setFormat(getUtils().centerMessage(null, player, result.replace("%", "%%")));
+            event.setFormat(SIRPlugin.getUtils().
+                    centerMessage(null, player, result.replace("%", "%%")));
             return;
         }
 
+        String loggerPath = "chat.simple-logger.", logger = result;
         event.setCancelled(true);
 
-        String loggerPath = "chat.simple-logger.", logger = result;
-
-        if (FileCache.MODULES.get().getBoolean(loggerPath + "enabled")) {
-            logger = parseInternalKeys(
-                    FileCache.MODULES.get().getString(loggerPath + "format", ""),
+        if (FileCache.MODULES.getValue(loggerPath + "enabled", false)) {
+            logger = ValueReplacer.forEach(
+                    FileCache.MODULES.getValue(loggerPath + "format", ""),
                     keys, values
             );
         }
@@ -231,12 +191,11 @@ public class Formats extends SIRViewer {
         LogUtils.doLog(parsePAPI(player, logger));
 
         if (Initializer.hasDiscord())
-            new DiscordMsg(player, "chat", keys, values).send();
+            new DiscordSender(player, "chat").setKeys(keys).setValues(values).send();
 
-        if (!result.matches("(?i)^\\[JSON]")) {
+        if (!result.matches("(?i)^\\[json]")) {
             String rt = result, c = click;
-
-            players.forEach(p -> new JsonMessage(utils, p, player, rt).send(c, hover));
+            players.forEach(p -> new JsonBuilder(p, player, rt).send(c, hover));
         }
         else Bukkit.dispatchCommand(
                 Bukkit.getConsoleSender(), removeSpace(result.substring(6)));

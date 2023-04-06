@@ -1,23 +1,25 @@
 package me.croabeast.sirplugin.module.listener;
 
+import lombok.var;
 import me.croabeast.beanslib.utility.TextUtils;
-import me.croabeast.iridiumapi.*;
-import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.object.instance.*;
-import me.croabeast.sirplugin.object.file.*;
+import me.croabeast.iridiumapi.IridiumAPI;
+import me.croabeast.sirplugin.SIRPlugin;
+import me.croabeast.sirplugin.object.file.FileCache;
+import me.croabeast.sirplugin.object.instance.SIRViewer;
 import me.croabeast.sirplugin.utility.LogUtils;
-import org.bukkit.*;
-import org.bukkit.configuration.*;
-import org.bukkit.entity.*;
-import org.bukkit.event.*;
-import org.bukkit.event.server.*;
-import org.bukkit.util.*;
-import org.jetbrains.annotations.*;
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.server.ServerListPingEvent;
+import org.bukkit.util.CachedServerIcon;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Locale;
+import java.util.Random;
 
+@SuppressWarnings("deprecation")
 public class MOTD extends SIRViewer {
 
     private final SIRPlugin main = SIRPlugin.getInstance();
@@ -26,53 +28,53 @@ public class MOTD extends SIRViewer {
     private int MOTD = 0, ICON = 0;
 
     public MOTD() {
+        super("motd");
+
         String path = "misc" + File.separator + "icons";
-        File folder = new File(main.getDataFolder(), path);
+
+        var folder = new File(main.getDataFolder(), path);
         if (!folder.exists()) folder.mkdirs();
 
-        File icon = new File(folder, "server-icon.png");
+        var icon = new File(folder, "server-icon.png");
         if (!icon.exists()) main.saveResource(path
                 + File.separator + "server-icon.png", false);
     }
 
-    @Override
-    public @NotNull Identifier getIdentifier() {
-        return Identifier.MOTD;
-    }
-
-    @Nullable
     private ConfigurationSection getList() {
-        return FileCache.MOTD.getSection("motds");
+        return FileCache.MOTD_CACHE.getSection("motds");
     }
 
     private Player getPlayerFromIP() {
         Player player = null;
-        for (Player p : Bukkit.getOnlinePlayers()) {
-            InetSocketAddress address = p.getAddress();
+
+        for (var p : Bukkit.getOnlinePlayers()) {
+            var address = p.getAddress();
+
             if (address == null) return null;
             if (address.getAddress() == event.getAddress())
                 player = p;
         }
+
         return player;
     }
 
     private void registerMOTD() {
         if (getList() == null) return;
-        List<String> keys = new ArrayList<>(getList().getKeys(false));
+        var keys = new ArrayList<>(getList().getKeys(false));
 
         int count = keys.size() - 1;
         if (MOTD > count) MOTD = 0;
 
-        ConfigurationSection id = getList().getConfigurationSection(keys.get(MOTD));
+        var id = getList().getConfigurationSection(keys.get(MOTD));
 
         event.setMotd(id != null ?
                 (IridiumAPI.process(TextUtils.parsePAPI(getPlayerFromIP(),
-                id.getString("1", "") + "\n" + id.getString("2", "")))) :
-                ("&cError getting the correct motd from SIR.")
+                        id.getString("1", "") + "\n" + id.getString("2", "")))) : (
+                                "&cError getting the correct motd from SIR.")
         );
 
 
-        if (!FileCache.MODULES.get().getBoolean("motd.random-motds")) {
+        if (!FileCache.MODULES.getValue("motd.random-motds", false)) {
             if (MOTD < count) MOTD++;
             else MOTD = 0;
         }
@@ -93,16 +95,16 @@ public class MOTD extends SIRViewer {
     }
 
     private String usageType() {
-        return FileCache.MODULES.get().getString("motd.server-icon.usage", "DISABLED").toUpperCase(Locale.ENGLISH);
+        return FileCache.MODULES.getValue("motd.server-icon.usage", "DISABLED").toUpperCase(Locale.ENGLISH);
     }
 
     private void setServerIcon() {
         if (usageType().equals("DISABLED")) return;
 
-        File folder = new File(main.getDataFolder() + File.separator + "misc" + File.separator + "icons");
-        File single = new File(folder, FileCache.MODULES.get().getString("motd.server-icon.image", ""));
+        var folder = new File(main.getDataFolder() + File.separator + "misc" + File.separator + "icons");
+        var single = new File(folder, FileCache.MODULES.getValue("motd.server-icon.image", ""));
 
-        File[] icons = folder.listFiles((dir, name) -> name.endsWith(".png"));
+        var icons = folder.listFiles((dir, name) -> name.endsWith(".png"));
         if (icons == null) {
             initServerIcon(null);
             return;
@@ -119,6 +121,7 @@ public class MOTD extends SIRViewer {
         catch (Exception e) {
             String error = e.getLocalizedMessage();
             initServerIcon(null);
+
             event.setMotd(IridiumAPI.process("&cError loading your custom icon: \n&7" + error));
             LogUtils.doLog("&7Error loading the icon: &c" + error);
         }
@@ -139,10 +142,6 @@ public class MOTD extends SIRViewer {
             ICON = new Random().nextInt(count + 1);
     }
 
-    private String maxType() {
-        return FileCache.MODULES.get().getString("motd.max-players.type", "DEFAULT").toUpperCase(Locale.ENGLISH);
-    }
-
     @EventHandler
     private void onServerPing(ServerListPingEvent event) {
         this.event = event;
@@ -151,13 +150,16 @@ public class MOTD extends SIRViewer {
         registerMOTD();
         setServerIcon();
 
-        switch (maxType()) {
+        switch (
+                FileCache.MODULES.getValue("motd.max-players.type",
+                "DEFAULT").toUpperCase(Locale.ENGLISH)
+        ) {
             case "MAXIMUM":
                 event.setMaxPlayers(Bukkit.getOnlinePlayers().size() + 1);
                 break;
 
             case "CUSTOM":
-                event.setMaxPlayers(FileCache.MODULES.get().getInt("motd.max-players.count"));
+                event.setMaxPlayers(FileCache.MODULES.getValue("motd.max-players.count", 0));
                 break;
 
             case "DEFAULT": default:

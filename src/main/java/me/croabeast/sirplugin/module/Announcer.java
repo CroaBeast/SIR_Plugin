@@ -1,87 +1,87 @@
 package me.croabeast.sirplugin.module;
 
-import me.croabeast.beanslib.object.display.Displayer;
+import lombok.Getter;
+import lombok.var;
 import me.croabeast.beanslib.utility.TextUtils;
-import me.croabeast.sirplugin.*;
-import me.croabeast.sirplugin.object.Sender;
-import me.croabeast.sirplugin.object.instance.*;
-import me.croabeast.sirplugin.object.file.*;
-import me.croabeast.sirplugin.utility.*;
-import org.bukkit.*;
-import org.bukkit.configuration.*;
-import org.bukkit.entity.*;
-import org.bukkit.scheduler.*;
-import org.jetbrains.annotations.*;
+import me.croabeast.sirplugin.SIRPlugin;
+import me.croabeast.sirplugin.object.file.FileCache;
+import me.croabeast.sirplugin.object.instance.SIRModule;
+import me.croabeast.sirplugin.utility.LangUtils;
+import me.croabeast.sirplugin.utility.PlayerUtils;
+import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.stream.*;
+import java.util.stream.Collectors;
 
 public class Announcer extends SIRModule {
 
-    private final SIRPlugin main = SIRPlugin.getInstance();
-    private final Map<Integer, ConfigurationSection> sections = new HashMap<>();
+    private static final Map<Integer, ConfigurationSection> SECTION_MAP = new HashMap<>();
+    private static int order = 0;
 
-    private int ORDER = 0;
-    private boolean isRunning = false;
+    private final SIRPlugin main = SIRPlugin.getInstance();
+
+    @Getter
+    private boolean running = false;
 
     private BukkitRunnable runnable;
 
-    @Override
-    public @NotNull Identifier getIdentifier() {
-        return Identifier.ANNOUNCES;
+    public Announcer() {
+        super("announces");
     }
 
     @Override
     public void registerModule() {
         if (getSection() == null) return;
-        if (!sections.isEmpty()) sections.clear();
+        if (!SECTION_MAP.isEmpty()) SECTION_MAP.clear();
 
         List<String> keys = new ArrayList<>(getSection().getKeys(false));
+
         for (String key : keys)
-            sections.put(keys.indexOf(key), getSection().getConfigurationSection(key));
+            SECTION_MAP.put(
+                    keys.indexOf(key),
+                    getSection().
+                    getConfigurationSection(key)
+            );
     }
 
     private List<Player> getPlayers(String perm) {
-        if (perm.matches("(?i)DEFAULT"))
-            return new ArrayList<>(Bukkit.getOnlinePlayers());
-        else
-            return Bukkit.getOnlinePlayers().stream().
-                    filter(p -> PlayerUtils.hasPerm(p, perm)).
-                    collect(Collectors.toList());
+        return perm.matches("(?i)DEFAULT") ?
+                new ArrayList<>(Bukkit.getOnlinePlayers()) :
+                Bukkit.getOnlinePlayers().stream().
+                        filter(p -> PlayerUtils.hasPerm(p, perm)).
+                        collect(Collectors.toList());
     }
 
     public void runSection(ConfigurationSection id) {
-        List<Player> players = getPlayers(id.getString("permission", "DEFAULT"));
+        var players = getPlayers(id.getString("permission", "DEFAULT"));
         if (players.isEmpty()) return;
 
-        LangUtils.create(players, null, TextUtils.toList(id, "lines")).display();
-        Sender.to(id, "commands").execute(null);
+        LangUtils.getSender().setTargets(players).send(TextUtils.toList(id, "lines"));
+        LangUtils.executeCommands(null, TextUtils.toList(id, "commands"));
     }
 
     public void startTask() {
-        if (!isEnabled()) {
+        if (!isEnabled() || getDelay() <= 0 || getSection() == null) {
             cancelTask();
             return;
         }
 
-        if (getDelay() <= 0) {
-            cancelTask();
-            return;
+        running = true;
+
+        int count = SECTION_MAP.size() - 1;
+        if (order > count) order = 0;
+
+        runSection(SECTION_MAP.get(order));
+
+        if (!FileCache.ANNOUNCEMENTS.getValue("random", false)) {
+            if (order < count) order++;
+            else order = 0;
         }
-
-        if (getSection() == null) return;
-        isRunning = true;
-
-        int count = sections.size() - 1;
-        if (ORDER > count) ORDER = 0;
-
-        runSection(sections.get(ORDER));
-
-        if (!FileCache.ANNOUNCES.get().getBoolean("random")) {
-            if (ORDER < count) ORDER++;
-            else ORDER = 0;
-        }
-        else ORDER = new Random().nextInt(count + 1);
+        else order = new Random().nextInt(count + 1);
 
         runnable = new BukkitRunnable() {
             @Override
@@ -92,22 +92,18 @@ public class Announcer extends SIRModule {
         runnable.runTaskLater(main, getDelay());
     }
 
-    public boolean isRunning() {
-        return isRunning;
-    }
-
     @Nullable
-    public ConfigurationSection getSection() {
-        return FileCache.ANNOUNCES.getSection("announces");
+    public static ConfigurationSection getSection() {
+        return FileCache.ANNOUNCEMENTS.getSection("announces");
     }
 
-    public int getDelay() {
-        return FileCache.MODULES.get().getInt("announces.interval");
+    static int getDelay() {
+        return FileCache.MODULES.getValue("announces.interval", 0);
     }
 
     public void cancelTask() {
         if (runnable == null) return;
-        isRunning = false;
+        running = false;
         runnable.cancel();
     }
 }

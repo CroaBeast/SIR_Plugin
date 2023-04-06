@@ -1,64 +1,81 @@
 package me.croabeast.sirplugin.task.message;
 
-import me.croabeast.sirplugin.object.instance.*;
-import me.croabeast.sirplugin.object.file.*;
+import lombok.var;
+import me.croabeast.sirplugin.object.file.FileCache;
+import me.croabeast.sirplugin.object.instance.SIRTask;
+import me.croabeast.sirplugin.utility.LangUtils;
+import me.croabeast.sirplugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.command.*;
-import org.bukkit.entity.*;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
-import java.util.*;
-
-import static me.croabeast.sirplugin.utility.PlayerUtils.*;
+import java.util.HashMap;
+import java.util.List;
 
 public abstract class DirectTask extends SIRTask {
 
-    static HashMap<CommandSender, CommandSender> receivers = new HashMap<>();
+    public static final HashMap<CommandSender, CommandSender> RECEIVER_MAP = new HashMap<>();
 
-    protected boolean isPlayer(CommandSender sender, CommandSender target, String key) {
-        String path = "data." + ((Player) target).getUniqueId() + ".",
-                uuid = ((Player) sender).getUniqueId().toString();
+    static final String MSG_PATH = "commands.msg-reply.";
+    static final String IG_PATH = "commands.ignore.";
 
-        List<String> list = FileCache.IGNORE.get().getStringList(path + "msg");
+    private static final String CONSOLE_PATH = MSG_PATH + "console-formatting.";
 
-        if (!list.isEmpty() && list.contains(uuid))
-            return oneMessage(sender, "commands.ignore.ignoring.player", "type", key);
-        return false;
+    DirectTask(String name) {
+        super(name);
     }
 
-    private String isConsole(CommandSender sender) {
-        return !(sender instanceof ConsoleCommandSender) ? sender.getName() :
-                FileCache.LANG.get().getString("commands.msg-reply.console-name");
+    String isConsole(CommandSender sender) {
+        return !(sender instanceof Player) ?
+                FileCache.LANG.getValue(CONSOLE_PATH + "name-value", String.class) :
+                sender.getName();
     }
 
-    private String toSound(String path) {
-        return FileCache.LANG.get().getString("commands.msg-reply.for-" + path + ".sound");
+    String getPath(boolean isSender) {
+        return isSender ? "sender" : "receiver";
     }
 
-    boolean sendResult(CommandSender sender, CommandSender target, String[] args, boolean isMsg) {
-        String path = "commands.msg-reply.", key = isMsg ? args[0] : isConsole(target),
-                message = rawMessage(args, (isMsg || !receivers.containsKey(sender)) ? 1 : 0);
+    String getSound(boolean isSender) {
+        return FileCache.LANG.getValue(MSG_PATH + "for-" + getPath(isSender) + ".sound", "");
+    }
 
-        if (StringUtils.isBlank(message)) return oneMessage(sender, path + "empty-message");
+    List<String> getMessagingOutput(boolean isSender) {
+        return LangUtils.toList(FileCache.LANG, MSG_PATH + "for-" + getPath(isSender) + ".message");
+    }
+
+    <C extends CommandSender> boolean sendMessagingResult(C sender, C target, String[] args, boolean isMsg) {
+        var message = getFromArray(args,
+                (isMsg || !RECEIVER_MAP.containsKey(sender)) ? 1 : 0);
+
+        if (StringUtils.isBlank(message))
+            return fromSender(sender, MSG_PATH + "empty-message");
 
         message = message.replace("$", "\\$").replace("%", "%%");
 
-        String[] sendValues = {key, message}, recValues = {isConsole(sender), message},
-                toSender = {"{receiver}", "{message}"}, toReceiver = {"{sender}", "{message}"};
+        PlayerUtils.playSound(sender, getSound(true));
+        PlayerUtils.playSound(target, getSound(false));
 
-        oneMessage(sender, path + "for-sender.message", toSender, sendValues, false);
-        oneMessage(target, path + "for-receiver.message", toReceiver, recValues, false);
+        getClonedSender(sender).setKeys("{receiver}", "{message}").
+                setValues(
+                        isMsg ? args[0] : isConsole(target),
+                        message
+                ).
+                send(getMessagingOutput(true));
 
-        oneMessage(null, path + "console-format",
-                new String[] {"{receiver}", "{sender}", "{message}"},
-                new String[] {key, isConsole(sender), message}
-        );
+        getClonedSender(target).setKeys("{sender}", "{message}").
+                setValues(
+                        isConsole(sender),
+                        message
+                ).
+                send(getMessagingOutput(false));
 
-        if (sender instanceof Player) playSound((Player) sender, toSound("sender"));
-        if (target instanceof Player) playSound((Player) target, toSound("receiver"));
+        LangUtils.getSender().setKeys("{receiver}", "{sender}", "{message}").
+                setValues(
+                        isMsg ? args[0] : isConsole(target),
+                        isConsole(sender), message
+                ).
+                send(LangUtils.toList(FileCache.LANG, CONSOLE_PATH + "format"));
+
         return true;
-    }
-
-    public static HashMap<CommandSender, CommandSender> getReceivers() {
-        return receivers;
     }
 }

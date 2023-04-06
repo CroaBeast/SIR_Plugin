@@ -36,6 +36,9 @@ public class ChatChannel {
         try {
             checker = new ColorChecker(
                     id.getConfigurationSection("color"));
+        }
+        catch (NullPointerException ignored) {}
+        try {
             cooldown = new Cooldown(
                     id.getConfigurationSection("cooldown"));
         }
@@ -54,7 +57,7 @@ public class ChatChannel {
     }
 
     protected ChatChannel getDefault() {
-        if (!FileCache.MODULES.value("chat.default.enabled", true)) return null;
+        if (!FileCache.MODULES.getValue("chat.default.enabled", true)) return null;
         return new ChatChannel(FileCache.MODULES.getSection("chat.default"));
     }
 

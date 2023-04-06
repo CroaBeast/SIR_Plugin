@@ -1,96 +1,78 @@
 package me.croabeast.sirplugin;
 
-import me.croabeast.beanslib.object.display.Bossbar;
+import lombok.Getter;
+import lombok.var;
+import me.croabeast.beanslib.builder.BossbarBuilder;
 import me.croabeast.beanslib.utility.LibUtils;
+import me.croabeast.sirplugin.hook.LoginHook;
+import me.croabeast.sirplugin.hook.VanishHook;
 import me.croabeast.sirplugin.module.Announcer;
-import me.croabeast.sirplugin.module.EmParser;
-import me.croabeast.sirplugin.module.listener.*;
+import me.croabeast.sirplugin.module.listener.JoinQuit;
 import me.croabeast.sirplugin.object.analytic.Amender;
+import me.croabeast.sirplugin.object.file.FileCache;
 import me.croabeast.sirplugin.object.instance.SIRModule;
 import me.croabeast.sirplugin.object.instance.SIRTask;
-import me.croabeast.sirplugin.task.BroadCmd;
-import me.croabeast.sirplugin.task.IgnCmd;
-import me.croabeast.sirplugin.task.MainCmd;
-import me.croabeast.sirplugin.task.PrintCmd;
-import me.croabeast.sirplugin.task.message.MsgCmd;
-import me.croabeast.sirplugin.task.message.ReplyCmd;
-import me.croabeast.sirplugin.utility.FilesUtils;
 import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.LogUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import static me.croabeast.sirplugin.object.instance.Identifier.ANNOUNCES;
-
 public final class SIRPlugin extends JavaPlugin {
 
+    @Getter
     private static SIRPlugin instance;
+    @Getter
+    private static LangUtils utils;
 
-    private FilesUtils files;
-
-    private Amender amender;
-
-    private static LangUtils text;
-    private static String pluginVersion;
+    @Getter
+    private static String version, author;
 
     @Override
     public void onEnable() {
-        long start = System.currentTimeMillis();
+        var start = System.currentTimeMillis();
+
         instance = this;
-        pluginVersion = getDescription().getVersion();
+        author = getDescription().getAuthors().get(0);
+        version = getDescription().getVersion();
 
-        text = new LangUtils(this);
-        files = new FilesUtils(this);
+        utils = new LangUtils(this);
 
-        Initializer init = new Initializer();
-        amender = new Amender(this);
+        FileCache.loadFiles();
 
         LogUtils.rawLog(
                 "&0* *&e____ &0* &e___ &0* &e____",
                 "&0* &e(___&0 * * &e|&0* * &e|___)",
-                "&0* &e____) . _|_ . | &0* &e\\ . &fv" + pluginVersion, "",
-                "&0* &7Developer: " + getDescription().getAuthors().get(0),
+                "&0* &e____) . _|_ . | &0* &e\\ . &fv" + version, "",
+                "&0* &7Developer: " + author,
                 "&0* &7Software: " + LibUtils.serverFork(),
                 "&0* &7Java Version: " + SystemUtils.JAVA_VERSION, ""
         );
 
-        init.startMetrics();
+        Initializer.startMetrics();
+        Initializer.setPluginHooks();
 
-        files.loadFiles(true);
-        init.setPluginHooks();
+        SIRTask.registerCommands();
+        SIRModule.registerModules();
 
-        registerCommands(
-                new MainCmd(), new BroadCmd(), new PrintCmd(), new MsgCmd(),
-                new ReplyCmd(), new IgnCmd()
-        );
-
-        SIRModule.registerModules(
-                new EmParser(), new Announcer(), new JoinQuit(), new Advances(),
-                new MOTD(), new Formats(), new ChatFilter()
-        );
-
-        if (ANNOUNCES.isEnabled()) {
-            ((Announcer) SIRModule.getModule(ANNOUNCES)).startTask();
+        if (SIRModule.isEnabled("announces")) {
+            ((Announcer) SIRModule.get("announces")).startTask();
             LogUtils.doLog("&7The announcement task has been started.");
         }
 
-        LogUtils.doLog("",
-                "&7SIR " + pluginVersion + " was&a loaded&7 in &e" +
-                        (System.currentTimeMillis() - start) + " ms."
+        LogUtils.mixLog("",
+                "&7SIR " + version + " was&a loaded&7 in &e" +
+                (System.currentTimeMillis() - start) + " ms.",
+                "true::"
         );
-        LogUtils.rawLog("");
 
-        if (!Bukkit.getOnlinePlayers().isEmpty() && Initializer.hasLogin())
-            Bukkit.getOnlinePlayers().stream().filter(p ->
-                    !JoinQuit.LOGGED_PLAYERS.contains(p)).
-                    forEach(JoinQuit.LOGGED_PLAYERS::add);
+        if (LoginHook.isEnabled())
+            JoinQuit.LOGGED_PLAYERS.addAll(Bukkit.getOnlinePlayers());
 
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
             Initializer.loadAdvances(true);
-            amender.initUpdater(null);
+            Amender.initUpdater(null);
         });
     }
 
@@ -99,51 +81,28 @@ public final class SIRPlugin extends JavaPlugin {
         LogUtils.rawLog(
                 "&0* *&e____ &0* &e___ &0* &e____",
                 "&0* &e(___&0 * * &e|&0* * &e|___)",
-                "&0* &e____) . _|_ . | &0* &e\\ . &fv" + pluginVersion, ""
+                "&0* &e____) . _|_ . | &0* &e\\ . &fv" + version, ""
         );
 
         Initializer.unloadAdvances(false);
-        ((Announcer) SIRModule.getModule(ANNOUNCES)).cancelTask();
+        ((Announcer) SIRModule.get("announces")).cancelTask();
 
-        for (Player player : Bukkit.getOnlinePlayers()) {
-            Bossbar bar = Bossbar.getBossbar(player);
+        for (var player : Bukkit.getOnlinePlayers()) {
+            var bar = BossbarBuilder.getBuilder(player);
             if (bar != null) bar.unregister();
         }
 
-        LogUtils.doLog(
-                "&7The announcement task has been stopped.",
-                "&7SIR &c" + pluginVersion + "&7 was totally disabled."
+        LogUtils.mixLog(
+                "&7The announcement task has been stopped.", "true::",
+                "&7SIR &c" + version + "&7 was totally disabled.", "true::"
         );
-        LogUtils.rawLog("");
+
+        VanishHook.unloadHook();
+        LoginHook.unloadHook();
 
         HandlerList.unregisterAll(this);
+
+        utils = null;
         instance = null;
-    }
-
-    public static SIRPlugin getInstance() {
-        return instance;
-    }
-    public static LangUtils getUtils() {
-        return text;
-    }
-
-    public static String pluginVersion() {
-        return pluginVersion;
-    }
-
-    public Amender getAmender() {
-        return amender;
-    }
-    public FilesUtils getFiles() {
-        return files;
-    }
-
-    private void registerCommands(SIRTask... cmds) {
-        for (SIRTask cmd : cmds)
-            try {
-                cmd.registerCommand();
-            } catch (NullPointerException e) {
-                LogUtils.doLog("&c" + e.getMessage());
-            }
     }
 }

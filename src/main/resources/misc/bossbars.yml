@@ -1,0 +1,19 @@
+bossbars:
+  custom-bossbar:
+    progress-decrease: true
+    time: 5
+    messages:
+      interval: 0
+      lines:
+        - "&e&lMy custom bossbar message :o"
+    formats:
+      - "RED"
+      - "SEGMENTED_12"
+      - "GREEN:SOLID"
+  bossbar-1:
+    messages:
+      lines:
+        - "&e&lMy custom bossbar message :o"
+        - "&cAnother great line"
+    time: 7
+    formats: "BLACK"

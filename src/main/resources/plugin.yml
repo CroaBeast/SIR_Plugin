@@ -8,13 +8,15 @@ softdepend:
   - DiscordSRV
   - ViaVersion
   - InteractiveChat
-  - UserLogin
   - Vault
-  - PlaceholderAPI
   - Essentials
+  - UserLogin
+  - PlaceholderAPI
+  - NexAuth
   - SuperVanish
   - PremiumVanish
   - AuthMe
+  - AuthMeVelocity
   - CMI
   - AdvancedBan
 
@@ -23,14 +25,14 @@ main: me.croabeast.sirplugin.SIRPlugin
 commands:
   sir:
     aliases: []
-  print:
-    aliases: [ rawmsg, rm ]
   msg:
     aliases: [ m, tell ]
   reply:
     aliases: [ r ]
+  print:
+    aliases: [ rawmsg, rm ]
   announcer:
-    aliases: [ broadcast, bc ]
+    aliases: []
   ignore:
     aliases: [ ig ]
 

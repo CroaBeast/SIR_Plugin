@@ -95,14 +95,18 @@ commands:
     not-player: '<P> &cThe player {target} does not exist.'
     not-replied: '<P> &cYou did not send a message to a player before.'
     not-yourself: '<P> &cYou can not send a message to yourself.'
-    for-sender: # lol
+    for-sender:
       message: ' &eME &8> &6{receiver}&7: &f{message}'
       sound: ENTITY_PLAYER_LEVELUP # Disable the sound setting it like this: ''
-    for-receiver: # lol
+    for-receiver:
       message: ' &6{sender} &8> &eME&7: &f{message}'
       sound: ENTITY_PLAYER_LEVELUP # Disable the sound setting it like this: ''
-    console-name: '&cConsole'
-    console-format: ' &6{sender} &8> &e{receiver}&7: &f{message}'
+    vanish-messages:
+      enabled: false
+      message: '<P> &cYou can not send a message to a vanished player.'
+    console-formatting:
+      name-value: '&cConsole'
+      format: ' &6{sender} &8> &e{receiver}&7: &f{message}'
   # The /ignore command.
   ignore:
     help:
@@ -110,7 +114,6 @@ commands:
       - ' &6>> &eIgnore command Help'
       - '  &7- &b/ignore chat [player]&7: Ignores/un-ignores the player in chat.'
       - '  &7- &b/ignore msg [player]&7: Ignores/un-ignores the messages of the player.'
-      - '  &7- &b/ignore all [player]&7: Ignores/un-ignores the player in chat and msgs.'
       - '&7'
     need-player: '<P> &cYou need a player to use this command.'
     not-yourself: '<P> &cYou can not ignore yourself.'
