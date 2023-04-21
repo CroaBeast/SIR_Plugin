@@ -1,9 +1,9 @@
-package me.croabeast.sirplugin.object.chat;
+package me.croabeast.sirplugin.chat;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.croabeast.beanslib.utility.TextUtils;
-import me.croabeast.sirplugin.object.file.FileCache;
+import me.croabeast.sirplugin.file.FileCache;
 import org.bukkit.configuration.ConfigurationSection;
 
 import java.util.ArrayList;

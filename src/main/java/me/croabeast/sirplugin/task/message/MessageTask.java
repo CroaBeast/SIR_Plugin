@@ -2,10 +2,11 @@ package me.croabeast.sirplugin.task.message;
 
 import lombok.var;
 import me.croabeast.sirplugin.hook.VanishHook;
-import me.croabeast.sirplugin.object.file.FileCache;
+import me.croabeast.sirplugin.file.FileCache;
 import me.croabeast.sirplugin.utility.PlayerUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +54,7 @@ public class MessageTask extends DirectTask {
     }
 
     @Override
-    protected List<String> complete(CommandSender sender, String[] args) {
+    protected @NotNull List<String> complete(CommandSender sender, String[] args) {
         if (args.length == 1) return generateList(args, getPlayersNames());
         if (args.length == 2) return generateList(args, "<message>");
         return new ArrayList<>();

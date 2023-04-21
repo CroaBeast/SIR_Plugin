@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.var;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.SIRPlugin;
-import me.croabeast.sirplugin.object.file.FileCache;
-import me.croabeast.sirplugin.object.instance.SIRModule;
+import me.croabeast.sirplugin.file.FileCache;
+import me.croabeast.sirplugin.instance.SIRModule;
 import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.PlayerUtils;
 import org.bukkit.Bukkit;
@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Announcer extends SIRModule {
+public class AnnounceViewer extends SIRModule {
 
     private static final Map<Integer, ConfigurationSection> SECTION_MAP = new HashMap<>();
     private static int order = 0;
@@ -29,7 +29,7 @@ public class Announcer extends SIRModule {
 
     private BukkitRunnable runnable;
 
-    public Announcer() {
+    public AnnounceViewer() {
         super("announces");
     }
 

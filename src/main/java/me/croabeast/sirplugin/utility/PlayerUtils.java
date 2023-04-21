@@ -5,7 +5,7 @@ import lombok.experimental.UtilityClass;
 import lombok.var;
 import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sirplugin.SIRPlugin;
-import me.croabeast.sirplugin.object.file.FileCache;
+import me.croabeast.sirplugin.file.FileCache;
 import me.croabeast.sirplugin.task.ignore.IgnoreTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -28,7 +28,7 @@ public class PlayerUtils {
     @Getter
     private static final Set<Player> godPlayers = new HashSet<>();
 
-    public <T extends CommandSender> boolean hasPerm(T sender, String perm) {
+    public boolean hasPerm(CommandSender sender, String perm) {
         final var b = sender.hasPermission(perm);
         final var s = "options.override-op";
 
@@ -134,12 +134,11 @@ public class PlayerUtils {
         }.runTaskLater(SIRPlugin.getInstance(), time);
     }
 
-    public <C extends CommandSender> void playSound(C sender, String rawSound) {
+    public void playSound(CommandSender sender, String rawSound) {
         if (!(sender instanceof Player)) return;
-
         if (rawSound == null) return;
-        Sound sound;
 
+        Sound sound;
         try {
             sound = Sound.valueOf(rawSound);
         } catch (Exception e) {
@@ -151,24 +150,17 @@ public class PlayerUtils {
     }
 
     public void addChatCompletions(Player player, List<String> list) {
-        if (!LibUtils.isPaper()) return;
-        if (LibUtils.getMainVersion() < 19) return;
-
-        if (player == null) return;
-        if (list.isEmpty()) return;
+        if (LibUtils.getMainVersion() < 19.0 ||
+                player == null || list.isEmpty()) return;
 
         final String m = "addAdditionalChatCompletions";
-        Method method = null;
-
         try {
-            method = player.getClass().
-                    getDeclaredMethod(m, Collection.class);
-        } catch (Exception e) { e.printStackTrace(); }
-
-        if (method == null) return;
-
-        try {
-            method.invoke(player, list);
-        } catch (Exception e) { e.printStackTrace(); }
+            player.getClass().
+                    getDeclaredMethod(m, Collection.class).
+                    invoke(player, list);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

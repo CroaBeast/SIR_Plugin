@@ -1,4 +1,4 @@
-package me.croabeast.sirplugin.object.instance;
+package me.croabeast.sirplugin.instance;
 
 import me.croabeast.sirplugin.SIRPlugin;
 import org.bukkit.Bukkit;

@@ -5,8 +5,8 @@ import me.croabeast.beanslib.key.ValueReplacer;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.iridiumapi.IridiumAPI;
 import me.croabeast.sirplugin.SIRPlugin;
-import me.croabeast.sirplugin.object.file.FileCache;
-import me.croabeast.sirplugin.object.instance.SIRModule;
+import me.croabeast.sirplugin.file.FileCache;
+import me.croabeast.sirplugin.instance.SIRModule;
 import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
@@ -136,8 +136,8 @@ public class MentionParser extends SIRModule {
         private final String click;
         private final List<String> hover;
 
-        private DoubleObject sound = DoubleObject.DEFAULT,
-                messages = DoubleObject.DEFAULT;
+        private DoubleObject sound = DoubleObject.EMPTY,
+                messages = DoubleObject.EMPTY;
 
         Mention(ConfigurationSection s) {
             section = s;
@@ -155,23 +155,23 @@ public class MentionParser extends SIRModule {
                 messages = new DoubleObject(s.getConfigurationSection("messages"));
             } catch (Exception ignored) {}
         }
+    }
 
-        static class DoubleObject {
+    static class DoubleObject {
 
-            static final DoubleObject DEFAULT = new DoubleObject();
+        static final DoubleObject EMPTY = new DoubleObject();
 
-            private List<String> sender = new ArrayList<>(),
-                    receiver = new ArrayList<>();
+        private List<String> sender = new ArrayList<>(),
+                receiver = new ArrayList<>();
 
-            DoubleObject() {}
+        DoubleObject() {}
 
-            DoubleObject(ConfigurationSection s) {
-                if (s == null)
-                    throw new NullPointerException();
+        DoubleObject(ConfigurationSection s) {
+            if (s == null)
+                throw new NullPointerException();
 
-                sender = TextUtils.toList(s, "sender");
-                receiver = TextUtils.toList(s, "receiver");
-            }
+            sender = TextUtils.toList(s, "sender");
+            receiver = TextUtils.toList(s, "receiver");
         }
     }
 }

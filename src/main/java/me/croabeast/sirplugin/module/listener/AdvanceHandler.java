@@ -3,8 +3,8 @@ package me.croabeast.sirplugin.module.listener;
 import lombok.var;
 import me.croabeast.sirplugin.Initializer;
 import me.croabeast.sirplugin.hook.DiscordSender;
-import me.croabeast.sirplugin.object.file.FileCache;
-import me.croabeast.sirplugin.object.instance.SIRViewer;
+import me.croabeast.sirplugin.file.FileCache;
+import me.croabeast.sirplugin.instance.SIRViewer;
 import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.LogUtils;
 import org.apache.commons.lang.StringUtils;
@@ -21,9 +21,9 @@ import java.util.Locale;
 
 import static me.croabeast.sirplugin.utility.LangUtils.stringKey;
 
-public class Advances extends SIRViewer {
+public class AdvanceHandler extends SIRViewer {
 
-    public Advances() {
+    public AdvanceHandler() {
         super("advances");
     }
 

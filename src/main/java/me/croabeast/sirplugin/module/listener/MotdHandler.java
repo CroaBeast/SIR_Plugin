@@ -4,8 +4,8 @@ import lombok.var;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.iridiumapi.IridiumAPI;
 import me.croabeast.sirplugin.SIRPlugin;
-import me.croabeast.sirplugin.object.file.FileCache;
-import me.croabeast.sirplugin.object.instance.SIRViewer;
+import me.croabeast.sirplugin.file.FileCache;
+import me.croabeast.sirplugin.instance.SIRViewer;
 import me.croabeast.sirplugin.utility.LogUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -20,14 +20,14 @@ import java.util.Locale;
 import java.util.Random;
 
 @SuppressWarnings("deprecation")
-public class MOTD extends SIRViewer {
+public class MotdHandler extends SIRViewer {
 
     private final SIRPlugin main = SIRPlugin.getInstance();
 
     private ServerListPingEvent event;
     private int MOTD = 0, ICON = 0;
 
-    public MOTD() {
+    public MotdHandler() {
         super("motd");
 
         String path = "misc" + File.separator + "icons";

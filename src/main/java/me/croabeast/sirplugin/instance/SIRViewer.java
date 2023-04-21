@@ -1,4 +1,4 @@
-package me.croabeast.sirplugin.object.instance;
+package me.croabeast.sirplugin.instance;
 
 /**
  * The class that is a {@link SIRModule} and a {@link SIRListener} for better handling.

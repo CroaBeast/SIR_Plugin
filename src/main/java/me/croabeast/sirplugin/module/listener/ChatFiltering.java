@@ -2,8 +2,8 @@ package me.croabeast.sirplugin.module.listener;
 
 import lombok.var;
 import me.croabeast.beanslib.utility.TextUtils;
-import me.croabeast.sirplugin.object.file.FileCache;
-import me.croabeast.sirplugin.object.instance.SIRViewer;
+import me.croabeast.sirplugin.file.FileCache;
+import me.croabeast.sirplugin.instance.SIRViewer;
 import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
@@ -17,9 +17,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public class ChatFilter extends SIRViewer {
+public class ChatFiltering extends SIRViewer {
 
-    public ChatFilter() {
+    public ChatFiltering() {
         super("filters");
     }
 

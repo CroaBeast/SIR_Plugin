@@ -7,7 +7,7 @@ import com.nickuc.openlogin.bukkit.api.events.AsyncRegisterEvent;
 import fr.xephi.authme.events.LoginEvent;
 import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.sirplugin.event.SIRLoginEvent;
-import me.croabeast.sirplugin.object.instance.SIRListener;
+import me.croabeast.sirplugin.instance.SIRListener;
 import me.croabeast.sirplugin.utility.LogUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
@@ -19,7 +19,7 @@ import su.nexmedia.auth.api.event.AuthPlayerRegisterEvent;
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.croabeast.sirplugin.object.file.FileCache.JOIN_QUIT;
+import static me.croabeast.sirplugin.file.FileCache.JOIN_QUIT;
 
 public final class LoginHook {
 

@@ -1,13 +1,14 @@
 package me.croabeast.sirplugin.task;
 
 import lombok.var;
-import me.croabeast.sirplugin.module.Announcer;
-import me.croabeast.sirplugin.object.file.FileCache;
-import me.croabeast.sirplugin.object.instance.SIRModule;
-import me.croabeast.sirplugin.object.instance.SIRTask;
+import me.croabeast.sirplugin.module.AnnounceViewer;
+import me.croabeast.sirplugin.file.FileCache;
+import me.croabeast.sirplugin.instance.SIRModule;
+import me.croabeast.sirplugin.instance.SIRTask;
 import me.croabeast.sirplugin.utility.LogUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +22,7 @@ public class AnnounceTask extends SIRTask {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        var announcer = (Announcer) SIRModule.get("announces");
+        var announcer = (AnnounceViewer) SIRModule.get("announces");
 
         if (isProhibited(sender, "announcer.*")) return true;
         if (args.length == 0) return fromSender(sender, "commands.announcer.help");
@@ -61,7 +62,7 @@ public class AnnounceTask extends SIRTask {
                     return true;
                 }
 
-                var section = Announcer.getSection();
+                var section = AnnounceViewer.getSection();
 
                 if (args.length == 1 || section == null)
                     return fromSender(sender, "commands.announcer.select");
@@ -77,11 +78,11 @@ public class AnnounceTask extends SIRTask {
     }
 
     @Override
-    protected List<String> complete(CommandSender sender, String[] args) {
+    protected @NotNull List<String> complete(CommandSender sender, String[] args) {
         if (args.length == 1)
             return generateList(args, "start", "preview", "cancel", "reboot");
 
-        if(args.length == 2 && args[0].matches("(?i)preview")) {
+        if (args.length == 2 && args[0].matches("(?i)preview")) {
             var id = FileCache.ANNOUNCEMENTS.getSection("announces");
 
             return id != null ?

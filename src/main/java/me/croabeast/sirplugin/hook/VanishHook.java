@@ -7,7 +7,7 @@ import com.earth2me.essentials.Essentials;
 import de.myzelyam.api.vanish.PlayerVanishStateChangeEvent;
 import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.sirplugin.event.SIRVanishEvent;
-import me.croabeast.sirplugin.object.instance.SIRListener;
+import me.croabeast.sirplugin.instance.SIRListener;
 import net.ess3.api.IUser;
 import net.ess3.api.events.VanishStatusChangeEvent;
 import org.bukkit.Bukkit;
@@ -20,7 +20,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-import static me.croabeast.sirplugin.object.file.FileCache.JOIN_QUIT;
+import static me.croabeast.sirplugin.file.FileCache.JOIN_QUIT;
 
 public final class VanishHook {
 

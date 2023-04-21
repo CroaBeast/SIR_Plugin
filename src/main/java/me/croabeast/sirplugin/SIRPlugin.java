@@ -2,24 +2,29 @@ package me.croabeast.sirplugin;
 
 import lombok.Getter;
 import lombok.var;
+import me.croabeast.beanslib.analytic.UpdateChecker;
 import me.croabeast.beanslib.builder.BossbarBuilder;
 import me.croabeast.beanslib.utility.LibUtils;
+import me.croabeast.sirplugin.file.FileCache;
 import me.croabeast.sirplugin.hook.LoginHook;
 import me.croabeast.sirplugin.hook.VanishHook;
-import me.croabeast.sirplugin.module.Announcer;
-import me.croabeast.sirplugin.module.listener.JoinQuit;
-import me.croabeast.sirplugin.object.analytic.Amender;
-import me.croabeast.sirplugin.object.file.FileCache;
-import me.croabeast.sirplugin.object.instance.SIRModule;
-import me.croabeast.sirplugin.object.instance.SIRTask;
+import me.croabeast.sirplugin.instance.SIRModule;
+import me.croabeast.sirplugin.instance.SIRTask;
+import me.croabeast.sirplugin.module.AnnounceViewer;
+import me.croabeast.sirplugin.module.listener.JoinQuitHandler;
 import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.LogUtils;
+import me.croabeast.sirplugin.utility.PlayerUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.Nullable;
 
 public final class SIRPlugin extends JavaPlugin {
+
+    public static final String EMPTY_LINE = "true::";
 
     @Getter
     private static SIRPlugin instance;
@@ -57,22 +62,22 @@ public final class SIRPlugin extends JavaPlugin {
         SIRModule.registerModules();
 
         if (SIRModule.isEnabled("announces")) {
-            ((Announcer) SIRModule.get("announces")).startTask();
+            ((AnnounceViewer) SIRModule.get("announces")).startTask();
             LogUtils.doLog("&7The announcement task has been started.");
         }
 
-        LogUtils.mixLog("",
+        LogUtils.mixLog(EMPTY_LINE,
                 "&7SIR " + version + " was&a loaded&7 in &e" +
                 (System.currentTimeMillis() - start) + " ms.",
-                "true::"
+                EMPTY_LINE
         );
 
         if (LoginHook.isEnabled())
-            JoinQuit.LOGGED_PLAYERS.addAll(Bukkit.getOnlinePlayers());
+            JoinQuitHandler.LOGGED_PLAYERS.addAll(Bukkit.getOnlinePlayers());
 
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
             Initializer.loadAdvances(true);
-            Amender.initUpdater(null);
+            checkUpdater(null);
         });
     }
 
@@ -85,7 +90,7 @@ public final class SIRPlugin extends JavaPlugin {
         );
 
         Initializer.unloadAdvances(false);
-        ((Announcer) SIRModule.get("announces")).cancelTask();
+        ((AnnounceViewer) SIRModule.get("announces")).cancelTask();
 
         for (var player : Bukkit.getOnlinePlayers()) {
             var bar = BossbarBuilder.getBuilder(player);
@@ -93,8 +98,8 @@ public final class SIRPlugin extends JavaPlugin {
         }
 
         LogUtils.mixLog(
-                "&7The announcement task has been stopped.", "true::",
-                "&7SIR &c" + version + "&7 was totally disabled.", "true::"
+                "&7The announcement task has been stopped.", EMPTY_LINE,
+                "&7SIR &c" + version + "&7 was totally disabled.", EMPTY_LINE
         );
 
         VanishHook.unloadHook();
@@ -104,5 +109,67 @@ public final class SIRPlugin extends JavaPlugin {
 
         utils = null;
         instance = null;
+    }
+
+    private static void runUpdater(@Nullable Player player) {
+        UpdateChecker.of(instance, 96378).requestUpdateCheck().whenComplete((result, e) -> {
+            String latest = result.getNewestVersion();
+
+            switch (result.getReason()) {
+                case NEW_UPDATE:
+                    LogUtils.mixLog(player,
+                            EMPTY_LINE, "&4NEW UPDATE!",
+                            "&cYou don't have the latest version of S.I.R. installed.",
+                            "&cRemember, older versions won't receive any support.",
+                            "&7New Version: &a" + latest +
+                                    "&7 - Your Version: &e" + version,
+                            "&7Link:&b https://www.spigotmc.org/resources/96378/",
+                            EMPTY_LINE
+                    );
+                    break;
+
+                case UP_TO_DATE:
+                    LogUtils.mixLog(player,
+                            EMPTY_LINE,
+                            "&eYou have the latest version of S.I.R. &7(" + latest + ")",
+                            "&7I would appreciate if you keep updating &c<3",
+                            EMPTY_LINE
+                    );
+                    break;
+
+                case UNRELEASED_VERSION:
+                    LogUtils.mixLog(player,
+                            EMPTY_LINE, "&4DEVELOPMENT BUILD:",
+                            "&cYou have a newer version of S.I.R. installed.",
+                            "&cErrors might occur in this build.",
+                            "Spigot Version: &a" + result.getSpigotVersion() +
+                                    "&7 - Your Version: &e" + version,
+                            EMPTY_LINE
+                    );
+                    break;
+
+                default:
+                    LogUtils.mixLog(player,
+                            EMPTY_LINE, "&4WARNING!",
+                            "&cCould not check for a new version of S.I.R.",
+                            "&7Please check your connection and restart the server.",
+                            "&7Possible reason: &e" + result.getReason(),
+                            EMPTY_LINE
+                    );
+                    break;
+            }
+        });
+    }
+
+    public static void checkUpdater(@Nullable Player player) {
+        if (player == null) {
+            if (!FileCache.MAIN_CONFIG.getValue("updater.plugin.on-start", false)) return;
+            runUpdater(null);
+        }
+        else {
+            if (!FileCache.MAIN_CONFIG.getValue("updater.plugin.send-op", false) ||
+                    !PlayerUtils.hasPerm(player, "sir.admin.updater")) return;
+            runUpdater(player);
+        }
     }
 }

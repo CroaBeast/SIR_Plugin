@@ -7,13 +7,12 @@ import me.croabeast.sirplugin.Initializer;
 import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.event.SIRLoginEvent;
 import me.croabeast.sirplugin.event.SIRVanishEvent;
+import me.croabeast.sirplugin.file.FileCache;
 import me.croabeast.sirplugin.hook.DiscordSender;
 import me.croabeast.sirplugin.hook.LoginHook;
 import me.croabeast.sirplugin.hook.VanishHook;
-import me.croabeast.sirplugin.object.analytic.Amender;
-import me.croabeast.sirplugin.object.file.FileCache;
-import me.croabeast.sirplugin.object.instance.SIRListener;
-import me.croabeast.sirplugin.object.instance.SIRViewer;
+import me.croabeast.sirplugin.instance.SIRListener;
+import me.croabeast.sirplugin.instance.SIRViewer;
 import me.croabeast.sirplugin.task.message.DirectTask;
 import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.LogUtils;
@@ -38,7 +37,7 @@ import java.util.regex.Pattern;
 
 import static me.croabeast.sirplugin.utility.PlayerUtils.*;
 
-public class JoinQuit extends SIRViewer {
+public class JoinQuitHandler extends SIRViewer {
 
     public static final Set<Player> LOGGED_PLAYERS = new HashSet<>();
 
@@ -46,7 +45,7 @@ public class JoinQuit extends SIRViewer {
             QUIT_MAP = new HashMap<>(),
             PLAY_MAP = new HashMap<>();
 
-    public JoinQuit() {
+    public JoinQuitHandler() {
         super("join-quit");
     }
 
@@ -62,7 +61,7 @@ public class JoinQuit extends SIRViewer {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
-        Amender.initUpdater(player);
+        SIRPlugin.checkUpdater(player);
         if (!isEnabled()) return;
 
         String path = !player.hasPlayedBefore() ? "first-join" : "join";
@@ -241,6 +240,8 @@ public class JoinQuit extends SIRViewer {
             var s = FileCache.MODULES.getSection("join-quit.vanish.chat-key");
             if (s == null || event.isCancelled()) return;
 
+            if (!VanishHook.isEnabled()) return;
+
             var key = s.getString("key");
             if (StringUtils.isBlank(key)) return;
 
@@ -248,13 +249,14 @@ public class JoinQuit extends SIRViewer {
             var player = event.getPlayer();
 
             var notAllow = TextUtils.toList(s, "not-allowed");
+            var sender = LangUtils.getSender().setTargets(player);
 
             if (s.getBoolean("regex")) {
                 var match = Pattern.compile(key).matcher(message);
 
                 if (!match.find()) {
-                    LangUtils.getSender().setTargets(player).send(notAllow);
                     event.setCancelled(true);
+                    sender.send(notAllow);
                     return;
                 }
 
@@ -272,7 +274,7 @@ public class JoinQuit extends SIRViewer {
             var match = Pattern.compile(pattern).matcher(message);
 
             if (!match.find()) {
-                LangUtils.getSender().setTargets(player).send(notAllow);
+                sender.send(notAllow);
                 event.setCancelled(true);
                 return;
             }

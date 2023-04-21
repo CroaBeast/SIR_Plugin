@@ -6,7 +6,7 @@ import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.module.EmojiParser;
-import me.croabeast.sirplugin.object.file.FileCache;
+import me.croabeast.sirplugin.file.FileCache;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;

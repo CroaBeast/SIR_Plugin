@@ -9,13 +9,14 @@ import me.croabeast.beanslib.message.MessageKey;
 import me.croabeast.sirplugin.Initializer;
 import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.module.EmojiParser;
-import me.croabeast.sirplugin.object.instance.SIRTask;
+import me.croabeast.sirplugin.instance.SIRTask;
 import me.croabeast.sirplugin.utility.LogUtils;
 import me.croabeast.sirplugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -97,7 +98,7 @@ public class PrintTask extends SIRTask {
     }
 
     @Override
-    protected List<String> complete(CommandSender sender, String[] args) {
+    protected @NotNull List<String> complete(CommandSender sender, String[] args) {
         if (args.length == 1)
             return generateList(args, "targets", "ACTION-BAR", "CHAT", "TITLE");
 

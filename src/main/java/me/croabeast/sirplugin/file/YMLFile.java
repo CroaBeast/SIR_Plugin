@@ -1,4 +1,4 @@
-package me.croabeast.sirplugin.object.file;
+package me.croabeast.sirplugin.file;
 
 import com.tchristofferson.configupdater.ConfigUpdater;
 import lombok.Getter;

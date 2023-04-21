@@ -12,10 +12,10 @@ import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.hook.DiscordSender;
 import me.croabeast.sirplugin.hook.LoginHook;
 import me.croabeast.sirplugin.module.EmojiParser;
+import me.croabeast.sirplugin.chat.ChatFormat;
+import me.croabeast.sirplugin.file.FileCache;
+import me.croabeast.sirplugin.instance.SIRViewer;
 import me.croabeast.sirplugin.module.MentionParser;
-import me.croabeast.sirplugin.object.chat.ChatFormat;
-import me.croabeast.sirplugin.object.file.FileCache;
-import me.croabeast.sirplugin.object.instance.SIRViewer;
 import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.LogUtils;
 import me.croabeast.sirplugin.utility.PlayerUtils;
@@ -31,16 +31,36 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static me.croabeast.beanslib.utility.TextUtils.*;
 
 @SuppressWarnings("deprecation")
-public class Formats extends SIRViewer {
+public class ChatFormatter extends SIRViewer {
 
+    private static final List<ChatFormat> FORMAT_LIST = new ArrayList<>();
     private static final HashMap<Player, Long> TIMED_PLAYERS = new HashMap<>();
 
-    public Formats() {
+    public ChatFormatter() {
         super("formats");
+    }
+
+    @Override
+    public void registerModule() {
+        super.registerModule();
+
+        if (!isEnabled()) return;
+        if (!FORMAT_LIST.isEmpty()) FORMAT_LIST.clear();
+
+        var section = FileCache.FORMATS.getSection("formats");
+        if (section == null) return;
+
+        for (var key : section.getKeys(false)) {
+            var c = section.getConfigurationSection(key);
+
+            if (c != null)
+                FORMAT_LIST.add(new ChatFormat(c));
+        }
     }
 
     @Nullable
@@ -82,7 +102,7 @@ public class Formats extends SIRViewer {
         }
 
         if (LoginHook.isEnabled() &&
-                !JoinQuit.LOGGED_PLAYERS.contains(player)) {
+                !JoinQuitHandler.LOGGED_PLAYERS.contains(player)) {
             event.setCancelled(true);
             return;
         }
@@ -115,10 +135,7 @@ public class Formats extends SIRViewer {
         if (StringUtils.isBlank(message) &&
                 !FileCache.MODULES.getValue("chat.allow-empty", false))
         {
-            var list = TextUtils.toList(
-                    FileCache.LANG.get(),
-                    "chat.empty-message"
-            );
+            var list = TextUtils.toList(FileCache.LANG.get(), "chat.empty-message");
             event.setCancelled(true);
 
             LangUtils.getSender().setTargets(player).send(list);

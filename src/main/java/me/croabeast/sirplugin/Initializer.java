@@ -5,14 +5,16 @@ import lombok.var;
 import me.croabeast.advancementinfo.AdvancementInfo;
 import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.beanslib.utility.LibUtils;
+import me.croabeast.sirplugin.file.FileCache;
 import me.croabeast.sirplugin.hook.LoginHook;
 import me.croabeast.sirplugin.hook.VanishHook;
-import me.croabeast.sirplugin.object.analytic.Metrics;
-import me.croabeast.sirplugin.object.file.FileCache;
-import me.croabeast.sirplugin.object.instance.SIRModule;
+import me.croabeast.sirplugin.instance.SIRModule;
 import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.LogUtils;
 import net.milkbowl.vault.permission.Permission;
+import org.bstats.bukkit.Metrics;
+import org.bstats.charts.DrilldownPie;
+import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.advancement.Advancement;
@@ -42,13 +44,13 @@ public final class Initializer {
     static void startMetrics() {
         var metrics = new Metrics(SIRPlugin.getInstance(), 12806);
 
-        metrics.addCustomChart(new Metrics.SimplePie("hasPAPI", () -> hasPAPI() + ""));
-        metrics.addCustomChart(new Metrics.SimplePie("hasVault", () -> hasVault() + ""));
+        metrics.addCustomChart(new SimplePie("hasPAPI", () -> hasPAPI() + ""));
+        metrics.addCustomChart(new SimplePie("hasVault", () -> hasVault() + ""));
 
-        metrics.addCustomChart(new Metrics.SimplePie("hasDiscord", () ->
+        metrics.addCustomChart(new SimplePie("hasDiscord", () ->
                 (Exceptions.isPluginEnabled("DiscordSRV")) + ""));
 
-        metrics.addCustomChart(new Metrics.DrilldownPie("loginPlugins", () -> {
+        metrics.addCustomChart(new DrilldownPie("loginPlugins", () -> {
             Map<String, Map<String, Integer>> map = new HashMap<>();
             Map<String, Integer> entry = new HashMap<>();
 
@@ -63,7 +65,7 @@ public final class Initializer {
             return map;
         }));
 
-        metrics.addCustomChart(new Metrics.DrilldownPie("vanishPlugins", () -> {
+        metrics.addCustomChart(new DrilldownPie("vanishPlugins", () -> {
             Map<String, Map<String, Integer>> map = new HashMap<>();
             Map<String, Integer> entry = new HashMap<>();
 
@@ -85,7 +87,7 @@ public final class Initializer {
     }
 
     static void setPluginHooks() {
-        LogUtils.doLog("", "&bChecking all compatible hooks...");
+        LogUtils.doLog("&bChecking all compatible hooks...");
         var logLines = 0;
 
         if (hasPAPI()) {

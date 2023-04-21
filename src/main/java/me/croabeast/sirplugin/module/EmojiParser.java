@@ -5,8 +5,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.var;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.iridiumapi.IridiumAPI;
-import me.croabeast.sirplugin.object.file.FileCache;
-import me.croabeast.sirplugin.object.instance.SIRModule;
+import me.croabeast.sirplugin.file.FileCache;
+import me.croabeast.sirplugin.instance.SIRModule;
 import me.croabeast.sirplugin.utility.PlayerUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -82,7 +82,7 @@ public class EmojiParser extends SIRModule {
         }
 
         String convertValue(String line) {
-            return (value == null ? "" : value) + IridiumAPI.getLastColor(line, key, true, true);
+            return (value == null ? "" : value) + IridiumAPI.getLastColor(line, key, true, false);
         }
 
         Matcher getMatcher(String line, boolean add) {

@@ -2,13 +2,14 @@ package me.croabeast.sirplugin.task.ignore;
 
 import com.google.common.collect.Lists;
 import lombok.var;
-import me.croabeast.sirplugin.object.file.FileCache;
-import me.croabeast.sirplugin.object.instance.SIRTask;
+import me.croabeast.sirplugin.file.FileCache;
+import me.croabeast.sirplugin.instance.SIRTask;
 import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.LogUtils;
 import me.croabeast.sirplugin.utility.PlayerUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,7 +95,7 @@ public class IgnoreTask extends SIRTask {
     }
 
     @Override
-    protected List<String> complete(CommandSender sender, String[] args) {
+    protected @NotNull List<String> complete(CommandSender sender, String[] args) {
         switch (args.length) {
             case 1: return generateList(args, "chat", "msg");
             case 2: return generateList(args,

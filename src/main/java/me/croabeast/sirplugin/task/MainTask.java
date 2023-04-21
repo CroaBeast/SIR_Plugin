@@ -4,13 +4,14 @@ import lombok.var;
 import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sirplugin.Initializer;
 import me.croabeast.sirplugin.SIRPlugin;
-import me.croabeast.sirplugin.module.Announcer;
-import me.croabeast.sirplugin.object.file.FileCache;
-import me.croabeast.sirplugin.object.instance.SIRModule;
-import me.croabeast.sirplugin.object.instance.SIRTask;
+import me.croabeast.sirplugin.module.AnnounceViewer;
+import me.croabeast.sirplugin.file.FileCache;
+import me.croabeast.sirplugin.instance.SIRModule;
+import me.croabeast.sirplugin.instance.SIRTask;
 import me.croabeast.sirplugin.utility.LangUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.bukkit.command.CommandSender;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +63,7 @@ public class MainTask extends SIRTask {
                 Initializer.unloadAdvances(true);
                 Initializer.loadAdvances(false);
 
-                var a = (Announcer) SIRModule.get("announces");
+                var a = (AnnounceViewer) SIRModule.get("announces");
                 if (a.isEnabled() && !a.isRunning()) a.startTask();
                 if (!a.isEnabled()) a.cancelTask();
 
@@ -84,7 +85,7 @@ public class MainTask extends SIRTask {
     }
 
     @Override
-    protected List<String> complete(CommandSender sender, String[] args) {
+    protected @NotNull List<String> complete(CommandSender sender, String[] args) {
         return args.length == 1 ?
                 generateList(args, "reload", "help", "support", "about") :
                 new ArrayList<>();

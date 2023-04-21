@@ -2,23 +2,23 @@ package me.croabeast.sirplugin.hook;
 
 import com.google.common.collect.Lists;
 import github.scarsz.discordsrv.DiscordSRV;
+import github.scarsz.discordsrv.api.events.GameChatMessagePostProcessEvent;
+import github.scarsz.discordsrv.api.events.GameChatMessagePreProcessEvent;
 import github.scarsz.discordsrv.dependencies.jda.api.EmbedBuilder;
-import github.scarsz.discordsrv.dependencies.jda.api.entities.Guild;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed;
-import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
+import github.scarsz.discordsrv.util.MessageUtil;
 import lombok.var;
 import me.croabeast.beanslib.key.ValueReplacer;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.iridiumapi.IridiumAPI;
 import me.croabeast.sirplugin.SIRPlugin;
-import me.croabeast.sirplugin.object.file.FileCache;
+import me.croabeast.sirplugin.file.FileCache;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Color;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 
-import java.lang.reflect.Field;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -90,7 +90,7 @@ public class DiscordSender {
             try {
                 colorInt = java.awt.Color.decode(rgb).getRGB();
             } catch (Exception e) {
-                Field color = Class.forName("org.bukkit.Color").getField(rgb);
+                var color = Class.forName("org.bukkit.Color").getField(rgb);
                 colorInt = ((Color) color.get(null)).asRGB();
             }
         } catch (Exception ignored) {}
@@ -136,40 +136,63 @@ public class DiscordSender {
         if (list.isEmpty()) return false;
 
         String text = getChannels().getString("channels." + channel + ".text");
-        boolean atLeastOneMessageWasSent = false;
+        boolean atLeastOneMessage = false;
 
         for (String s : list) {
-            String guildId = path, channelId;
+            String guildId = path, id;
 
             if (s.contains(":")) {
                 String[] sp = s.split(":", 2);
-                guildId = sp[0];
-                channelId = sp[1];
-            }
-            else channelId = s;
 
-            Guild guild = DiscordSRV.getPlugin().getMainGuild();
+                id = sp[1];
+                guildId = sp[0];
+            }
+            else id = s;
+
+            var guild = DiscordSRV.getPlugin().getMainGuild();
             try {
                 guild = DiscordSRV.getPlugin().getJda().getGuildById(guildId);
             } catch (Exception ignored) {}
 
             if (guild == null) continue;
 
-            TextChannel channel = guild.getTextChannelById(channelId);
+            var channel = guild.getTextChannelById(id);
             if (channel == null) continue;
+
+            var pre = new GameChatMessagePreProcessEvent(
+                    id, MessageUtil.toComponent(text, true),
+                    player, null
+            );
+            DiscordSRV.api.callEvent(pre);
+
+            if (pre.isCancelled()) return false;
+
+            channel = guild.getTextChannelById(pre.getChannel());
+            if (channel == null) return false;
+
+            text = MessageUtil.toLegacy(pre.getMessageComponent());
+
+            var post = new GameChatMessagePostProcessEvent(
+                    id, text, player, false, null);
+            DiscordSRV.api.callEvent(post);
+
+            channel = guild.getTextChannelById(post.getChannel());
+            if (channel == null) return false;
+
+            text = post.getProcessedMessage();
 
             if (StringUtils.isNotBlank(text)) {
                 channel.sendMessage(formatString(text)).queue();
-                if (!atLeastOneMessageWasSent) atLeastOneMessageWasSent = true;
+                if (!atLeastOneMessage) atLeastOneMessage = true;
                 continue;
             }
 
             if (embed == null) continue;
 
             channel.sendMessageEmbeds(Lists.newArrayList(embed)).queue();
-            if (!atLeastOneMessageWasSent) atLeastOneMessageWasSent = true;
+            if (!atLeastOneMessage) atLeastOneMessage = true;
         }
 
-        return atLeastOneMessageWasSent;
+        return atLeastOneMessage;
     }
 }
