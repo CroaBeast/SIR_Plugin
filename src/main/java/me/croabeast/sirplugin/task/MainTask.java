@@ -4,7 +4,7 @@ import lombok.var;
 import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sirplugin.Initializer;
 import me.croabeast.sirplugin.SIRPlugin;
-import me.croabeast.sirplugin.module.AnnounceViewer;
+import me.croabeast.sirplugin.channel.GeneralChannel;
 import me.croabeast.sirplugin.file.FileCache;
 import me.croabeast.sirplugin.instance.SIRModule;
 import me.croabeast.sirplugin.instance.SIRTask;
@@ -23,7 +23,6 @@ public class MainTask extends SIRTask {
         super("sir");
     }
 
-    @SuppressWarnings("all")
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         if (isProhibited(sender, "admin.*")) return true;
@@ -60,12 +59,11 @@ public class MainTask extends SIRTask {
                 SIRModule.get("emojis").registerModule();
                 SIRModule.get("mentions").registerModule();
 
+                SIRModule.get("formats").registerModule();
+                GeneralChannel.loadDefaults();
+
                 Initializer.unloadAdvances(true);
                 Initializer.loadAdvances(false);
-
-                var a = (AnnounceViewer) SIRModule.get("announces");
-                if (a.isEnabled() && !a.isRunning()) a.startTask();
-                if (!a.isEnabled()) a.cancelTask();
 
                 return fromSender(sender,
                         "{time}", System.currentTimeMillis() - start,

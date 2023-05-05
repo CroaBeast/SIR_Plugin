@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import lombok.var;
 import me.croabeast.sirplugin.file.FileCache;
 import me.croabeast.sirplugin.instance.SIRTask;
-import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.LogUtils;
 import me.croabeast.sirplugin.utility.PlayerUtils;
 import org.bukkit.command.CommandSender;
@@ -46,7 +45,7 @@ public class IgnoreTask extends SIRTask {
 
             return getClonedSender(player).setKeys(keys).
                     setValues(null, t).
-                    send(LangUtils.toList(FileCache.LANG, path));
+                    send(FileCache.LANG.toList(path));
         }
 
         var target = PlayerUtils.getClosestPlayer(token);
@@ -63,7 +62,7 @@ public class IgnoreTask extends SIRTask {
 
         return getClonedSender(player).setKeys(keys).
                 setValues(target, t).
-                send(LangUtils.toList(FileCache.LANG, path));
+                send(FileCache.LANG.toList(path));
     }
 
     @Override

@@ -3,11 +3,11 @@ package me.croabeast.sirplugin.module;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.var;
-import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.iridiumapi.IridiumAPI;
 import me.croabeast.sirplugin.file.FileCache;
 import me.croabeast.sirplugin.instance.SIRModule;
 import me.croabeast.sirplugin.utility.PlayerUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
@@ -45,7 +45,7 @@ public class EmojiParser extends SIRModule {
         }
     }
 
-    public static String parseEmojis(Player player, String line) {
+    public static String parse(Player player, String line) {
         try {
             if (!SIRModule.isEnabled("emojis")) return line;
             if (EMOJI_LIST.isEmpty()) return line;
@@ -96,11 +96,12 @@ public class EmojiParser extends SIRModule {
         }
 
         public String parseEmoji(Player player, String line) {
-            if (key == null) return line;
+            if (StringUtils.isBlank(line) || key == null) return line;
 
             if (player != null &&
                     !permission.matches("(?i)DEFAULT") &&
-                    !PlayerUtils.hasPerm(player, permission)) return line;
+                    !PlayerUtils.hasPerm(player, permission)
+            ) return line;
 
             if (checks.isWord()) {
                 var builder = new StringBuilder();
@@ -140,7 +141,8 @@ public class EmojiParser extends SIRModule {
 
         @Override
         public String toString() {
-            return TextUtils.classFormat(this, ":", true, key, value, checks);
+            return "Emoji{" + "perm='" + permission + '\'' + ", key='" + key +
+                    '\'' + ", value='" + value + '\'' + ", checks=" + checks + '}';
         }
 
         @RequiredArgsConstructor
@@ -162,7 +164,7 @@ public class EmojiParser extends SIRModule {
 
             @Override
             public String toString() {
-                return TextUtils.classFormat(this, ":", true, regex, isWord, sensitive);
+                return '{' + "regex=" + regex + ", isWord=" + isWord + ", sensitive=" + sensitive + '}';
             }
         }
     }

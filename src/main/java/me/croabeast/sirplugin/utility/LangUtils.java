@@ -5,15 +5,14 @@ import me.croabeast.beanslib.BeansLib;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.SIRPlugin;
-import me.croabeast.sirplugin.module.EmojiParser;
 import me.croabeast.sirplugin.file.FileCache;
+import me.croabeast.sirplugin.module.EmojiParser;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -74,17 +73,12 @@ public class LangUtils extends BeansLib {
                 setLogger(config.getValue("options.send-console", true)).
                 setCaseSensitive(false).
                 setNoFirstSpaces(config.getValue("options.strip-spaces", false)).
-                addFunctions(EmojiParser::parseEmojis);
+                addFunctions(EmojiParser::parse);
     }
 
     @NotNull
     public static MessageSender getSender() {
         return (sender == null ? setSender() : sender).clone();
-    }
-
-    public static List<String> toList(FileCache cache, String path) {
-        var file = cache.getFile();
-        return file == null ? new ArrayList<>() : TextUtils.toList(file.get(), path);
     }
 
     public static void executeCommands(Player player, List<String> commands) {

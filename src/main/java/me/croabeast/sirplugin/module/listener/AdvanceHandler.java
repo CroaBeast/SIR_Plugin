@@ -1,6 +1,7 @@
 package me.croabeast.sirplugin.module.listener;
 
 import lombok.var;
+import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.Initializer;
 import me.croabeast.sirplugin.hook.DiscordSender;
 import me.croabeast.sirplugin.file.FileCache;
@@ -16,8 +17,10 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 import static me.croabeast.sirplugin.utility.LangUtils.stringKey;
 
@@ -28,7 +31,7 @@ public class AdvanceHandler extends SIRViewer {
     }
 
     private List<String> advList(String path) {
-        return LangUtils.toList(FileCache.MODULES, "advancements.disabled-" + path);
+        return FileCache.MODULES.toList("advancements.disabled-" + path);
     }
 
     @EventHandler
@@ -66,7 +69,7 @@ public class AdvanceHandler extends SIRViewer {
 
         String frameType = null, advName = null, description = null;
 
-        var messageKey = FileCache.ADVANCEMENTS.getValue(stringKey(key), String.class);
+        var messageKey = FileCache.ADVANCE_LANG.getValue(stringKey(key), String.class);
         if (messageKey == null) return;
 
         if (messageKey.contains("-(")) {
@@ -117,12 +120,17 @@ public class AdvanceHandler extends SIRViewer {
 
         if (messageKey.matches("(?i)null")) return;
 
-        List<String> messages = LangUtils.toList(FileCache.ADVANCEMENTS, messageKey),
+        System.out.println(Arrays.toString(keys));
+        System.out.println(Arrays.toString(values));
+
+        List<String> messages = FileCache.ADVANCE_CONFIG.toList(messageKey),
                 mList = new ArrayList<>(), cList = new ArrayList<>();
 
         for (var s : messages) {
-            if (s.matches("(?i)^\\[cmd]")) {
-                cList.add(s.substring(5));
+            var m = Pattern.compile("(?i)^\\[cmd]").matcher(s);
+
+            if (m.find()) {
+                cList.add(TextUtils.STRIP_FIRST_SPACES.apply(s.substring(5)));
                 continue;
             }
             mList.add(s);

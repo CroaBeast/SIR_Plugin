@@ -40,7 +40,7 @@ public abstract class DirectTask extends SIRTask {
     }
 
     List<String> getMessagingOutput(boolean isSender) {
-        return LangUtils.toList(FileCache.LANG, MSG_PATH + "for-" + getPath(isSender) + ".message");
+        return FileCache.LANG.toList(MSG_PATH + "for-" + getPath(isSender) + ".message");
     }
 
     <C extends CommandSender> boolean sendMessagingResult(C sender, C target, String[] args, boolean isMsg) {
@@ -74,7 +74,7 @@ public abstract class DirectTask extends SIRTask {
                         isMsg ? args[0] : isConsole(target),
                         isConsole(sender), message
                 ).
-                send(LangUtils.toList(FileCache.LANG, CONSOLE_PATH + "format"));
+                send(FileCache.LANG.toList(CONSOLE_PATH + "format"));
 
         return true;
     }

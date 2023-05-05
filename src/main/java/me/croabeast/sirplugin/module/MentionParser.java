@@ -41,7 +41,8 @@ public class MentionParser extends SIRModule {
         }
     }
 
-    public static String parseMention(Player player, String line) {
+    public static String parse(Player player, String line) {
+        if (StringUtils.isBlank(line)) return line;
         if (!SIRModule.isEnabled("mentions")) return line;
 
         var id = FileCache.MENTIONS.permSection(player, "mentions");
@@ -117,7 +118,7 @@ public class MentionParser extends SIRModule {
                 output = format + output + "</text>";
         }
 
-        String result = ValueReplacer.forEach(output, keys, values),
+        String result = ValueReplacer.forEach(keys, values, output),
                 regex = prefix + target.getName();
 
         var match = Pattern.compile("(?i)" + regex).matcher(line);

@@ -77,7 +77,7 @@ public abstract class SIRTask {
     protected <T> boolean fromSender(CommandSender sender, String key, T value, String path) {
         return getClonedSender(sender).setKeys(key).
                 setValues(value).
-                send(LangUtils.toList(FileCache.LANG, path));
+                send(FileCache.LANG.toList(path));
     }
 
     /**
@@ -89,7 +89,7 @@ public abstract class SIRTask {
      * @return the {@link MessageSender#send(List)} result
      */
     protected boolean fromSender(CommandSender sender, String path) {
-        return getClonedSender(sender).send(LangUtils.toList(FileCache.LANG, path));
+        return getClonedSender(sender).send(FileCache.LANG.toList(path));
     }
 
     protected boolean isProhibited(CommandSender sender, String perm) {

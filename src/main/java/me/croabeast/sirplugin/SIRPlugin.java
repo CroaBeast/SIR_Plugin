@@ -111,13 +111,29 @@ public final class SIRPlugin extends JavaPlugin {
         instance = null;
     }
 
+    private static void updaterLog(Player player, String... strings) {
+        if (player != null) {
+            String[] array = new String[strings.length];
+
+            for (int i = 0; i < strings.length; i++) {
+                var s = strings[i];
+                array[i] = s.equals(EMPTY_LINE) ? " " : s;
+            }
+
+            LogUtils.playerLog(player, array);
+            return;
+        }
+
+        LogUtils.mixLog(strings);
+    }
+
     private static void runUpdater(@Nullable Player player) {
         UpdateChecker.of(instance, 96378).requestUpdateCheck().whenComplete((result, e) -> {
             String latest = result.getNewestVersion();
 
             switch (result.getReason()) {
                 case NEW_UPDATE:
-                    LogUtils.mixLog(player,
+                    updaterLog(player,
                             EMPTY_LINE, "&4NEW UPDATE!",
                             "&cYou don't have the latest version of S.I.R. installed.",
                             "&cRemember, older versions won't receive any support.",
@@ -129,7 +145,7 @@ public final class SIRPlugin extends JavaPlugin {
                     break;
 
                 case UP_TO_DATE:
-                    LogUtils.mixLog(player,
+                    updaterLog(player,
                             EMPTY_LINE,
                             "&eYou have the latest version of S.I.R. &7(" + latest + ")",
                             "&7I would appreciate if you keep updating &c<3",
@@ -138,7 +154,7 @@ public final class SIRPlugin extends JavaPlugin {
                     break;
 
                 case UNRELEASED_VERSION:
-                    LogUtils.mixLog(player,
+                    updaterLog(player,
                             EMPTY_LINE, "&4DEVELOPMENT BUILD:",
                             "&cYou have a newer version of S.I.R. installed.",
                             "&cErrors might occur in this build.",
@@ -149,7 +165,7 @@ public final class SIRPlugin extends JavaPlugin {
                     break;
 
                 default:
-                    LogUtils.mixLog(player,
+                    updaterLog(player,
                             EMPTY_LINE, "&4WARNING!",
                             "&cCould not check for a new version of S.I.R.",
                             "&7Please check your connection and restart the server.",

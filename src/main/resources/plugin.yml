@@ -5,20 +5,25 @@ authors: [ CroaBeast ]
 api-version: 1.13
 
 softdepend:
-  - DiscordSRV
+  # Utility plugins
   - ViaVersion
-  - InteractiveChat
   - Vault
-  - Essentials
-  - UserLogin
   - PlaceholderAPI
+  - InteractiveChat
+  # Login plugins
+  - UserLogin
+  - AuthMe
   - NexAuth
+  - nLogin
+  - OpeNLogin
+  # Vanish plugins
   - SuperVanish
   - PremiumVanish
-  - AuthMe
-  - AuthMeVelocity
   - CMI
+  - Essentials
+  # Misc
   - AdvancedBan
+  - DiscordSRV
 
 main: me.croabeast.sirplugin.SIRPlugin
 
@@ -35,6 +40,8 @@ commands:
     aliases: []
   ignore:
     aliases: [ ig ]
+  chat-toggle:
+    aliases: [ c-t ]
 
 permissions:
   sir.*:
@@ -45,6 +52,7 @@ permissions:
       sir.announcer.*: true
       sir.message.*: true
       sir.ignore: true
+      sir.chat-toggle: true
 
   sir.admin.*:
     default: op
@@ -109,4 +117,6 @@ permissions:
     default: op
 
   sir.ignore:
+    default: op
+  sir.chat-toggle:
     default: op

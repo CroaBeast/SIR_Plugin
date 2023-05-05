@@ -3,7 +3,6 @@ package me.croabeast.sirplugin.instance;
 import lombok.Getter;
 import lombok.var;
 import me.croabeast.sirplugin.file.FileCache;
-import me.croabeast.sirplugin.utility.LangUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -44,7 +43,7 @@ public abstract class SIRModule {
      * @return if the specified module is enabled.
      */
     public boolean isEnabled() {
-        return LangUtils.toList(FileCache.MODULES, "modules").contains(name);
+        return FileCache.MODULES.toList("modules").contains(name);
     }
 
     public String toString() {

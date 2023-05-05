@@ -243,7 +243,7 @@ public class PrintTask extends SIRTask {
                     }
 
                     for (var s : a)
-                        k.execute(player, EmojiParser.parseEmojis(player, s));
+                        k.execute(player, EmojiParser.parse(player, s));
                     continue;
                 }
 
@@ -259,12 +259,12 @@ public class PrintTask extends SIRTask {
 
                     k.execute(player,
                             d[0] + k.getKey() + time + d[1] + " " +
-                            EmojiParser.parseEmojis(player, message)
+                            EmojiParser.parse(player, message)
                     );
                     continue;
                 }
 
-                k.execute(player, EmojiParser.parseEmojis(player, message));
+                k.execute(player, EmojiParser.parse(player, message));
             }
         }
     }

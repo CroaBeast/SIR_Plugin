@@ -130,3 +130,7 @@ commands:
     channels:
       chat: 'Chat'
       msg: 'Private Messages'
+  chat-toggle:
+    help: ""
+    on: ""
+    off: ""

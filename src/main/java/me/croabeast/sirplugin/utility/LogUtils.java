@@ -5,6 +5,7 @@ import lombok.var;
 import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.module.EmojiParser;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
 @UtilityClass
 public class LogUtils {
@@ -14,12 +15,16 @@ public class LogUtils {
 
         for (int i = 0; i < lines.length; i++) {
             try {
-                results[i] = EmojiParser.parseEmojis(null, lines[i]);
+                results[i] = EmojiParser.parse(null, lines[i]);
             } catch (Exception e) {
                 results[i] = lines[i];
             }
         }
         return results;
+    }
+
+    public void playerLog(Player player, String... lines) {
+        SIRPlugin.getUtils().playerLog(player, parseEmojis(lines));
     }
 
     public void rawLog(String... lines) {
@@ -32,10 +37,6 @@ public class LogUtils {
 
     public void doLog(String... lines) {
         doLog(null, lines);
-    }
-
-    public void mixLog(CommandSender sender, String... lines) {
-        SIRPlugin.getUtils().mixLog(sender, parseEmojis(lines));
     }
 
     public void mixLog(String... lines) {

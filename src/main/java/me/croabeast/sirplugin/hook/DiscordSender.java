@@ -9,10 +9,10 @@ import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed;
 import github.scarsz.discordsrv.util.DiscordUtil;
 import github.scarsz.discordsrv.util.MessageUtil;
 import lombok.var;
+import me.croabeast.beanslib.BeansLib;
 import me.croabeast.beanslib.key.ValueReplacer;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.iridiumapi.IridiumAPI;
-import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.file.FileCache;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Color;
@@ -62,14 +62,12 @@ public class DiscordSender {
     String formatString(String string) {
         if (StringUtils.isBlank(string)) return string;
 
-        string = SIRPlugin.getUtils().
-                parsePlayerKeys(player, string, false);
+        string = ValueReplacer.forEach(keys, values, string);
 
         return DiscordUtil.translateEmotes(
-                IridiumAPI.stripAll(TextUtils.PARSE_PLACEHOLDERAPI.apply(
-                        player, // player can be null
-                        ValueReplacer.forEach(string, keys, values)
-                )));
+                IridiumAPI.stripAll(BeansLib.getLoadedInstance().
+                formatPlaceholders(player, string))
+        );
     }
 
     FileConfiguration getModules() {

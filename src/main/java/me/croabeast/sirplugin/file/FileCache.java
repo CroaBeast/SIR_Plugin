@@ -1,8 +1,8 @@
 package me.croabeast.sirplugin.file;
 
 import lombok.var;
+import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.SIRPlugin;
-import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.LogUtils;
 import me.croabeast.sirplugin.utility.PlayerUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -31,13 +31,17 @@ public final class FileCache {
     public static final FileCache MENTIONS = new FileCache("chat", "mentions");
 
     public static final FileCache IGNORE_DATA = new FileCache("data", "ignore");
+    public static final FileCache TOGGLE_DATA = new FileCache("data", "chat-toggle");
 
-    public static final FileCache ADVANCEMENTS = new FileCache("messages", "advances");
+    public static final FileCache ADVANCE_CONFIG = new FileCache("advances", "config");
+    public static final FileCache ADVANCE_LANG = new FileCache("advances", "lang");
+
     public static final FileCache ANNOUNCEMENTS = new FileCache("messages", "announces");
     public static final FileCache JOIN_QUIT = new FileCache("messages", "join-quit");
 
     public static final FileCache BOSSBARS_FILE = new FileCache("misc", "bossbars");
     public static final FileCache WEBHOOKS_FILE = new FileCache("misc", "webhooks");
+
     public static final FileCache MOTD_CACHE = new FileCache("misc", "motd");
     public static final FileCache DISCORD_CACHE = new FileCache("misc", "discord");
 
@@ -126,6 +130,10 @@ public final class FileCache {
         return defKey == null ? null : id.getConfigurationSection(defKey);
     }
 
+    public List<String> toList(String path) {
+        return TextUtils.toList(get(), path);
+    }
+
     public static void loadFiles() {
         final long time = System.currentTimeMillis();
         int totalFiles = 0, filesUpdates = 0;
@@ -141,8 +149,9 @@ public final class FileCache {
                 if (file == null) continue;
                 FILE_LIST.add(file);
 
-                var list = LangUtils.toList(MAIN_CONFIG, "updater.files");
-                if (!list.contains(file.getName())) continue;
+                var list = MAIN_CONFIG.toList("updater.files");
+                if (file.getFolder() != null ||
+                        !list.contains(file.getName())) continue;
 
                 file.updateFile();
                 filesUpdates++;
@@ -161,7 +170,7 @@ public final class FileCache {
             file.reloadFile();
             totalFiles++;
 
-            var list = LangUtils.toList(MAIN_CONFIG, "updater.files");
+            var list = MAIN_CONFIG.toList("updater.files");
             if (!list.contains(file + "")) continue;
 
             file.updateFile();

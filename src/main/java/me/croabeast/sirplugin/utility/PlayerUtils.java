@@ -16,7 +16,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +28,8 @@ public class PlayerUtils {
     private static final Set<Player> godPlayers = new HashSet<>();
 
     public boolean hasPerm(CommandSender sender, String perm) {
+        if (perm.matches("(?i)DEFAULT")) return true;
+
         final var b = sender.hasPermission(perm);
         final var s = "options.override-op";
 

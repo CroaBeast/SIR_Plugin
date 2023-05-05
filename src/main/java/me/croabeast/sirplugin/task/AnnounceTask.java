@@ -8,6 +8,7 @@ import me.croabeast.sirplugin.instance.SIRTask;
 import me.croabeast.sirplugin.utility.LogUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -57,7 +58,7 @@ public class AnnounceTask extends SIRTask {
             case "preview":
                 if (isProhibited(sender, "announcer.preview")) return true;
 
-                if (sender instanceof ConsoleCommandSender) {
+                if (!(sender instanceof Player)) {
                     LogUtils.doLog("&cYou can't preview an announce in console.");
                     return true;
                 }

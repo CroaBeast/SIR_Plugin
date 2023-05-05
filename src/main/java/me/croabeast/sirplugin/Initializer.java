@@ -171,7 +171,8 @@ public final class Initializer {
         }
 
         List<Advancement> tasks = new ArrayList<>(), goals = new ArrayList<>(),
-                challenges = new ArrayList<>(), errors = new ArrayList<>(), keys = new ArrayList<>();
+                challenges = new ArrayList<>(),
+                errors = new ArrayList<>(), keys = new ArrayList<>();
 
         for (var adv : getAdvancements()) {
             ADVANCEMENT_KEYS.put(adv, new AdvancementInfo(adv));
@@ -181,7 +182,7 @@ public final class Initializer {
 
             if (key.contains("root") || key.contains("recipes")) continue;
 
-            var advances = FileCache.ADVANCEMENTS.get();
+            var advances = FileCache.ADVANCE_LANG.get();
             if (advances == null) continue;
 
             var notContained = !advances.contains(key);
@@ -222,7 +223,7 @@ public final class Initializer {
         }
 
         if (keys.size() > 0) {
-            var file = FileCache.ADVANCEMENTS.getFile();
+            var file = FileCache.ADVANCE_LANG.getFile();
             if (file != null) file.saveFile();
         }
 
