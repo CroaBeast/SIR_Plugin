@@ -1,9 +1,9 @@
-package me.croabeast.sirplugin.event;
+package me.croabeast.sirplugin.event.chat;
 
 import lombok.Getter;
 import lombok.Setter;
-import me.croabeast.beanslib.builder.ChatMessageBuilder;
 import me.croabeast.sirplugin.channel.ChatChannel;
+import me.croabeast.sirplugin.event.SIRPlayerEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.jetbrains.annotations.NotNull;
@@ -17,6 +17,7 @@ public class SIRChatEvent extends SIRPlayerEvent implements Cancellable {
     private String message;
 
     private boolean cancelled = false;
+    private boolean global = false;
 
     public SIRChatEvent(
             @NotNull Player player, @NotNull ChatChannel channel,
@@ -28,25 +29,15 @@ public class SIRChatEvent extends SIRPlayerEvent implements Cancellable {
         this.message = message;
     }
 
-    public void setCancelled(boolean cancel) {
-        cancelled = cancel;
-    }
-
     public void setFormat(String format) {
         channel.setChatFormat(format);
     }
 
+    public void setCancelled(boolean cancel) {
+        cancelled = cancel;
+    }
+
     public Set<Player> getRecipients() {
-        return channel.getRecipients(getPlayer());
-    }
-
-    public String getFormattedOutput(boolean isChat) {
-        return channel.formatOutput(getPlayer(), message, isChat);
-    }
-
-    public ChatMessageBuilder getChatBuilder() {
-        return new ChatMessageBuilder(getFormattedOutput(true)).
-                setHover(channel.getHoverList()).
-                setClick(channel.getClickAction());
+        return channel.getRecipients(player);
     }
 }

@@ -3,7 +3,7 @@ package me.croabeast.sirplugin.channel;
 import lombok.var;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.file.FileCache;
-import me.croabeast.sirplugin.task.ToggleTask;
+import me.croabeast.sirplugin.task.ChatViewTask;
 import me.croabeast.sirplugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -27,13 +27,14 @@ public interface ChatChannel {
 
     @Nullable ChatChannel getParent();
 
-    default boolean isParent() {
-        return getParent() == null;
-    }
-
     @NotNull
     default String getName() {
-        return (getParent() == null ? "" : (getParent().getSection().getName() + ":")) + getSection().getName();
+        return (
+                getParent() == null ||
+                        getParent().equals(GeneralChannel.getDefaults()) ?
+                        "" : (getParent().getName() + ":")
+                ) +
+                getSection().getName();
     }
 
     @Nullable ChatChannel getSubChannel();
@@ -58,30 +59,37 @@ public interface ChatChannel {
 
     @Nullable
     default String getAccessPrefix() {
-        return isGlobal() ? null : getSection().getString("local.prefix");
+        return isGlobal() ? null : getSection().getString("access.prefix");
     }
 
     @Nullable
     default List<String> getAccessCommands() {
-        return isGlobal() ? null : TextUtils.toList(getSection(), "local.commands", null);
+        return isGlobal() ? null : TextUtils.toList(getSection(), "access.commands", null);
     }
 
     @NotNull
     default Set<Player> getRecipients(Player player) {
+        Set<Player> set = new HashSet<>(Bukkit.getOnlinePlayers());
         final int r = getRadius();
 
-        if (isGlobal() || player == null || r <= 0)
-            return new HashSet<>(Bukkit.getOnlinePlayers());
+        if (isGlobal() || player == null) return set;
 
-        return player.getNearbyEntities(r, r, r).
-                stream().
-                filter(e -> e instanceof Player).
-                map(e -> (Player) e).
-                filter(
-                        p -> PlayerUtils.hasPerm(p, getPermission())
-                        && ToggleTask.isToggled(p, getName())
+        var players = r <= 0 ?
+                player.getNearbyEntities(r, r, r).
+                        stream().
+                        filter(e -> e instanceof Player).
+                        map(e -> (Player) e) :
+                set.stream();
+
+        set = players.
+                filter(p ->
+                        PlayerUtils.hasPerm(p, getPermission()) &&
+                        ChatViewTask.isToggled(p, getName())
                 ).
                 collect(Collectors.toSet());
+
+        set.add(player);
+        return set;
     }
 
     @NotNull String getChatFormat();
@@ -106,4 +114,12 @@ public interface ChatChannel {
     }
 
     String formatOutput(Player player, String message, boolean isChat);
+
+    default String[] getChatKeys() {
+        return new String[]{"{prefix}", "{suffix}", "{message}"};
+    }
+
+    default String[] getChatValues(String message) {
+        return new String[] {getPrefix(), getSuffix(), message};
+    }
 }

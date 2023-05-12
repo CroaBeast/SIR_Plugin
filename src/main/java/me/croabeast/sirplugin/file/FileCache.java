@@ -5,7 +5,7 @@ import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.utility.LogUtils;
 import me.croabeast.sirplugin.utility.PlayerUtils;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -26,12 +26,12 @@ public final class FileCache {
     public static final FileCache MODULES = new FileCache(null, "modules");
 
     public static final FileCache FILTERS = new FileCache("chat", "filters");
-    public static final FileCache FORMATS = new FileCache("chat", "formats");
+    public static final FileCache CHANNELS = new FileCache("chat", "channels");
     public static final FileCache EMOJIS = new FileCache("chat", "emojis");
     public static final FileCache MENTIONS = new FileCache("chat", "mentions");
 
     public static final FileCache IGNORE_DATA = new FileCache("data", "ignore");
-    public static final FileCache TOGGLE_DATA = new FileCache("data", "chat-toggle");
+    public static final FileCache CHAT_VIEW_DATA = new FileCache("data", "chat-view");
 
     public static final FileCache ADVANCE_CONFIG = new FileCache("advances", "config");
     public static final FileCache ADVANCE_LANG = new FileCache("advances", "lang");
@@ -77,7 +77,7 @@ public final class FileCache {
         final YMLFile file = getFile();
         if (file == null) return null;
 
-        final FileConfiguration f = file.get();
+        final var f = file.get();
         return StringUtils.isBlank(path) ? f : f.getConfigurationSection(path);
     }
 

@@ -6,7 +6,7 @@ import org.bukkit.entity.Player;
 public abstract class SIRPlayerEvent extends SIREvent {
 
     @Getter
-    private final Player player;
+    protected final Player player;
 
     public SIRPlayerEvent(Player player, boolean isAsync) {
         super(isAsync);

@@ -2,17 +2,19 @@ package me.croabeast.sirplugin.module.listener;
 
 import com.Zrips.CMI.Containers.CMIUser;
 import lombok.var;
-import me.croabeast.beanslib.BeansLib;
+import me.croabeast.beanslib.builder.ChatMessageBuilder;
+import me.croabeast.beanslib.key.ValueReplacer;
 import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.beanslib.utility.TextUtils;
-import me.croabeast.iridiumapi.IridiumAPI;
 import me.croabeast.sirplugin.Initializer;
+import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.channel.ChatChannel;
 import me.croabeast.sirplugin.channel.GeneralChannel;
-import me.croabeast.sirplugin.event.SIRChatEvent;
+import me.croabeast.sirplugin.event.chat.SIRChatEvent;
 import me.croabeast.sirplugin.file.FileCache;
 import me.croabeast.sirplugin.hook.DiscordSender;
 import me.croabeast.sirplugin.hook.LoginHook;
+import me.croabeast.sirplugin.instance.SIRTask;
 import me.croabeast.sirplugin.instance.SIRViewer;
 import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.LogUtils;
@@ -23,21 +25,24 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class ChatFormatter extends SIRViewer {
 
     public static final List<ChatChannel> CHANNEL_LIST = new ArrayList<>();
-    private static final HashMap<Player, Long> TIMED_PLAYERS = new HashMap<>();
 
     private static boolean notRegistered = true;
 
+    private static final HashMap<Player, Long> GLOBAL_PLAYERS = new HashMap<>();
+    private static final HashMap<Player, Long> LOCAL_PLAYERS = new HashMap<>();
+
     public ChatFormatter() {
-        super("formats");
+        super("channels");
     }
 
     @Override
@@ -50,7 +55,7 @@ public class ChatFormatter extends SIRViewer {
         if (!isEnabled()) return;
         if (!CHANNEL_LIST.isEmpty()) CHANNEL_LIST.clear();
 
-        var section = FileCache.FORMATS.getSection("formats");
+        var section = FileCache.CHANNELS.getSection("channels");
         if (section == null) return;
 
         for (var key : section.getKeys(false)) {
@@ -63,124 +68,202 @@ public class ChatFormatter extends SIRViewer {
             if (channel.getSubChannel() != null)
                 CHANNEL_LIST.add(channel.getSubChannel());
         }
+    }
 
-        System.out.println(CHANNEL_LIST.stream().map(ChatChannel::getName).collect(Collectors.toList()));
+    private static boolean canBeCancelled(Player player) {
+        if (Exceptions.isPluginEnabled("AdvancedBan")) {
+            var id = UUIDManager.get().getUUID(player.getName());
+            if (PunishmentManager.get().isMuted(id)) return true;
+        }
+
+        if (Exceptions.isPluginEnabled("CMI") &&
+                CMIUser.getUser(player).isMuted()) return true;
+
+        return LoginHook.isEnabled() &&
+                !JoinQuitHandler.LOGGED_PLAYERS.contains(player);
     }
 
     @EventHandler(priority = EventPriority.LOW)
-    private void onChatting(AsyncPlayerChatEvent event) {
+    private void onChat(AsyncPlayerChatEvent event) {
         if (event.isCancelled()) return;
         if (!isEnabled()) return;
 
         final var player = event.getPlayer();
 
-        if (Exceptions.isPluginEnabled("AdvancedBan")) {
-            var id = UUIDManager.get().getUUID(player.getName());
-
-            if (PunishmentManager.get().isMuted(id)) {
-                event.setCancelled(true);
-                return;
-            }
-        }
-
-        if (Exceptions.isPluginEnabled("CMI") && CMIUser.getUser(player).isMuted()) {
+        if (canBeCancelled(player)) {
             event.setCancelled(true);
             return;
         }
 
-        if (LoginHook.isEnabled() && !JoinQuitHandler.LOGGED_PLAYERS.contains(player)) {
-            event.setCancelled(true);
-            return;
-        }
-
-        var sender = LangUtils.getSender().setTargets(player);
         var message = event.getMessage();
 
         if (StringUtils.isBlank(message) &&
-                !FileCache.MODULES.getValue("chat.allow-empty", false)) {
-            event.setCancelled(true);
-
-            sender.send(FileCache.LANG.toList("chat.empty-message"));
-            return;
-        }
-
-        var invalid = FileCache.LANG.toList("chat.invalid-format");
-
-        var id = FileCache.FORMATS.permSection(player, "formats");
-        if (id == null) {
-            sender.send(invalid);
+                !FileCache.MODULES.getValue("chat.allow-empty", false))
+        {
+            LangUtils.getSender().setTargets(player).
+                    send(FileCache.LANG.toList("chat.empty-message"));
 
             event.setCancelled(true);
             return;
         }
 
-        ChatChannel channel = null;
-        for (var m : CHANNEL_LIST)
-            if (m.getSection() == id) channel = m;
+        final boolean isAsync = event.isAsynchronous();
 
-        if (channel == null) {
-            sender.send(invalid);
+        ChatChannel local = getLocalFromMessage(message);
+        if (local != null) {
+            final String prefix = local.getAccessPrefix();
 
-            event.setCancelled(true);
+            if (StringUtils.isNotBlank(prefix))
+                message = message.substring(prefix.length());
+
+            new SIRChatEvent(player, local, message, isAsync).call();
             return;
         }
 
-        SIRChatEvent chatEvent = new SIRChatEvent(
-                player, channel,
-                event.getMessage(), event.isAsynchronous()
-        );
-        chatEvent.call();
+        ChatChannel channel = getGlobalFormat(player);
+        if (channel == null) return;
 
-        if (chatEvent.isCancelled()) {
-            LogUtils.rawLog(
-                    "&c[SIR-ERROR] The SIR Chat event was cancelled. " +
-                    "No message was being sent."
-            );
+        var global = new SIRChatEvent(player, channel, message, isAsync);
+        global.setGlobal(true);
 
-            event.setCancelled(true);
-            return;
-        }
-
-        channel = chatEvent.getChannel();
-        message = chatEvent.getFormattedOutput(true);
+        String output = channel.formatOutput(player, message, true);
+        boolean notDefault = true;
 
         if (FileCache.MODULES.getValue("chat.default-format", false) ||
-                channel.isDefault() && !TextUtils.IS_JSON.apply(message)) {
-            event.setFormat(message);
-            return;
+                (channel.isDefault() &&
+                        !TextUtils.IS_JSON.apply(output))
+        ) {
+            event.setFormat(output);
+            notDefault = false;
         }
 
-        event.setCancelled(true); // cancels the bukkit chat event
+        event.setCancelled(notDefault);
+        if (notDefault) global.call();
+    }
 
+    @EventHandler(priority = EventPriority.LOW)
+    private void onCommand(PlayerCommandPreprocessEvent event) {
+        if (event.isCancelled()) return;
+
+        var args = event.getMessage().split(" ");
+
+        var local = getLocalFromCommand(args[0]);
+        if (local == null) return;
+
+        event.setCancelled(true);
+
+        String message = SIRTask.getFromArray(args, 1);
+        if (StringUtils.isBlank(message)) return;
+
+        boolean b = event.isAsynchronous();
+        var player = event.getPlayer();
+
+        new SIRChatEvent(player, local, message, b).call();
+    }
+
+    @EventHandler(priority = EventPriority.LOW)
+    private void onGlobal(SIRChatEvent event) {
+        if (event.isCancelled()) return;
+
+        ChatChannel channel = event.getChannel();
+        Player player = event.getPlayer();
+
+        String message = event.getMessage();
+
+        var map = event.isGlobal() ? GLOBAL_PLAYERS : LOCAL_PLAYERS;
         int timer = channel.getCooldown();
 
-        if (timer > 0 && TIMED_PLAYERS.containsKey(player)) {
-            long rest = System.currentTimeMillis() - TIMED_PLAYERS.get(player);
+        if (timer > 0 && map.containsKey(player)) {
+            long rest = System.currentTimeMillis() - map.get(player);
 
             if (rest < timer * 1000L) {
                 event.setCancelled(true);
                 int time = timer - ((int) (Math.round(rest / 100D) / 10));
 
-                sender.setKeys("{time}").setValues(time).send(channel.getCdMessages());
+                LangUtils.getSender().setTargets(player).
+                        setKeys("{time}").
+                        setValues(time).send(channel.getCdMessages());
                 return;
             }
         }
 
-        if (Initializer.hasDiscord())
-            new DiscordSender(player, "chat").setKeys("{prefix}", "{suffix}", "{message}").
-                    setValues(
-                            channel.getPrefix(), channel.getSuffix(),
-                            IridiumAPI.stripAll(BeansLib.getLoadedInstance().
-                                    formatPlaceholders(player, chatEvent.getMessage()))
-                    ).
+        if (Initializer.hasDiscord()) {
+            var m = SIRPlugin.getUtils().formatPlaceholders(player, message);
+            var channelName = event.isGlobal() ? "global-chat" : channel.getName();
+
+            new DiscordSender(player, channelName).
+                    setKeys(channel.getChatKeys()).
+                    setValues(channel.getChatValues(m)).
                     send();
+        }
 
-        var players = chatEvent.getRecipients();
-        players.add(player);
-        players.forEach(p -> chatEvent.getChatBuilder().clone().setPlayer(p).send());
+        LogUtils.doLog(channel.formatOutput(player, message, false));
 
-        LogUtils.doLog(chatEvent.getFormattedOutput(false));
+        String[] values = channel.getChatValues(message);
+        String[] keys = channel.getChatKeys();
 
-        if (timer > 0) TIMED_PLAYERS.put(player, System.currentTimeMillis());
+        var hover = channel.getHoverList();
+        if (hover != null)
+            hover.replaceAll(s -> ValueReplacer.forEach(keys, values, s));
+
+        var click = channel.getClickAction();
+        if (StringUtils.isNotBlank(click))
+            click = ValueReplacer.forEach(keys, values, click);
+        String finalClick = click;
+
+        event.getRecipients().stream().
+                map(p ->
+                        new ChatMessageBuilder(
+                                player,
+                                channel.formatOutput(player, message, true)
+                        ).
+                        setHover(hover).setClick(finalClick)
+                ).
+                forEach(ChatMessageBuilder::send);
+
+        if (timer > 0) map.put(player, System.currentTimeMillis());
+    }
+
+    @Nullable
+    public static ChatChannel getGlobalFormat(Player player) {
+        var c = FileCache.CHANNELS.permSection(player, "channels");
+        if (c == null) return null;
+
+        for (var channel : CHANNEL_LIST)
+            if (channel.getSection().equals(c)) return channel;
+
+        return null;
+    }
+
+    @Nullable
+    public static ChatChannel getLocalFromMessage(String message) {
+        HashMap<ChatChannel, String> map = new HashMap<>();
+        for (var c : CHANNEL_LIST) map.put(c, c.getAccessPrefix());
+
+        for (var entry : map.entrySet()) {
+            var prefix = entry.getValue();
+
+            if (StringUtils.isBlank(prefix)) continue;
+            if (message.startsWith(prefix)) return entry.getKey();
+        }
+
+        return null;
+    }
+
+    @Nullable
+    public static ChatChannel getLocalFromCommand(String command) {
+        HashMap<ChatChannel, List<String>> map = new HashMap<>();
+
+        for (var c : CHANNEL_LIST)
+            map.put(c, c.getAccessCommands());
+
+        for (var entry : map.entrySet()) {
+            var list = entry.getValue();
+            if (list == null || list.isEmpty()) continue;
+
+            if (list.contains(command)) return entry.getKey();
+        }
+
+        return null;
     }
 }

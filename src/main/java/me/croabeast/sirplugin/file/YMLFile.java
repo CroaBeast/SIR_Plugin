@@ -4,7 +4,7 @@ import com.tchristofferson.configupdater.ConfigUpdater;
 import lombok.Getter;
 import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sirplugin.utility.*;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.*;
 import org.bukkit.plugin.java.*;

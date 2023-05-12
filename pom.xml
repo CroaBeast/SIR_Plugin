@@ -191,6 +191,10 @@
             <id>nickuc-repo</id>
             <url>https://repo.nickuc.com/maven-releases/</url>
         </repository>
+        <repository>
+            <id>arim-mvn-agpl3</id>
+            <url>https://mvn-repo.arim.space/affero-gpl3/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -213,13 +217,6 @@
             <artifactId>BeansLib</artifactId>
             <version>1.0</version>
             <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>3.12.0</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -351,6 +348,13 @@
             <groupId>com.github.DevLeoko</groupId>
             <artifactId>AdvancedBan</artifactId>
             <version>2.3.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>space.arim.libertybans</groupId>
+            <artifactId>bans-api</artifactId>
+            <version>1.1.0-M2</version>
             <scope>provided</scope>
         </dependency>
 

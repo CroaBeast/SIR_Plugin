@@ -40,8 +40,8 @@ commands:
     aliases: []
   ignore:
     aliases: [ ig ]
-  chat-toggle:
-    aliases: [ c-t ]
+  chat-view:
+    aliases: [ c-v ]
 
 permissions:
   sir.*:
@@ -52,7 +52,7 @@ permissions:
       sir.announcer.*: true
       sir.message.*: true
       sir.ignore: true
-      sir.chat-toggle: true
+      sir.chat-view: true
 
   sir.admin.*:
     default: op
@@ -118,5 +118,5 @@ permissions:
 
   sir.ignore:
     default: op
-  sir.chat-toggle:
+  sir.chat-view:
     default: op

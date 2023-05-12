@@ -7,13 +7,13 @@
 # This file is to edit every module option available for SIR.
 
 # This list can enable/disable every module putting its name on the list.
-# Available modules: join-quit, announces, motd, formats, discord,
+# Available modules: join-quit, announces, motd, channels, discord,
 #                    advances, emojis, filters, mentions
 modules:
   - 'join-quit'
   - 'announces'
   - 'motd'
-  - 'formats'
+  - 'channels'
   - 'discord'
   - 'advances'
   - 'emojis'
@@ -67,8 +67,9 @@ join-quit:
     # This feature is EXPERIMENTAL, so errors might occur using this feature
     # along with other chat-related modules.
     chat-key:
+      # Enables or disables this feature.
+      enabled: false
       # The key to check in the chat message.
-      # You can disable this feature removing the key like this: ''
       key: '|'
       # If the key is a regex one.
       regex: false
@@ -93,22 +94,22 @@ chat:
   # This will also allow chat compatibility with these features:
   # - InteractiveChat support
   # - Ignore chat command
-  # - Per Radius/World format
+  # - Per Radius channel
   # - Hover and Click events
   # Enabling this is NOT recommended.
   default-format: false
-  # This section is for the default format that applies to all chat formats
+  # This section is for the default channel that applies to all custom
+  # global and local channels.
   # if you want to apply default changes instead of doing it one by one.
   # More info in our Discord Server!
-  default:
+  default-channel:
     enabled: true
-    prefix: ''
-    suffix: ''
+    # prefix: ''
+    # suffix: ''
     color:
       normal: false
       special: false
       rgb: false
-    world: ''
     radius: 0
     cooldown:
       time: 5
@@ -151,8 +152,8 @@ discord:
     first-join: CHANNEL_ID
     join: CHANNEL_ID
     quit: CHANNEL_ID
-    chat: CHANNEL_ID
     advances: CHANNEL_ID
+    global-chat: CHANNEL_ID
 
 motd:
   # Sets the maximum player size. It doesn't modify the actual

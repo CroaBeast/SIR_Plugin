@@ -23,6 +23,7 @@ abstract class AbstractChannel implements ChatChannel {
     private final ConfigurationSection section;
     private final boolean isGlobal;
 
+    @Nullable
     private final ChatChannel parent;
 
     private final int radius;
@@ -50,7 +51,7 @@ abstract class AbstractChannel implements ChatChannel {
     @Setter @NotNull
     private String chatFormat;
 
-    AbstractChannel(ConfigurationSection section, ChatChannel parent) {
+    AbstractChannel(ConfigurationSection section, @Nullable ChatChannel parent) {
         this.section = section;
         isGlobal = section.getBoolean("global", true);
 
@@ -85,9 +86,10 @@ abstract class AbstractChannel implements ChatChannel {
     }
 
     private boolean useParents(String path) {
-        return !section.isSet(path) && !isParent();
+        return !section.isSet(path) && parent != null;
     }
 
+    @SuppressWarnings("all")
     private boolean fromBoolean(String path) {
         return useParents(path) ? parent.getSection().getBoolean(path) : section.getBoolean(path);
     }
@@ -97,23 +99,23 @@ abstract class AbstractChannel implements ChatChannel {
         return useParents(path) ? f.apply(parent) : (T) section.get(path, def);
     }
 
-    private List<String> fromList(String path, Function<ChatChannel, List<String>> list, List<String> def) {
-        return useParents(path) ? list.apply(parent) : TextUtils.toList(section, path, def);
+    private List<String> fromList(
+            String p, Function<ChatChannel, List<String>> list, List<String> def
+    ) {
+        return useParents(p) ? list.apply(parent) : TextUtils.toList(section, p, def);
     }
 
     public String formatOutput(Player p, String message, boolean isChat) {
         message = colorChecker.check(message);
         String format = isChat ? getChatFormat() : getLogFormat();
 
-        format = ValueReplacer.of("{message}", message, format);
+        format = SIRPlugin.getUtils().parsePlayerKeys(p, format);
 
         format = ValueReplacer.forEach(
-                new String[] {"{prefix}", "{suffix}"},
-                new String[] {getPrefix(), getSuffix()},
-                format, false
+                getChatKeys(),
+                getChatValues(message), format
         );
 
-        format = SIRPlugin.getUtils().parsePlayerKeys(p, format);
         format = MentionParser.parse(p, EmojiParser.parse(p, format));
 
         if (isDefault() && !TextUtils.IS_JSON.apply(format)) {
@@ -132,17 +134,28 @@ abstract class AbstractChannel implements ChatChannel {
 
     @Override
     public String toString() {
-        String sub = getSubChannel() == null ? "null" : getSubChannel().getName();
+        String sub = getSubChannel() == null ? "null" : getSubChannel().getName(),
+                parentName = parent == null ? "null" : parent.getName();
 
         return "ChatChannel{" +
                 "section=" + section.getName() + ", isGlobal=" + isGlobal +
-                ", parent=" + parent.getName() + ", subChannel=" + sub +
+                ", parent=" + parentName + ", subChannel=" + sub +
                 ", permission='" + permission + '\'' + ", priority=" + priority +
                 ", chatFormat='" + chatFormat + '\'' + '}';
     }
 
+    public boolean equals(Object o) {
+        if (o == null) return false;
+        if (o == this) return true;
+
+        if (!(o instanceof ChatChannel)) return false;
+
+        var channel = (ChatChannel) o;
+        return section.equals(channel.getSection());
+    }
+
     @RequiredArgsConstructor
-    static final class ColorChecker {
+    static class ColorChecker {
 
         final boolean normal, special, rgb;
 

@@ -59,7 +59,7 @@ public class MainTask extends SIRTask {
                 SIRModule.get("emojis").registerModule();
                 SIRModule.get("mentions").registerModule();
 
-                SIRModule.get("formats").registerModule();
+                SIRModule.get("channels").registerModule();
                 GeneralChannel.loadDefaults();
 
                 Initializer.unloadAdvances(true);

@@ -39,7 +39,7 @@ channels:
       title: ''
       description: ''
       timeStamp: true
-  chat:
+  global-chat:
     text: '**{prefix}** {player} `{suffix}` :white_small_square: {message}'
   advances:
     text: '**{player}** has complete the {low-type}: **{adv}**'

@@ -15,10 +15,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ToggleTask extends SIRTask {
+public class ChatViewTask extends SIRTask {
 
-    public ToggleTask() {
-        super("chat-toggle");
+    public ChatViewTask() {
+        super("chat-view");
     }
 
     private static List<String> getKeys(Player player) {
@@ -32,13 +32,7 @@ public class ToggleTask extends SIRTask {
     @SuppressWarnings("all")
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        if (isProhibited(sender, "chat-toggle")) return true;
-
-        if (args.length == 0)
-            return fromSender(sender, "commands.chat-toggle.help");
-
-        if (args.length != 1)
-            return isWrongArgument(sender, args[args.length - 1]);
+        if (isProhibited(sender, "chat-view")) return true;
 
         if (!(sender instanceof Player)) {
             LogUtils.doLog("&cYou can't toggle a local chat in console.");
@@ -46,19 +40,25 @@ public class ToggleTask extends SIRTask {
         }
 
         var p = (Player) sender;
+
+        if (args.length == 0)
+            return fromSender(p, "commands.chat-view.help");
+
+        if (args.length != 1)
+            return isWrongArgument(p, args[args.length - 1]);
+
         String key = null;
 
         for (var k : getKeys(p)) if (k.matches("(?i)" + args[0])) key = k;
         if (key == null) return isWrongArgument(p, args[0]);
 
         String path = "data." + p.getUniqueId() + "." + key;
-        var isToggled = FileCache.TOGGLE_DATA.getValue(path, false);
+        var isToggled = FileCache.CHAT_VIEW_DATA.getValue(path, false);
 
-        FileCache.TOGGLE_DATA.get().set(path, !isToggled);
-        FileCache.TOGGLE_DATA.getFile().saveFile();
+        FileCache.CHAT_VIEW_DATA.get().set(path, !isToggled);
+        FileCache.CHAT_VIEW_DATA.getFile().saveFile(false);
 
-        return fromSender(p,
-                "commands.chat-toggle." + (isToggled ? "off" : "on"));
+        return fromSender(p, "{channel}", key, "commands.chat-view." + !isToggled);
     }
 
     @Override
@@ -67,6 +67,6 @@ public class ToggleTask extends SIRTask {
     }
 
     public static boolean isToggled(Player player, String key) {
-        return FileCache.TOGGLE_DATA.getValue("data." + player.getUniqueId() + "." + key, false);
+        return FileCache.CHAT_VIEW_DATA.getValue("data." + player.getUniqueId() + "." + key, false);
     }
 }

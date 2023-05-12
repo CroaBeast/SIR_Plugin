@@ -6,7 +6,7 @@ import com.Zrips.CMI.events.CMIPlayerVanishEvent;
 import com.earth2me.essentials.Essentials;
 import de.myzelyam.api.vanish.PlayerVanishStateChangeEvent;
 import me.croabeast.beanslib.utility.Exceptions;
-import me.croabeast.sirplugin.event.SIRVanishEvent;
+import me.croabeast.sirplugin.event.hook.SIRVanishEvent;
 import me.croabeast.sirplugin.instance.SIRListener;
 import net.ess3.api.IUser;
 import net.ess3.api.events.VanishStatusChangeEvent;

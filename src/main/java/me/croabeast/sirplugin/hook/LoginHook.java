@@ -6,7 +6,7 @@ import com.nickuc.openlogin.bukkit.api.events.AsyncLoginEvent;
 import com.nickuc.openlogin.bukkit.api.events.AsyncRegisterEvent;
 import fr.xephi.authme.events.LoginEvent;
 import me.croabeast.beanslib.utility.Exceptions;
-import me.croabeast.sirplugin.event.SIRLoginEvent;
+import me.croabeast.sirplugin.event.hook.SIRLoginEvent;
 import me.croabeast.sirplugin.instance.SIRListener;
 import me.croabeast.sirplugin.utility.LogUtils;
 import org.bukkit.Bukkit;
@@ -41,7 +41,7 @@ public final class LoginHook {
             SIRListener s = new SIRListener() {
                 @EventHandler
                 private void onEvent(LoginEvent event) {
-                    new SIRLoginEvent(event.getPlayer()).call();
+                    new SIRLoginEvent(event.getPlayer(), event.isAsynchronous()).call();
                 }
             };
 
@@ -53,7 +53,7 @@ public final class LoginHook {
             SIRListener s = new SIRListener() {
                 @EventHandler
                 private void onEvent(AuthenticationEvent event) {
-                    new SIRLoginEvent(event.getPlayer()).call();
+                    new SIRLoginEvent(event.getPlayer(), event.isAsynchronous()).call();
                 }
             };
 
@@ -68,7 +68,7 @@ public final class LoginHook {
                 SIRListener s = new SIRListener() {
                     @EventHandler
                     private void onEvent(AuthenticateEvent event) {
-                        new SIRLoginEvent(event.getPlayer()).call();
+                        new SIRLoginEvent(event.getPlayer(), event.isAsynchronous()).call();
                     }
                 };
 
@@ -84,12 +84,12 @@ public final class LoginHook {
             SIRListener s = new SIRListener() {
                 @EventHandler
                 private void onEvent(AsyncLoginEvent event) {
-                    new SIRLoginEvent(event.getPlayer()).call();
+                    new SIRLoginEvent(event.getPlayer(), event.isAsynchronous()).call();
                 }
 
                 @EventHandler
                 private void onOther(AsyncRegisterEvent event) {
-                    new SIRLoginEvent(event.getPlayer()).call();
+                    new SIRLoginEvent(event.getPlayer(), event.isAsynchronous()).call();
                 }
             };
 
@@ -101,12 +101,12 @@ public final class LoginHook {
             SIRListener s = new SIRListener() {
                 @EventHandler
                 private void onEvent(AuthPlayerLoginEvent event) {
-                    new SIRLoginEvent(event.getPlayer()).call();
+                    new SIRLoginEvent(event.getPlayer(), event.isAsynchronous()).call();
                 }
 
                 @EventHandler
                 private void onOther(AuthPlayerRegisterEvent event) {
-                    new SIRLoginEvent(event.getPlayer()).call();
+                    new SIRLoginEvent(event.getPlayer(), event.isAsynchronous()).call();
                 }
             };
 

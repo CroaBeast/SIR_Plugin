@@ -5,8 +5,8 @@ import me.croabeast.beanslib.builder.BossbarBuilder;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.Initializer;
 import me.croabeast.sirplugin.SIRPlugin;
-import me.croabeast.sirplugin.event.SIRLoginEvent;
-import me.croabeast.sirplugin.event.SIRVanishEvent;
+import me.croabeast.sirplugin.event.hook.SIRLoginEvent;
+import me.croabeast.sirplugin.event.hook.SIRVanishEvent;
 import me.croabeast.sirplugin.file.FileCache;
 import me.croabeast.sirplugin.hook.DiscordSender;
 import me.croabeast.sirplugin.hook.LoginHook;
@@ -241,6 +241,7 @@ public class JoinQuitHandler extends SIRViewer {
             if (s == null || event.isCancelled()) return;
 
             if (!VanishHook.isEnabled()) return;
+            if (!s.getBoolean("enabled")) return;
 
             var key = s.getString("key");
             if (StringUtils.isBlank(key)) return;

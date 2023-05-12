@@ -9,10 +9,10 @@ import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed;
 import github.scarsz.discordsrv.util.DiscordUtil;
 import github.scarsz.discordsrv.util.MessageUtil;
 import lombok.var;
-import me.croabeast.beanslib.BeansLib;
 import me.croabeast.beanslib.key.ValueReplacer;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.iridiumapi.IridiumAPI;
+import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.file.FileCache;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Color;
@@ -44,12 +44,21 @@ public class DiscordSender {
         return this;
     }
 
+    String formatString(String string) {
+        if (StringUtils.isBlank(string)) return string;
+
+        string = ValueReplacer.forEach(keys, values, string);
+        string = SIRPlugin.getUtils().formatPlaceholders(player, string);
+
+        return DiscordUtil.translateEmotes(IridiumAPI.stripAll(string));
+    }
+
     public DiscordSender setValues(String... values) {
         if (values == null || values.length <= 0) return this;
 
         List<String> list = new ArrayList<>();
         for (String s : values)
-            list.add(IridiumAPI.stripAll(TextUtils.STRIP_JSON.apply(s)));
+            list.add(formatString(TextUtils.STRIP_JSON.apply(s)));
 
         this.values = list.toArray(new String[0]);
         return this;
@@ -57,17 +66,6 @@ public class DiscordSender {
 
     private static boolean checkURL(String string) {
         return StringUtils.isNotBlank(string) && string.startsWith("http");
-    }
-
-    String formatString(String string) {
-        if (StringUtils.isBlank(string)) return string;
-
-        string = ValueReplacer.forEach(keys, values, string);
-
-        return DiscordUtil.translateEmotes(
-                IridiumAPI.stripAll(BeansLib.getLoadedInstance().
-                formatPlaceholders(player, string))
-        );
     }
 
     FileConfiguration getModules() {

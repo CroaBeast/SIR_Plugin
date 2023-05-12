@@ -18,7 +18,7 @@ wrong-arg: '<P> The argument &c{arg} &7is invalid or does not exist.'
 # Some messages for the chat formatter feature. Use them wisely
 chat:
   empty-message: '<P> &cYou can not send an empty message.'
-  invalid-format: '<P> &cCould not found any valid chat format, check your formats.yml'
+  invalid-channel: '<P> &cCould not found any valid channel, check your channels.yml'
 
 # Messages for the plugin's commands.
 commands:
@@ -130,7 +130,7 @@ commands:
     channels:
       chat: 'Chat'
       msg: 'Private Messages'
-  chat-toggle:
-    help: ""
-    on: ""
-    off: ""
+  chat-view:
+    help: "<P> &7Correct usage: &b/chat-view &b<local format name>"
+    'true': "<P> &7The messages of the channel &e{channel}&7 are&a visible&7."
+    'false': "<P> &7The messages of the channel &e{channel}&7 are&c not visible&7."

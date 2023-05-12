@@ -17,7 +17,7 @@ public final class GeneralChannel extends AbstractChannel {
         super(section, getDefaults());
 
         var l = getSection().getConfigurationSection("local");
-        subChannel = l == null ? null : new AbstractChannel(l, this) {
+        subChannel = l == null || !isGlobal() ? null : new AbstractChannel(l, this) {
 
             public boolean isGlobal() {
                 return false;
@@ -31,9 +31,14 @@ public final class GeneralChannel extends AbstractChannel {
     }
 
     public static ChatChannel loadDefaults() {
-        var def = FileCache.MODULES.getSection("chat.default");
+        var def = FileCache.MODULES.getSection("chat.default-channel");
 
         return def == null ? null : (defs = new AbstractChannel(def, null) {
+
+            public boolean isGlobal() {
+                return true;
+            }
+
             @Nullable
             public ChatChannel getSubChannel() {
                 return null;
@@ -42,7 +47,9 @@ public final class GeneralChannel extends AbstractChannel {
     }
 
     public static ChatChannel getDefaults() {
-        if (!FileCache.MODULES.getValue("chat.default.enabled", true)) return null;
+        if (!FileCache.MODULES.getValue("chat.default-channel.enabled", true))
+            return null;
+
         return defs == null ? loadDefaults() : defs;
     }
 }
