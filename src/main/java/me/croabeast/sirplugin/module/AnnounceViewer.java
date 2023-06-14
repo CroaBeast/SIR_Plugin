@@ -5,6 +5,7 @@ import lombok.var;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.file.FileCache;
+import me.croabeast.sirplugin.hook.VanishHook;
 import me.croabeast.sirplugin.instance.SIRModule;
 import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.PlayerUtils;
@@ -48,15 +49,14 @@ public class AnnounceViewer extends SIRModule {
             );
     }
 
-    private List<Player> getPlayers(String perm) {
-        return perm.matches("(?i)DEFAULT") ?
-                new ArrayList<>(Bukkit.getOnlinePlayers()) :
-                Bukkit.getOnlinePlayers().stream().
-                        filter(p -> PlayerUtils.hasPerm(p, perm)).
-                        collect(Collectors.toList());
+    private static List<Player> getPlayers(String perm) {
+        return Bukkit.getOnlinePlayers().stream().
+                filter(VanishHook::isVisible).
+                filter(p -> PlayerUtils.hasPerm(p, perm)).
+                collect(Collectors.toList());
     }
 
-    public void runSection(ConfigurationSection id) {
+    public static void runSection(ConfigurationSection id) {
         var players = getPlayers(id.getString("permission", "DEFAULT"));
         if (players.isEmpty()) return;
 

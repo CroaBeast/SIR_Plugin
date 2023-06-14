@@ -55,8 +55,19 @@ public class ChatFormatter extends SIRViewer {
         if (!isEnabled()) return;
         if (!CHANNEL_LIST.isEmpty()) CHANNEL_LIST.clear();
 
+        var defs = GeneralChannel.getDefaults();
+
         var section = FileCache.CHANNELS.getSection("channels");
-        if (section == null) return;
+        if (section == null) {
+            if (defs != null) CHANNEL_LIST.add(defs);
+            return;
+        }
+
+        var keys = section.getKeys(false);
+        if (keys.isEmpty()) {
+            if (defs != null) CHANNEL_LIST.add(defs);
+            return;
+        }
 
         for (var key : section.getKeys(false)) {
             var c = section.getConfigurationSection(key);
@@ -109,36 +120,37 @@ public class ChatFormatter extends SIRViewer {
 
         final boolean isAsync = event.isAsynchronous();
 
-        ChatChannel local = getLocalFromMessage(message);
-        if (local != null) {
-            final String prefix = local.getAccessPrefix();
+        ChatChannel channel = getGlobalFormat(player);
+        if (channel != null) {
+            var global = new SIRChatEvent(player, channel, message, isAsync);
+            global.setGlobal(true);
 
-            if (StringUtils.isNotBlank(prefix))
-                message = message.substring(prefix.length());
+            String output = channel.formatOutput(player, message, true);
+            boolean notDefault = true;
 
-            new SIRChatEvent(player, local, message, isAsync).call();
+            if (FileCache.MODULES.getValue("chat.default-format", false) ||
+                    (channel.isDefault() && !TextUtils.IS_JSON.test(output))
+            ) {
+                event.setFormat(output);
+                notDefault = false;
+            }
+
+            if (notDefault) {
+                event.setCancelled(true);
+                global.call();
+            }
             return;
         }
 
-        ChatChannel channel = getGlobalFormat(player);
-        if (channel == null) return;
+        ChatChannel local = getLocalFromMessage(message);
+        if (local == null) return;
 
-        var global = new SIRChatEvent(player, channel, message, isAsync);
-        global.setGlobal(true);
+        final String prefix = local.getAccessPrefix();
 
-        String output = channel.formatOutput(player, message, true);
-        boolean notDefault = true;
+        if (StringUtils.isNotBlank(prefix))
+            message = message.substring(prefix.length());
 
-        if (FileCache.MODULES.getValue("chat.default-format", false) ||
-                (channel.isDefault() &&
-                        !TextUtils.IS_JSON.apply(output))
-        ) {
-            event.setFormat(output);
-            notDefault = false;
-        }
-
-        event.setCancelled(notDefault);
-        if (notDefault) global.call();
+        new SIRChatEvent(player, local, message, isAsync).call();
     }
 
     @EventHandler(priority = EventPriority.LOW)
@@ -161,7 +173,7 @@ public class ChatFormatter extends SIRViewer {
         new SIRChatEvent(player, local, message, b).call();
     }
 
-    @EventHandler(priority = EventPriority.LOW)
+    @EventHandler(priority = EventPriority.LOWEST)
     private void onGlobal(SIRChatEvent event) {
         if (event.isCancelled()) return;
 
@@ -209,15 +221,16 @@ public class ChatFormatter extends SIRViewer {
         var click = channel.getClickAction();
         if (StringUtils.isNotBlank(click))
             click = ValueReplacer.forEach(keys, values, click);
-        String finalClick = click;
+
+        String fc = click;
 
         event.getRecipients().stream().
                 map(p ->
                         new ChatMessageBuilder(
-                                player,
-                                channel.formatOutput(player, message, true)
+                                p, player,
+                                channel.formatOutput(p, player, message, true)
                         ).
-                        setHover(hover).setClick(finalClick)
+                        setHover(hover).setClick(fc)
                 ).
                 forEach(ChatMessageBuilder::send);
 

@@ -25,21 +25,21 @@ public abstract class DirectTask extends SIRTask {
         super(name);
     }
 
-    String isConsole(CommandSender sender) {
+    static String isConsole(CommandSender sender) {
         return !(sender instanceof Player) ?
                 FileCache.LANG.getValue(CONSOLE_PATH + "name-value", String.class) :
                 sender.getName();
     }
 
-    String getPath(boolean isSender) {
+    static String getPath(boolean isSender) {
         return isSender ? "sender" : "receiver";
     }
 
-    String getSound(boolean isSender) {
+    static String getSound(boolean isSender) {
         return FileCache.LANG.getValue(MSG_PATH + "for-" + getPath(isSender) + ".sound", "");
     }
 
-    List<String> getMessagingOutput(boolean isSender) {
+    static List<String> getMessagingOutput(boolean isSender) {
         return FileCache.LANG.toList(MSG_PATH + "for-" + getPath(isSender) + ".message");
     }
 
@@ -59,14 +59,14 @@ public abstract class DirectTask extends SIRTask {
                 setValues(
                         isMsg ? args[0] : isConsole(target),
                         message
-                ).
+                ).setLogger(false).
                 send(getMessagingOutput(true));
 
         getClonedSender(target).setKeys("{sender}", "{message}").
                 setValues(
                         isConsole(sender),
                         message
-                ).
+                ).setLogger(false).
                 send(getMessagingOutput(false));
 
         LangUtils.getSender().setKeys("{receiver}", "{sender}", "{message}").

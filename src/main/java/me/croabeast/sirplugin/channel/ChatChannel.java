@@ -113,10 +113,15 @@ public interface ChatChannel {
         return noChatEvents() && getRadius() <= 0;
     }
 
-    String formatOutput(Player player, String message, boolean isChat);
+    @NotNull String formatOutput(Player target, Player parser, String message, boolean isChat);
+
+    @NotNull
+    default String formatOutput(Player player, String message, boolean isChat) {
+        return formatOutput(player, player, message, isChat);
+    }
 
     default String[] getChatKeys() {
-        return new String[]{"{prefix}", "{suffix}", "{message}"};
+        return new String[] {"{prefix}", "{suffix}", "{message}"};
     }
 
     default String[] getChatValues(String message) {

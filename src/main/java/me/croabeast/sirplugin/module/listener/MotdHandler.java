@@ -1,8 +1,7 @@
 package me.croabeast.sirplugin.module.listener;
 
 import lombok.var;
-import me.croabeast.beanslib.utility.TextUtils;
-import me.croabeast.iridiumapi.IridiumAPI;
+import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.file.FileCache;
 import me.croabeast.sirplugin.instance.SIRViewer;
@@ -19,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Random;
 
-@SuppressWarnings("deprecation")
 public class MotdHandler extends SIRViewer {
 
     private final SIRPlugin main = SIRPlugin.getInstance();
@@ -44,7 +42,7 @@ public class MotdHandler extends SIRViewer {
         return FileCache.MOTD_CACHE.getSection("motds");
     }
 
-    private Player getPlayerFromIP() {
+    private Player fromIP() {
         Player player = null;
 
         for (var p : Bukkit.getOnlinePlayers()) {
@@ -66,12 +64,11 @@ public class MotdHandler extends SIRViewer {
         if (MOTD > count) MOTD = 0;
 
         var id = getList().getConfigurationSection(keys.get(MOTD));
+        var s = id != null ?
+                id.getString("1", "") + "\n" + id.getString("2", "") :
+                "&cError getting the correct motd from SIR.";
 
-        event.setMotd(id != null ?
-                (IridiumAPI.process(TextUtils.parsePAPI(getPlayerFromIP(),
-                        id.getString("1", "") + "\n" + id.getString("2", "")))) : (
-                                "&cError getting the correct motd from SIR.")
-        );
+        event.setMotd(SIRPlugin.getUtils().colorize(null, fromIP(), s));
 
 
         if (!FileCache.MODULES.getValue("motd.random-motds", false)) {
@@ -122,7 +119,7 @@ public class MotdHandler extends SIRViewer {
             String error = e.getLocalizedMessage();
             initServerIcon(null);
 
-            event.setMotd(IridiumAPI.process("&cError loading your custom icon: \n&7" + error));
+            event.setMotd(NeoPrismaticAPI.colorize("&cError loading your custom icon: \n&7" + error));
             LogUtils.doLog("&7Error loading the icon: &c" + error);
         }
 

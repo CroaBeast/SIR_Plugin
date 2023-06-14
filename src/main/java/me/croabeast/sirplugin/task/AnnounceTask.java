@@ -1,13 +1,12 @@
 package me.croabeast.sirplugin.task;
 
 import lombok.var;
-import me.croabeast.sirplugin.module.AnnounceViewer;
 import me.croabeast.sirplugin.file.FileCache;
 import me.croabeast.sirplugin.instance.SIRModule;
 import me.croabeast.sirplugin.instance.SIRTask;
+import me.croabeast.sirplugin.module.AnnounceViewer;
 import me.croabeast.sirplugin.utility.LogUtils;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -71,7 +70,7 @@ public class AnnounceTask extends SIRTask {
                 var id = section.getConfigurationSection(args[1]);
                 if (id == null) return fromSender(sender, "commands.announcer.select");
 
-                announcer.runSection(id);
+                AnnounceViewer.runSection(id);
                 return true;
 
             default: return isWrongArgument(sender, args[args.length - 1]);

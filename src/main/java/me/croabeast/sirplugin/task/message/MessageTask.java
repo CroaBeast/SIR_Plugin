@@ -61,7 +61,7 @@ public class MessageTask extends DirectTask {
         if (args.length == 1)
             return generateList(args,
                     Bukkit.getOnlinePlayers().stream().
-                            filter(p -> !VanishHook.isVanished(p)).
+                            filter(VanishHook::isVisible).
                             map(HumanEntity::getName).
                             collect(Collectors.toList())
             );

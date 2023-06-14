@@ -3,7 +3,7 @@ package me.croabeast.sirplugin.channel;
 import lombok.*;
 import me.croabeast.beanslib.key.ValueReplacer;
 import me.croabeast.beanslib.utility.TextUtils;
-import me.croabeast.iridiumapi.IridiumAPI;
+import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.module.EmojiParser;
 import me.croabeast.sirplugin.module.MentionParser;
@@ -105,7 +105,8 @@ abstract class AbstractChannel implements ChatChannel {
         return useParents(p) ? list.apply(parent) : TextUtils.toList(section, p, def);
     }
 
-    public String formatOutput(Player p, String message, boolean isChat) {
+    @NotNull
+    public String formatOutput(Player t, Player p, String message, boolean isChat) {
         message = colorChecker.check(message);
         String format = isChat ? getChatFormat() : getLogFormat();
 
@@ -118,13 +119,13 @@ abstract class AbstractChannel implements ChatChannel {
 
         format = MentionParser.parse(p, EmojiParser.parse(p, format));
 
-        if (isDefault() && !TextUtils.IS_JSON.apply(format)) {
+        if (isDefault() && !TextUtils.IS_JSON.test(format)) {
             format = TextUtils.STRIP_JSON.apply(format.
                     replace("\\", "\\\\").
                     replace("$", "\\$"));
 
             return SIRPlugin.getUtils().
-                    createCenteredChatMessage(null, p, format).
+                    createCenteredChatMessage(t, p, format).
                     replace("%", "%%");
         }
 
@@ -160,9 +161,9 @@ abstract class AbstractChannel implements ChatChannel {
         final boolean normal, special, rgb;
 
         String check(String s) {
-            if (!normal) s = IridiumAPI.stripBukkit(s);
-            if (!rgb) s = IridiumAPI.stripRGB(s);
-            if (!special) s = IridiumAPI.stripSpecial(s);
+            if (!normal) s = NeoPrismaticAPI.stripBukkit(s);
+            if (!rgb) s = NeoPrismaticAPI.stripRGB(s);
+            if (!special) s = NeoPrismaticAPI.stripSpecial(s);
 
             return s;
         }

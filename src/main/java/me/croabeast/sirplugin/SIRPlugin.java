@@ -22,9 +22,14 @@ import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
+import java.net.URLDecoder;
+import java.util.Objects;
+import java.util.jar.JarFile;
+
 public final class SIRPlugin extends JavaPlugin {
 
-    public static final String EMPTY_LINE = "true::";
+    private static final String EMPTY_LINE = "true::";
 
     @Getter
     private static SIRPlugin instance;
@@ -92,10 +97,10 @@ public final class SIRPlugin extends JavaPlugin {
         Initializer.unloadAdvances(false);
         ((AnnounceViewer) SIRModule.get("announces")).cancelTask();
 
-        for (var player : Bukkit.getOnlinePlayers()) {
-            var bar = BossbarBuilder.getBuilder(player);
-            if (bar != null) bar.unregister();
-        }
+        Bukkit.getOnlinePlayers().
+                stream().map(BossbarBuilder::getBuilder).
+                filter(Objects::nonNull).
+                forEach(BossbarBuilder::unregister);
 
         LogUtils.mixLog(
                 "&7The announcement task has been stopped.", EMPTY_LINE,
@@ -186,6 +191,26 @@ public final class SIRPlugin extends JavaPlugin {
             if (!FileCache.MAIN_CONFIG.getValue("updater.plugin.send-op", false) ||
                     !PlayerUtils.hasPerm(player, "sir.admin.updater")) return;
             runUpdater(player);
+        }
+    }
+
+    public static String getSIRFilePath() {
+        return SIRPlugin.class.getProtectionDomain().
+                getCodeSource().
+                getLocation().getPath();
+    }
+
+    @SuppressWarnings("deprecation")
+    public static File getSIRFileObject() {
+        return new File(URLDecoder.decode(getSIRFilePath()));
+    }
+
+    @Nullable
+    public static JarFile getSIRJarFile() {
+        try {
+            return new JarFile(getSIRFileObject());
+        } catch (Exception e) {
+            return null;
         }
     }
 }

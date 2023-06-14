@@ -3,26 +3,24 @@ package me.croabeast.sirplugin.module.listener;
 import lombok.var;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sirplugin.Initializer;
-import me.croabeast.sirplugin.hook.DiscordSender;
 import me.croabeast.sirplugin.file.FileCache;
+import me.croabeast.sirplugin.hook.DiscordSender;
 import me.croabeast.sirplugin.instance.SIRViewer;
 import me.croabeast.sirplugin.utility.LangUtils;
-import me.croabeast.sirplugin.utility.LogUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.advancement.Advancement;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
-
-import static me.croabeast.sirplugin.utility.LangUtils.stringKey;
 
 public class AdvanceHandler extends SIRViewer {
 
@@ -30,101 +28,67 @@ public class AdvanceHandler extends SIRViewer {
         super("advances");
     }
 
-    private List<String> advList(String path) {
+    private static List<String> advList(String path) {
         return FileCache.MODULES.toList("advancements.disabled-" + path);
     }
 
     @EventHandler
-    private void onDone(PlayerAdvancementDoneEvent event) {
+    private void onBukkit(PlayerAdvancementDoneEvent event) {
         final Player player = event.getPlayer();
         if (!isEnabled()) return;
 
-        var worlds = advList("worlds");
-        if (!worlds.isEmpty() && worlds.contains(player.getWorld().getName())) return;
+        if (advList("worlds").contains(player.getWorld().getName()))
+            return;
 
-        var modes = advList("modes");
-        if (!modes.isEmpty()) {
-            for (var s : modes) {
-                try {
-                    if (player.getGameMode() == GameMode.valueOf(
-                            s.toUpperCase(Locale.ENGLISH))) return;
-                } catch (IllegalArgumentException ignored) {}
-            }
+        for (var s : advList("modes")) {
+            String g = s.toUpperCase(Locale.ENGLISH);
+
+            try {
+                if (player.getGameMode() == GameMode.valueOf(g))
+                    return;
+            } catch (Exception ignored) {}
         }
 
         var adv = event.getAdvancement();
-        if (!Initializer.getAdvancements().contains(adv)) return;
+        if (!Initializer.ADV_LIST.contains(adv)) return;
 
-        var info = Initializer.getKeys().getOrDefault(adv, null);
         var key = adv.getKey().toString();
 
         if (key.contains("root") || key.contains("recipes")) return;
-        if (!advList("advs").isEmpty() && advList("advs").contains(key)) return;
+        if (advList("advs").contains(key)) return;
 
         var norms = new ArrayList<>(adv.getCriteria());
         if (norms.isEmpty()) return;
 
-        var date = player.getAdvancementProgress(adv).getDateAwarded(norms.get(norms.size() - 1));
-        if (date != null && date.getTime() < System.currentTimeMillis() - 5 * 1000) return;
+        var p = player.getAdvancementProgress(adv);
+        var date = p.getDateAwarded(norms.get(norms.size() - 1));
 
-        String frameType = null, advName = null, description = null;
+        var now = System.currentTimeMillis();
+        if (date != null && date.getTime() < now - 5 * 1000) return;
 
-        var messageKey = FileCache.ADVANCE_LANG.getValue(stringKey(key), String.class);
-        if (messageKey == null) return;
+        var path = key.replaceAll("[/:]", ".");
 
-        if (messageKey.contains("-(")) {
-            try {
-                String split = messageKey.split("-\\(")[1];
-                split = split.substring(0, split.lastIndexOf(')'));
-                String[] format = split.split("::");
+        var section = FileCache.ADVANCE_LANG.getSection(path);
+        if (section == null) return;
 
-                if (format.length > 0 && format.length < 4) {
-                    advName = format[0];
-                    description = format.length == 2 ? format[1] : null;
-                    frameType = format.length == 3 ? format[2] : null;
-                }
+        String messagePath = section.getString("path");
+        if (StringUtils.isBlank(messagePath)) return;
 
-                messageKey = messageKey.split("-\\(")[0];
-            }
-            catch (IndexOutOfBoundsException e) {
-                LogUtils.doLog(
-                        "&cError when getting the custom format of the advancement.",
-                        "&7Localized error: &e" + e.getLocalizedMessage()
-                );
-                frameType = advName = description = null;
-            }
-        }
-
-        if (advName == null) {
-            String replacement = key.substring(key.lastIndexOf('/') + 1);
-            replacement = StringUtils.replace(replacement, "_", " ");
-            advName = info == null || info.getTitle() == null ?
-                    WordUtils.capitalizeFully(replacement) : info.getTitle();
-        }
-
-        if (frameType == null)
-            frameType = info == null ? "PROGRESS" : info.getFrameType();
-        if (description == null)
-            description = info == null ? "No description." : info.getDescription();
+        var info = new BaseInfo(section, adv);
 
         String[] keys = {
-                        "{player}", "{adv}", "{description}",
-                        "{type}", "{low-type}", "{cap-type}"
+                        "{adv}", "{description}", "{type}", "{low-type}",
+                        "{cap-type}", "{item}"
                 },
                 values = {
-                        player.getName(), advName,
-                        description, frameType,
-                        frameType.toLowerCase(Locale.ENGLISH),
-                        WordUtils.capitalizeFully(frameType)
+                        info.title, info.description, info.frame,
+                        info.frame.toLowerCase(Locale.ENGLISH),
+                        WordUtils.capitalizeFully(info.frame), info.item
                 };
 
-        if (messageKey.matches("(?i)null")) return;
-
-        System.out.println(Arrays.toString(keys));
-        System.out.println(Arrays.toString(values));
-
-        List<String> messages = FileCache.ADVANCE_CONFIG.toList(messageKey),
-                mList = new ArrayList<>(), cList = new ArrayList<>();
+        List<String> messages = FileCache.ADVANCE_CONFIG.toList(messagePath),
+                mList = new ArrayList<>(),
+                cList = new ArrayList<>();
 
         for (var s : messages) {
             var m = Pattern.compile("(?i)^\\[cmd]").matcher(s);
@@ -144,5 +108,29 @@ public class AdvanceHandler extends SIRViewer {
 
         if (Initializer.hasDiscord())
             new DiscordSender(player, "advances").setKeys(keys).setValues(values).send();
+
+    }
+
+    static class BaseInfo {
+
+        private final String title, description, frame, item;
+
+        BaseInfo(ConfigurationSection section, Advancement adv) {
+            final String key = adv.getKey().toString();
+
+            String temp = key.substring(key.lastIndexOf('/') + 1);
+            temp = temp.replace('_', ' ');
+
+            char f = temp.toCharArray()[0];
+            String first = (f + "").toUpperCase(Locale.ENGLISH);
+
+            title = section.getString("name", first + temp.substring(1));
+
+            description = section.getString("description", "No description.");
+            frame = section.getString("frame", "TASK");
+
+            var item = section.getItemStack("item");
+            this.item = item == null ? null : item.getType().toString();
+        }
     }
 }

@@ -61,10 +61,6 @@ public class LangUtils extends BeansLib {
         return !FileCache.MAIN_CONFIG.getValue("options.show-prefix", false);
     }
 
-    public static String stringKey(@Nullable String key) {
-        return key == null ? "empty" : key.replace("/", ".").replace(":", ".");
-    }
-
     @NotNull
     public static MessageSender setSender() {
         final var config = FileCache.MAIN_CONFIG;

@@ -3,7 +3,7 @@ package me.croabeast.sirplugin.module;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.var;
-import me.croabeast.iridiumapi.IridiumAPI;
+import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sirplugin.file.FileCache;
 import me.croabeast.sirplugin.instance.SIRModule;
 import me.croabeast.sirplugin.utility.PlayerUtils;
@@ -82,7 +82,7 @@ public class EmojiParser extends SIRModule {
         }
 
         String convertValue(String line) {
-            return (value == null ? "" : value) + IridiumAPI.getLastColor(line, key, true, false);
+            return (value == null ? "" : value) + NeoPrismaticAPI.getLastColor(line, key);
         }
 
         Matcher getMatcher(String line, boolean add) {
@@ -109,7 +109,7 @@ public class EmojiParser extends SIRModule {
 
                 for (int i = 0; i < words.length; i++) {
                     String w = words[i];
-                    var match = getMatcher(IridiumAPI.stripAll(w), true);
+                    var match = getMatcher(NeoPrismaticAPI.stripAll(w), true);
 
                     if (match == null) {
                         if (i > 0) builder.append(" ");

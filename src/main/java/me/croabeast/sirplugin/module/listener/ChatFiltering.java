@@ -42,7 +42,7 @@ public class ChatFiltering extends SIRViewer {
             } catch (Exception ignored) {}
             if (section == null) continue;
 
-            if (!section.hasPermission(player)) continue;
+            if (!PlayerUtils.hasPerm(player, section.perm)) continue;
 
             String replacer = section.replaceKey;
 
@@ -107,10 +107,6 @@ public class ChatFiltering extends SIRViewer {
                     lineList.add(new Line(s));
                 } catch (Exception ignored) {}
             }
-        }
-
-        public boolean hasPermission(Player player) {
-            return perm.matches("(?i)default") || PlayerUtils.hasPerm(player, perm);
         }
     }
 

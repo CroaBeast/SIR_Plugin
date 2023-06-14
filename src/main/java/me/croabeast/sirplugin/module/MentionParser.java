@@ -3,7 +3,7 @@ package me.croabeast.sirplugin.module;
 import lombok.var;
 import me.croabeast.beanslib.key.ValueReplacer;
 import me.croabeast.beanslib.utility.TextUtils;
-import me.croabeast.iridiumapi.IridiumAPI;
+import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.file.FileCache;
 import me.croabeast.sirplugin.instance.SIRModule;
@@ -124,7 +124,7 @@ public class MentionParser extends SIRModule {
         var match = Pattern.compile("(?i)" + regex).matcher(line);
         if (match.find())
             line = line.replace(match.group(), result +
-                    IridiumAPI.getLastColor(line, regex, true, true));
+                    NeoPrismaticAPI.getLastColor(line, regex));
 
         return line;
     }

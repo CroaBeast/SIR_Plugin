@@ -9,26 +9,75 @@ import me.croabeast.sirplugin.file.FileCache;
 import me.croabeast.sirplugin.hook.LoginHook;
 import me.croabeast.sirplugin.hook.VanishHook;
 import me.croabeast.sirplugin.instance.SIRModule;
-import me.croabeast.sirplugin.utility.LangUtils;
 import me.croabeast.sirplugin.utility.LogUtils;
 import net.milkbowl.vault.permission.Permission;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.DrilldownPie;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
-import org.bukkit.GameRule;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.plugin.Plugin;
 
 import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public final class Initializer {
+
+    public static final Map<Advancement, AdvancementInfo> ADVANCEMENT_MAP = new HashMap<>();
+    private static final Map<String, List<AdvancementInfo>> ADV_INFO_MAP = new HashMap<>();
+
+    public static final List<Advancement> ADV_LIST;
+
+    private static void forList(Set<AdvancementInfo> set, String frame) {
+        set.stream().
+                filter(info -> info.getFrameType().matches("(?i)" + frame)).
+                forEach(info -> {
+                    var s = ADV_INFO_MAP.getOrDefault(frame, new ArrayList<>());
+                    s.add(info);
+
+                    ADV_INFO_MAP.put(frame, s);
+                });
+    }
+
+    static {
+        ADV_LIST = Lists.newArrayList(Bukkit.advancementIterator()).
+                stream().filter(a -> {
+                    var key = a.getKey().toString();
+
+                    if (key.contains("recipes"))
+                        return false;
+
+                    return !key.contains("root");
+                }).
+                collect(Collectors.toList());
+
+        var infoSet = ADV_LIST.stream().map(AdvancementInfo::new).collect(Collectors.toSet());
+
+        infoSet.forEach(info -> ADVANCEMENT_MAP.put(info.getBukkit(), info));
+
+        forList(infoSet, "task");
+        forList(infoSet, "goal");
+        forList(infoSet, "challenge");
+        forList(infoSet, "unknown");
+    }
+
+    private static List<AdvancementInfo> getList(String frame) {
+        return ADV_INFO_MAP.getOrDefault(frame, new ArrayList<>());
+    }
+
+    private static Set<AdvancementInfo> toTypeSet(String frame) {
+        return new HashSet<>(getList(frame));
+    }
+
+    private static final Set<AdvancementInfo> TASK_ADVANCEMENTS = toTypeSet("task");
+    private static final Set<AdvancementInfo> GOAL_ADVANCEMENTS = toTypeSet("goal");
+    private static final Set<AdvancementInfo> CHALLENGE_ADVANCEMENTS = toTypeSet("challenge");
+    private static final Set<AdvancementInfo> UNKNOWN_ADVANCEMENTS = toTypeSet("unknown");
 
     private Initializer() {}
 
     private static Permission permProvider;
-
-    private static final HashMap<Advancement, AdvancementInfo> ADVANCEMENT_KEYS = new HashMap<>();
 
     private static boolean hasPAPI() {
         return Exceptions.isPluginEnabled("PlaceholderAPI");
@@ -145,12 +194,47 @@ public final class Initializer {
             LogUtils.doLog("&cThere is no compatible hooks available.");
     }
 
+    private static Consumer<AdvancementInfo> fromInfo(Set<Advancement> keys, String type) {
+        return info -> {
+            var advances = FileCache.ADVANCE_LANG.get();
+            if (advances == null) return;
+
+            var adv = info.getBukkit();
+
+            final String k = adv.getKey().toString();
+            var key = k.replaceAll("[/:]", ".");
+
+            if (advances.contains(key)) return;
+
+            String title = info.getTitle();
+            if (title == null) {
+                String temp = k.substring(k.lastIndexOf('/') + 1);
+                temp = temp.replace('_', ' ');
+
+                char f = temp.toCharArray()[0];
+                String first = (f + "").toUpperCase(Locale.ENGLISH);
+
+                title = first + temp.substring(1);
+            }
+
+            advances.set(key + ".path", "type." + type);
+
+            advances.set(key + ".frame", info.getFrameType());
+            advances.set(key + ".name", title);
+            advances.set(key + ".description", info.getDescription());
+
+            final var item = info.getItem();
+            advances.set(key + ".item",
+                    item == null ? null : item.getType().toString());
+
+            keys.add(adv);
+        };
+    }
+
     @SuppressWarnings("deprecation")
     public static void loadAdvances(boolean debug) {
         var version = LibUtils.getMainVersion();
-
         if (version < 12) return;
-        if (!ADVANCEMENT_KEYS.isEmpty()) ADVANCEMENT_KEYS.clear();
 
         var time = System.currentTimeMillis();
         if (debug) {
@@ -159,113 +243,56 @@ public final class Initializer {
         }
 
         if (SIRModule.isEnabled("advances")) {
-            for (var world : Bukkit.getServer().getWorlds()) {
-                if (version >= 12 && version < 13) {
-                    world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "false");
-                    continue;
-                }
-                world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, false);
-            }
-
+            for (var world : Bukkit.getWorlds())
+                world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "false");
             LogUtils.doLog("&eAll worlds have default advancements disabled.");
         }
 
-        List<Advancement> tasks = new ArrayList<>(), goals = new ArrayList<>(),
-                challenges = new ArrayList<>(),
-                errors = new ArrayList<>(), keys = new ArrayList<>();
+        Set<Advancement> loadedKeys = new HashSet<>();
 
-        for (var adv : getAdvancements()) {
-            ADVANCEMENT_KEYS.put(adv, new AdvancementInfo(adv));
+        TASK_ADVANCEMENTS.forEach(fromInfo(loadedKeys, "task"));
+        GOAL_ADVANCEMENTS.forEach(fromInfo(loadedKeys, "goal"));
+        CHALLENGE_ADVANCEMENTS.forEach(fromInfo(loadedKeys, "challenge"));
+        UNKNOWN_ADVANCEMENTS.forEach(fromInfo(loadedKeys, "custom"));
 
-            var key = LangUtils.stringKey(adv.getKey().toString());
-            var type = ADVANCEMENT_KEYS.get(adv).getFrameType();
-
-            if (key.contains("root") || key.contains("recipes")) continue;
-
-            var advances = FileCache.ADVANCE_LANG.get();
-            if (advances == null) continue;
-
-            var notContained = !advances.contains(key);
-
-            switch (type.toUpperCase(Locale.ENGLISH)) {
-                case "TASK":
-                    tasks.add(adv);
-                    if (notContained) {
-                        advances.set(key, "type.task");
-                        keys.add(adv);
-                    }
-                    break;
-
-                case "GOAL":
-                    goals.add(adv);
-                    if (notContained) {
-                        advances.set(key, "type.goal");
-                        keys.add(adv);
-                    }
-                    break;
-
-                case "CHALLENGE":
-                    challenges.add(adv);
-                    if (notContained) {
-                        advances.set(key, "type.challenge");
-                        keys.add(adv);
-                    }
-                    break;
-
-                default:
-                    errors.add(adv);
-                    if (notContained) {
-                        advances.set(key, "type.custom");
-                        keys.add(adv);
-                    }
-                    break;
-            }
-        }
-
-        if (keys.size() > 0) {
+        if (loadedKeys.size() > 0) {
             var file = FileCache.ADVANCE_LANG.getFile();
             if (file != null) file.saveFile();
         }
 
-        String counts = "&7Tasks: &a" + tasks.size() +
-                "&7 - Goals: &b" + goals.size() + "&7 - " + "&7Challenges: &d" + challenges.size();
-        String error = errors.size() == 0 ? null :
-                ("&7Unknowns: &c" + errors.size() + "&7. Check your advances.yml file!");
-
         if (!debug) return;
 
-        LogUtils.doLog(counts, error,
-                "&7Registered advancements in &e" + (System.currentTimeMillis() - time) + "&7 ms.");
-        LogUtils.rawLog("");
+        String advancements = "&7Tasks: &a" + TASK_ADVANCEMENTS.size() +
+                "&7 - Goals: &b" + GOAL_ADVANCEMENTS.size() +
+                "&7 - &7Challenges: &d" + CHALLENGE_ADVANCEMENTS.size();
+        LogUtils.doLog(advancements);
+
+        if (!UNKNOWN_ADVANCEMENTS.isEmpty())
+            LogUtils.doLog(
+                    "&7Unknowns: &c" + UNKNOWN_ADVANCEMENTS.size() +
+                    "&7. Check your advances.yml file!"
+            );
+
+        LogUtils.mixLog(
+                "&7Loaded advancements in &e" + (System.currentTimeMillis() - time) +
+                "&7 ms.", "true::"
+        );
     }
 
     @SuppressWarnings("deprecation")
     public static void unloadAdvances(boolean reload) {
         var version = LibUtils.getMainVersion();
-
         if (version < 12) return;
+
         if (SIRModule.isEnabled("advances") && reload) return;
 
-        for (var world : Bukkit.getServer().getWorlds()) {
-            if (version >= 12 && version < 13) {
-                world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "true");
-                continue;
-            }
-            world.setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, true);
-        }
+        for (var world : Bukkit.getWorlds())
+            world.setGameRuleValue("ANNOUNCE_ADVANCEMENTS", "true");
 
         LogUtils.doLog("&eAll worlds have default advancements enabled.");
     }
 
-    public static List<Advancement> getAdvancements() {
-        return Lists.newArrayList(Bukkit.getServer().advancementIterator());
-    }
-
     public static Permission getPerms() {
         return permProvider;
-    }
-
-    public static Map<Advancement, AdvancementInfo> getKeys() {
-        return ADVANCEMENT_KEYS;
     }
 }

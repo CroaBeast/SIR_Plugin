@@ -121,6 +121,10 @@ public final class VanishHook {
         return false;
     }
 
+    public static boolean isVisible(Player player) {
+        return !isVanished(player);
+    }
+
     @Nullable
     public static Plugin getHook() {
         return isEnabled() ? ENABLED_HOOKS.get(0) : null;

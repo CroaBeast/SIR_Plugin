@@ -2,16 +2,13 @@ package me.croabeast.sirplugin.hook;
 
 import com.google.common.collect.Lists;
 import github.scarsz.discordsrv.DiscordSRV;
-import github.scarsz.discordsrv.api.events.GameChatMessagePostProcessEvent;
-import github.scarsz.discordsrv.api.events.GameChatMessagePreProcessEvent;
 import github.scarsz.discordsrv.dependencies.jda.api.EmbedBuilder;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed;
 import github.scarsz.discordsrv.util.DiscordUtil;
-import github.scarsz.discordsrv.util.MessageUtil;
 import lombok.var;
 import me.croabeast.beanslib.key.ValueReplacer;
 import me.croabeast.beanslib.utility.TextUtils;
-import me.croabeast.iridiumapi.IridiumAPI;
+import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sirplugin.SIRPlugin;
 import me.croabeast.sirplugin.file.FileCache;
 import org.apache.commons.lang.StringUtils;
@@ -23,7 +20,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DiscordSender {
+public final class DiscordSender {
 
     private final Player player;
     private final String channel;
@@ -50,7 +47,7 @@ public class DiscordSender {
         string = ValueReplacer.forEach(keys, values, string);
         string = SIRPlugin.getUtils().formatPlaceholders(player, string);
 
-        return DiscordUtil.translateEmotes(IridiumAPI.stripAll(string));
+        return DiscordUtil.translateEmotes(NeoPrismaticAPI.stripAll(string));
     }
 
     public DiscordSender setValues(String... values) {
@@ -154,28 +151,6 @@ public class DiscordSender {
 
             var channel = guild.getTextChannelById(id);
             if (channel == null) continue;
-
-            var pre = new GameChatMessagePreProcessEvent(
-                    id, MessageUtil.toComponent(text, true),
-                    player, null
-            );
-            DiscordSRV.api.callEvent(pre);
-
-            if (pre.isCancelled()) return false;
-
-            channel = guild.getTextChannelById(pre.getChannel());
-            if (channel == null) return false;
-
-            text = MessageUtil.toLegacy(pre.getMessageComponent());
-
-            var post = new GameChatMessagePostProcessEvent(
-                    id, text, player, false, null);
-            DiscordSRV.api.callEvent(post);
-
-            channel = guild.getTextChannelById(post.getChannel());
-            if (channel == null) return false;
-
-            text = post.getProcessedMessage();
 
             if (StringUtils.isNotBlank(text)) {
                 channel.sendMessage(formatString(text)).queue();
