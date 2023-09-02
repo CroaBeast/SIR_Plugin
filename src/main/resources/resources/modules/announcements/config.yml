@@ -1,0 +1,7 @@
+# The interval between each announcement in server ticks.
+# Want to disable the announcements feature? Set it to 0.
+# Every 20 server ticks is a second.
+interval: 2400
+# Send announcements in random order. I don't like this,
+# but if you want to use it, set it to true.
+random: false

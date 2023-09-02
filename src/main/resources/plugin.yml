@@ -1,3 +1,5 @@
+main: me.croabeast.sir.plugin.SIRPlugin
+
 name: SIR # Simple In-game Receptionist
 version: '${project.version}'
 prefix: SIR
@@ -24,8 +26,6 @@ softdepend:
   # Misc
   - AdvancedBan
   - DiscordSRV
-
-main: me.croabeast.sirplugin.SIRPlugin
 
 commands:
   sir:

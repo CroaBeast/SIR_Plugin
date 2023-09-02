@@ -1,0 +1,21 @@
+# The default server ID for the DiscordSRV Hook.
+# If not set, will catch the default one on DiscordSRV configuration.
+default-server: SERVER_ID
+# Put every channel you want to receive a message type.
+# Or just put the same channel for every message type
+channels:
+  first-join:
+    - CHANNEL_ID
+    - OTHER_SERVER_ID:CHANNEL_ID
+  join:
+    - CHANNEL_ID
+    - OTHER_SERVER_ID:CHANNEL_ID
+  quit:
+    - CHANNEL_ID
+    - OTHER_SERVER_ID:CHANNEL_ID
+  global-chat:
+    - CHANNEL_ID
+    - OTHER_SERVER_ID:CHANNEL_ID
+  advances:
+    - CHANNEL_ID
+    - OTHER_SERVER_ID:CHANNEL_ID

@@ -1,0 +1,13 @@
+update: true
+
+modules:
+  join-quit: true
+  announcements: true
+  motd: true
+  chat-channels: true
+  discord-hook: true
+  advancements: true
+  emojis: true
+  chat-filters: true
+  mentions: true
+  chat-color: true

@@ -1,0 +1,55 @@
+########################
+#   SIR by CroaBeast   #
+# Depressed since 2004 #
+########################
+# Want to use unicode characters? Check this site: https://coolsymbol.com
+
+# If the file should be updated to the latest version.
+update: true
+# The language of most of the plugin messages.
+lang: en
+
+# The Updater Checker for new plugin updates.
+updater:
+  # Sends a reminder when the plugin is completely enabled.
+  # Disabling won't send any reminder.
+  on-start: true
+  # Sends a reminder to OP's or players with 'sir.admin.update'
+  # permission. Disabling won't send any reminder.
+  send-op: true
+
+# Some useful options for this plugin if you want to change them.
+options:
+  # It will log the join/quit messages, the announcements from
+  # announces.yml, and the advancement messages from advances.yml
+  # to the server's console.
+  send-console: true
+  # If enabled, it will remove all unnecessary spaces for every chat
+  # message to send. Recommended leaving this 'false'.
+  strip-spaces: false
+  # Fix a color format bug when RGB is applied to the console.
+  # It's recommended to leave it to false if you don't have
+  # this visual bug.
+  fix-logger: false
+  # If enabled, it will check if the permission is set to that player,
+  # overriding the default OP permission system.
+  # In other words, it'll not check if a player is OP, only if a player
+  # HAVE SET that specific permission, avoiding wildcard permissions,
+  # like sir.* or worldedit.*. Recommended leaving this value on 'false'.
+  override-op: false
+  # if enabled, it will show the prefix of the message type in
+  # the console. Example:
+  # [ACTION-BAR] My action bar message.
+  show-prefix: true
+
+# You can delete the values' section if you want to use the hard-coded values!
+values:
+  # Every message that start with this string, will have the main-prefix.
+  lang-prefix-key: '<P>'
+  # Valid only in SIR files or inputs that accept centered messages.
+  # Put this first on those chat messages you want to center.
+  center-prefix: '<C>'
+  # Can be used in most of the plugin files and the /print command.
+  # If you want to add more than one line in your CHAT type message,
+  # or you want title AND subtitle, use it to split the message.
+  line-separator: '<n>'

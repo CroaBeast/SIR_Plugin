@@ -1,0 +1,17 @@
+# The worlds list that will not show any advancement messages.
+# Disable this using [].
+disabled-worlds:
+  - custom_world
+# The game-modes list that will not show any advancement messages.
+# Disable this using [].
+disabled-modes:
+  - SPECTATOR
+# The world's list that will not show any advancement messages.
+# THESE ARE JUST EXAMPLES FROM OTHER DATA PACKS!!
+# Disable this using []
+disabled-advs:
+  - fusionmc:bastion_advancement_fix
+  - vanillatweaks:classic_fishing_loot
+  - vanillatweaks:double_shulker_shells
+  - global:fusion_mc
+  - vanillatweaks:wandering_trades
