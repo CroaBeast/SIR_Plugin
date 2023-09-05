@@ -41,6 +41,7 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
         return FileCache.ANNOUNCE_CACHE.getCache("announces").getSection("announces");
     }
 
+    @Priority(level = 2)
     static void loadCache() {
         ConfigurationSection section = announceSection();
         if (section == null) return;

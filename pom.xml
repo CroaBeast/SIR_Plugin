@@ -6,7 +6,7 @@
 
     <groupId>me.croabeast</groupId>
     <artifactId>SIR_Plugin</artifactId>
-    <version>3.0-SNAPSHOT-1</version>
+    <version>3.0-SNAPSHOT-4</version>
     <packaging>jar</packaging>
 
     <name>SIR_Plugin</name> <!--Simple In-game Receptionist-->
@@ -64,7 +64,7 @@
                         </relocation>
                         <relocation>
                             <pattern>org.bstats</pattern>
-                            <shadedPattern>me.croabeast.sir.api.metrics</shadedPattern>
+                            <shadedPattern>me.croabeast.metrics</shadedPattern>
                         </relocation>
                         <relocation>
                             <pattern>com.github.stefvanschie.inventoryframework</pattern>
@@ -77,6 +77,7 @@
                             <artifact>*:*</artifact>
                             <excludes>
                                 <exclude>META-INF/**</exclude>
+                                <exclude>me/croabeast/sir/api/loot/**</exclude>
                                 <exclude>fonts/**</exclude>
                                 <exclude>resources/plugin.yml</exclude>
                             </excludes>
@@ -200,7 +201,7 @@
         <dependency>
             <groupId>io.github.croabeast</groupId>
             <artifactId>BeansLib</artifactId>
-            <version>1.4-SNAPSHOT-82</version>
+            <version>1.4-SNAPSHOT-83</version>
             <scope>compile</scope>
         </dependency>
 

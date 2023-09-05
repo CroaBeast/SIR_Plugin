@@ -41,8 +41,8 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
 
     private static boolean notRegistered = true;
 
-    private static final HashMap<Player, Long> GLOBAL_PLAYERS = new HashMap<>();
-    private static final HashMap<Player, Long> LOCAL_PLAYERS = new HashMap<>();
+    private static final HashMap<Player, Long>
+            GLOBAL_PLAYERS = new HashMap<>(), LOCAL_PLAYERS = new HashMap<>();
 
     public ChatFormatter() {
         super(ModuleName.CHAT_CHANNELS);
@@ -66,8 +66,9 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
         return FileCache.CHAT_CHANNELS_CACHE.getCache("channels");
     }
 
+    @Priority(level = 1)
     static void loadCache() {
-        if (!ModuleName.isEnabled(ModuleName.CHAT_CHANNELS)) return;
+        if (!ModuleName.CHAT_CHANNELS.isEnabled()) return;
         if (!CHANNEL_LIST.isEmpty()) CHANNEL_LIST.clear();
 
         ChatChannel defs = GeneralChannel.getDefaults();

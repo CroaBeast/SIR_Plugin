@@ -19,9 +19,10 @@ import java.util.Map;
 
 public class ModuleGUI implements CacheHandler {
 
-    public static final Map<ModuleName<?>, Boolean> MODULE_STATUS_MAP = new HashMap<>();
+    static final Map<ModuleName<?>, Boolean> MODULE_STATUS_MAP = new HashMap<>();
     private static ChestGui modulesGUI = null;
 
+    @Priority(level = 2)
     static void loadCache() {
         ConfigurationSection data = FileCache.MODULES_DATA.getSection("modules");
         if (data == null) return;

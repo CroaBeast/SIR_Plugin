@@ -4,7 +4,6 @@ import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sir.plugin.Initializer;
 import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.channel.GeneralChannel;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.module.ModuleGUI;
@@ -63,13 +62,16 @@ public class MainTask extends SIRTask {
                 if (isProhibited(sender, "admin.reload")) return true;
                 long start = System.currentTimeMillis();
 
-                CacheHandler.save();
-                CacheHandler.load();
-
-                GeneralChannel.loadDefaults();
-
-                Initializer.unloadAdvances();
-                Initializer.loadAdvances();
+                try {
+                    CacheHandler.save();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                try {
+                    CacheHandler.load();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
 
                 final FileCache config = FileCache.MAIN_CONFIG;
 
@@ -103,7 +105,7 @@ public class MainTask extends SIRTask {
     @Override
     protected @NotNull List<String> complete(CommandSender sender, String[] args) {
         return args.length == 1 ?
-                generateList(args, "reload", "help", "support", "about") :
+                generateList(args, "modules", "reload", "help", "support", "about") :
                 new ArrayList<>();
     }
 }

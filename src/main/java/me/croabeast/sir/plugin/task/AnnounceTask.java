@@ -25,7 +25,7 @@ public class AnnounceTask extends SIRTask {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        AnnounceHandler announcer = ModuleName.get(ModuleName.ANNOUNCEMENTS);
+        AnnounceHandler announcer = ModuleName.ANNOUNCEMENTS.get();
 
         if (isProhibited(sender, "announcer.*")) return true;
         if (args.length == 0) return fromSender(sender, "commands.announcer.help");

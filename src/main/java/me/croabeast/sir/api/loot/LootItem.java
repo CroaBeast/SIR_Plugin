@@ -1,4 +1,4 @@
-package me.croabeast.sir.plugin.loot;
+package me.croabeast.sir.api.loot;
 
 import org.bukkit.inventory.ItemStack;
 

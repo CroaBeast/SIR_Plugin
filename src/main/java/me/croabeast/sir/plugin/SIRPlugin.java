@@ -2,7 +2,6 @@ package me.croabeast.sir.plugin;
 
 import lombok.Getter;
 import me.croabeast.beanslib.analytic.UpdateChecker;
-import me.croabeast.beanslib.builder.BossbarBuilder;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sir.plugin.file.CacheHandler;
@@ -11,6 +10,7 @@ import me.croabeast.sir.plugin.hook.LoginHook;
 import me.croabeast.sir.plugin.hook.VanishHook;
 import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.SIRModule;
+import me.croabeast.sir.plugin.module.instance.AnnounceHandler;
 import me.croabeast.sir.plugin.module.instance.EmojiParser;
 import me.croabeast.sir.plugin.module.instance.listener.JoinQuitHandler;
 import me.croabeast.sir.plugin.task.SIRTask;
@@ -29,7 +29,6 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
@@ -38,9 +37,7 @@ import java.util.zip.ZipEntry;
 public final class SIRPlugin extends JavaPlugin {
 
     private static final List<String> JAR_ENTRIES = new ArrayList<>();
-
     static final String EMPTY_LINE = "true::";
-    static boolean isRunning = false, firstUse = true;
 
     @Getter
     private static SIRPlugin instance;
@@ -74,8 +71,11 @@ public final class SIRPlugin extends JavaPlugin {
             );
         } catch (Exception ignored) {}
 
-        isRunning = true;
-        CacheHandler.load();
+        try {
+            CacheHandler.load();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         final FileCache config = FileCache.MAIN_CONFIG;
 
@@ -101,8 +101,10 @@ public final class SIRPlugin extends JavaPlugin {
         SIRTask.registerCommands();
         SIRModule.registerModules();
 
-        if (ModuleName.isEnabled(ModuleName.ANNOUNCEMENTS)) {
-            ModuleName.get(ModuleName.ANNOUNCEMENTS).startTask();
+        ModuleName<AnnounceHandler> name = ModuleName.ANNOUNCEMENTS;
+
+        if (name.isEnabled()) {
+            name.get().startTask();
             LogUtils.doLog("&7The announcement task has been started.");
         }
 
@@ -115,12 +117,7 @@ public final class SIRPlugin extends JavaPlugin {
         if (LoginHook.isEnabled())
             JoinQuitHandler.LOGGED_PLAYERS.addAll(Bukkit.getOnlinePlayers());
 
-        getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
-            Initializer.loadAdvances();
-            firstUse = false;
-
-            checkUpdater(null);
-        });
+        runTaskWhenLoaded(() -> checkUpdater(null));
     }
 
     @Override
@@ -131,12 +128,13 @@ public final class SIRPlugin extends JavaPlugin {
                 "&0* &e____) . _|_ . | &0* &e\\ . &fv" + version, ""
         );
 
-        isRunning = false;
+        try {
+            CacheHandler.save();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        CacheHandler.save();
-        Initializer.unloadAdvances();
-
-        ModuleName.get(ModuleName.ANNOUNCEMENTS).cancelTask();
+        ModuleName.ANNOUNCEMENTS.get().cancelTask();
 
         LogUtils.mixLog(
                 "&7The announcement task has been stopped.", "",
@@ -230,6 +228,10 @@ public final class SIRPlugin extends JavaPlugin {
         }
     }
 
+    public static void runTaskWhenLoaded(Runnable runnable) {
+        Bukkit.getScheduler().scheduleSyncDelayedTask(instance, runnable);
+    }
+
     public static File getSIRFolder() {
         return getInstance().getDataFolder();
     }
@@ -244,6 +246,16 @@ public final class SIRPlugin extends JavaPlugin {
 
     public static SIRCollector fromCollector(String packagePath) {
         return fromCollector().filter(c -> c.getName().startsWith(packagePath));
+    }
+
+    @Nullable
+    public static SIRPlugin getProvidingInstance(Class<?> clazz) {
+        try {
+            JavaPlugin plugin = JavaPlugin.getProvidingPlugin(clazz);
+            return plugin == instance ? (SIRPlugin) plugin : null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public static class SIRCollector {

@@ -5,6 +5,7 @@ import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sir.plugin.SIRPlugin;
+import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.SIRModule;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MentionParser extends SIRModule {
+public class MentionParser extends SIRModule implements CacheHandler {
 
     private static final List<Mention> MENTION_LIST = new ArrayList<>();
 
@@ -31,8 +32,9 @@ public class MentionParser extends SIRModule {
         loadCache();
     }
 
+    @Priority(level = 2)
     static void loadCache() {
-        if (!ModuleName.isEnabled(ModuleName.MENTIONS)) return;
+        if (!ModuleName.MENTIONS.isEnabled()) return;
         if (!MENTION_LIST.isEmpty()) MENTION_LIST.clear();
 
         ConfigurationSection section = FileCache.MENTIONS_CACHE.getSection("mentions");
@@ -46,7 +48,7 @@ public class MentionParser extends SIRModule {
 
     public static String parse(Player player, String line) {
         if (StringUtils.isBlank(line)) return line;
-        if (!ModuleName.isEnabled(ModuleName.MENTIONS)) return line;
+        if (!ModuleName.MENTIONS.isEnabled()) return line;
 
         ConfigurationSection id = FileCache.MENTIONS_CACHE.permSection(player, "mentions");
         if (id == null) return line;

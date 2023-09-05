@@ -38,11 +38,11 @@ public abstract class SIRModule {
      * @return if the specified module is enabled.
      */
     protected boolean isEnabled() {
-        return ModuleName.isEnabled(name);
+        return name.isEnabled();
     }
 
     public String toString() {
-        return "SIRModule{" + name + ", " + isEnabled() + "}";
+        return "SIRModule{" + name + ", " + name.isEnabled() + "}";
     }
 
     private static boolean areRegistered = false;

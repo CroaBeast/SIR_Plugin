@@ -1,11 +1,12 @@
 package me.croabeast.sir.plugin.channel;
 
 import lombok.Getter;
+import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
 
-public final class GeneralChannel extends AbstractChannel {
+public final class GeneralChannel extends AbstractChannel implements CacheHandler {
 
     private static ChatChannel defs = null;
 
@@ -33,7 +34,7 @@ public final class GeneralChannel extends AbstractChannel {
         return FileCache.CHAT_CHANNELS_CACHE.getConfig();
     }
 
-    public static ChatChannel loadDefaults() {
+    static ChatChannel loadDefaults() {
         ConfigurationSection def = config().getSection("default-channel");
 
         return def == null ? null : (defs = new AbstractChannel(def, null) {
@@ -47,6 +48,11 @@ public final class GeneralChannel extends AbstractChannel {
                 return null;
             }
         });
+    }
+
+    @Priority(level = 1)
+    static void loadCache() {
+        loadDefaults();
     }
 
     public static ChatChannel getDefaults() {

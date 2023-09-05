@@ -74,9 +74,7 @@ public class YAMLFile {
 
         try {
             setResource(location);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        } catch (Exception ignored) {}
     }
 
     public YAMLFile setResource(InputStream resource) throws NullPointerException {

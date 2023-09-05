@@ -14,7 +14,7 @@ out/
 # Log file
 *.log
 
-# BlueJ plugin_resources
+# BlueJ files
 *.ctxt
 
 # Package Files #
@@ -31,7 +31,7 @@ hs_err_pid*
 
 *~
 
-# temporary plugin_resources which can be created if a process still has a handle open of a deleted file
+# temporary files which can be created if a process still has a handle open of a deleted file
 .fuse_hidden*
 
 # KDE directory preferences
@@ -40,7 +40,7 @@ hs_err_pid*
 # Linux trash folder which might appear on any partition or disk
 .Trash-*
 
-# .nfs plugin_resources are created when an open file is removed but is still being accessed
+# .nfs files are created when an open file is removed but is still being accessed
 .nfs*
 
 # General
@@ -70,7 +70,7 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-# Windows thumbnail cache plugin_resources
+# Windows thumbnail cache files
 Thumbs.db
 Thumbs.db:encryptable
 ehthumbs.db
@@ -85,7 +85,7 @@ ehthumbs_vista.db
 # Recycle Bin used on file shares
 $RECYCLE.BIN/
 
-# Windows Installer plugin_resources
+# Windows Installer files
 *.cab
 *.msi
 *.msix

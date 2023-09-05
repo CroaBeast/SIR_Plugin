@@ -153,6 +153,7 @@ public final class FileCache implements CacheHandler {
         return "FileCache{" + getFile().getLocation() + "}";
     }
 
+    @Priority(level = 3)
     static void loadCache() {
         final long time = System.currentTimeMillis();
         int totalFiles = 0, filesUpdates = 0;

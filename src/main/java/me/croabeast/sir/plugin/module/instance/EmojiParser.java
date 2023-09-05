@@ -3,6 +3,7 @@ package me.croabeast.sir.plugin.module.instance;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
+import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.SIRModule;
@@ -16,7 +17,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class EmojiParser extends SIRModule {
+public class EmojiParser extends SIRModule implements CacheHandler {
 
     private static final List<Emoji> EMOJI_LIST = new ArrayList<>();
 
@@ -29,8 +30,9 @@ public class EmojiParser extends SIRModule {
         loadCache();
     }
 
+    @Priority(level = 1)
     static void loadCache() {
-        if (!ModuleName.isEnabled(ModuleName.EMOJIS)) return;
+        if (!ModuleName.EMOJIS.isEnabled()) return;
         if (!EMOJI_LIST.isEmpty()) EMOJI_LIST.clear();
 
         ConfigurationSection section = FileCache.EMOJIS_CACHE.getSection("emojis");
@@ -51,7 +53,7 @@ public class EmojiParser extends SIRModule {
 
     public static String parse(Player player, String line) {
         try {
-            if (!ModuleName.isEnabled(ModuleName.EMOJIS)) return line;
+            if (!ModuleName.EMOJIS.isEnabled()) return line;
             if (EMOJI_LIST.isEmpty()) return line;
 
             for (Emoji e : EMOJI_LIST) line = e.parseEmoji(player, line);
