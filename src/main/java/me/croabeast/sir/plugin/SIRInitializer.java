@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @UtilityClass
-public class Initializer {
+public class SIRInitializer {
 
     private Permission permProvider;
 
@@ -84,7 +84,7 @@ public class Initializer {
         int logLines = 0;
 
         if (hasPAPI()) {
-            LogUtils.doLog("&7PlaceholderAPI: &eFound v. " + pluginVersion("PlaceholderAPI"));
+            LogUtils.doLog("&7PlaceholderAPI: &e" + pluginVersion("PlaceholderAPI"));
             logLines++;
         }
 
@@ -94,17 +94,17 @@ public class Initializer {
 
             String hasVault;
             if (rsp != null) {
-                hasVault = "&ePermission System registered.";
+                hasVault = "&eProvider registered.";
                 permProvider = rsp.getProvider();
             }
-            else hasVault = "&cNo permission provider!";
+            else hasVault = "&cNo provider!";
 
             LogUtils.doLog("&7Vault: " + hasVault);
             logLines++;
         }
 
         if (hasDiscord()) {
-            LogUtils.doLog("&7DiscordSRV: " + "&eFound v. " + pluginVersion("DiscordSRV"));
+            LogUtils.doLog("&7DiscordSRV: " + "&e" + pluginVersion("DiscordSRV"));
             logLines++;
         }
 
@@ -117,7 +117,7 @@ public class Initializer {
                     p.getDescription().getVersion() : "";
 
             LogUtils.doLog("&7Login Plugin: "
-                    + "&eFound " + pN + " v. " + pV);
+                    + "&e" + pN + " v. " + pV);
             logLines++;
         }
 
@@ -130,7 +130,7 @@ public class Initializer {
                     p.getDescription().getVersion() : "";
 
             LogUtils.doLog("&7Vanish Plugin: "
-                    + "&eFound " + pN + " v. " + pV);
+                    + "&e" + pN + " v. " + pV);
             logLines++;
         }
 

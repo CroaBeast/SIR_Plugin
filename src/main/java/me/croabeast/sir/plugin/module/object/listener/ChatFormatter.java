@@ -1,7 +1,10 @@
-package me.croabeast.sir.plugin.module.instance.listener;
+package me.croabeast.sir.plugin.module.object.listener;
 
 import com.Zrips.CMI.Containers.CMIUser;
 import com.earth2me.essentials.Essentials;
+import com.google.common.collect.Lists;
+import lombok.var;
+import me.croabeast.beanslib.Beans;
 import me.croabeast.beanslib.builder.ChatMessageBuilder;
 import me.croabeast.beanslib.key.ValueReplacer;
 import me.croabeast.beanslib.message.MessageSender;
@@ -9,8 +12,7 @@ import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.event.chat.SIRChatEvent;
 import me.croabeast.sir.api.misc.CustomListener;
-import me.croabeast.sir.plugin.Initializer;
-import me.croabeast.sir.plugin.SIRPlugin;
+import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.channel.ChatChannel;
 import me.croabeast.sir.plugin.channel.GeneralChannel;
 import me.croabeast.sir.plugin.file.CacheHandler;
@@ -21,6 +23,7 @@ import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.SIRModule;
 import me.croabeast.sir.plugin.task.SIRTask;
 import me.croabeast.sir.plugin.utility.LogUtils;
+import me.croabeast.sir.plugin.utility.PlayerUtils;
 import me.leoko.advancedban.manager.PunishmentManager;
 import me.leoko.advancedban.manager.UUIDManager;
 import org.apache.commons.lang.StringUtils;
@@ -37,25 +40,26 @@ import java.util.*;
 
 public class ChatFormatter extends SIRModule implements CustomListener, CacheHandler {
 
-    public static final List<ChatChannel> CHANNEL_LIST = new ArrayList<>();
+    private static final Map<Integer, List<ChatChannel>> CHANNELS_MAP = new LinkedHashMap<>();
 
-    private static boolean notRegistered = true;
+    public static final Map<Integer, List<ChatChannel>> LOCAL_MAP = new LinkedHashMap<>();
+    private static final Map<Integer, List<ChatChannel>> GLOBAL_MAP = new LinkedHashMap<>();
 
     private static final HashMap<Player, Long>
             GLOBAL_PLAYERS = new HashMap<>(), LOCAL_PLAYERS = new HashMap<>();
 
-    public ChatFormatter() {
+    ChatFormatter() {
         super(ModuleName.CHAT_CHANNELS);
     }
 
-    @Override
-    public void registerModule() {
-        if (notRegistered) {
-            register();
-            notRegistered = false;
-        }
+    private boolean registered = false;
 
-        loadCache();
+    @Override
+    public void register() {
+        if (registered) return;
+
+        CustomListener.super.register();
+        registered = true;
     }
 
     private static FileCache config() {
@@ -69,31 +73,58 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
     @Priority(level = 1)
     static void loadCache() {
         if (!ModuleName.CHAT_CHANNELS.isEnabled()) return;
-        if (!CHANNEL_LIST.isEmpty()) CHANNEL_LIST.clear();
 
-        ChatChannel defs = GeneralChannel.getDefaults();
+        if (!CHANNELS_MAP.isEmpty()) CHANNELS_MAP.clear();
+        if (!LOCAL_MAP.isEmpty()) LOCAL_MAP.clear();
+        if (!GLOBAL_MAP.isEmpty()) GLOBAL_MAP.clear();
 
-        ConfigurationSection section = channels().getSection("channels");
-        if (section == null) {
-            if (defs != null) CHANNEL_LIST.add(defs);
+        final ChatChannel def = GeneralChannel.getDefaults();
+
+        List<ChatChannel> defs = def != null ?
+                Lists.newArrayList(def) : new ArrayList<>();
+
+        Map<Integer, Map<String, ConfigurationSection>> channels;
+
+        try {
+            channels = channels().getPermSections("channels");
+        } catch (Exception e) {
+            CHANNELS_MAP.put(0, defs);
             return;
         }
 
-        Set<String> keys = section.getKeys(false);
-        if (keys.isEmpty()) {
-            if (defs != null) CHANNEL_LIST.add(defs);
+        if (channels.isEmpty()) {
+            CHANNELS_MAP.put(0, defs);
             return;
         }
 
-        for (String key : section.getKeys(false)) {
-            ConfigurationSection c = section.getConfigurationSection(key);
-            if (c == null) continue;
+        for (var entry : channels.entrySet()) {
+            List<ChatChannel> values = new ArrayList<>();
+            final int i = entry.getKey();
 
-            GeneralChannel channel = new GeneralChannel(c);
-            CHANNEL_LIST.add(channel);
+            for (var id : entry.getValue().values()) {
+                ChatChannel channel;
+                try {
+                    channel = new GeneralChannel(id);
+                } catch (Exception e) {
+                    continue;
+                }
 
-            if (channel.getSubChannel() != null)
-                CHANNEL_LIST.add(channel.getSubChannel());
+                values.add(channel);
+
+                ChatChannel local = channel.getSubChannel();
+                if (local != null) values.add(local);
+            }
+
+            List<ChatChannel> globals = new ArrayList<>();
+            List<ChatChannel> locals = new ArrayList<>();
+
+            for (var c : values)
+                (c.isGlobal() ? globals : locals).add(c);
+
+            CHANNELS_MAP.put(i, values);
+
+            if (!globals.isEmpty()) GLOBAL_MAP.put(i, globals);
+            if (!locals.isEmpty()) LOCAL_MAP.put(i, locals);
         }
     }
 
@@ -140,34 +171,35 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
 
         final boolean isAsync = event.isAsynchronous();
 
-        ChatChannel channel = getGlobalFormat(player);
-        if (channel != null) {
-            SIRChatEvent global = new SIRChatEvent(player, channel, message, isAsync);
-            global.setGlobal(true);
+        ChatChannel local = getLocalFromMessage(player, message);
 
-            String output = channel.formatOutput(player, message, true);
+        if (local != null) {
+            String prefix = local.getAccessPrefix();
+            if (StringUtils.isBlank(prefix)) return;
 
-            if (config().getValue("default-format", false) ||
-                    (channel.isDefault() && !TextUtils.IS_JSON.test(output))
-            ) {
-                event.setFormat(TextUtils.STRIP_JSON.apply(output).replace("%", "%%"));
-            } else {
-                event.setCancelled(true);
-                global.call();
-            }
+            message = message.substring(prefix.length());
+            event.setCancelled(true);
 
+            new SIRChatEvent(player, local, message, isAsync).call();
             return;
         }
 
-        ChatChannel local = getLocalFromMessage(message);
-        if (local == null) return;
+        ChatChannel channel = getGlobalFormat(player);
+        if (channel == null) return;
 
-        final String prefix = local.getAccessPrefix();
+        SIRChatEvent global = new SIRChatEvent(player, channel, message, isAsync);
+        global.setGlobal(true);
 
-        if (StringUtils.isNotBlank(prefix))
-            message = message.substring(prefix.length());
+        String output = channel.formatOutput(player, message, true);
 
-        new SIRChatEvent(player, local, message, isAsync).call();
+        if (config().getValue("default-format", false) ||
+                (channel.isDefault() && !TextUtils.IS_JSON.test(output))
+        ) {
+            event.setFormat(TextUtils.STRIP_JSON.apply(output).replace("%", "%%"));
+        } else {
+            event.setCancelled(true);
+            global.call();
+        }
     }
 
     @EventHandler(priority = EventPriority.LOW)
@@ -176,7 +208,7 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
 
         String[] args = event.getMessage().split(" ");
 
-        ChatChannel local = getLocalFromCommand(args[0]);
+        ChatChannel local = getLocalFromCommand(event.getPlayer(), args[0]);
         if (local == null) return;
 
         event.setCancelled(true);
@@ -191,7 +223,7 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
-    private void onGlobal(SIRChatEvent event) {
+    private void onSIRChat(SIRChatEvent event) {
         if (event.isCancelled()) return;
 
         ChatChannel channel = event.getChannel();
@@ -217,11 +249,11 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
             }
         }
 
-        if (Initializer.hasDiscord()) {
-            String m = SIRPlugin.getUtils().formatPlaceholders(player, message);
-            String channelName = event.isGlobal() ? "global-chat" : channel.getName();
+        if (SIRInitializer.hasDiscord()) {
+            String m = Beans.formatPlaceholders(player, message);
+            String name = event.isGlobal() ? "global-chat" : channel.getName();
 
-            new DiscordSender(player, channelName).
+            new DiscordSender(player, name).
                     setKeys(channel.getChatKeys()).
                     setValues(channel.getChatValues(m)).
                     send();
@@ -257,41 +289,42 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
 
     @Nullable
     public static ChatChannel getGlobalFormat(Player player) {
-        ConfigurationSection c = channels().permSection(player, "channels");
-        if (c == null) return null;
+        for (var entry : GLOBAL_MAP.entrySet())
+            for (var c : entry.getValue())
+                if (PlayerUtils.hasPerm(player, c.getPermission()))
+                    return c;
 
-        for (ChatChannel channel : CHANNEL_LIST)
-            if (channel.getSection().equals(c)) return channel;
+        return GeneralChannel.getDefaults();
+    }
+
+    @Nullable
+    public static ChatChannel getLocalFromMessage(Player player, String message) {
+        for (var entry : LOCAL_MAP.entrySet())
+            for (var c : entry.getValue()) {
+                if (!PlayerUtils.hasPerm(player, c.getPermission()))
+                    continue;
+
+                final String prefix = c.getAccessPrefix();
+                if (StringUtils.isBlank(prefix)) continue;
+
+                if (message.startsWith(prefix)) return c;
+            }
 
         return null;
     }
 
     @Nullable
-    public static ChatChannel getLocalFromMessage(String message) {
-        HashMap<ChatChannel, String> map = new HashMap<>();
-        for (ChatChannel c : CHANNEL_LIST) map.put(c, c.getAccessPrefix());
+    public static ChatChannel getLocalFromCommand(Player player, String command) {
+        for (var entry : LOCAL_MAP.entrySet())
+            for (var c : entry.getValue()) {
+                if (!PlayerUtils.hasPerm(player, c.getPermission()))
+                    continue;
 
-        for (Map.Entry<ChatChannel, String> entry : map.entrySet()) {
-            String prefix = entry.getValue();
+                List<String> list = c.getAccessCommands();
+                if (list == null || list.isEmpty()) continue;
 
-            if (StringUtils.isBlank(prefix)) continue;
-            if (message.startsWith(prefix)) return entry.getKey();
-        }
-
-        return null;
-    }
-
-    @Nullable
-    public static ChatChannel getLocalFromCommand(String command) {
-        HashMap<ChatChannel, List<String>> map = new HashMap<>();
-        for (ChatChannel c : CHANNEL_LIST) map.put(c, c.getAccessCommands());
-
-        for (Map.Entry<ChatChannel, List<String>> entry : map.entrySet()) {
-            List<String> list = entry.getValue();
-            if (list == null || list.isEmpty()) continue;
-
-            if (list.contains(command)) return entry.getKey();
-        }
+                if (list.contains(command)) return c;
+            }
 
         return null;
     }

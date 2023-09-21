@@ -1,6 +1,7 @@
 package me.croabeast.sir.plugin.file;
 
 import lombok.Getter;
+import lombok.var;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.plugin.SIRPlugin;
@@ -51,107 +52,6 @@ public final class FileCache implements CacheHandler {
     public static final FileCache MODULES_DATA = new FileCache("data", "modules");
     public static final FileCache IGNORE_DATA = new FileCache("data", "ignore");
     public static final FileCache CHAT_VIEW_DATA = new FileCache("data", "chat-view");
-
-    @Getter
-    private final String folder, name;
-
-    private FileCache(String folder, String name) {
-        this.folder = folder;
-        this.name = name;
-
-        CACHE_LIST.add(this);
-    }
-
-    @Nullable
-    public YAMLFile getFile() {
-        for (YAMLFile f : FILE_LIST) if (f.equals(folder, name)) return f;
-        return null;
-    }
-
-    public <T> T getValue(String path, T def) {
-        return getFile() == null ? def : getFile().getValue(path, def);
-    }
-
-    @Nullable
-    public <T> T getValue(String path, Class<T> clazz) {
-        return getFile() == null ? null : getFile().getValue(path, clazz);
-    }
-
-    @Nullable
-    public ConfigurationSection getSection(String path) {
-        final YAMLFile file = getFile();
-        if (file == null) return null;
-
-        FileConfiguration f = file.get();
-        return StringUtils.isBlank(path) ? f : f.getConfigurationSection(path);
-    }
-
-    @NotNull
-    public List<String> getKeys(String path, boolean deep) {
-        ConfigurationSection section = getSection(path);
-
-        return section != null ?
-                new ArrayList<>(section.getKeys(deep)) :
-                new ArrayList<>();
-    }
-
-    public FileConfiguration get() {
-        return getFile() == null ? null : getFile().get();
-    }
-
-    public ConfigurationSection permSection(Player player, String path) {
-        ConfigurationSection maxSection = null, id = get();
-        String maxPerm = null, defKey = null;
-
-        if (player == null) return null;
-
-        if (StringUtils.isNotBlank(path) && id != null)
-            id = id.getConfigurationSection(path);
-
-        if (id == null) return null;
-
-        Set<String> keys = id.getKeys(false);
-        if (keys.isEmpty()) return null;
-
-        int highestPriority = 0;
-        boolean notDef = true;
-
-        for (String k : keys) {
-            ConfigurationSection i = id.getConfigurationSection(k);
-            if (i == null) continue;
-
-            String perm = i.getString("permission", "DEFAULT");
-
-            if (perm.matches("(?i)DEFAULT") && notDef) {
-                defKey = k;
-                notDef = false;
-                continue;
-            }
-
-            int p = i.getInt("priority", perm.matches("(?i)DEFAULT") ? 0 : 1);
-
-            if (PlayerUtils.hasPerm(player, perm) && p > highestPriority) {
-                maxSection = i;
-                maxPerm = perm;
-                highestPriority = p;
-            }
-        }
-
-        if (maxPerm != null && PlayerUtils.hasPerm(player, maxPerm))
-            return maxSection;
-
-        return defKey == null ? null : id.getConfigurationSection(defKey);
-    }
-
-    public List<String> toList(String path) {
-        return TextUtils.toList(get(), path);
-    }
-
-    @Override
-    public String toString() {
-        if (getFile() == null) return "FileCache{}";
-        return "FileCache{" + getFile().getLocation() + "}";
-    }
 
     @Priority(level = 3)
     static void loadCache() {
@@ -205,6 +105,154 @@ public final class FileCache implements CacheHandler {
         );
     }
 
+    @Getter
+    private final String folder, name;
+
+    private FileCache(String folder, String name) {
+        this.folder = folder;
+        this.name = name;
+
+        CACHE_LIST.add(this);
+    }
+
+    @Nullable
+    public YAMLFile getFile() {
+        for (YAMLFile f : FILE_LIST) if (f.equals(folder, name)) return f;
+        return null;
+    }
+
+    public <T> T getValue(String path, T def) {
+        return getFile() == null ? def : getFile().getValue(path, def);
+    }
+
+    @Nullable
+    public <T> T getValue(String path, Class<T> clazz) {
+        return getFile() == null ? null : getFile().getValue(path, clazz);
+    }
+
+    @Nullable
+    public ConfigurationSection getSection(String path) {
+        final YAMLFile file = getFile();
+        if (file == null) return null;
+
+        FileConfiguration f = file.get();
+        return StringUtils.isBlank(path) ? f : f.getConfigurationSection(path);
+    }
+
+    @NotNull
+    public List<String> getKeys(String path, boolean deep) {
+        ConfigurationSection section = getSection(path);
+
+        return section != null ?
+                new ArrayList<>(section.getKeys(deep)) :
+                new ArrayList<>();
+    }
+
+    public FileConfiguration get() {
+        return getFile() == null ? null : getFile().get();
+    }
+
+    public static Map<Integer, Map<String, ConfigurationSection>> getPermSections(
+            ConfigurationSection mainSection, String path
+    ) {
+        Objects.requireNonNull(mainSection);
+
+        var section = StringUtils.isNotBlank(path) ?
+                mainSection.getConfigurationSection(path) :
+                mainSection;
+
+        Objects.requireNonNull(section);
+
+        Set<String> sectionKeys = section.getKeys(false);
+        if (sectionKeys.isEmpty())
+            throw new NullPointerException();
+
+        Map<Integer, Map<String, ConfigurationSection>>
+                map = new HashMap<>();
+
+        for (String key : sectionKeys) {
+            var id = section.getConfigurationSection(key);
+            if (id == null) continue;
+
+            String perm = id.getString("permission", "DEFAULT");
+            int def = perm.matches("(?i)default") ? 0 : 1;
+
+            int priority = id.getInt("priority", def);
+
+            var m = map.getOrDefault(priority, new HashMap<>());
+            m.put(perm, id);
+
+            map.put(priority, m);
+        }
+
+        var entries = new ArrayList<>(map.entrySet());
+        entries.sort((e1, e2) ->
+                e2.getKey().compareTo(e1.getKey()));
+
+        Map<Integer, Map<String, ConfigurationSection>>
+                r = new LinkedHashMap<>();
+        entries.forEach(e -> r.put(e.getKey(), e.getValue()));
+
+        return r;
+    }
+
+    public Map<Integer, Map<String, ConfigurationSection>> getPermSections(String path) {
+        return getPermSections(get(), path);
+    }
+
+    public ConfigurationSection permSection(Player player, String path) {
+        ConfigurationSection maxSection = null, id = get();
+        String maxPerm = null, defKey = null;
+
+        if (player == null) return null;
+
+        if (StringUtils.isNotBlank(path) && id != null)
+            id = id.getConfigurationSection(path);
+
+        if (id == null) return null;
+
+        Set<String> keys = id.getKeys(false);
+        if (keys.isEmpty()) return null;
+
+        int highestPriority = 0;
+        boolean notDef = true;
+
+        for (String k : keys) {
+            ConfigurationSection i = id.getConfigurationSection(k);
+            if (i == null) continue;
+
+            String perm = i.getString("permission", "DEFAULT");
+
+            if (perm.matches("(?i)DEFAULT") && notDef) {
+                defKey = k;
+                notDef = false;
+                continue;
+            }
+
+            int p = i.getInt("priority", perm.matches("(?i)DEFAULT") ? 0 : 1);
+
+            if (PlayerUtils.hasPerm(player, perm) && p > highestPriority) {
+                maxSection = i;
+                maxPerm = perm;
+                highestPriority = p;
+            }
+        }
+
+        if (maxPerm != null && PlayerUtils.hasPerm(player, maxPerm))
+            return maxSection;
+
+        return defKey == null ? null : id.getConfigurationSection(defKey);
+    }
+
+    public List<String> toList(String path) {
+        return TextUtils.toList(get(), path);
+    }
+
+    @Override
+    public String toString() {
+        return "FileCache{folder='" + folder + "', name='" + name + "'}";
+    }
+
     private static FileCache createUnaryModuleCache(String folder, String name) {
         return new FileCache("modules" + File.separator + folder, name);
     }
@@ -243,6 +291,11 @@ public final class FileCache implements CacheHandler {
 
             throw new NullPointerException("There is no file: " + file);
         }
+
+        @Override
+        public String toString() {
+            return "MultiFileCache{files=" + cacheMap + '}';
+        }
     }
 
     private static List<String> moduleFiles(String... files) {
@@ -254,7 +307,7 @@ public final class FileCache implements CacheHandler {
         return list;
     }
 
-    public static class ModuleCache extends MultiFileCache {
+    public static final class ModuleCache extends MultiFileCache {
 
         private ModuleCache(String folder, String... files) {
             super("modules" + File.separator + folder, moduleFiles(files));

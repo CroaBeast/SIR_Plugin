@@ -1,8 +1,8 @@
 package me.croabeast.sir.plugin.module;
 
+import lombok.SneakyThrows;
 import me.croabeast.sir.plugin.SIRPlugin;
 
-import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,9 +16,12 @@ public abstract class SIRModule {
      */
     static final Map<ModuleName<?>, SIRModule> MODULE_MAP = new HashMap<>();
 
-    protected final ModuleName<?> name;
+    private final ModuleName<?> name;
 
-    public SIRModule(ModuleName<?> name) {
+    @SneakyThrows
+    protected SIRModule(ModuleName<?> name) {
+        SIRPlugin.checkAccess(SIRModule.class);
+
         this.name = name;
 
         if (MODULE_MAP.containsKey(name))
@@ -30,7 +33,7 @@ public abstract class SIRModule {
     /**
      * Registers the module in the server.
      */
-    public abstract void registerModule();
+    public abstract void register();
 
     /**
      * Checks if the module is enabled in the GUI.
@@ -43,43 +46,5 @@ public abstract class SIRModule {
 
     public String toString() {
         return "SIRModule{" + name + ", " + name.isEnabled() + "}";
-    }
-
-    private static boolean areRegistered = false;
-
-    public static void registerModules() {
-        if (areRegistered)
-            throw new IllegalStateException("Modules are already registered.");
-
-        try {
-            SIRPlugin.fromCollector("me.croabeast.sir.plugin.module.instance").
-                    filter(c -> !c.getName().contains("$")).
-                    filter(c -> c.getSuperclass() == SIRModule.class).
-                    collect().
-                    forEach(c -> {
-                        try {
-                            Constructor<?> co = c.getDeclaredConstructor();
-                            ((SIRModule) co.newInstance()).registerModule();
-                        }
-                        catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    });
-
-            new SIRModule(ModuleName.DISCORD_HOOK) {
-                @Override
-                public void registerModule() {}
-            };
-
-            new SIRModule(ModuleName.CHAT_COLORS) {
-                @Override
-                public void registerModule() {}
-            };
-
-            areRegistered = true;
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

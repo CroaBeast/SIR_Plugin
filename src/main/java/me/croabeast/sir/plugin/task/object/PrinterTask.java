@@ -1,13 +1,14 @@
-package me.croabeast.sir.plugin.task;
+package me.croabeast.sir.plugin.task.object;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
-import me.croabeast.beanslib.message.MessageKey;
-import me.croabeast.sir.plugin.Initializer;
-import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.module.instance.EmojiParser;
+import me.croabeast.beanslib.Beans;
+import me.croabeast.beanslib.message.MessageExecutor;
+import me.croabeast.sir.plugin.SIRInitializer;
+import me.croabeast.sir.plugin.module.object.EmojiParser;
+import me.croabeast.sir.plugin.task.SIRTask;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
@@ -23,7 +24,7 @@ import java.util.stream.Stream;
 
 public class PrinterTask extends SIRTask {
 
-    public PrinterTask() {
+    PrinterTask() {
         super("print");
     }
 
@@ -107,7 +108,7 @@ public class PrinterTask extends SIRTask {
                 return new ArrayList<>();
 
             ArrayList<String> l = Lists.newArrayList("@a", "PERM:", "WORLD:");
-            if (Initializer.hasVault()) l.add("GROUP:");
+            if (SIRInitializer.hasVault()) l.add("GROUP:");
 
             return generateList(args, l, getPlayersNames());
         }
@@ -184,7 +185,7 @@ public class PrinterTask extends SIRTask {
 
                     case "GROUP":
                         targets = stream.filter(
-                                        p -> Initializer.hasVault() && Initializer.getPerms().
+                                        p -> SIRInitializer.hasVault() && SIRInitializer.getPerms().
                                                 getPrimaryGroup(null, p).
                                                 matches("(?i)" + array[1])).
                                 collect(Collectors.toSet());
@@ -217,7 +218,7 @@ public class PrinterTask extends SIRTask {
         }
     }
 
-    @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
+    @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
     class Printer {
 
         private final TargetCatcher catcher;
@@ -225,14 +226,14 @@ public class PrinterTask extends SIRTask {
         private final int argumentIndex;
 
         private void print(String key) {
-            final String center = SIRPlugin.getUtils().getCenterPrefix();
+            final String center = Beans.getCenterPrefix();
             final String message = getFromArray(args, argumentIndex);
 
             for (Player player : catcher.targets) {
-                MessageKey k = MessageKey.matchKey(key);
+                MessageExecutor k = MessageExecutor.matchKey(key);
 
-                if (k == MessageKey.CHAT_KEY) {
-                    String[] a = SIRPlugin.getUtils().splitLine(message);
+                if (k == MessageExecutor.CHAT_EXECUTOR) {
+                    String[] a = Beans.splitLine(message);
 
                     for (int i = 0; i < a.length; i++) {
                         final String s = a[i];
@@ -250,8 +251,8 @@ public class PrinterTask extends SIRTask {
                     continue;
                 }
 
-                else if (k == MessageKey.TITLE_KEY) {
-                    String[] d = SIRPlugin.getUtils().getKeysDelimiters();
+                else if (k == MessageExecutor.TITLE_EXECUTOR) {
+                    String[] d = Beans.getKeysDelimiters();
 
                     String time = null;
                     try {

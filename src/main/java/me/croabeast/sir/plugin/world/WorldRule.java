@@ -14,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-@SuppressWarnings({"deprecation"})
+@SuppressWarnings({"deprecation", "unchecked"})
 @UtilityClass
 public class WorldRule implements CacheHandler {
     
@@ -66,7 +66,7 @@ public class WorldRule implements CacheHandler {
     public final Rule<Integer> PLAYERS_SLEEPING_PERCENTAGE = fromInt("playersSleepingPercentage", 100);
     public final Rule<Integer> SNOW_ACCUMULATION_HEIGHT = fromInt("snowAccumulationHeight", 1);
 
-    private final Map<World, Map<Rule<?>, String>> DEFAULT_RULES_MAP = new HashMap<>();
+    private final Map<World, Map<Rule<?>, String>> LOADED_RULES_MAP = new HashMap<>();
     public boolean areWorldsLoaded = false;
 
     @Priority(level = 1)
@@ -74,15 +74,17 @@ public class WorldRule implements CacheHandler {
         if (areWorldsLoaded) return;
 
         SIRPlugin.runTaskWhenLoaded(() -> {
-            Bukkit.getWorlds().forEach(w -> {
-                var v = DEFAULT_RULES_MAP.getOrDefault(w, new HashMap<>());
+            Bukkit.getWorlds().forEach(world -> {
+                var v = LOADED_RULES_MAP.get(world);
+                if (v == null) v = new HashMap<>();
 
                 for (var rule : WorldRule.values()) {
-                    Object value = rule.getValue(w);
-                    if (value != null) v.put(rule, value.toString());
+                    Object value = rule.getValue(world);
+                    if (value != null)
+                        v.put(rule, value.toString());
                 }
 
-                DEFAULT_RULES_MAP.put(w, v);
+                LOADED_RULES_MAP.put(world, v);
             });
 
             areWorldsLoaded = true;
@@ -101,9 +103,13 @@ public class WorldRule implements CacheHandler {
         return RULE_MAP.values().toArray(new Rule<?>[0]);
     }
 
-    public String fromLoaded(World world, Rule<?> rule) {
+    public <T> Rule<T> fromBukkit(GameRule<T> rule) {
+        return (Rule<T>) RULE_MAP.get(rule);
+    }
+
+    public String valueFromLoaded(World world, Rule<?> rule) {
         try {
-            return DEFAULT_RULES_MAP.get(world).get(rule);
+            return LOADED_RULES_MAP.get(world).get(rule);
         } catch (Exception e) {
             return null;
         }
@@ -114,13 +120,13 @@ public class WorldRule implements CacheHandler {
         @NotNull @Getter
         final String rule;
 
-        private final Class<T> clazz;
+        private final Class<T> c;
         private final T defValue;
 
-        private Rule(@NotNull String rule, Class<T> clazz, T defValue) {
+        private Rule(@NotNull String rule, Class<T> clazz, T def) {
             this.rule = rule;
-            this.defValue = defValue;
-            this.clazz = clazz;
+            this.defValue = def;
+            this.c = clazz;
 
             if (RULE_MAP.containsValue(this))
                 throw new UnsupportedOperationException();
@@ -147,12 +153,12 @@ public class WorldRule implements CacheHandler {
             if (!(obj instanceof Rule)) return false;
 
             Rule<?> o = (Rule<?>) obj;
-            return rule.equals(o.rule) && clazz == o.clazz;
+            return c == o.c && rule.equals(o.rule);
         }
 
         @Override
         public String toString() {
-            return "Rule{rule='" + rule + "', clazz=" + clazz.getSimpleName() + '}';
+            return "WorldRule{rule='" + rule + "', clazz=" + c.getSimpleName() + '}';
         }
     }
 

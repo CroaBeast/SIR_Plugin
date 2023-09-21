@@ -1,6 +1,7 @@
 package me.croabeast.sir.plugin.file;
 
 import lombok.var;
+import me.croabeast.sir.plugin.SIRCollector;
 import me.croabeast.sir.plugin.SIRPlugin;
 
 import java.lang.annotation.ElementType;
@@ -31,12 +32,9 @@ public interface CacheHandler {
      * @throws IllegalAccessException if this method is being called by another plugin
      */
     static List<Class<?>> loadedHandlers() throws IllegalAccessException {
-        String e = "This method can only be called by SIR plugin";
+        SIRPlugin.checkAccess(CacheHandler.class);
 
-        if (SIRPlugin.getProvidingInstance(CacheHandler.class) == null)
-            throw new IllegalAccessException(e);
-
-        return SIRPlugin.fromCollector().
+        return SIRCollector.from().
                 filter(CacheHandler.class::isAssignableFrom).
                 filter(c -> c != CacheHandler.class).
                 collect();
@@ -72,9 +70,9 @@ public interface CacheHandler {
                 });
 
         var entries = new ArrayList<>(methodsMap.entrySet());
-        Collections.reverse(entries);
+        entries.sort((e1, e2) -> e2.getKey().compareTo(e1.getKey()));
 
-        entries.stream().map(Map.Entry::getValue).forEach(mList -> mList.
+        entries.stream().map(Map.Entry::getValue).forEach(l -> l.
                 forEach(m -> {
                     try {
                         m.setAccessible(true);
@@ -118,7 +116,7 @@ public interface CacheHandler {
                 });
 
         var entries = new ArrayList<>(methodsMap.entrySet());
-        Collections.reverse(entries);
+        entries.sort((e1, e2) -> e2.getKey().compareTo(e1.getKey()));
 
         entries.stream().map(Map.Entry::getValue).forEach(mList -> mList.
                 forEach(m -> {

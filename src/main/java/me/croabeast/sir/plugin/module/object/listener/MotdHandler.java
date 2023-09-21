@@ -1,6 +1,6 @@
-package me.croabeast.sir.plugin.module.instance.listener;
+package me.croabeast.sir.plugin.module.object.listener;
 
-import me.croabeast.beanslib.utility.TextUtils;
+import me.croabeast.beanslib.Beans;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sir.api.misc.CustomListener;
 import me.croabeast.sir.api.misc.JavaLoader;
@@ -13,7 +13,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.util.CachedServerIcon;
 
@@ -30,7 +29,7 @@ public class MotdHandler extends SIRModule implements CustomListener {
 
     private int MOTD = 0, ICON = 0;
 
-    public MotdHandler() {
+    MotdHandler() {
         super(ModuleName.MOTD);
 
         String path = "modules" + SP + "motd" + SP + "icons";
@@ -54,9 +53,14 @@ public class MotdHandler extends SIRModule implements CustomListener {
         }
     }
 
+    private boolean registered = false;
+
     @Override
-    public void registerModule() {
-        register();
+    public void register() {
+        if (registered) return;
+
+        CustomListener.super.register();
+        registered = true;
     }
 
     private static ConfigurationSection motds() {
@@ -112,7 +116,7 @@ public class MotdHandler extends SIRModule implements CustomListener {
                     player = p;
             }
 
-            event.setMotd(SIRPlugin.getUtils().colorize(null, player, s));
+            event.setMotd(Beans.colorize(player, s));
 
             if (!config().getValue("random-motds", false)) {
                 if (MOTD < count) MOTD++;

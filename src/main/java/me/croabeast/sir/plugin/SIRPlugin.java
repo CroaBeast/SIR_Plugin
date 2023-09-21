@@ -1,6 +1,7 @@
 package me.croabeast.sir.plugin;
 
 import lombok.Getter;
+import lombok.var;
 import me.croabeast.beanslib.analytic.UpdateChecker;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.LibUtils;
@@ -10,10 +11,11 @@ import me.croabeast.sir.plugin.hook.LoginHook;
 import me.croabeast.sir.plugin.hook.VanishHook;
 import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.SIRModule;
-import me.croabeast.sir.plugin.module.instance.AnnounceHandler;
-import me.croabeast.sir.plugin.module.instance.EmojiParser;
-import me.croabeast.sir.plugin.module.instance.listener.JoinQuitHandler;
+import me.croabeast.sir.plugin.module.object.AnnounceHandler;
+import me.croabeast.sir.plugin.module.object.EmojiParser;
+import me.croabeast.sir.plugin.module.object.listener.JoinQuitHandler;
 import me.croabeast.sir.plugin.task.SIRTask;
+import me.croabeast.sir.plugin.task.object.message.DirectTask;
 import me.croabeast.sir.plugin.utility.LangUtils;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
@@ -29,14 +31,13 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.jar.JarFile;
 import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
 public final class SIRPlugin extends JavaPlugin {
 
-    private static final List<String> JAR_ENTRIES = new ArrayList<>();
+    static final List<String> JAR_ENTRIES = new ArrayList<>();
     static final String EMPTY_LINE = "true::";
 
     @Getter
@@ -47,12 +48,20 @@ public final class SIRPlugin extends JavaPlugin {
     @Getter
     private static String version, author;
 
+    static String[] pluginHeader() {
+        return new String[] {
+                "", "&0* *&e____ &0* &e___ &0* &e____", "&0* &e(___&0 * * &e|&0* * &e|___)",
+                "&0* &e____) . _|_ . | &0* &e\\ . &f" + getVersion(), ""
+        };
+    }
+
     @SuppressWarnings("deprecation")
     @Override
     public void onEnable() {
         final long start = System.currentTimeMillis();
 
         instance = this;
+
         author = getDescription().getAuthors().get(0);
         version = getDescription().getVersion();
 
@@ -63,10 +72,12 @@ public final class SIRPlugin extends JavaPlugin {
                 getLocation().getPath();
 
         try (JarFile j = new JarFile(new File(URLDecoder.decode(path)))) {
+            String prefix = "me/croabeast/sir/plugin";
+
             JAR_ENTRIES.addAll(
                     Collections.list(j.entries()).stream().
                             map(ZipEntry::getName).
-                            filter(s -> s.startsWith("me/croabeast/sir/plugin")).
+                            filter(s -> s.startsWith(prefix)).
                             collect(Collectors.toList())
             );
         } catch (Exception ignored) {}
@@ -86,20 +97,19 @@ public final class SIRPlugin extends JavaPlugin {
                 addFunctions(EmojiParser::parse)
         );
 
+        LogUtils.rawLog(pluginHeader());
+
         LogUtils.rawLog(
-                "&0* *&e____ &0* &e___ &0* &e____",
-                "&0* &e(___&0 * * &e|&0* * &e|___)",
-                "&0* &e____) . _|_ . | &0* &e\\ . &fv" + version, "",
                 "&0* &7Developer: " + author,
                 "&0* &7Software: " + LibUtils.serverFork(),
                 "&0* &7Java Version: " + SystemUtils.JAVA_VERSION, ""
         );
 
-        Initializer.startMetrics();
-        Initializer.setPluginHooks();
+        SIRInitializer.startMetrics();
+        SIRInitializer.setPluginHooks();
 
-        SIRTask.registerCommands();
-        SIRModule.registerModules();
+        registerCommands();
+        registerModules();
 
         ModuleName<AnnounceHandler> name = ModuleName.ANNOUNCEMENTS;
 
@@ -122,11 +132,7 @@ public final class SIRPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        LogUtils.rawLog(
-                "&0* *&e____ &0* &e___ &0* &e____",
-                "&0* &e(___&0 * * &e|&0* * &e|___)",
-                "&0* &e____) . _|_ . | &0* &e\\ . &fv" + version, ""
-        );
+        LogUtils.rawLog(pluginHeader());
 
         try {
             CacheHandler.save();
@@ -148,6 +154,65 @@ public final class SIRPlugin extends JavaPlugin {
 
         utils = null;
         instance = null;
+    }
+
+    private boolean commandsRegistered = false, modulesRegistered = false;
+
+    private void registerCommands() {
+        if (commandsRegistered)
+            throw new IllegalStateException("Commands are already registered.");
+
+        SIRCollector.from("me.croabeast.sir.plugin.task.object").
+                filter(c -> !c.getName().contains("$")).
+                filter(SIRTask.class::isAssignableFrom).
+                filter(c -> c != SIRTask.class && c != DirectTask.class).
+                collect().
+                forEach(c -> {
+                    try {
+                        var co = c.getDeclaredConstructor();
+
+                        co.setAccessible(true);
+                        ((SIRTask) co.newInstance()).register();
+                        co.setAccessible(false);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+
+        commandsRegistered = true;
+    }
+
+    private void registerModules() {
+        if (modulesRegistered)
+            throw new IllegalStateException("Modules are already registered.");
+
+        SIRCollector.from("me.croabeast.sir.plugin.module.object").
+                filter(c -> !c.getName().contains("$")).
+                filter(SIRModule.class::isAssignableFrom).
+                filter(c -> c != SIRModule.class).
+                collect().
+                forEach(c -> {
+                    try {
+                        var co = c.getDeclaredConstructor();
+                        co.setAccessible(true);
+                        ((SIRModule) co.newInstance()).register();
+                        co.setAccessible(false);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+
+        new SIRModule(ModuleName.DISCORD_HOOK) {
+            @Override
+            public void register() {}
+        };
+
+        new SIRModule(ModuleName.CHAT_COLORS) {
+            @Override
+            public void register() {}
+        };
+
+        modulesRegistered = true;
     }
 
     private static void updaterLog(Player player, String... strings) {
@@ -218,7 +283,8 @@ public final class SIRPlugin extends JavaPlugin {
 
     public static void checkUpdater(@Nullable Player player) {
         if (player == null) {
-            if (!FileCache.MAIN_CONFIG.getValue("updater.plugin.on-start", false)) return;
+            if (!FileCache.MAIN_CONFIG.getValue("updater.plugin.on-start", false))
+                return;
             runUpdater(null);
         }
         else {
@@ -233,59 +299,26 @@ public final class SIRPlugin extends JavaPlugin {
     }
 
     public static File getSIRFolder() {
-        return getInstance().getDataFolder();
+        return instance.getDataFolder();
     }
 
-    public static File fromSIRFolder(String path) {
-        return new File(getSIRFolder(), path);
-    }
+    /**
+     * Checks if the providing plugin of the class is SIR, otherwise will
+     * throw an Exception.
+     *
+     * @param clazz a class
+     * @throws IllegalAccessException if the plugin of the class is not SIR
+     */
+    public static void checkAccess(Class<?> clazz) throws IllegalAccessException {
+        JavaPlugin plugin = null;
 
-    public static SIRCollector fromCollector() {
-        return new SIRCollector();
-    }
-
-    public static SIRCollector fromCollector(String packagePath) {
-        return fromCollector().filter(c -> c.getName().startsWith(packagePath));
-    }
-
-    @Nullable
-    public static SIRPlugin getProvidingInstance(Class<?> clazz) {
         try {
-            JavaPlugin plugin = JavaPlugin.getProvidingPlugin(clazz);
-            return plugin == instance ? (SIRPlugin) plugin : null;
-        } catch (Exception e) {
-            return null;
+            plugin = JavaPlugin.getProvidingPlugin(clazz);
+            if (plugin != instance) plugin = null;
         }
-    }
+        catch (Exception ignored) {}
 
-    public static class SIRCollector {
-
-        private final List<Class<?>> classes = new ArrayList<>();
-
-        private SIRCollector() {
-            for (String s : JAR_ENTRIES) {
-                if (!s.endsWith(".class")) continue;
-
-                s = s.replace('/', '.').replace(".class", "");
-
-                Class<?> c;
-                try {
-                    c = Class.forName(s);
-                } catch (ClassNotFoundException ex) {
-                    continue;
-                }
-
-                classes.add(c);
-            }
-        }
-
-        public SIRCollector filter(Predicate<Class<?>> predicate) {
-            classes.removeIf(predicate.negate());
-            return this;
-        }
-
-        public List<Class<?>> collect() {
-            return new ArrayList<>(classes);
-        }
+        if (plugin == null)
+            throw new IllegalAccessException(clazz.getSimpleName() + " can only be used by SIR");
     }
 }

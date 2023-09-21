@@ -1,4 +1,4 @@
-package me.croabeast.sir.plugin.task.message;
+package me.croabeast.sir.plugin.task.object.message;
 
 import me.croabeast.sir.plugin.hook.VanishHook;
 import me.croabeast.sir.plugin.file.FileCache;
@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class ReplyTask extends DirectTask {
 
-    public ReplyTask() {
+    ReplyTask() {
         super("reply");
     }
 

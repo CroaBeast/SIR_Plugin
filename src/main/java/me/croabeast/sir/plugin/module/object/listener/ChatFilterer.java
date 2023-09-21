@@ -1,4 +1,4 @@
-package me.croabeast.sir.plugin.module.instance.listener;
+package me.croabeast.sir.plugin.module.object.listener;
 
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.TextUtils;
@@ -21,13 +21,18 @@ import java.util.regex.Pattern;
 
 public class ChatFilterer extends SIRModule implements CustomListener {
 
-    public ChatFilterer() {
+    ChatFilterer() {
         super(ModuleName.CHAT_FILTERS);
     }
 
+    private boolean registered = false;
+
     @Override
-    public void registerModule() {
-        register();
+    public void register() {
+        if (registered) return;
+
+        CustomListener.super.register();
+        registered = true;
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

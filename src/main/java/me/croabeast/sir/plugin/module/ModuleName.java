@@ -1,9 +1,11 @@
 package me.croabeast.sir.plugin.module;
 
-import me.croabeast.sir.plugin.module.instance.AnnounceHandler;
-import me.croabeast.sir.plugin.module.instance.EmojiParser;
-import me.croabeast.sir.plugin.module.instance.MentionParser;
-import me.croabeast.sir.plugin.module.instance.listener.*;
+import lombok.SneakyThrows;
+import me.croabeast.sir.plugin.SIRPlugin;
+import me.croabeast.sir.plugin.module.object.AnnounceHandler;
+import me.croabeast.sir.plugin.module.object.EmojiParser;
+import me.croabeast.sir.plugin.module.object.MentionParser;
+import me.croabeast.sir.plugin.module.object.listener.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +28,9 @@ public final class ModuleName<T extends SIRModule> {
 
     private final String name;
 
+    @SneakyThrows
     private ModuleName(String name) {
+        SIRPlugin.checkAccess(ModuleName.class);
         this.name = name;
 
         if (VALUES.contains(this))

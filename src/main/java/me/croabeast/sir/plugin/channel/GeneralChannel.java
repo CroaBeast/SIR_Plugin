@@ -13,11 +13,11 @@ public final class GeneralChannel extends AbstractChannel implements CacheHandle
     @Nullable @Getter
     private final ChatChannel subChannel;
 
-    public GeneralChannel(ConfigurationSection section) {
+    public GeneralChannel(ConfigurationSection section) throws IllegalAccessException {
         super(section, getDefaults());
 
         ConfigurationSection l = getSection().getConfigurationSection("local");
-        subChannel = l == null || !isGlobal() ? null : new AbstractChannel(l, this) {
+        subChannel = (l == null || isLocal()) ? null : new AbstractChannel(l, this) {
 
             public boolean isGlobal() {
                 return false;
@@ -34,7 +34,7 @@ public final class GeneralChannel extends AbstractChannel implements CacheHandle
         return FileCache.CHAT_CHANNELS_CACHE.getConfig();
     }
 
-    static ChatChannel loadDefaults() {
+    static ChatChannel loadDefaults() throws IllegalAccessException {
         ConfigurationSection def = config().getSection("default-channel");
 
         return def == null ? null : (defs = new AbstractChannel(def, null) {
@@ -52,13 +52,19 @@ public final class GeneralChannel extends AbstractChannel implements CacheHandle
 
     @Priority(level = 1)
     static void loadCache() {
-        loadDefaults();
+        try {
+            loadDefaults();
+        } catch (Exception ignored) {}
     }
 
     public static ChatChannel getDefaults() {
         if (!config().getValue("default-channel.enabled", true))
             return null;
 
-        return defs == null ? loadDefaults() : defs;
+        try {
+            return defs == null ? loadDefaults() : defs;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

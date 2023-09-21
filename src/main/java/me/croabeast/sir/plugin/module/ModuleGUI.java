@@ -3,6 +3,7 @@ package me.croabeast.sir.plugin.module;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.component.ToggleButton;
+import lombok.experimental.UtilityClass;
 import me.croabeast.beanslib.utility.ArrayUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sir.api.file.YAMLFile;
@@ -17,13 +18,14 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.HashMap;
 import java.util.Map;
 
+@UtilityClass
 public class ModuleGUI implements CacheHandler {
 
-    static final Map<ModuleName<?>, Boolean> MODULE_STATUS_MAP = new HashMap<>();
-    private static ChestGui modulesGUI = null;
+    final Map<ModuleName<?>, Boolean> MODULE_STATUS_MAP = new HashMap<>();
+    private ChestGui modulesGUI = null;
 
     @Priority(level = 2)
-    static void loadCache() {
+    void loadCache() {
         ConfigurationSection data = FileCache.MODULES_DATA.getSection("modules");
         if (data == null) return;
 
@@ -35,7 +37,8 @@ public class ModuleGUI implements CacheHandler {
         getModulesGUI();
     }
 
-    static void saveCache() {
+    @Priority(level = 2)
+    void saveCache() {
         YAMLFile file = FileCache.MODULES_DATA.getFile();
         FileConfiguration data = FileCache.MODULES_DATA.get();
 
@@ -47,7 +50,7 @@ public class ModuleGUI implements CacheHandler {
         file.save();
     }
     
-    public static ChestGui getModulesGUI() {
+    public ChestGui getModulesGUI() {
         if (modulesGUI != null) return modulesGUI;
 
         ChestGui gui = new ChestGui(5, "Loaded SIR Modules");
@@ -122,7 +125,7 @@ public class ModuleGUI implements CacheHandler {
         return modulesGUI = gui;
     }
 
-    static GuiItem getButton(Material material, String name, String... lore) {
+    GuiItem getButton(Material material, String name, String... lore) {
         ItemStack item = new ItemStack(material);
         ItemMeta meta = item.getItemMeta();
 
@@ -135,7 +138,7 @@ public class ModuleGUI implements CacheHandler {
         return new GuiItem(item);
     }
 
-    static ToggleButton createButton(int x, int y, ModuleName<?> module, String name, String... lore) {
+    ToggleButton createButton(int x, int y, ModuleName<?> module, String name, String... lore) {
         boolean def = MODULE_STATUS_MAP.getOrDefault(module, false);
         ToggleButton button = new ToggleButton(x, y, 1, 1, def);
 

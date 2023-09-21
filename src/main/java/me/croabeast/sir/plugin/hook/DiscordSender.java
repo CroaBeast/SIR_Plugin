@@ -7,10 +7,11 @@ import github.scarsz.discordsrv.dependencies.jda.api.entities.Guild;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
+import me.croabeast.beanslib.Beans;
 import me.croabeast.beanslib.key.ValueReplacer;
+import me.croabeast.beanslib.misc.StringApplier;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
-import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.FileCache;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Color;
@@ -46,10 +47,13 @@ public final class DiscordSender {
     String formatString(String string) {
         if (StringUtils.isBlank(string)) return string;
 
-        string = ValueReplacer.forEach(keys, values, string);
-        string = SIRPlugin.getUtils().formatPlaceholders(player, string);
+        StringApplier applier = StringApplier.of(string).
+                apply(s -> ValueReplacer.forEach(keys, values, s)).
+                apply(s -> Beans.formatPlaceholders(player, s)).
+                apply(NeoPrismaticAPI::stripAll).
+                apply(DiscordUtil::translateEmotes);
 
-        return DiscordUtil.translateEmotes(NeoPrismaticAPI.stripAll(string));
+        return applier.toString();
     }
 
     public DiscordSender setValues(String... values) {
@@ -121,13 +125,10 @@ public final class DiscordSender {
     }
 
     public boolean send() {
-        String path = getModules().getString("discord.server-id");
-        if (StringUtils.isBlank(path))
-            path = getModules().getString("discord.default-server", "");
-
+        String path = getModules().getString("default-server", "");
         generateEmbed();
 
-        List<String> list = TextUtils.toList(getModules(), "discord.channels." + channel);
+        List<String> list = TextUtils.toList(getModules(), "channels." + channel);
         if (list.isEmpty()) return false;
 
         String text = getChannels().getString("channels." + channel + ".text");
@@ -144,9 +145,11 @@ public final class DiscordSender {
             }
             else id = s;
 
-            Guild guild = DiscordSRV.getPlugin().getMainGuild();
+            DiscordSRV srv = DiscordSRV.getPlugin();
+
+            Guild guild = srv.getMainGuild();
             try {
-                guild = DiscordSRV.getPlugin().getJda().getGuildById(guildId);
+                guild = srv.getJda().getGuildById(guildId);
             } catch (Exception ignored) {}
 
             if (guild == null) continue;
@@ -156,7 +159,9 @@ public final class DiscordSender {
 
             if (StringUtils.isNotBlank(text)) {
                 channel.sendMessage(formatString(text)).queue();
-                if (!atLeastOneMessage) atLeastOneMessage = true;
+
+                if (!atLeastOneMessage)
+                    atLeastOneMessage = true;
                 continue;
             }
 

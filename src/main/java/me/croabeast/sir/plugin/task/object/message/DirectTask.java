@@ -1,4 +1,4 @@
-package me.croabeast.sir.plugin.task.message;
+package me.croabeast.sir.plugin.task.object.message;
 
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.sir.plugin.file.FileCache;
@@ -71,15 +71,13 @@ public abstract class DirectTask extends SIRTask {
                 ).setLogger(false).
                 send(getMessagingOutput(false));
 
-        MessageSender.fromLoaded().
+        return MessageSender.fromLoaded().
                 setKeys("{receiver}", "{sender}", "{message}").
                 setValues(
                         isMsg ? args[0] : isConsole(target),
                         isConsole(sender), message
                 ).
                 send(lang().toList(CONSOLE_PATH + "format"));
-
-        return true;
     }
 
     public static Map<CommandSender, CommandSender> getReceiverMap() {

@@ -1,4 +1,4 @@
-package me.croabeast.sir.plugin.module.instance;
+package me.croabeast.sir.plugin.module.object;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -21,16 +21,16 @@ public class EmojiParser extends SIRModule implements CacheHandler {
 
     private static final List<Emoji> EMOJI_LIST = new ArrayList<>();
 
-    public EmojiParser() {
+    EmojiParser() {
         super(ModuleName.EMOJIS);
     }
 
     @Override
-    public void registerModule() {
+    public void register() {
         loadCache();
     }
 
-    @Priority(level = 1)
+    @Priority(level = 2)
     static void loadCache() {
         if (!ModuleName.EMOJIS.isEnabled()) return;
         if (!EMOJI_LIST.isEmpty()) EMOJI_LIST.clear();

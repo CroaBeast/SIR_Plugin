@@ -1,9 +1,9 @@
-package me.croabeast.sir.plugin.module.instance;
+package me.croabeast.sir.plugin.module.object;
 
 import lombok.Getter;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.TextUtils;
-import me.croabeast.sir.plugin.SIRPlugin;
+import me.croabeast.sir.plugin.SIRRunnable;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.hook.VanishHook;
@@ -14,7 +14,6 @@ import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 
@@ -26,14 +25,14 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
     @Getter
     private boolean running = false;
 
-    private BukkitRunnable runnable;
+    private SIRRunnable runnable;
 
-    public AnnounceHandler() {
+    AnnounceHandler() {
         super(ModuleName.ANNOUNCEMENTS);
     }
 
     @Override
-    public void registerModule() {
+    public void register() {
         loadCache();
     }
 
@@ -41,7 +40,7 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
         return FileCache.ANNOUNCE_CACHE.getCache("announces").getSection("announces");
     }
 
-    @Priority(level = 2)
+    @Priority(level = 1)
     static void loadCache() {
         ConfigurationSection section = announceSection();
         if (section == null) return;
@@ -84,13 +83,8 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
         }
         else order = new Random().nextInt(count + 1);
 
-        runnable = new BukkitRunnable() {
-            @Override
-            public void run() {
-                startTask();
-            }
-        };
-        runnable.runTaskLater(SIRPlugin.getInstance(), delay);
+        runnable = SIRRunnable.create(this::startTask);
+        runnable.runTaskLater(delay);
     }
 
     public void cancelTask() {

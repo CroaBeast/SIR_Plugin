@@ -3,10 +3,10 @@ package me.croabeast.sir.plugin.utility;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import me.croabeast.beanslib.utility.LibUtils;
-import me.croabeast.sir.plugin.SIRPlugin;
+import me.croabeast.sir.plugin.SIRRunnable;
 import me.croabeast.sir.plugin.file.FileCache;
-import me.croabeast.sir.plugin.task.ignore.IgnoreSettings;
-import me.croabeast.sir.plugin.task.ignore.IgnoreTask;
+import me.croabeast.sir.plugin.task.object.ignore.IgnoreSettings;
+import me.croabeast.sir.plugin.task.object.ignore.IgnoreTask;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -15,7 +15,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -131,13 +130,13 @@ public class PlayerUtils {
         player.setInvulnerable(true);
         getGodPlayers().add(player);
 
-        new BukkitRunnable() {
-            @Override
-            public void run() {
-                player.setInvulnerable(false);
-                getGodPlayers().remove(player);
-            }
-        }.runTaskLater(SIRPlugin.getInstance(), time);
+        SIRRunnable.runFromSIR(
+                () -> {
+                    player.setInvulnerable(false);
+                    getGodPlayers().remove(player);
+                },
+                r -> r.runTaskLater(time)
+        );
     }
 
     public void playSound(CommandSender sender, String rawSound) {
@@ -153,6 +152,24 @@ public class PlayerUtils {
 
         Player p = (Player) sender;
         p.playSound(p.getLocation(), sound, 1, 1);
+    }
+
+    public Set<Player> getNearbyPlayers(Location location, double range) {
+        Set<Player> players = new HashSet<>();
+
+        World world = location.getWorld();
+        if (world == null) return players;
+
+        world.getPlayers().forEach(p -> {
+            if (p.getLocation().distanceSquared(location) <= range)
+                players.add(p);
+        });
+
+        return players;
+    }
+
+    public Set<Player> getNearbyPlayers(Player player, double range) {
+        return getNearbyPlayers(player.getLocation(), range);
     }
 
     public void addChatCompletions(Player player, List<String> list) {

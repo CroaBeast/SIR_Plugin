@@ -1,8 +1,9 @@
-package me.croabeast.sir.plugin.task;
+package me.croabeast.sir.plugin.task.object;
 
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.module.ModuleName;
-import me.croabeast.sir.plugin.module.instance.AnnounceHandler;
+import me.croabeast.sir.plugin.module.object.AnnounceHandler;
+import me.croabeast.sir.plugin.task.SIRTask;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
@@ -15,7 +16,7 @@ import java.util.Locale;
 
 public class AnnounceTask extends SIRTask {
 
-    public AnnounceTask() {
+    AnnounceTask() {
         super("announcer");
     }
 

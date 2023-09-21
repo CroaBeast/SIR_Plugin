@@ -1,4 +1,4 @@
-package me.croabeast.sir.plugin.module.instance.listener;
+package me.croabeast.sir.plugin.module.object.listener;
 
 import me.croabeast.beanslib.builder.BossbarBuilder;
 import me.croabeast.beanslib.message.MessageSender;
@@ -6,15 +6,16 @@ import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.event.hook.SIRLoginEvent;
 import me.croabeast.sir.api.event.hook.SIRVanishEvent;
 import me.croabeast.sir.api.misc.CustomListener;
-import me.croabeast.sir.plugin.Initializer;
+import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.SIRPlugin;
+import me.croabeast.sir.plugin.SIRRunnable;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.hook.DiscordSender;
 import me.croabeast.sir.plugin.hook.LoginHook;
 import me.croabeast.sir.plugin.hook.VanishHook;
 import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.SIRModule;
-import me.croabeast.sir.plugin.task.message.DirectTask;
+import me.croabeast.sir.plugin.task.object.message.DirectTask;
 import me.croabeast.sir.plugin.utility.LangUtils;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
@@ -28,7 +29,6 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -44,15 +44,20 @@ public class JoinQuitHandler extends SIRModule implements CustomListener {
             QUIT_MAP = new HashMap<>(),
             PLAY_MAP = new HashMap<>();
 
-    public JoinQuitHandler() {
+    JoinQuitHandler() {
         super(ModuleName.JOIN_QUIT);
     }
 
+    private boolean registered = false;
+
     @Override
-    public void registerModule() {
-        register();
+    public void register() {
+        if (registered) return;
+
+        CustomListener.super.register();
         if (LoginHook.isEnabled()) new SIRLoginHook().register();
         if (VanishHook.isEnabled()) new SIRVanishHook().register();
+        registered = true;
     }
 
     static FileCache config() {
@@ -113,8 +118,8 @@ public class JoinQuitHandler extends SIRModule implements CustomListener {
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
 
-        BossbarBuilder bar = BossbarBuilder.getBuilder(player);
-        if (bar != null) bar.unregister();
+        Set<BossbarBuilder> bar = BossbarBuilder.getBuilder(player);
+        if (bar != null) bar.forEach(BossbarBuilder::unregister);
 
         if (getGodPlayers().contains(player)) {
             player.setInvulnerable(false);
@@ -316,37 +321,34 @@ public class JoinQuitHandler extends SIRModule implements CustomListener {
         }
 
         public void runTasks() {
-            BukkitRunnable runnable = new BukkitRunnable() {
-                @Override
-                public void run() {
-                    MessageSender.fromLoaded().setTargets(Bukkit.getOnlinePlayers()).
-                            setParser(player).
-                            send(TextUtils.toList(id, "public"));
+            final int ticks = config().getValue("login.ticks-after", 0);
 
-                    if (isJoin) {
-                        playSound(player, id.getString("sound"));
-                        giveImmunity(player, id.getInt("invulnerable"));
+            SIRRunnable.runFromSIR(() -> {
+                MessageSender.fromLoaded().setTargets(Bukkit.getOnlinePlayers()).
+                        setParser(player).
+                        send(TextUtils.toList(id, "public"));
 
-                        MessageSender.fromLoaded().
-                                setTargets(player).send(TextUtils.toList(id, "private"));
+                if (isJoin) {
+                    playSound(player, id.getString("sound"));
+                    giveImmunity(player, id.getInt("invulnerable"));
 
-                        if (doSpawn) PlayerUtils.teleport(id, player);
-                    }
+                    MessageSender.fromLoaded().
+                            setTargets(player).send(TextUtils.toList(id, "private"));
 
-                    LangUtils.executeCommands(isJoin ? player : null,
-                            TextUtils.toList(id, "commands"));
-
-                    if (!Initializer.hasDiscord()) return;
-
-                    String path = player.hasPlayedBefore() ? "" : "first-";
-                    new DiscordSender(player, isJoin ? path + "join" : "quit").send();
+                    if (doSpawn) PlayerUtils.teleport(id, player);
                 }
-            };
 
-            int ticks = config().getValue("login.ticks-after", 0);
+                LangUtils.executeCommands(isJoin ? player : null,
+                        TextUtils.toList(id, "commands"));
 
-            if (!isLogged || ticks <= 0) runnable.runTask(main);
-            else runnable.runTaskLater(main, ticks);
+                if (!SIRInitializer.hasDiscord()) return;
+
+                String path = player.hasPlayedBefore() ? "" : "first-";
+                new DiscordSender(player, isJoin ? path + "join" : "quit").send();
+            },
+                    (!isLogged || ticks <= 0) ?
+                            SIRRunnable::runTask : r -> r.runTaskLater(ticks)
+            );
         }
     }
 }

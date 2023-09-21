@@ -1,12 +1,12 @@
-package me.croabeast.sir.plugin.task;
+package me.croabeast.sir.plugin.task.object;
 
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.LibUtils;
-import me.croabeast.sir.plugin.Initializer;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.module.ModuleGUI;
+import me.croabeast.sir.plugin.task.SIRTask;
 import org.apache.commons.lang.SystemUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -18,7 +18,7 @@ import java.util.Locale;
 
 public class MainTask extends SIRTask {
 
-    public MainTask() {
+    MainTask() {
         super("sir");
     }
 

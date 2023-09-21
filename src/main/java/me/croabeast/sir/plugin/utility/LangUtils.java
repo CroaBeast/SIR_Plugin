@@ -1,5 +1,6 @@
 package me.croabeast.sir.plugin.utility;
 
+import me.croabeast.beanslib.Beans;
 import me.croabeast.beanslib.BeansLib;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.plugin.SIRPlugin;
@@ -14,7 +15,7 @@ import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class LangUtils extends BeansLib {
+public final class LangUtils extends BeansLib {
 
     public LangUtils(SIRPlugin instance) {
         super(instance);
@@ -69,8 +70,7 @@ public class LangUtils extends BeansLib {
             Matcher pMatch = pPattern.matcher(c);
             Matcher cMatch = cPattern.matcher(c);
 
-            c = SIRPlugin.getUtils().
-                    getKeyManager().parseKeys(player, c, false);
+            c = Beans.parsePlayerKeys(player, c);
 
             if (pMatch.find() && player != null) {
                 Bukkit.dispatchCommand(player,

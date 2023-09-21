@@ -1,4 +1,4 @@
-package me.croabeast.sir.plugin.module.instance.listener;
+package me.croabeast.sir.plugin.module.object.listener;
 
 import com.google.common.collect.Lists;
 import lombok.var;
@@ -8,7 +8,7 @@ import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.api.misc.CustomListener;
-import me.croabeast.sir.plugin.Initializer;
+import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
@@ -122,14 +122,14 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
     }
 
     static void checkAdvancements() {
+        if (!ModuleName.ADVANCEMENTS.isEnabled()) return;
+
         for (World w : Bukkit.getWorlds()) {
             var announcesEnabled = WorldRule.ANNOUNCE_ADVANCEMENTS;
             if (advList("worlds").contains(w.getName())) continue;
 
             if (announcesEnabled.getValue(w))
                 announcesEnabled.setValue(w, false);
-
-            System.out.println(announcesEnabled.getValue(w));
         }
     }
 
@@ -139,42 +139,46 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
         if (WorldRule.areWorldsLoaded) checkAdvancements();
         if (areAdvancementsLoaded) return;
 
-        SIRPlugin.runTaskWhenLoaded(() -> {
-            checkAdvancements();
+        try {
+            SIRPlugin.runTaskWhenLoaded(() -> {
+                checkAdvancements();
 
-            LogUtils.mixLog("true::",
-                    "&bRegistering all the advancement values...");
+                LogUtils.mixLog("true::",
+                        "&bRegistering all the advancement values...");
 
-            long t = System.currentTimeMillis();
-            final Set<Advancement> loadedKeys = new HashSet<>();
+                long t = System.currentTimeMillis();
+                final Set<Advancement> loadedKeys = new HashSet<>();
 
-            TASKS.forEach(fromInfo(loadedKeys, "task"));
-            GOALS.forEach(fromInfo(loadedKeys, "goal"));
-            CHALLENGES.forEach(fromInfo(loadedKeys, "challenge"));
-            UNKNOWNS.forEach(fromInfo(loadedKeys, "custom"));
+                TASKS.forEach(fromInfo(loadedKeys, "task"));
+                GOALS.forEach(fromInfo(loadedKeys, "goal"));
+                CHALLENGES.forEach(fromInfo(loadedKeys, "challenge"));
+                UNKNOWNS.forEach(fromInfo(loadedKeys, "custom"));
 
-            if (loadedKeys.size() > 0) {
-                YAMLFile f = FileCache.ADVANCE_CACHE.getCache("lang").getFile();
-                if (f != null) f.save();
-            }
+                if (loadedKeys.size() > 0) {
+                    YAMLFile f = FileCache.ADVANCE_CACHE.getCache("lang").getFile();
+                    if (f != null) f.save();
+                }
 
-            String advancements = "&7Tasks: &a" + TASKS.size() +
-                    "&7 - Goals: &b" + GOALS.size() +
-                    "&7 - &7Challenges: &d" + CHALLENGES.size();
+                String advancements = "&7Tasks: &a" + TASKS.size() +
+                        "&7 - Goals: &b" + GOALS.size() +
+                        "&7 - &7Challenges: &d" + CHALLENGES.size();
 
-            LogUtils.doLog(advancements);
+                LogUtils.doLog(advancements);
 
-            if (!UNKNOWNS.isEmpty())
-                LogUtils.doLog("&7Unknowns: &c" +
-                        UNKNOWNS.size() +
-                        "&7. Check your lang.yml file!"
-                );
+                if (!UNKNOWNS.isEmpty())
+                    LogUtils.doLog("&7Unknowns: &c" +
+                            UNKNOWNS.size() +
+                            "&7. Check your lang.yml file!"
+                    );
 
-            t = System.currentTimeMillis() - t;
-            LogUtils.mixLog("&7Loaded advancements in &e" + t + "&7 ms.", "true::");
+                t = System.currentTimeMillis() - t;
+                LogUtils.mixLog("&7Loaded advancements in &e" + t + "&7 ms.", "true::");
 
-            areAdvancementsLoaded = true;
-        });
+                areAdvancementsLoaded = true;
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     static void saveCache() {
@@ -184,23 +188,26 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
             var announcesEnabled = WorldRule.ANNOUNCE_ADVANCEMENTS;
             if (advList("worlds").contains(w.getName())) return;
 
-            String def = WorldRule.fromLoaded(w, announcesEnabled);
+            String def = WorldRule.valueFromLoaded(w, announcesEnabled);
             boolean v = announcesEnabled.getValue(w);
 
             if (Boolean.parseBoolean(def) && !v)
                 announcesEnabled.setValue(w, true);
-
-            System.out.println(announcesEnabled.getValue(w));
         }
     }
 
-    public AdvanceHandler() {
+    AdvanceHandler() {
         super(ModuleName.ADVANCEMENTS);
     }
 
+    private boolean registered = false;
+
     @Override
-    public void registerModule() {
-        register();
+    public void register() {
+        if (registered) return;
+
+        CustomListener.super.register();
+        registered = true;
     }
 
     private static List<String> advList(String path) {
@@ -282,7 +289,7 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
 
         LangUtils.executeCommands(player, cList);
 
-        if (!Initializer.hasDiscord()) return;
+        if (!SIRInitializer.hasDiscord()) return;
 
         DiscordSender sender = new DiscordSender(player, "advances");
         sender.setKeys(keys).setValues(values).send();

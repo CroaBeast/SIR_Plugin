@@ -1,8 +1,8 @@
 package me.croabeast.sir.plugin.utility;
 
 import lombok.experimental.UtilityClass;
-import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.module.instance.EmojiParser;
+import me.croabeast.beanslib.Beans;
+import me.croabeast.sir.plugin.module.object.EmojiParser;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -23,15 +23,15 @@ public class LogUtils {
     }
 
     public void playerLog(Player player, String... lines) {
-        SIRPlugin.getUtils().playerLog(player, parseEmojis(lines));
+        Beans.playerLog(player, parseEmojis(lines));
     }
 
     public void rawLog(String... lines) {
-        SIRPlugin.getUtils().rawLog(parseEmojis(lines));
+        Beans.rawLog(parseEmojis(lines));
     }
 
     public void doLog(CommandSender sender, String... lines) {
-        SIRPlugin.getUtils().doLog(sender, parseEmojis(lines));
+        Beans.doLog(sender, parseEmojis(lines));
     }
 
     public void doLog(String... lines) {
@@ -39,6 +39,6 @@ public class LogUtils {
     }
 
     public void mixLog(String... lines) {
-        SIRPlugin.getUtils().mixLog(parseEmojis(lines));
+        Beans.mixLog(parseEmojis(lines));
     }
 }

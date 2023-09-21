@@ -1,11 +1,11 @@
 package me.croabeast.sir.plugin.task;
 
 import com.google.common.collect.Lists;
+import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.FileCache;
-import me.croabeast.sir.plugin.task.message.DirectTask;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -13,7 +13,6 @@ import org.bukkit.command.PluginCommand;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -22,10 +21,8 @@ import java.util.stream.Collectors;
 /**
  * This class represents the base of every command used in this plugin.
  */
-@RequiredArgsConstructor
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class SIRTask {
-
-    private static boolean areRegistered = false;
 
     private final String name;
 
@@ -45,7 +42,7 @@ public abstract class SIRTask {
     /**
      * Registers the command in the server.
      */
-    public final void registerCommand() {
+    public final void register() {
         PluginCommand command = SIRPlugin.getInstance().getCommand(name);
         if (command == null) return;
 
@@ -137,33 +134,5 @@ public abstract class SIRTask {
         }
 
         return b.toString();
-    }
-
-    public static void registerCommands() {
-        if (areRegistered)
-            throw new IllegalStateException("Commands are already registered.");
-
-        try {
-            SIRPlugin.fromCollector("me.croabeast.sir.plugin.task").
-                    filter(c -> !c.getName().contains("$")).
-                    filter(c -> {
-                        Class<?> s = c.getSuperclass();
-                        return s == SIRTask.class || s == DirectTask.class;
-                    }).
-                    filter(c -> c != SIRTask.class).
-                    filter(c -> c != DirectTask.class).
-                    collect().
-                    forEach(c -> {
-                        try {
-                            Constructor<?> co = c.getDeclaredConstructor();
-                            ((SIRTask) co.newInstance()).registerCommand();
-                        }
-                        catch (Exception ignored) {}
-                    });
-            areRegistered = true;
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

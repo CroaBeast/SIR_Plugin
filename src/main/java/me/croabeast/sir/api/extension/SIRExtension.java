@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 
 @Getter
-public abstract class SIRExtension {
+abstract class SIRExtension {
 
     /**
      * The folder that will storages any file of the extension.
@@ -21,7 +21,7 @@ public abstract class SIRExtension {
      * The defined name of the extension.
      */
     @NotNull
-    private String name = getClass().getSimpleName();
+    protected String name = getClass().getSimpleName();
 
     /**
      * The version of the extension.
@@ -31,16 +31,11 @@ public abstract class SIRExtension {
     @Getter(AccessLevel.NONE)
     private boolean enabled = false, loaded = false;
 
-    @SuppressWarnings("all")
-    SIRExtension(String name, String folderPath) {
+    protected SIRExtension(@NotNull String name, String folderPath) {
         if (StringUtils.isNotBlank(name)) this.name = name;
 
-        final String f = folderPath;
-
-        dataFolder = new File(
-                SIRPlugin.getInstance().getDataFolder(),
-                StringUtils.isBlank(f) ? "extensions" : f
-        );
+        String path = StringUtils.isBlank(folderPath) ? "extensions" : folderPath;
+        dataFolder = new File(SIRPlugin.getSIRFolder(), path);
     }
 
     public final void setVersion(String version) {
@@ -62,6 +57,7 @@ public abstract class SIRExtension {
             return false;
         }
 
+        hashCode();
         return enabled = loaded = true;
     }
 
@@ -69,9 +65,8 @@ public abstract class SIRExtension {
 
     protected abstract boolean onDisabling();
 
-    @NotNull
+    @Override
     public String toString() {
-        final String c = getClass().getSuperclass().getSimpleName(), n = getName();
-        return c + "{" + (c.equals(n) ? "Unknown Extension" : (n + ":")) + getVersion() + "}";
+        return "SIRExtension{name='" + getName() + "', version='" + getVersion() + "'}";
     }
 }

@@ -1,8 +1,9 @@
-package me.croabeast.sir.plugin.task;
+package me.croabeast.sir.plugin.task.object;
 
 import me.croabeast.sir.plugin.channel.ChatChannel;
 import me.croabeast.sir.plugin.file.FileCache;
-import me.croabeast.sir.plugin.module.instance.listener.ChatFormatter;
+import me.croabeast.sir.plugin.module.object.listener.ChatFormatter;
+import me.croabeast.sir.plugin.task.SIRTask;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.bukkit.command.CommandSender;
@@ -15,16 +16,20 @@ import java.util.stream.Collectors;
 
 public class ChatViewTask extends SIRTask {
 
-    public ChatViewTask() {
+    ChatViewTask() {
         super("chat-view");
     }
 
-    private static List<String> getKeys(Player player) {
-        return ChatFormatter.CHANNEL_LIST.stream().
-                filter(c -> !c.isGlobal()).
-                filter(c -> PlayerUtils.hasPerm(player, c.getPermission())).
-                map(ChatChannel::getName).
-                collect(Collectors.toList());
+    static List<String> getKeys(Player player) {
+        List<String> keys = new ArrayList<>();
+
+        for (List<ChatChannel> channels : ChatFormatter.LOCAL_MAP.values()) {
+            channels.forEach(c -> {
+                if (PlayerUtils.hasPerm(player, c.getPermission())) keys.add(c.getName());
+            });
+        }
+
+        return keys;
     }
 
     @SuppressWarnings("all")
@@ -66,6 +71,6 @@ public class ChatViewTask extends SIRTask {
     }
 
     public static boolean isToggled(Player player, String key) {
-        return FileCache.CHAT_VIEW_DATA.getValue("data." + player.getUniqueId() + "." + key, false);
+        return FileCache.CHAT_VIEW_DATA.getValue("data." + player.getUniqueId() + "." + key, true);
     }
 }

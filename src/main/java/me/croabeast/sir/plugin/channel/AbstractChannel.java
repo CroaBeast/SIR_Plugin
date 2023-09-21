@@ -4,12 +4,14 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import me.croabeast.beanslib.Beans;
 import me.croabeast.beanslib.key.ValueReplacer;
+import me.croabeast.beanslib.misc.StringApplier;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.module.instance.EmojiParser;
-import me.croabeast.sir.plugin.module.instance.MentionParser;
+import me.croabeast.sir.plugin.module.object.EmojiParser;
+import me.croabeast.sir.plugin.module.object.MentionParser;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -18,8 +20,11 @@ import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.regex.Pattern;
 
+/**
+ * Skeletal constructor of the {@link ChatChannel} interface.
+ */
+@SuppressWarnings("all")
 @Getter
 abstract class AbstractChannel implements ChatChannel {
 
@@ -57,7 +62,9 @@ abstract class AbstractChannel implements ChatChannel {
     @NotNull
     private String chatFormat;
 
-    AbstractChannel(ConfigurationSection section, @Nullable ChatChannel parent) {
+    AbstractChannel(ConfigurationSection section, @Nullable ChatChannel parent) throws IllegalAccessException {
+        SIRPlugin.checkAccess(getClass());
+
         this.section = section;
         isGlobal = section.getBoolean("global", true);
 
@@ -96,12 +103,10 @@ abstract class AbstractChannel implements ChatChannel {
         return !section.isSet(path) && parent != null;
     }
 
-    @SuppressWarnings("all")
     private boolean fromBoolean(String path) {
         return useParents(path) ? parent.getSection().getBoolean(path) : section.getBoolean(path);
     }
 
-    @SuppressWarnings("unchecked")
     private <T> T fromParent(String path, Function<ChatChannel, T> f, T def) {
         return useParents(path) ? f.apply(parent) : (T) section.get(path, def);
     }
@@ -114,21 +119,29 @@ abstract class AbstractChannel implements ChatChannel {
 
     @NotNull
     public String formatOutput(Player t, Player p, String message, boolean isChat) {
-        message = colorChecker.check(message);
-        String format = isChat ? getChatFormat() : getLogFormat();
+        String rawFormat = isChat ? getChatFormat() : getLogFormat();
 
-        format = SIRPlugin.getUtils().parsePlayerKeys(p, format);
-        format = ValueReplacer.forEach(
-                getChatKeys(),
-                getChatValues(message), format
-        );
+        StringApplier applier = StringApplier.of(rawFormat).
+                apply(s -> Beans.parsePlayerKeys(p, s)).
+                apply(s -> {
+                    String[] values = getChatValues(colorChecker.check(message));
+                    return ValueReplacer.forEach(getChatKeys(), values, s);
+                }).
+                apply(s -> EmojiParser.parse(p, s)).
+                apply(s -> MentionParser.parseMentions(p, s));
 
-        format = MentionParser.parse(p, EmojiParser.parse(p, format));
+        if (isChat) applier.apply(Beans::convertToSmallCaps);
 
-        if (isDefault() && !TextUtils.IS_JSON.test(format))
-            return SIRPlugin.getUtils().createCenteredChatMessage(t, p, format);
+        final String format = applier.toString();
 
-        return !noChatEvents() ? TextUtils.STRIP_JSON.apply(format) : format;
+        if (isDefault() && !TextUtils.IS_JSON.test(format)) {
+            return applier.
+                    apply(s -> Beans.createCenteredChatMessage(t, p, s)).
+                    toString();
+        }
+
+        if (noChatEvents()) return format;
+        return applier.apply(TextUtils.STRIP_JSON).toString();
     }
 
     @Override
@@ -136,11 +149,9 @@ abstract class AbstractChannel implements ChatChannel {
         String sub = getSubChannel() == null ? "null" : getSubChannel().getName(),
                 parentName = parent == null ? "null" : parent.getName();
 
-        return "ChatChannel{" +
-                "section=" + section.getName() + ", isGlobal=" + isGlobal +
-                ", parent=" + parentName + ", subChannel=" + sub +
-                ", permission='" + permission + '\'' + ", priority=" + priority +
-                ", chatFormat='" + chatFormat + '\'' + '}';
+        return "ChatChannel{" + "section=" + section.getName() + ", isGlobal=" + isGlobal +
+                ", parent=" + parentName + ", local=" + sub +
+                ", permission='" + permission + "', priority=" + priority + "'}";
     }
 
     public boolean equals(Object o) {
@@ -159,11 +170,13 @@ abstract class AbstractChannel implements ChatChannel {
         final boolean normal, special, rgb;
 
         String check(String s) {
-            if (!normal) s = NeoPrismaticAPI.stripBukkit(s);
-            if (!rgb) s = NeoPrismaticAPI.stripRGB(s);
-            if (!special) s = NeoPrismaticAPI.stripSpecial(s);
+            StringApplier applier = StringApplier.of(s);
 
-            return s;
+            if (!normal) applier.apply(NeoPrismaticAPI::stripBukkit);
+            if (!rgb) applier.apply(NeoPrismaticAPI::stripRGB);
+            if (!special) applier.apply(NeoPrismaticAPI::stripSpecial);;
+
+            return applier.toString();
         }
     }
 }

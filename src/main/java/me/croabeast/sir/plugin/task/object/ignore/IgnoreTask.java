@@ -1,4 +1,4 @@
-package me.croabeast.sir.plugin.task.ignore;
+package me.croabeast.sir.plugin.task.object.ignore;
 
 import com.google.common.collect.Lists;
 import me.croabeast.sir.plugin.file.FileCache;
