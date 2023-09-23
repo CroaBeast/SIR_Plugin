@@ -38,7 +38,7 @@ commands:
       - '  &7 &b/ignore&7: Игнорировать игрока из ЛС или чата.'
       - '&7'
     support: '<P> Зайдите на наш Discord-сервер: &b{link}'
-    перезагрузка: '<P> Все .yml-файлы были успешно перезагружены за {time} мс.'
+    reload: '<P> Все .yml-файлы были успешно перезагружены за {time} мс.'
   # Команда /print или /rawmsg.
   print:
     help:
@@ -89,7 +89,7 @@ commands:
     cant-stop: '<P> &cЗадание объявления уже отменено.'
     started: '<P> &cЗадача объявления была запущена'.
     stopped: '<P> &cЗадача объявления была отменена.'
-    перезагружено: '<P> &cЗадача объявления была перезагружена.'
+    rebooted: '<P> &cЗадача объявления была перезагружена.'
     select: '<P> Пожалуйста, выберите правильный анонс из&a announces.yml'
   # Команды /msg и /reply.
   msg-reply:
@@ -100,13 +100,13 @@ commands:
     not-yourself: '<P> &cВы не можете отправить сообщение самому себе.'
     for-sender:
       message: ' &eЯ &8> &6{sender}&7: &f{message}'
-      звук: ENTITY_PLAYER_LEVELUP # Отключить звук, настроив его следующим образом: ''
+      sound: ENTITY_PLAYER_LEVELUP # Отключить звук, настроив его следующим образом: ''
     for-receiver:
       message: ' &6{sender} &8> &eЯ&7: &f{message}'
-      звук: ENTITY_PLAYER_LEVELUP # Отключить звук, настроив его следующим образом: ''
+      sound: ENTITY_PLAYER_LEVELUP # Отключить звук, настроив его следующим образом: ''
     vanish-messages:
       enabled: false
-      сообщение: '<P> &cВы не можете отправить сообщение невидимому игроку.'
+      message: '<P> &cВы не можете отправить сообщение невидимому игроку.'
     console-formatting:
       name-value: '&cКонсоль'
       format: ' &6{sender} &8> &e{receiver}&7: &f{message}'
