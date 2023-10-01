@@ -42,9 +42,9 @@ public class IgnoreTask extends SIRTask {
 
             String path = MAIN_PATH + (b ? "success" : "remove") + ".all";
 
-            return getClonedSender(player).setKeys(keys).
-                    setValues(null, t).
-                    send(FileCache.getLang().toList(path));
+            return getClonedSender(player).setKeys(keys)
+                    .setValues(null, t)
+                    .send(FileCache.getLang().toList(path));
         }
 
         Player target = PlayerUtils.getClosestPlayer(token);
@@ -59,9 +59,9 @@ public class IgnoreTask extends SIRTask {
         String path = MAIN_PATH +
                 (cache.contains(target) ? "success" : "remove") + ".all";
 
-        return getClonedSender(player).setKeys(keys).
-                setValues(target, t).
-                send(FileCache.getLang().toList(path));
+        return getClonedSender(player).setKeys(keys)
+                .setValues(target, t)
+                .send(FileCache.getLang().toList(path));
     }
 
     @Override

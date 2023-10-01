@@ -38,16 +38,16 @@ public class MainTask extends SIRTask {
                 Player player = sender instanceof Player ? (Player) sender : null;
 
                 if (player == null)
-                    return getClonedSender(sender).
-                            setLogger(true).
-                            send("[SIR] &cThis command is only for players.");
+                    return getClonedSender(sender)
+                            .setLogger(true)
+                            .send("[SIR] &cThis command is only for players.");
 
                 ModuleGUI.getModulesGUI().show(player);
                 return true;
 
             case "about":
-                return getClonedSender(sender).setLogger(true).
-                        send(
+                return getClonedSender(sender).setLogger(true)
+                        .send(
                             "", " &eSIR &7- &f" + version + "&7:",
                             "   &8• &7Server Software: &f" + LibUtils.serverFork(),
                             "   &8• &7Developer: &f" + SIRPlugin.getAuthor(),
@@ -76,13 +76,13 @@ public class MainTask extends SIRTask {
                 final FileCache config = FileCache.MAIN_CONFIG;
 
                 MessageSender.setLoaded(
-                        MessageSender.fromLoaded().
-                        setLogger(
-                                config.getValue("options.send-console", true)
-                        ).
-                        setNoFirstSpaces(
-                                config.getValue("options.strip-spaces", false)
-                        )
+                        MessageSender.fromLoaded()
+                                .setLogger(
+                                        config.getValue("options.send-console", true)
+                                )
+                                .setNoFirstSpaces(
+                                        config.getValue("options.strip-spaces", false)
+                                )
                 );
 
                 return fromSender(sender,

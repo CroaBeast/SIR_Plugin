@@ -30,7 +30,7 @@ public class EmojiParser extends SIRModule implements CacheHandler {
         loadCache();
     }
 
-    @Priority(level = 2)
+    @Priority(level = 1)
     static void loadCache() {
         if (!ModuleName.EMOJIS.isEnabled()) return;
         if (!EMOJI_LIST.isEmpty()) EMOJI_LIST.clear();

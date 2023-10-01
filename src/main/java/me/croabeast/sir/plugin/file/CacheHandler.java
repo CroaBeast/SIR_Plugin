@@ -34,10 +34,10 @@ public interface CacheHandler {
     static List<Class<?>> loadedHandlers() throws IllegalAccessException {
         SIRPlugin.checkAccess(CacheHandler.class);
 
-        return SIRCollector.from().
-                filter(CacheHandler.class::isAssignableFrom).
-                filter(c -> c != CacheHandler.class).
-                collect();
+        return SIRCollector.from()
+                .filter(CacheHandler.class::isAssignableFrom)
+                .filter(c -> c != CacheHandler.class)
+                .collect();
     }
 
     /**
@@ -50,8 +50,8 @@ public interface CacheHandler {
     static void load() throws IllegalAccessException {
         final Map<Integer, List<Method>> methodsMap = new HashMap<>();
 
-        loadedHandlers().
-                forEach(c -> {
+        loadedHandlers()
+                .forEach(c -> {
                     try {
                         Method m = c.getDeclaredMethod("loadCache");
                         int level = 0;
@@ -72,8 +72,8 @@ public interface CacheHandler {
         var entries = new ArrayList<>(methodsMap.entrySet());
         entries.sort((e1, e2) -> e2.getKey().compareTo(e1.getKey()));
 
-        entries.stream().map(Map.Entry::getValue).forEach(l -> l.
-                forEach(m -> {
+        entries.stream().map(Map.Entry::getValue).forEach(l -> l
+                .forEach(m -> {
                     try {
                         m.setAccessible(true);
                         m.invoke(null);
@@ -96,8 +96,8 @@ public interface CacheHandler {
     static void save() throws IllegalAccessException {
         final Map<Integer, List<Method>> methodsMap = new HashMap<>();
 
-        loadedHandlers().
-                forEach(c -> {
+        loadedHandlers()
+                .forEach(c -> {
                     try {
                         Method m = c.getDeclaredMethod("saveCache");
                         int level = 0;
@@ -118,8 +118,8 @@ public interface CacheHandler {
         var entries = new ArrayList<>(methodsMap.entrySet());
         entries.sort((e1, e2) -> e2.getKey().compareTo(e1.getKey()));
 
-        entries.stream().map(Map.Entry::getValue).forEach(mList -> mList.
-                forEach(m -> {
+        entries.stream().map(Map.Entry::getValue).forEach(mList -> mList
+                .forEach(m -> {
                     try {
                         m.setAccessible(true);
                         m.invoke(null);

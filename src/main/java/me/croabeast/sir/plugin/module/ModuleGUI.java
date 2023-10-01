@@ -7,15 +7,17 @@ import lombok.experimental.UtilityClass;
 import me.croabeast.beanslib.utility.ArrayUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sir.api.file.YAMLFile;
+import me.croabeast.sir.gui.ButtonCreator;
+import me.croabeast.sir.gui.ItemCreator;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 @UtilityClass
@@ -58,98 +60,107 @@ public class ModuleGUI implements CacheHandler {
         gui.addPane(createButton(
                 1, 1, ModuleName.JOIN_QUIT,
                 "&fJoin & Quit:",
-                "&7Handles if join and quit messages should",
-                "&7be custom or not.",
-                "&7Can be hooked into a login plugin to send",
-                "&7login messages, or a vanish plugin to",
-                "&7send fake join or quit messages."
+                "Handles if join and quit messages should",
+                "be custom or not.",
+                "Can be hooked into a login plugin to send",
+                "login messages, or a vanish plugin to",
+                "send fake join or quit messages."
         ));
         gui.addPane(createButton(
                 2, 1, ModuleName.ANNOUNCEMENTS,
                 "&fAnnouncements:",
-                "&7Handles if custom scheduled and",
-                "&7automated messages will be displayed",
-                "&7in a defined time frame in ticks.",
-                "&7Remember: &e20 server ticks = 1 second"
+                "Handles if custom scheduled and",
+                "automated messages will be displayed",
+                "in a defined time frame in ticks.",
+                "Remember: &e20 server ticks = 1 second"
         ));
         gui.addPane(createButton(
                 3, 1, ModuleName.MOTD,
                 "&fMOTD:",
-                "&7Handles the motd of the server, having",
-                "&7multiple motds in order or random.",
-                "&7Works with placeholders, RGB and more."
+                "Handles the motd of the server, having",
+                "multiple motds in order or random.",
+                "Works with placeholders, RGB and more."
         ));
         gui.addPane(createButton(
                 4, 1, ModuleName.CHAT_CHANNELS,
                 "&fChat Channels:",
-                "&7Handles how the chat will display and",
-                "&7if will be local channels as well with",
-                "&7the global channel.",
-                "&7Local channels works with commands and",
-                "&7with prefix to access to them."
+                "Handles how the chat will display and",
+                "if will be local channels as well with",
+                "the global channel.",
+                "Local channels works with commands and",
+                "with prefix to access to them."
         ));
         gui.addPane(createButton(
                 5, 1, ModuleName.DISCORD_HOOK,
                 "&fDiscord Hook:",
-                "&7Handles if DiscordSRV will work with",
-                "&7SIR to display join-quit messages,",
-                "&7chat messages, and more."
+                "Handles if DiscordSRV will work with",
+                "SIR to display join-quit messages,",
+                "chat messages, and more."
         ));
         gui.addPane(createButton(
                 6, 1, ModuleName.ADVANCEMENTS,
                 "&fAdvancements:",
-                "&7Handles if custom advancement messages",
-                "&7and/or rewards should be enabled.",
-                "&7Each advancement can be in a different",
-                "&7category."
+                "Handles if custom advancement messages",
+                "and/or rewards should be enabled.",
+                "Each advancement can be in a different",
+                "category."
         ));
         gui.addPane(createButton(
                 7, 1, ModuleName.EMOJIS,
                 "&fEmojis:",
-                "&7Handles if custom emojis should be",
-                "&7added in chat and/or other SIR features",
-                "&7and files."
+                "Handles if custom emojis should be",
+                "added in chat and/or other SIR features",
+                "and files."
         ));
 
         gui.addPane(createButton(
                 3, 2, ModuleName.CHAT_FILTERS,
                 "&fChat Filters:",
-                "&7Handles if filters will be applied on",
-                "&7the chat to avoid insults or spamming."
+                "Handles if filters will be applied on",
+                "the chat to avoid insults or spamming."
         ));
         gui.addPane(createButton(
                 4, 2, ModuleName.MENTIONS,
-                "&fMentions:", ""
+                "&fMentions:",
+                "Handles if players can be mentioned or",
+                "tagged in the chat, similar how Discord",
+                "use their mentions."
         ));
 
         return modulesGUI = gui;
     }
 
     GuiItem getButton(Material material, String name, String... lore) {
-        ItemStack item = new ItemStack(material);
-        ItemMeta meta = item.getItemMeta();
+        final String text = NeoPrismaticAPI.colorize(name);
 
-        if (meta != null) {
-            meta.setDisplayName(NeoPrismaticAPI.colorize(name));
-            meta.setLore(ArrayUtils.fromArray(NeoPrismaticAPI::colorize, lore));
-        }
+        return ItemCreator.of(material)
+                .modifyMeta(m -> m.setDisplayName(text))
+                .modifyMeta(m -> {
+                    List<String> list = new LinkedList<>();
 
-        item.setItemMeta(meta);
-        return new GuiItem(item);
+                    list.add("");
+                    list.addAll(ArrayUtils.fromArray(lore));
+                    list.add("");
+
+                    list.replaceAll(s -> "&7" + s);
+                    list.replaceAll(NeoPrismaticAPI::colorize);
+
+                    m.setLore(list);
+                })
+                .create();
     }
 
     ToggleButton createButton(int x, int y, ModuleName<?> module, String name, String... lore) {
-        boolean def = MODULE_STATUS_MAP.getOrDefault(module, false);
-        ToggleButton button = new ToggleButton(x, y, 1, 1, def);
-
-        Material lime = Material.LIME_STAINED_GLASS_PANE,
-                red = Material.RED_STAINED_GLASS_PANE;
-
-        button.setEnabledItem(getButton(lime, name + " &a&lENABLED", lore));
-        button.setDisabledItem(getButton(red, name + " &c&lDISABLED", lore));
-
-        button.setOnClick(e -> 
-                MODULE_STATUS_MAP.put(module, button.isEnabled()));
-        return button;
+        return ButtonCreator.of(x, y, MODULE_STATUS_MAP.getOrDefault(module, false))
+                .setItem(getButton(
+                        Material.LIME_STAINED_GLASS_PANE,
+                        "&7• " + name + " &a&l✔", lore), true
+                )
+                .setItem(getButton(
+                        Material.RED_STAINED_GLASS_PANE,
+                        "&7• " + name + " &c&l❌", lore), false
+                )
+                .onClick(b -> e -> MODULE_STATUS_MAP.put(module, b.isEnabled()))
+                .create();
     }
 }

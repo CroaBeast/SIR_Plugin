@@ -291,9 +291,9 @@ public class YAMLFile {
 
         void saveResource(String resourcePath, boolean replace) {
             try {
-                loader.getClass().
-                        getMethod("saveResource", String.class, boolean.class).
-                        invoke(loader, resourcePath, replace);
+                loader.getClass()
+                        .getMethod("saveResource", String.class, boolean.class)
+                        .invoke(loader, resourcePath, replace);
             }
             catch (Exception ignored) {}
         }

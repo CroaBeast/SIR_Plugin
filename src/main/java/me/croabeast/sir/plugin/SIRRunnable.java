@@ -12,7 +12,7 @@ public final class SIRRunnable {
 
     private final BukkitRunnable runnable;
 
-    private SIRRunnable(Action action) {
+    public SIRRunnable(Action action) {
         runnable = new BukkitRunnable() {
             @Override
             public void run() {
@@ -53,12 +53,8 @@ public final class SIRRunnable {
         runnable.runTaskTimerAsynchronously(get(), delay, period);
     }
 
-    public static SIRRunnable create(Action action) {
-        return new SIRRunnable(action);
-    }
-
-    public static void runFromSIR(Action action, Consumer<SIRRunnable> performer) {
-        performer.accept(create(action));
+    public static void runFromSIR(Action action, Consumer<SIRRunnable> consumer) {
+        consumer.accept(new SIRRunnable(action));
     }
 
     public interface Action {

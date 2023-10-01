@@ -70,10 +70,10 @@ public class ReplyTask extends DirectTask {
         if (args.length == 1)
             return notPlayer ?
                     generateList(args,
-                            Bukkit.getOnlinePlayers().stream().
-                                    filter(VanishHook::isVisible).
-                                    map(HumanEntity::getName).
-                                    collect(Collectors.toList())
+                            Bukkit.getOnlinePlayers().stream()
+                                    .filter(VanishHook::isVisible)
+                                    .map(HumanEntity::getName)
+                                    .collect(Collectors.toList())
                     ) :
                     generateList(args, "<message>");
 

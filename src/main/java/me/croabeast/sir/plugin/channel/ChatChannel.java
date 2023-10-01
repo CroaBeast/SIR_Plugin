@@ -1,5 +1,6 @@
 package me.croabeast.sir.plugin.channel;
 
+import lombok.SneakyThrows;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.task.object.ChatViewTask;
@@ -58,7 +59,7 @@ public interface ChatChannel {
      */
     @NotNull
     default String getName() {
-        ChatChannel p = getParent(), def = GeneralChannel.getDefaults();
+        ChatChannel p = getParent(), def = ChatChannelImpl.getDefaults();
         return (p == null || p.equals(def) ? "" : (p.getName() + ":")) + getSection().getName();
     }
 
@@ -239,4 +240,13 @@ public interface ChatChannel {
     }
 
     boolean equals(Object object);
+
+    @SneakyThrows
+    static ChatChannel of(ConfigurationSection section) {
+        return new ChatChannelImpl(section);
+    }
+
+    static ChatChannel getDefaults() {
+        return ChatChannelImpl.getDefaults();
+    }
 }

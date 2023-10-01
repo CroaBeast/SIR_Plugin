@@ -1,5 +1,6 @@
 package me.croabeast.sir.plugin.module.object.listener;
 
+import lombok.var;
 import me.croabeast.beanslib.builder.BossbarBuilder;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.TextUtils;
@@ -17,7 +18,6 @@ import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.SIRModule;
 import me.croabeast.sir.plugin.task.object.message.DirectTask;
 import me.croabeast.sir.plugin.utility.LangUtils;
-import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -41,11 +41,45 @@ public class JoinQuitHandler extends SIRModule implements CustomListener {
     public static final Set<Player> LOGGED_PLAYERS = new HashSet<>();
 
     private static final HashMap<UUID, Long> JOIN_MAP = new HashMap<>(),
-            QUIT_MAP = new HashMap<>(),
-            PLAY_MAP = new HashMap<>();
+            QUIT_MAP = new HashMap<>(), PLAY_MAP = new HashMap<>();
+
+    static final Map<Type, Map<Integer, Set<Section>>> SECTIONS_MAP = new LinkedHashMap<>();
+
+    enum Type {
+        FIRST("first-join"), JOIN("join"), QUIT("quit");
+
+        private final String name;
+
+        Type(String name) {
+            this.name = name;
+        }
+    }
 
     JoinQuitHandler() {
         super(ModuleName.JOIN_QUIT);
+    }
+
+    static Map<Integer, Set<Section>> getMap(Type type) {
+        return SECTIONS_MAP.getOrDefault(type, new HashMap<>());
+    }
+
+    static void loadMapFromType(Type type) {
+        var fromConfig = messages().getPermSections(type.name);
+        var fromLoaded = getMap(type);
+
+        for (var entry : fromConfig.entrySet()) {
+            var sections = fromLoaded.getOrDefault(entry.getKey(), new HashSet<>());
+
+            for (var e : entry.getValue().values()) {
+                sections.add(new Section(e));
+            }
+        }
+    }
+
+    static void load() {
+        if (!SECTIONS_MAP.isEmpty()) SECTIONS_MAP.clear();
+
+
     }
 
     private boolean registered = false;
@@ -77,15 +111,9 @@ public class JoinQuitHandler extends SIRModule implements CustomListener {
         if (!isEnabled()) return;
 
         String path = !player.hasPlayedBefore() ? "first-join" : "join";
-        ConfigurationSection id = messages().permSection(player, path);
 
-        if (id == null) {
-            LogUtils.doLog(player,
-                    "<P> &cA valid message group isn't found...",
-                    "<P> &7Please check your&e join-quit.yml &7file."
-            );
-            return;
-        }
+        ConfigurationSection id = messages().permSection(player, path);
+        if (id == null) return;
 
         if (config().getValue("default-messages.disable-join", true))
             event.setJoinMessage(null);
@@ -106,7 +134,7 @@ public class JoinQuitHandler extends SIRModule implements CustomListener {
             return;
         }
 
-        new Section(event, id, player).runTasks();
+        new Section(id).runTasks(event, player);
         final long data = System.currentTimeMillis();
 
         if (joinCooldown > 0) JOIN_MAP.put(uuid, data);
@@ -132,14 +160,7 @@ public class JoinQuitHandler extends SIRModule implements CustomListener {
         if (!isEnabled()) return;
 
         ConfigurationSection id = messages().permSection(player, "quit");
-
-        if (id == null) {
-            LogUtils.doLog(player,
-                    "<P> &cA valid message group isn't found...",
-                    "<P> &7Please check your&e join-quit.yml &7file."
-            );
-            return;
-        }
+        if (id == null) return;
 
         if (config().getValue("default-messages.disable-quit", true))
             event.setQuitMessage(null);
@@ -161,7 +182,7 @@ public class JoinQuitHandler extends SIRModule implements CustomListener {
             LOGGED_PLAYERS.remove(player);
         }
 
-        new Section(event, id, player).runTasks();
+        new Section(id).runTasks(event, player);
         if (quitCooldown > 0) QUIT_MAP.put(uuid, System.currentTimeMillis());
     }
 
@@ -179,17 +200,10 @@ public class JoinQuitHandler extends SIRModule implements CustomListener {
             if (!config().getValue("login.enabled", false)) return;
             if (VanishHook.isVanished(player)) return;
 
-            ConfigurationSection id = config().permSection(player,
+            ConfigurationSection id = messages().permSection(player,
                     !player.hasPlayedBefore() ? "first-join" : "join"
             );
-
-            if (id == null) {
-                LogUtils.doLog(player,
-                        "<P> &cA valid message group isn't found...",
-                        "<P> &7Please check your&e messages.yml &7file."
-                );
-                return;
-            }
+            if (id == null) return;
 
             int playTime = config().getValue("cooldown.between", 0),
                     joinCooldown = config().getValue("cooldown.join", 0);
@@ -199,7 +213,7 @@ public class JoinQuitHandler extends SIRModule implements CustomListener {
                 if (rest < joinCooldown * 1000L) return;
             }
 
-            new Section(event, id, player).runTasks();
+            new Section(id).runTasks(event, player);
 
             final long data = System.currentTimeMillis();
             if (joinCooldown > 0) JOIN_MAP.put(uuid, data);
@@ -225,15 +239,9 @@ public class JoinQuitHandler extends SIRModule implements CustomListener {
             }
 
             String path = event.isVanished() ? "join" : "quit";
-            ConfigurationSection id = config().permSection(player, path);
 
-            if (id == null) {
-                LogUtils.doLog(player,
-                        "<P> &cA valid message group isn't found...",
-                        "<P> &7Please check your&e messages.yml &7file."
-                );
-                return;
-            }
+            ConfigurationSection id = messages().permSection(player, path);
+            if (id == null) return;
 
             int timer = config().getValue("cooldown." + path, 0);
             HashMap<UUID, Long> players = event.isVanished() ? JOIN_MAP : QUIT_MAP;
@@ -243,7 +251,7 @@ public class JoinQuitHandler extends SIRModule implements CustomListener {
                 if (rest < timer * 1000L) return;
             }
 
-            new Section(event, id, player).runTasks();
+            new Section(id).runTasks(event, player);
             if (timer > 0) players.put(uuid, System.currentTimeMillis());
         }
 
@@ -298,17 +306,14 @@ public class JoinQuitHandler extends SIRModule implements CustomListener {
 
     static class Section {
 
-        private final SIRPlugin main = SIRPlugin.getInstance();
-
         private final ConfigurationSection id;
-        private final Player player;
-
         private boolean isJoin = true, doSpawn = true, isLogged = false;
 
-        public Section(Event event, ConfigurationSection id, Player player) {
+        public Section(ConfigurationSection id) {
             this.id = id;
-            this.player = player;
+        }
 
+        public void runTasks(Event event, Player player) {
             if (event instanceof PlayerQuitEvent) isJoin = doSpawn = false;
             else if (event instanceof SIRLoginEvent) {
                 doSpawn = !config().getValue("login.enabled", false);
@@ -318,22 +323,21 @@ public class JoinQuitHandler extends SIRModule implements CustomListener {
                 isJoin = ((SIRVanishEvent) event).isVanished();
                 doSpawn = config().getValue("vanish.use-spawn", false);
             }
-        }
 
-        public void runTasks() {
             final int ticks = config().getValue("login.ticks-after", 0);
 
             SIRRunnable.runFromSIR(() -> {
-                MessageSender.fromLoaded().setTargets(Bukkit.getOnlinePlayers()).
-                        setParser(player).
-                        send(TextUtils.toList(id, "public"));
+                MessageSender.fromLoaded().setTargets(Bukkit.getOnlinePlayers())
+                        .setParser(player)
+                        .send(TextUtils.toList(id, "public"));
 
                 if (isJoin) {
                     playSound(player, id.getString("sound"));
                     giveImmunity(player, id.getInt("invulnerable"));
 
-                    MessageSender.fromLoaded().
-                            setTargets(player).send(TextUtils.toList(id, "private"));
+                    MessageSender.fromLoaded()
+                            .setTargets(player)
+                            .send(TextUtils.toList(id, "private"));
 
                     if (doSpawn) PlayerUtils.teleport(id, player);
                 }

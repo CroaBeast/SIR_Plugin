@@ -1,18 +1,19 @@
 package me.croabeast.sir.plugin;
 
 import lombok.experimental.UtilityClass;
+import lombok.var;
 import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.sir.plugin.hook.LoginHook;
 import me.croabeast.sir.plugin.hook.VanishHook;
 import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.utility.LogUtils;
+import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.permission.Permission;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.DrilldownPie;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicesManager;
 
 import java.util.HashMap;
@@ -22,6 +23,7 @@ import java.util.Map;
 public class SIRInitializer {
 
     private Permission permProvider;
+    private Chat chatProvider;
 
     private boolean hasPAPI() {
         return Exceptions.isPluginEnabled("PlaceholderAPI");
@@ -89,18 +91,13 @@ public class SIRInitializer {
         }
 
         if (hasVault()) {
-            ServicesManager servMngr = Bukkit.getServer().getServicesManager();
-            RegisteredServiceProvider<Permission> rsp = servMngr.getRegistration(Permission.class);
+            var servMngr = Bukkit.getServer().getServicesManager();
 
-            String hasVault;
-            if (rsp != null) {
-                hasVault = "&eProvider registered.";
-                permProvider = rsp.getProvider();
-            }
-            else hasVault = "&cNo provider!";
+            var rsp = servMngr.getRegistration(Permission.class);
+            var rsc = servMngr.getRegistration(Chat.class);
 
-            LogUtils.doLog("&7Vault: " + hasVault);
-            logLines++;
+            if (rsp != null) permProvider = rsp.getProvider();
+            if (rsc != null) chatProvider = rsc.getProvider();
         }
 
         if (hasDiscord()) {
@@ -112,12 +109,11 @@ public class SIRInitializer {
             LoginHook.loadHook();
             Plugin p = LoginHook.getHook();
 
-            String pN = p != null ? p.getName() : "";
+            String name = p != null ? p.getName() : "";
             String pV = p != null ?
                     p.getDescription().getVersion() : "";
 
-            LogUtils.doLog("&7Login Plugin: "
-                    + "&e" + pN + " v. " + pV);
+            LogUtils.doLog("&7Login Plugin: " + "&e" + name + " v. " + pV);
             logLines++;
         }
 
@@ -125,12 +121,11 @@ public class SIRInitializer {
             VanishHook.loadHook();
             Plugin p = VanishHook.getHook();
 
-            String pN = p != null ? p.getName() : "";
+            String name = p != null ? p.getName() : "";
             String pV = p != null ?
                     p.getDescription().getVersion() : "";
 
-            LogUtils.doLog("&7Vanish Plugin: "
-                    + "&e" + pN + " v. " + pV);
+            LogUtils.doLog("&7Vanish Plugin: " + "&e" + name + " v. " + pV);
             logLines++;
         }
 
@@ -140,5 +135,9 @@ public class SIRInitializer {
 
     public Permission getPerms() {
         return permProvider;
+    }
+
+    public Chat getChatMeta() {
+        return chatProvider;
     }
 }

@@ -28,7 +28,7 @@ public final class FileCache implements CacheHandler {
     public static final FileCache BOSSBARS = new FileCache(null, "bossbars");
     public static final FileCache WEBHOOKS = new FileCache(null, "webhooks");
 
-    private static final MultiFileCache LANG_CACHE = new MultiFileCache("lang", "lang-en", "lang-es");
+    private static final MultiFileCache LANG_CACHE = new MultiFileCache("lang", "lang-en", "lang-es", "lang-ru");
 
     public static FileCache getLang() {
         return LANG_CACHE.getCache("lang-" + MAIN_CONFIG.getValue("lang", "en"));

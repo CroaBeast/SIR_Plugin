@@ -1,6 +1,7 @@
 package me.croabeast.sir.plugin.module.object.listener;
 
-import me.croabeast.beanslib.Beans;
+import lombok.var;
+import me.croabeast.beanslib.message.CenteredMessage;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sir.api.misc.CustomListener;
 import me.croabeast.sir.api.misc.JavaLoader;
@@ -9,7 +10,9 @@ import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.SIRModule;
 import me.croabeast.sir.plugin.utility.LogUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -27,7 +30,7 @@ public class MotdHandler extends SIRModule implements CustomListener {
 
     private static final String SP = File.separator;
 
-    private int MOTD = 0, ICON = 0;
+    private int motdIndex = 0, ICON = 0;
 
     MotdHandler() {
         super(ModuleName.MOTD);
@@ -80,15 +83,14 @@ public class MotdHandler extends SIRModule implements CustomListener {
         }
     }
 
-    private static String usageType() {
-        return FileCache.MOTD_CACHE.
-                getConfig().
-                getValue("server-icon.usage", "DISABLED").
-                toUpperCase(Locale.ENGLISH);
-    }
-
     private static FileCache config() {
         return FileCache.MOTD_CACHE.getConfig();
+    }
+
+    private static String usageType() {
+        return config()
+                .getValue("server-icon.usage", "DISABLED")
+                .toUpperCase(Locale.ENGLISH);
     }
 
     @EventHandler
@@ -99,12 +101,7 @@ public class MotdHandler extends SIRModule implements CustomListener {
             List<String> keys = new ArrayList<>(motds().getKeys(false));
 
             int count = keys.size() - 1;
-            if (MOTD > count) MOTD = 0;
-
-            ConfigurationSection id = motds().getConfigurationSection(keys.get(MOTD));
-            String s = id != null ?
-                    id.getString("1", "") + "\n" + id.getString("2", "") :
-                    "&cError getting the correct motd from SIR.";
+            if (motdIndex > count) motdIndex = 0;
 
             Player player = null;
 
@@ -116,13 +113,25 @@ public class MotdHandler extends SIRModule implements CustomListener {
                     player = p;
             }
 
-            event.setMotd(Beans.colorize(player, s));
+            var id = motds().getConfigurationSection(keys.get(motdIndex));
+            if (id == null)
+                event.setMotd(ChatColor.RED + "SIR error: Incorrect MOTD");
+            else {
+                StringBuilder builder = new StringBuilder();
+                String two = id.getString("2");
 
-            if (!config().getValue("random-motds", false)) {
-                if (MOTD < count) MOTD++;
-                else MOTD = 0;
+                CenteredMessage center = new CenteredMessage(player).setLimit(130);
+
+                builder.append(center.center(id.getString("1", "")));
+                if (StringUtils.isNotBlank(two))
+                    builder.append("\n").append(center.center(two));
+
+                event.setMotd(builder.toString());
             }
-            else MOTD = new Random().nextInt(count + 1);
+
+            motdIndex = config().getValue("random-motds", false) ?
+                    new Random().nextInt(count + 1) :
+                    motdIndex < count ? motdIndex + 1 : 0;
         }
 
         if (!usageType().equals("DISABLED")) {
@@ -167,15 +176,14 @@ public class MotdHandler extends SIRModule implements CustomListener {
                 ICON = new Random().nextInt(count + 1);
         }
 
-        String type = FileCache.MOTD_CACHE.
-                getConfig().
-                getValue("max-players.type", "DEFAULT").
-                toUpperCase(Locale.ENGLISH);
+        String type = config()
+                .getValue("max-players.type", "DEFAULT")
+                .toUpperCase(Locale.ENGLISH);
 
         if (!type.matches("(?i)MAXIMUM|CUSTOM")) return;
 
         event.setMaxPlayers(type.matches("(?i)CUSTOM") ?
-                FileCache.MOTD_CACHE.getConfig().getValue("max-players.count", 0) :
+                config().getValue("max-players.count", 0) :
                 Bukkit.getOnlinePlayers().size() + 1
         );
     }

@@ -31,7 +31,7 @@ public class MentionParser extends SIRModule implements CacheHandler {
         loadCache();
     }
 
-    @Priority(level = 2)
+    @Priority(level = 1)
     static void loadCache() {
         if (!ModuleName.MENTIONS.isEnabled()) return;
         MENTIONS_MAP.clear();
@@ -57,11 +57,15 @@ public class MentionParser extends SIRModule implements CacheHandler {
         return null;
     }
 
+    static String stripJoiner(StringJoiner joiner) {
+        return joiner.toString().replaceAll("\\\\Q", "").replaceAll("\\\\E", "");
+    }
+
     public static String parseMentions(Player player, String string) {
         if (StringUtils.isBlank(string)) return string;
         if (!ModuleName.MENTIONS.isEnabled()) return string;
 
-        final String playerName = player.getName();
+        final String plName = player.getName();
         String split = Beans.getLineSeparator();
 
         Mention mention = getMention(player);
@@ -94,7 +98,7 @@ public class MentionParser extends SIRModule implements CacheHandler {
             if (target == null || player == target) continue;
             if (PlayerUtils.isIgnoring(target, player, true)) continue;
 
-            String[] values = {playerName, target.getName(), prefix};
+            String[] values = {plName, target.getName(), prefix};
             if (firstTarget == null) firstTarget = target;
 
             atLeastOne = true;
@@ -113,11 +117,10 @@ public class MentionParser extends SIRModule implements CacheHandler {
                     StringJoiner joiner = new StringJoiner(split);
                     hover.forEach(joiner::add);
 
-                    String join = joiner.toString().replaceAll("\\\\Q", "").
-                            replaceAll("\\\\E", "");
-
-                    builder.append("<hover:\"").append(join).
-                            append('"');
+                    builder.append("<hover:")
+                            .append('"')
+                            .append(stripJoiner(joiner))
+                            .append('"');
                 }
 
                 if (hasClick) {
@@ -125,9 +128,9 @@ public class MentionParser extends SIRModule implements CacheHandler {
 
                     String[] array = click.split(":", 2);
 
-                    builder.append(array[0].toLowerCase(Locale.ENGLISH)).
-                            append(":\"").
-                            append(array[1]).append("\">");
+                    builder.append(array[0].toLowerCase(Locale.ENGLISH))
+                            .append(":\"")
+                            .append(array[1]).append("\">");
                 }
                 else builder.append('>');
 
@@ -135,19 +138,18 @@ public class MentionParser extends SIRModule implements CacheHandler {
                 stringArray[i] = ValueReplacer.forEach(keys, values, output);
             }
 
-            sender.clone().setValues(values).
-                    setTargets(target).
-                    send(mention.messages.receiver);
+            sender.clone().setValues(values)
+                    .setTargets(target)
+                    .send(mention.messages.receiver);
 
             if (!sound.receiver.isEmpty())
                 PlayerUtils.playSound(target, sound.receiver.get(0));
         }
 
         if (atLeastOne) {
-            String[] values = {playerName, firstTarget.getName(), prefix};
-            sender.clone().setTargets(player).
-                    setValues(values).
-                    send(mention.messages.sender);
+            sender.clone().setTargets(player)
+                    .setValues(plName, firstTarget.getName(), prefix)
+                    .send(mention.messages.sender);
 
             if (!sound.sender.isEmpty())
                 PlayerUtils.playSound(player, sound.sender.get(0));
@@ -156,7 +158,7 @@ public class MentionParser extends SIRModule implements CacheHandler {
         StringJoiner joiner = new StringJoiner(" ");
         for (String s : stringArray) joiner.add(s);
 
-        return joiner.toString().replaceAll("\\\\Q", "").replaceAll("\\\\E", "");
+        return stripJoiner(joiner);
     }
 
     static class Mention {
@@ -167,8 +169,7 @@ public class MentionParser extends SIRModule implements CacheHandler {
         private final String click;
         private final List<String> hover;
 
-        private Two sound = Two.EMPTY,
-                messages = Two.EMPTY;
+        private Two sound = Two.EMPTY, messages = Two.EMPTY;
 
         Mention(ConfigurationSection s) {
             permission = s.getString("permission", "DEFAULT");

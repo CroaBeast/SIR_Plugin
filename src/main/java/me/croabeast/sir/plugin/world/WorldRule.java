@@ -69,7 +69,6 @@ public class WorldRule implements CacheHandler {
     private final Map<World, Map<Rule<?>, String>> LOADED_RULES_MAP = new HashMap<>();
     public boolean areWorldsLoaded = false;
 
-    @Priority(level = 1)
     void loadCache() {
         if (areWorldsLoaded) return;
 
@@ -138,10 +137,6 @@ public class WorldRule implements CacheHandler {
 
         public T getDefault() {
             return defValue;
-        }
-
-        public boolean isDefault(World world) {
-            return Objects.equals(getValue(world), getDefault());
         }
 
         public boolean setValue(World world, T value) {

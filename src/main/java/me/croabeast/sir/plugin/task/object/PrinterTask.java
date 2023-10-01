@@ -11,6 +11,7 @@ import me.croabeast.sir.plugin.module.object.EmojiParser;
 import me.croabeast.sir.plugin.task.SIRTask;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
+import net.milkbowl.vault.permission.Permission;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -48,7 +49,7 @@ public class PrinterTask extends SIRTask {
                 return true;
             }
 
-            LogUtils.doLog(getFromArray(args, 1));
+            LogUtils.doLog(createMessageFromArray(args, 1));
             return true;
         }
 
@@ -179,23 +180,28 @@ public class PrinterTask extends SIRTask {
                         break;
 
                     case "PERM":
-                        targets = stream.filter(p -> PlayerUtils.hasPerm(p, array[1])).
-                                collect(Collectors.toSet());
+                        targets = stream
+                                .filter(p -> PlayerUtils.hasPerm(p, array[1]))
+                                .collect(Collectors.toSet());
                         break;
 
                     case "GROUP":
                         targets = stream.filter(
-                                        p -> SIRInitializer.hasVault() && SIRInitializer.getPerms().
-                                                getPrimaryGroup(null, p).
-                                                matches("(?i)" + array[1])).
+                                        p -> {
+                                            Permission perms = SIRInitializer.getPerms();
+                                            if (perms == null) return false;
+
+                                            return perms.getPrimaryGroup(null, p).
+                                                    matches("(?i)" + array[1]);
+                                        }).
                                 collect(Collectors.toSet());
                         break;
 
                     default:
                 }}
 
-            return this.targets = targets.stream().
-                    filter(Objects::nonNull).collect(Collectors.toSet());
+            return this.targets = targets.stream()
+                    .filter(Objects::nonNull).collect(Collectors.toSet());
         }
 
         private boolean sendConfirmation() {
@@ -227,7 +233,7 @@ public class PrinterTask extends SIRTask {
 
         private void print(String key) {
             final String center = Beans.getCenterPrefix();
-            final String message = getFromArray(args, argumentIndex);
+            final String message = createMessageFromArray(args, argumentIndex);
 
             for (Player player : catcher.targets) {
                 MessageExecutor k = MessageExecutor.matchKey(key);

@@ -3,10 +3,12 @@ package me.croabeast.sir.plugin.utility;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
 import me.croabeast.beanslib.utility.LibUtils;
+import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.SIRRunnable;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.task.object.ignore.IgnoreSettings;
 import me.croabeast.sir.plugin.task.object.ignore.IgnoreTask;
+import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -28,16 +30,29 @@ public class PlayerUtils {
     private static final Set<Player> godPlayers = new HashSet<>();
 
     public boolean hasPerm(CommandSender sender, String perm) {
-        if (sender instanceof ConsoleCommandSender) return true;
+        if (sender instanceof ConsoleCommandSender)
+            return true;
+
         if (perm.matches("(?i)DEFAULT")) return true;
 
         final boolean b = sender.hasPermission(perm);
         final String s = "options.override-op";
 
-        if (!FileCache.MAIN_CONFIG.getValue(s, false)) return b;
+        if (!FileCache.MAIN_CONFIG.getValue(s, false))
+            return b;
 
         return (!sender.isOp() ||
                 sender.isPermissionSet(perm)) && b;
+    }
+
+    public String getPrefix(Player player) {
+        final Chat chat = SIRInitializer.getChatMeta();
+        return chat != null ? chat.getPlayerPrefix(player) : null;
+    }
+
+    public String getSuffix(Player player) {
+        final Chat chat = SIRInitializer.getChatMeta();
+        return chat != null ? chat.getPlayerSuffix(player) : null;
     }
 
     public Player getClosestPlayer(String input) {
@@ -178,9 +193,9 @@ public class PlayerUtils {
 
         final String m = "addAdditionalChatCompletions";
         try {
-            player.getClass().
-                    getDeclaredMethod(m, Collection.class).
-                    invoke(player, list);
+            player.getClass()
+                    .getDeclaredMethod(m, Collection.class)
+                    .invoke(player, list);
         }
         catch (Exception e) {
             e.printStackTrace();

@@ -4,15 +4,12 @@
 ########################
 # Want to use unicode characters? Check this site: https://coolsymbol.com
 
-# Using the center prefix in this .yml and messages.yml file, will ONLY
-# work on a player using a command, not when the console is using it.
-
 # IF YOU WANT TO DISABLE ANY OF THESE MESSAGES, JUST LEAVE IT BLANK >> ''
 
 # If the file should be updated to the latest version.
 update: true
 
-# The main prefix will be inserted in lines with <P> or "prefix-in-lang" string.
+# The main prefix will be inserted in lines with <P> or "lang-prefix-key" string.
 main-prefix: ' &e&lSIR &8>&7'
 
 no-permission: '<P> You do not have the permission &c{perm} &7to use this.'
@@ -21,7 +18,6 @@ wrong-arg: '<P> The argument &c{arg} &7is invalid or does not exist.'
 # Some messages for the chat formatter feature. Use them wisely
 chat:
   empty-message: '<P> &cYou can not send an empty message.'
-  invalid-channel: '<P> &cCould not found any valid channel, check your channels.yml'
 
 # Messages for the plugin's commands.
 commands:
@@ -64,11 +60,6 @@ commands:
       chat: '<P> Usage: &b/print CHAT <target> <type> <my message>'
       title: '<P> Usage: &b/print TITLE <target> <times> <my message>'
     empty-message: '<P> &cYou can not send an empty message.'
-    # For logging all messages types sent by the /print command.
-    logger:
-      for-player: '<P> Check the console to see the logged message.'
-      # If you want to disable the logger, just leave this path blank: ''
-      header: '&7Logged Message:'
     # To remind if the sender sends a message via /print command.
     reminder:
       empty: '<P> This target or group of targets is/are invalid or empty.'

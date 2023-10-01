@@ -83,7 +83,7 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
         }
         else order = new Random().nextInt(count + 1);
 
-        runnable = SIRRunnable.create(this::startTask);
+        runnable = new SIRRunnable(this::startTask);
         runnable.runTaskLater(delay);
     }
 

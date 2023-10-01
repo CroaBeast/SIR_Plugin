@@ -43,19 +43,19 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
     private static final Map<String, List<AdvancementInfo>> ADV_INFO_MAP = new HashMap<>();
 
     private static final List<Advancement> ADV_LIST =
-            Lists.newArrayList(Bukkit.advancementIterator()).
-            stream().filter(a -> {
-                String key = a.getKey().toString();
-                return !key.contains("recipes") && !key.contains("root");
-            }).
-            collect(Collectors.toList());
+            Lists.newArrayList(Bukkit.advancementIterator())
+                    .stream().filter(a -> {
+                        String k = a.getKey().toString();
+                        return !k.contains("recipes") && !k.contains("root");
+                    })
+                    .collect(Collectors.toList());
 
     private static boolean areAdvancementsLoaded = false;
 
     private static void forList(Set<AdvancementInfo> set, String frame) {
-        set.stream().
-                filter(info -> info.getFrameType().matches("(?i)" + frame)).
-                forEach(info -> {
+        set.stream()
+                .filter(info -> info.getFrameType().matches("(?i)" + frame))
+                .forEach(info -> {
                     List<AdvancementInfo> s = ADV_INFO_MAP.getOrDefault(frame, new ArrayList<>());
                     s.add(info);
 
@@ -64,7 +64,9 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
     }
 
     static {
-        var infoSet = ADV_LIST.stream().map(AdvancementInfo::new).collect(Collectors.toSet());
+        var infoSet = ADV_LIST
+                .stream().map(AdvancementInfo::new)
+                .collect(Collectors.toSet());
 
         forList(infoSet, "task");
         forList(infoSet, "goal");
@@ -81,7 +83,8 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
     }
 
     private static final Set<AdvancementInfo>
-            TASKS = toTypeSet("task"), GOALS = toTypeSet("goal"), CHALLENGES = toTypeSet("challenge"),
+            TASKS = toTypeSet("task"), GOALS = toTypeSet("goal"),
+            CHALLENGES = toTypeSet("challenge"),
             UNKNOWNS = toTypeSet("unknown");
 
     private static Consumer<AdvancementInfo> fromInfo(Set<Advancement> keys, String type) {
@@ -97,15 +100,6 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
             if (advances.contains(key)) return;
 
             String title = info.getTitle();
-            if (title == null) {
-                String temp = k.substring(k.lastIndexOf('/') + 1);
-                temp = temp.replace('_', ' ');
-
-                char f = temp.toCharArray()[0];
-                String first = (f + "").toUpperCase(Locale.ENGLISH);
-
-                title = first + temp.substring(1);
-            }
 
             advances.set(key + ".path", "type." + type);
 
@@ -168,7 +162,7 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
                 if (!UNKNOWNS.isEmpty())
                     LogUtils.doLog("&7Unknowns: &c" +
                             UNKNOWNS.size() +
-                            "&7. Check your lang.yml file!"
+                            "&7. Check your modules/advancements/lang.yml file!"
                     );
 
                 t = System.currentTimeMillis() - t;
@@ -250,7 +244,7 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
 
         String path = key.replaceAll("[/:]", ".");
 
-        ConfigurationSection section = FileCache.ADVANCE_CACHE.getCache("lang").getSection(path);
+        var section = FileCache.ADVANCE_CACHE.getCache("lang").getSection(path);
         if (section == null) return;
 
         String messagePath = section.getString("path");
@@ -282,10 +276,10 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
             mList.add(s);
         }
 
-        MessageSender.fromLoaded().
-                setTargets(Bukkit.getOnlinePlayers()).
-                setParser(player).
-                setKeys(keys).setValues(values).send(mList);
+        MessageSender.fromLoaded()
+                .setTargets(Bukkit.getOnlinePlayers())
+                .setParser(player)
+                .setKeys(keys).setValues(values).send(mList);
 
         LangUtils.executeCommands(player, cList);
 

@@ -14,7 +14,6 @@ import me.croabeast.sir.api.event.chat.SIRChatEvent;
 import me.croabeast.sir.api.misc.CustomListener;
 import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.channel.ChatChannel;
-import me.croabeast.sir.plugin.channel.GeneralChannel;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.hook.DiscordSender;
@@ -78,7 +77,7 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
         if (!LOCAL_MAP.isEmpty()) LOCAL_MAP.clear();
         if (!GLOBAL_MAP.isEmpty()) GLOBAL_MAP.clear();
 
-        final ChatChannel def = GeneralChannel.getDefaults();
+        final ChatChannel def = ChatChannel.getDefaults();
 
         List<ChatChannel> defs = def != null ?
                 Lists.newArrayList(def) : new ArrayList<>();
@@ -104,7 +103,7 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
             for (var id : entry.getValue().values()) {
                 ChatChannel channel;
                 try {
-                    channel = new GeneralChannel(id);
+                    channel = ChatChannel.of(id);
                 } catch (Exception e) {
                     continue;
                 }
@@ -162,14 +161,14 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
 
         if (!config().getValue("allow-empty", false) && StringUtils.isBlank(message))
         {
-            MessageSender.fromLoaded().setTargets(player).
-                    send(FileCache.getLang().toList("chat.empty-message"));
+            MessageSender.fromLoaded().setTargets(player)
+                    .send(FileCache.getLang().toList("chat.empty-message"));
 
             event.setCancelled(true);
             return;
         }
 
-        final boolean isAsync = event.isAsynchronous();
+        final boolean b = event.isAsynchronous();
 
         ChatChannel local = getLocalFromMessage(player, message);
 
@@ -177,17 +176,17 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
             String prefix = local.getAccessPrefix();
             if (StringUtils.isBlank(prefix)) return;
 
-            message = message.substring(prefix.length());
+            String msg = message.substring(prefix.length());
             event.setCancelled(true);
 
-            new SIRChatEvent(player, local, message, isAsync).call();
+            new SIRChatEvent(player, local, msg, b).call();
             return;
         }
 
         ChatChannel channel = getGlobalFormat(player);
         if (channel == null) return;
 
-        SIRChatEvent global = new SIRChatEvent(player, channel, message, isAsync);
+        SIRChatEvent global = new SIRChatEvent(player, channel, message, b);
         global.setGlobal(true);
 
         String output = channel.formatOutput(player, message, true);
@@ -196,10 +195,11 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
                 (channel.isDefault() && !TextUtils.IS_JSON.test(output))
         ) {
             event.setFormat(TextUtils.STRIP_JSON.apply(output).replace("%", "%%"));
-        } else {
-            event.setCancelled(true);
-            global.call();
+            return;
         }
+
+        event.setCancelled(true);
+        global.call();
     }
 
     @EventHandler(priority = EventPriority.LOW)
@@ -213,7 +213,7 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
 
         event.setCancelled(true);
 
-        String message = SIRTask.getFromArray(args, 1);
+        String message = SIRTask.createMessageFromArray(args, 1);
         if (StringUtils.isBlank(message)) return;
 
         boolean b = event.isAsynchronous();
@@ -241,10 +241,10 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
                 event.setCancelled(true);
                 int t = timer - ((int) (Math.round(rest / 100D) / 10));
 
-                MessageSender.fromLoaded().setTargets(player).
-                        setKeys("{time}").setValues(t).
-                        setLogger(false).
-                        send(channel.getCdMessages());
+                MessageSender.fromLoaded().setTargets(player)
+                        .setKeys("{time}").setValues(t)
+                        .setLogger(false)
+                        .send(channel.getCdMessages());
                 return;
             }
         }
@@ -253,10 +253,10 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
             String m = Beans.formatPlaceholders(player, message);
             String name = event.isGlobal() ? "global-chat" : channel.getName();
 
-            new DiscordSender(player, name).
-                    setKeys(channel.getChatKeys()).
-                    setValues(channel.getChatValues(m)).
-                    send();
+            new DiscordSender(player, name)
+                    .setKeys(channel.getChatKeys())
+                    .setValues(channel.getChatValues(m))
+                    .send();
         }
 
         LogUtils.doLog(channel.formatOutput(player, message, false));
@@ -274,15 +274,14 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
 
         String fc = click;
 
-        event.getRecipients().stream().
-                map(p ->
+        event.getRecipients().stream()
+                .map(p ->
                         new ChatMessageBuilder(
                                 p, player,
                                 channel.formatOutput(p, player, message, true)
-                        ).
-                        setHoverToAll(hover).setClickToAll(fc)
-                ).
-                forEach(ChatMessageBuilder::send);
+                        ).setHoverToAll(hover).setClickToAll(fc)
+                )
+                .forEach(ChatMessageBuilder::send);
 
         if (timer > 0) map.put(player, System.currentTimeMillis());
     }
@@ -294,7 +293,7 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
                 if (PlayerUtils.hasPerm(player, c.getPermission()))
                     return c;
 
-        return GeneralChannel.getDefaults();
+        return ChatChannel.getDefaults();
     }
 
     @Nullable

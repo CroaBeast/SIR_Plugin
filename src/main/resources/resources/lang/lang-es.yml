@@ -1,0 +1,130 @@
+########################
+#   SIR por CroaBeast  #
+# Deprimido desde 2004 #
+########################
+# ¿Quieres usar caracteres de Unicode? Mira este sitio: https://coolsymbol.com
+
+# Si deseas eliminar/desactivar cualquier de estos mensajes, cambialos a esto: ''
+
+# Si deseas que el archivo se actualice automáticamente.
+update: true
+
+# El prefijo principal del plugin. Cuando se usa <P>, se muestra el prefijo.
+main-prefix: ' &e&lSIR &8>&7'
+
+no-permission: '<P> No tienes el permiso &c{perm} &7para usar esto.'
+wrong-arg: '<P> El valor &c{arg} &7es inválido o no existe.'
+
+# Mensajes para el módulo de chat.
+chat:
+  empty-message: '<P> &cNo puedes enviar un mensaje vacío.'
+
+# Los mensajes para los comandos del plugin.
+commands:
+  # El comando principal (/sir).
+  sir:
+    help:
+      - '&7'
+      - ' &6>> &e&lSIR &7v {version}'
+      - '  &7 &b/sir&7: El comando principal de este plugin.'
+      - '  &7 &b/print&7: Muestra un mensaje desde este comando.'
+      - '  &7 &b/announcer&7: Maneja el módulo de Anuncios.'
+      - '  &7 &b/msg&7: Envías un mensaje privado a un jugador.'
+      - '  &7 &b/reply&7: Respondes un mensaje privado.'
+      - '  &7 &b/ignore&7: Ignoras a un jugador del chat o de mensajes privados.'
+      - '&7'
+    support: '<P> Entra a nuestro oficial de SIR: &b{link}'
+    reload: '<P> Todos los archivos .yml han sido recargados en &a{time} &7ms.'
+  # El comando /print.
+  print:
+    help:
+      main:
+        - '&7'
+        - ' &6>> &ePrint Menú de Ayuda'
+        - '  &7- &b/print&7: Muestra este menú de ayuda.'
+        - '  &7- &b/print targets&7: Muestra la información de los posibles objetivos a enviar.'
+        - '  &7- &b/print ACTION-BAR&7: Ayuda para los mensajes ActionBar.'
+        - '  &7- &b/print CHAT&7: Ayuda para los mensajes de chat.'
+        - '  &7- &b/print TITLE&7: Ayuda para los mensajes mostrados por título.'
+        - '&7'
+      targets:
+        - '&7'
+        - ' &6>> &ePrint Targets Info'
+        - '  &7- &b<PLAYER>&7: Selecciona a algún jugador en línea.'
+        - '  &7- &b@a&7: Selecciona a todos los jugadores en línea.'
+        - '  &7- &bWORLD:myWorld&7: Selecciona a los jugadores de un mundo si es válido.'
+        - '  &7- &bPERM:my.perm&7: Selecciona a los jugadores que tienen dicho permiso.'
+        - '  &7- &bGROUP:myGroup&7: Selecciona a los jugadores pertenecientes a un grupo (Solo con Vault).'
+        - '&7'
+      action-bar: '<P> Uso: &b/print ACTION-BAR <objetivo> <mi mensaje>'
+      chat: '<P> Usage: &b/print CHAT <objetivo> <tipo> <mi mensaje>'
+      title: '<P> Usage: &b/print TITLE <objetivo> <tiempos> <mi mensaje>'
+    empty-message: '<P> &cNo puedes enviar un mensaje vacío.'
+    # Mensajes para visualizar si alguien usa el comando /print.
+    reminder:
+      empty: '<P> El grupo objetivo es inválido, no se pudo enviar el mensaje.'
+      success: '<P> El mensaje fue enviado correctamente al grupo objetivo: &a{TARGET}'
+  # El comando /announcer.
+  announcer:
+    help:
+      - '&7'
+      - ' &6>> &eAnnouncer Menú de Ayuda'
+      - '  &7- &b/announcer&7: Muestra este menú de ayuda.'
+      - '  &7- &b/announcer start&7: Inicia los mensajes automáticos.'
+      - '  &7- &b/announcer cancel&7: Cancela los mensajes automáticos.'
+      - '  &7- &b/announcer reboot&7: Reinicia los mensajes automáticos.'
+      - '  &7- &b/announcer preview <ID>&7:'
+      - '    &7Se muestra el anuncio de manera independiente.'
+      - '&7'
+    cant-start: '<P> &cLos mensajes automáticos ya han iniciado.'
+    cant-stop: '<P> &cLos mensajes automáticos ya están cancelados.'
+    started: '<P> &7Los mensajes automáticos han sido iniciados.'
+    stopped: '<P> &7Los mensajes automáticos han sido cancelados.'
+    rebooted: '<P> &7Los mensajes automáticos han sido reiniciados.'
+    select: '<P> Por favor, selecciona un anuncio válido.'
+  # Los comandos /msg y /reply.
+  msg-reply:
+    empty-message: '<P> &cNo puedes enviar un mensaje vacío.'
+    need-player: '<P> &cNecesitas mencionar un jugador para usar el comando.'
+    not-player: '<P> &cEl jugador {target} no existe.'
+    not-replied: '<P> &cNo has enviado un mensaje a un jugador antes.'
+    not-yourself: '<P> &cNo puedes enviar un mensaje a ti mismo.'
+    for-sender:
+      message: ' &eYo &8> &6{receiver}&7: &f{message}'
+      sound: ENTITY_PLAYER_LEVELUP # Disable the sound setting it like this: ''
+    for-receiver:
+      message: ' &6{sender} &8> &eYo&7: &f{message}'
+      sound: ENTITY_PLAYER_LEVELUP # Disable the sound setting it like this: ''
+    vanish-messages:
+      enabled: false
+      message: '<P> &cNo puedes enviar un mensaje a un jugador en estado de vanish.'
+    console-formatting:
+      name-value: '&cConsola'
+      format: ' &6{sender} &8> &e{receiver}&7: &f{message}'
+  # El comando /ignore.
+  ignore:
+    help:
+      - '&7'
+      - ' &6>> &eIgnore Menú de Ayuda'
+      - '  &7- &b/ignore chat [player]&7: Ignora (o quita el ignore) a un jugador en el chat.'
+      - '  &7- &b/ignore msg [player]&7: Ignora (o quita el ignore) a un jugador en los mensajes privados.'
+      - '&7'
+    need-player: '<P> &cNecesitas a un jugador para usar este comando.'
+    not-yourself: '<P> &cNo puedes ignorarte a ti mismo.'
+    not-player: '<P> &cEl jugador {target} no existe.'
+    success:
+      player: '<P> &7Ahora estás ignorando a &a{target} en &e{type}&7.'
+      all: '<P> &7Estás ignorando a todos los jugadores en &e{type}&7.'
+    remove:
+      player: '<P> &7Ahora ya no estás ignorando a &a{target} en &e{type}&7.'
+      all: '<P> &7Estás ignorando a todos los jugadores en &e{type}&7.'
+    ignoring:
+      player: '<P> &7Este jugador te está ignorando en &e{type}&7.'
+      all: '<P> &7Este jugador está ignorando a todos en &e{type}&7.'
+    channels:
+      chat: 'Chat'
+      msg: 'Mensajes privados'
+  chat-view:
+    help: "<P> &7Uso: &b/chat-view &b<canal local de chat>"
+    'true': "<P> &7Los mensajes del canal &e{channel}&7 son&a visibles&7."
+    'false': "<P> &7Los mensajes del canal &e{channel}&c no son visibles&7."

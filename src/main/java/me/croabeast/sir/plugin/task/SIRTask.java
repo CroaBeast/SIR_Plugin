@@ -74,9 +74,9 @@ public abstract class SIRTask {
      * @param <T> the class of the value
      */
     protected <T> boolean fromSender(CommandSender sender, String key, T value, String path) {
-        return getClonedSender(sender).setKeys(key).
-                setValues(value).
-                send(FileCache.getLang().toList(path));
+        return getClonedSender(sender).setKeys(key)
+                .setValues(value)
+                .send(FileCache.getLang().toList(path));
     }
 
     /**
@@ -124,7 +124,7 @@ public abstract class SIRTask {
         return Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
     }
 
-    public static String getFromArray(String[] args, int argumentIndex) {
+    public static String createMessageFromArray(String[] args, int argumentIndex) {
         if (argumentIndex >= args.length) return null;
         StringBuilder b = new StringBuilder();
 

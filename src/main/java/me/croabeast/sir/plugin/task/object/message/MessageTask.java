@@ -59,10 +59,10 @@ public class MessageTask extends DirectTask {
     protected @NotNull List<String> complete(CommandSender sender, String[] args) {
         if (args.length == 1)
             return generateList(args,
-                    Bukkit.getOnlinePlayers().stream().
-                            filter(VanishHook::isVisible).
-                            map(HumanEntity::getName).
-                            collect(Collectors.toList())
+                    Bukkit.getOnlinePlayers().stream()
+                            .filter(VanishHook::isVisible)
+                            .map(HumanEntity::getName)
+                            .collect(Collectors.toList())
             );
 
         return args.length == 2 ? generateList(args, "<message>") : new ArrayList<>();

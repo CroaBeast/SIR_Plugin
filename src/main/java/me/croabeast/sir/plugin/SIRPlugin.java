@@ -1,6 +1,7 @@
 package me.croabeast.sir.plugin;
 
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.var;
 import me.croabeast.beanslib.analytic.UpdateChecker;
 import me.croabeast.beanslib.message.MessageSender;
@@ -67,18 +68,18 @@ public final class SIRPlugin extends JavaPlugin {
 
         utils = new LangUtils(this);
 
-        String path = getClass().getProtectionDomain().
-                getCodeSource().
-                getLocation().getPath();
+        String path = getClass().getProtectionDomain()
+                .getCodeSource()
+                .getLocation().getPath();
 
         try (JarFile j = new JarFile(new File(URLDecoder.decode(path)))) {
             String prefix = "me/croabeast/sir/plugin";
 
             JAR_ENTRIES.addAll(
-                    Collections.list(j.entries()).stream().
-                            map(ZipEntry::getName).
-                            filter(s -> s.startsWith(prefix)).
-                            collect(Collectors.toList())
+                    Collections.list(j.entries()).stream()
+                            .map(ZipEntry::getName)
+                            .filter(s -> s.startsWith(prefix))
+                            .collect(Collectors.toList())
             );
         } catch (Exception ignored) {}
 
@@ -90,11 +91,11 @@ public final class SIRPlugin extends JavaPlugin {
 
         final FileCache config = FileCache.MAIN_CONFIG;
 
-        MessageSender.setLoaded(new MessageSender().
-                setLogger(config.getValue("options.send-console", true)).
-                setCaseSensitive(false).
-                setNoFirstSpaces(config.getValue("options.strip-spaces", false)).
-                addFunctions(EmojiParser::parse)
+        MessageSender.setLoaded(new MessageSender()
+                .setLogger(config.getValue("options.send-console", true))
+                .setCaseSensitive(false)
+                .setNoFirstSpaces(config.getValue("options.strip-spaces", false))
+                .addFunctions(EmojiParser::parse)
         );
 
         LogUtils.rawLog(pluginHeader());
@@ -162,15 +163,14 @@ public final class SIRPlugin extends JavaPlugin {
         if (commandsRegistered)
             throw new IllegalStateException("Commands are already registered.");
 
-        SIRCollector.from("me.croabeast.sir.plugin.task.object").
-                filter(c -> !c.getName().contains("$")).
-                filter(SIRTask.class::isAssignableFrom).
-                filter(c -> c != SIRTask.class && c != DirectTask.class).
-                collect().
-                forEach(c -> {
+        SIRCollector.from("me.croabeast.sir.plugin.task.object")
+                .filter(c -> !c.getName().contains("$"))
+                .filter(SIRTask.class::isAssignableFrom)
+                .filter(c -> c != SIRTask.class && c != DirectTask.class)
+                .collect()
+                .forEach(c -> {
                     try {
                         var co = c.getDeclaredConstructor();
-
                         co.setAccessible(true);
                         ((SIRTask) co.newInstance()).register();
                         co.setAccessible(false);
@@ -186,12 +186,12 @@ public final class SIRPlugin extends JavaPlugin {
         if (modulesRegistered)
             throw new IllegalStateException("Modules are already registered.");
 
-        SIRCollector.from("me.croabeast.sir.plugin.module.object").
-                filter(c -> !c.getName().contains("$")).
-                filter(SIRModule.class::isAssignableFrom).
-                filter(c -> c != SIRModule.class).
-                collect().
-                forEach(c -> {
+        SIRCollector.from("me.croabeast.sir.plugin.module.object")
+                .filter(c -> !c.getName().contains("$"))
+                .filter(SIRModule.class::isAssignableFrom)
+                .filter(c -> c != SIRModule.class)
+                .collect()
+                .forEach(c -> {
                     try {
                         var co = c.getDeclaredConstructor();
                         co.setAccessible(true);
@@ -294,7 +294,9 @@ public final class SIRPlugin extends JavaPlugin {
         }
     }
 
+    @SneakyThrows
     public static void runTaskWhenLoaded(Runnable runnable) {
+        checkAccess(SIRPlugin.class);
         Bukkit.getScheduler().scheduleSyncDelayedTask(instance, runnable);
     }
 
@@ -318,7 +320,9 @@ public final class SIRPlugin extends JavaPlugin {
         }
         catch (Exception ignored) {}
 
-        if (plugin == null)
-            throw new IllegalAccessException(clazz.getSimpleName() + " can only be used by SIR");
+        if (plugin != null) return;
+
+        String e = " is only accessible using the SIR plugin";
+        throw new IllegalAccessException(clazz.getSimpleName() + e);
     }
 }

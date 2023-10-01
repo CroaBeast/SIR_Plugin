@@ -48,7 +48,7 @@ public abstract class DirectTask extends SIRTask {
     }
 
     <C extends CommandSender> boolean sendMessagingResult(C sender, C target, String[] args, boolean isMsg) {
-        String message = getFromArray(args,
+        String message = createMessageFromArray(args,
                 (isMsg || !RECEIVER_MAP.containsKey(sender)) ? 1 : 0);
 
         if (StringUtils.isBlank(message))
@@ -57,27 +57,29 @@ public abstract class DirectTask extends SIRTask {
         PlayerUtils.playSound(sender, getSound(true));
         PlayerUtils.playSound(target, getSound(false));
 
-        getClonedSender(sender).setKeys("{receiver}", "{message}").
-                setValues(
+        getClonedSender(sender).setKeys("{receiver}", "{message}")
+                .setValues(
                         isMsg ? args[0] : isConsole(target),
                         message
-                ).setLogger(false).
-                send(getMessagingOutput(true));
+                )
+                .setLogger(false)
+                .send(getMessagingOutput(true));
 
-        getClonedSender(target).setKeys("{sender}", "{message}").
-                setValues(
+        getClonedSender(target).setKeys("{sender}", "{message}")
+                .setValues(
                         isConsole(sender),
                         message
-                ).setLogger(false).
-                send(getMessagingOutput(false));
+                )
+                .setLogger(false)
+                .send(getMessagingOutput(false));
 
-        return MessageSender.fromLoaded().
-                setKeys("{receiver}", "{sender}", "{message}").
-                setValues(
+        return MessageSender.fromLoaded()
+                .setKeys("{receiver}", "{sender}", "{message}")
+                .setValues(
                         isMsg ? args[0] : isConsole(target),
                         isConsole(sender), message
-                ).
-                send(lang().toList(CONSOLE_PATH + "format"));
+                )
+                .send(lang().toList(CONSOLE_PATH + "format"));
     }
 
     public static Map<CommandSender, CommandSender> getReceiverMap() {

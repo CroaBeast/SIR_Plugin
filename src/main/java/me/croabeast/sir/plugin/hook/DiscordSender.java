@@ -47,11 +47,11 @@ public final class DiscordSender {
     String formatString(String string) {
         if (StringUtils.isBlank(string)) return string;
 
-        StringApplier applier = StringApplier.of(string).
-                apply(s -> ValueReplacer.forEach(keys, values, s)).
-                apply(s -> Beans.formatPlaceholders(player, s)).
-                apply(NeoPrismaticAPI::stripAll).
-                apply(DiscordUtil::translateEmotes);
+        StringApplier applier = StringApplier.of(string)
+                .apply(s -> ValueReplacer.forEach(keys, values, s))
+                .apply(s -> Beans.formatPlaceholders(player, s))
+                .apply(NeoPrismaticAPI::stripAll)
+                .apply(DiscordUtil::translateEmotes);
 
         return applier.toString();
     }
