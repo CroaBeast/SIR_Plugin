@@ -27,9 +27,7 @@ public class MentionParser extends SIRModule implements CacheHandler {
     }
 
     @Override
-    public void register() {
-        loadCache();
-    }
+    public void register() {}
 
     @Priority(level = 1)
     static void loadCache() {
@@ -58,7 +56,7 @@ public class MentionParser extends SIRModule implements CacheHandler {
     }
 
     static String stripJoiner(StringJoiner joiner) {
-        return joiner.toString().replaceAll("\\\\Q", "").replaceAll("\\\\E", "");
+        return joiner.toString().replaceAll("\\\\[QE]", "");
     }
 
     public static String parseMentions(Player player, String string) {

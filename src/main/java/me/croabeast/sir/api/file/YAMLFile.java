@@ -229,6 +229,15 @@ public class YAMLFile {
         }
     }
 
+    public <T> T setValue(String path, T value) {
+        try {
+            get().set(path, value);
+            return save(false) ? getValue(path, value) : null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     @Nullable
     public ConfigurationSection getSection(String path) {
         return get().getConfigurationSection(path);

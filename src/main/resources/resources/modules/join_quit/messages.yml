@@ -19,13 +19,13 @@ join:
     public:
       - '&8[&a+&8] &7Welcome &e{player} &7to the server!'
     invulnerable: 3
-    spawn:
+    spawn-location:
       # the world
       world: world
       # the coordinates
-      x-y-z: 0,80,0
+      coordinates: 0,80,0
       # the direction
-      yaw-pitch: 0,-90
+      rotation: 0,-90
   2:
     permission: join.vip
     public:

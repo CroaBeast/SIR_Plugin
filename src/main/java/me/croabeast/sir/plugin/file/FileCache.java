@@ -38,8 +38,8 @@ public final class FileCache implements CacheHandler {
     public static final ModuleCache ANNOUNCE_CACHE = new ModuleCache("announcements", "announces");
 
     public static final ModuleCache CHAT_CHANNELS_CACHE = new ModuleCache("chat_channels", "channels");
-    public static final ModuleCache CHAT_COLORS_CACHE = new ModuleCache("chat_colors", "gui");
-    public static final ModuleCache CHAT_TAGS_CACHE = new ModuleCache("chat_tags", "tags");
+    //public static final ModuleCache CHAT_COLORS_CACHE = new ModuleCache("chat_colors", "gui");
+    //public static final ModuleCache CHAT_TAGS_CACHE = new ModuleCache("chat_tags", "tags");
 
     public static final ModuleCache DISCORD_HOOK_CACHE = new ModuleCache("discord_hook", "channels");
     public static final ModuleCache JOIN_QUIT_CACHE = new ModuleCache("join_quit", "messages");
@@ -128,6 +128,11 @@ public final class FileCache implements CacheHandler {
     @Nullable
     public <T> T getValue(String path, Class<T> clazz) {
         return getFile() == null ? null : getFile().getValue(path, clazz);
+    }
+
+    @Nullable
+    public <T> T setValue(String path, T value) {
+        return getFile() == null ? null : getFile().setValue(path, value);
     }
 
     @Nullable

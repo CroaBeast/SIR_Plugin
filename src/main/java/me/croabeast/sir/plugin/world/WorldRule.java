@@ -5,6 +5,7 @@ import lombok.experimental.UtilityClass;
 import lombok.var;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.CacheHandler;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.World;
@@ -12,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 @SuppressWarnings({"deprecation", "unchecked"})
 @UtilityClass
@@ -165,7 +165,11 @@ public class WorldRule implements CacheHandler {
 
         @Override
         public Boolean getValue(World world) {
-            return Boolean.parseBoolean(world.getGameRuleValue(rule));
+            String value = world.getGameRuleValue(rule);
+
+            return StringUtils.isBlank(value) || !value.matches("(?i)true|false") ?
+                    null :
+                    Boolean.parseBoolean(value);
         }
     }
 
@@ -177,7 +181,16 @@ public class WorldRule implements CacheHandler {
 
         @Override
         public Integer getValue(World world) {
-            return Integer.parseInt(world.getGameRuleValue(rule));
+            String value = world.getGameRuleValue(rule);
+
+            if (StringUtils.isBlank(value))
+                return null;
+
+            try {
+                return Integer.parseInt(value);
+            } catch (Exception e) {
+                return null;
+            }
         }
     }
 }

@@ -3,6 +3,7 @@ package me.croabeast.sir.plugin.module.object.listener;
 import com.google.common.collect.Lists;
 import lombok.var;
 import me.croabeast.advancementinfo.AdvancementInfo;
+import me.croabeast.advancementinfo.FrameType;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.beanslib.utility.TextUtils;
@@ -13,6 +14,7 @@ import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.hook.DiscordSender;
+import me.croabeast.sir.plugin.hook.VanishHook;
 import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.SIRModule;
 import me.croabeast.sir.plugin.utility.LangUtils;
@@ -40,7 +42,7 @@ import java.util.stream.Collectors;
 
 public class AdvanceHandler extends SIRModule implements CustomListener, CacheHandler {
 
-    private static final Map<String, List<AdvancementInfo>> ADV_INFO_MAP = new HashMap<>();
+    private static final Map<FrameType, Set<AdvancementInfo>> ADV_INFO_MAP = new HashMap<>();
 
     private static final List<Advancement> ADV_LIST =
             Lists.newArrayList(Bukkit.advancementIterator())
@@ -52,40 +54,44 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
 
     private static boolean areAdvancementsLoaded = false;
 
-    private static void forList(Set<AdvancementInfo> set, String frame) {
+    private static void forList(Set<AdvancementInfo> set, FrameType frame) {
         set.stream()
-                .filter(info -> info.getFrameType().matches("(?i)" + frame))
+                .filter(info -> info.getFrame() == frame)
                 .forEach(info -> {
-                    List<AdvancementInfo> s = ADV_INFO_MAP.getOrDefault(frame, new ArrayList<>());
-                    s.add(info);
+                    Set<AdvancementInfo> s = ADV_INFO_MAP.get(frame);
+                    if (s == null) s = new LinkedHashSet<>();
 
+                    s.add(info);
                     ADV_INFO_MAP.put(frame, s);
                 });
     }
 
     static {
-        var infoSet = ADV_LIST
-                .stream().map(AdvancementInfo::new)
+        Set<AdvancementInfo> infoSet = ADV_LIST
+                .stream().map(a -> {
+                    AdvancementInfo info = null;
+                    try {
+                        info = new AdvancementInfo(a);
+                    } catch (Exception ignored) {}
+                    return info;
+                })
+                .filter(Objects::nonNull)
                 .collect(Collectors.toSet());
 
-        forList(infoSet, "task");
-        forList(infoSet, "goal");
-        forList(infoSet, "challenge");
-        forList(infoSet, "unknown");
+        forList(infoSet, FrameType.TASK);
+        forList(infoSet, FrameType.GOAL);
+        forList(infoSet, FrameType.CHALLENGE);
+        forList(infoSet, FrameType.UNKNOWN);
     }
 
-    private static List<AdvancementInfo> getList(String frame) {
-        return ADV_INFO_MAP.getOrDefault(frame, new ArrayList<>());
+    private static Set<AdvancementInfo> toTypeSet(FrameType frame) {
+        return new LinkedHashSet<>(ADV_INFO_MAP.getOrDefault(frame, new LinkedHashSet<>()));
     }
 
-    private static Set<AdvancementInfo> toTypeSet(String frame) {
-        return new HashSet<>(getList(frame));
-    }
-
-    private static final Set<AdvancementInfo>
-            TASKS = toTypeSet("task"), GOALS = toTypeSet("goal"),
-            CHALLENGES = toTypeSet("challenge"),
-            UNKNOWNS = toTypeSet("unknown");
+    private static final Set<AdvancementInfo> TASKS = toTypeSet(FrameType.TASK);
+    private static final Set<AdvancementInfo> GOALS = toTypeSet(FrameType.GOAL);
+    private static final Set<AdvancementInfo> CHALLENGES = toTypeSet(FrameType.CHALLENGE);
+    private static final Set<AdvancementInfo> UNKNOWNS = toTypeSet(FrameType.UNKNOWN);
 
     private static Consumer<AdvancementInfo> fromInfo(Set<Advancement> keys, String type) {
         return info -> {
@@ -103,7 +109,7 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
 
             advances.set(key + ".path", "type." + type);
 
-            advances.set(key + ".frame", info.getFrameType());
+            advances.set(key + ".frame", info.getFrame());
             advances.set(key + ".name", title);
             advances.set(key + ".description", info.getDescription());
 
@@ -149,7 +155,8 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
                 UNKNOWNS.forEach(fromInfo(loadedKeys, "custom"));
 
                 if (loadedKeys.size() > 0) {
-                    YAMLFile f = FileCache.ADVANCE_CACHE.getCache("lang").getFile();
+                    YAMLFile f = FileCache
+                            .ADVANCE_CACHE.getCache("lang").getFile();
                     if (f != null) f.save();
                 }
 
@@ -166,7 +173,10 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
                     );
 
                 t = System.currentTimeMillis() - t;
-                LogUtils.mixLog("&7Loaded advancements in &e" + t + "&7 ms.", "true::");
+                LogUtils.mixLog(
+                        "&7Loaded advancements in &e" + t + "&7 ms.",
+                        "true::"
+                );
 
                 areAdvancementsLoaded = true;
             });
@@ -179,14 +189,15 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
         if (LibUtils.getMainVersion() < 12) return;
 
         for (World w : Bukkit.getWorlds()) {
-            var announcesEnabled = WorldRule.ANNOUNCE_ADVANCEMENTS;
-            if (advList("worlds").contains(w.getName())) return;
+            var announces = WorldRule.ANNOUNCE_ADVANCEMENTS;
+            if (advList("worlds").contains(w.getName()))
+                return;
 
-            String def = WorldRule.valueFromLoaded(w, announcesEnabled);
-            boolean v = announcesEnabled.getValue(w);
+            String d = WorldRule.valueFromLoaded(w, announces);
+            boolean v = announces.getValue(w);
 
-            if (Boolean.parseBoolean(def) && !v)
-                announcesEnabled.setValue(w, true);
+            if (Boolean.parseBoolean(d) && !v)
+                announces.setValue(w, true);
         }
     }
 
@@ -194,14 +205,9 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
         super(ModuleName.ADVANCEMENTS);
     }
 
-    private boolean registered = false;
-
     @Override
     public void register() {
-        if (registered) return;
-
-        CustomListener.super.register();
-        registered = true;
+        registerOnSIR();
     }
 
     private static List<String> advList(String path) {
@@ -211,7 +217,7 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
     @EventHandler
     private void onBukkit(PlayerAdvancementDoneEvent event) {
         final Player player = event.getPlayer();
-        if (!isEnabled()) return;
+        if (!isEnabled() || VanishHook.isVanished(player)) return;
 
         if (advList("worlds").contains(player.getWorld().getName()))
             return;
@@ -262,9 +268,9 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
                         WordUtils.capitalizeFully(info.frame), info.item
                 };
 
-        List<String> messages = FileCache.ADVANCE_CACHE.getCache("messages").toList(messagePath),
-                mList = new ArrayList<>(),
-                cList = new ArrayList<>();
+        List<String> mList = new ArrayList<>(), cList = new ArrayList<>();
+        List<String> messages = FileCache
+                .ADVANCE_CACHE.getCache("messages").toList(messagePath);
 
         for (String s : messages) {
             Matcher m = Pattern.compile("(?i)^\\[cmd]").matcher(s);
@@ -279,7 +285,7 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
         MessageSender.fromLoaded()
                 .setTargets(Bukkit.getOnlinePlayers())
                 .setParser(player)
-                .setKeys(keys).setValues(values).send(mList);
+                .addKeysValues(keys, values).send(mList);
 
         LangUtils.executeCommands(player, cList);
 

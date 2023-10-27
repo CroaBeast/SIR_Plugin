@@ -1,10 +1,11 @@
 package me.croabeast.sir.plugin.utility;
 
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sir.plugin.SIRInitializer;
-import me.croabeast.sir.plugin.SIRRunnable;
+import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.task.object.ignore.IgnoreSettings;
 import me.croabeast.sir.plugin.task.object.ignore.IgnoreTask;
@@ -27,7 +28,7 @@ import java.util.Set;
 public class PlayerUtils {
 
     @Getter
-    private static final Set<Player> godPlayers = new HashSet<>();
+    private static final Set<Player> GOD_PLAYERS = new HashSet<>();
 
     public boolean hasPerm(CommandSender sender, String perm) {
         if (sender instanceof ConsoleCommandSender)
@@ -139,18 +140,40 @@ public class PlayerUtils {
         player.teleport(loc);
     }
 
+    @SneakyThrows
+    private void check() {
+        SIRPlugin.checkAccess(PlayerUtils.class);
+    }
+
+    public boolean isImmune(Player player) {
+        check();
+        return GOD_PLAYERS.contains(player);
+    }
+
+    public boolean addToImmunePlayers(Player player) {
+        check();
+        return GOD_PLAYERS.add(player);
+    }
+
+    public boolean removeFromImmunePlayers(Player player) {
+        check();
+        return GOD_PLAYERS.remove(player);
+    }
+
     public void giveImmunity(Player player, int time) {
-        if (LibUtils.getMainVersion() <= 8 | time <= 0) return;
+        if (LibUtils.getMainVersion() <= 8 | time <= 0)
+            return;
 
+        addToImmunePlayers(player);
         player.setInvulnerable(true);
-        getGodPlayers().add(player);
 
-        SIRRunnable.runFromSIR(
+        Bukkit.getScheduler().runTaskLater(
+                SIRPlugin.getInstance(),
                 () -> {
                     player.setInvulnerable(false);
-                    getGodPlayers().remove(player);
+                    GOD_PLAYERS.remove(player);
                 },
-                r -> r.runTaskLater(time)
+                time
         );
     }
 

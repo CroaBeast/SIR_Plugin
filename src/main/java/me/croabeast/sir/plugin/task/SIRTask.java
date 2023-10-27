@@ -51,17 +51,6 @@ public abstract class SIRTask {
     }
 
     /**
-     * Creates a cloned instance of the {@link MessageSender#fromLoaded()} object
-     * using a {@link CommandSender} as the main target.
-     *
-     * @param sender a sender
-     * @return a cloned instance
-     */
-    protected MessageSender getClonedSender(CommandSender sender) {
-        return MessageSender.fromLoaded().setTargets(sender).clone();
-    }
-
-    /**
      * Sends a list / unique string from the lang.yml file using a single key
      * and value, and a unique path.
      *
@@ -74,8 +63,8 @@ public abstract class SIRTask {
      * @param <T> the class of the value
      */
     protected <T> boolean fromSender(CommandSender sender, String key, T value, String path) {
-        return getClonedSender(sender).setKeys(key)
-                .setValues(value)
+        return MessageSender.fromLoaded().setTargets(sender)
+                .addKeyValue(key, value)
                 .send(FileCache.getLang().toList(path));
     }
 
@@ -88,7 +77,7 @@ public abstract class SIRTask {
      * @return the {@link MessageSender#send(List)} result
      */
     protected boolean fromSender(CommandSender sender, String path) {
-        return getClonedSender(sender).send(FileCache.getLang().toList(path));
+        return MessageSender.fromLoaded().setTargets(sender).send(FileCache.getLang().toList(path));
     }
 
     protected boolean isProhibited(CommandSender sender, String perm) {

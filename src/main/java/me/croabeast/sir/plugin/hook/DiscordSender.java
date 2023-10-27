@@ -8,8 +8,8 @@ import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
 import me.croabeast.beanslib.Beans;
+import me.croabeast.beanslib.applier.StringApplier;
 import me.croabeast.beanslib.key.ValueReplacer;
-import me.croabeast.beanslib.misc.StringApplier;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sir.plugin.file.FileCache;
@@ -47,7 +47,7 @@ public final class DiscordSender {
     String formatString(String string) {
         if (StringUtils.isBlank(string)) return string;
 
-        StringApplier applier = StringApplier.of(string)
+        StringApplier applier = StringApplier.simplified(string)
                 .apply(s -> ValueReplacer.forEach(keys, values, s))
                 .apply(s -> Beans.formatPlaceholders(player, s))
                 .apply(NeoPrismaticAPI::stripAll)
@@ -154,7 +154,12 @@ public final class DiscordSender {
 
             if (guild == null) continue;
 
-            TextChannel channel = guild.getTextChannelById(id);
+            TextChannel channel;
+            try {
+                channel = guild.getTextChannelById(id);
+            } catch (Exception e) {
+                continue;
+            }
             if (channel == null) continue;
 
             if (StringUtils.isNotBlank(text)) {

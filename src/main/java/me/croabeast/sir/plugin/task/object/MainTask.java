@@ -38,7 +38,7 @@ public class MainTask extends SIRTask {
                 Player player = sender instanceof Player ? (Player) sender : null;
 
                 if (player == null)
-                    return getClonedSender(sender)
+                    return MessageSender.fromLoaded().setTargets(sender)
                             .setLogger(true)
                             .send("[SIR] &cThis command is only for players.");
 
@@ -46,7 +46,8 @@ public class MainTask extends SIRTask {
                 return true;
 
             case "about":
-                return getClonedSender(sender).setLogger(true)
+                return MessageSender.fromLoaded()
+                        .setTargets(sender).setLogger(true)
                         .send(
                             "", " &eSIR &7- &f" + version + "&7:",
                             "   &8• &7Server Software: &f" + LibUtils.serverFork(),
@@ -75,15 +76,15 @@ public class MainTask extends SIRTask {
 
                 final FileCache config = FileCache.MAIN_CONFIG;
 
-                MessageSender.setLoaded(
-                        MessageSender.fromLoaded()
-                                .setLogger(
-                                        config.getValue("options.send-console", true)
-                                )
-                                .setNoFirstSpaces(
-                                        config.getValue("options.strip-spaces", false)
-                                )
-                );
+                MessageSender newSender = MessageSender.fromLoaded()
+                        .setLogger(
+                                config.getValue("options.send-console", true)
+                        )
+                        .setNoFirstSpaces(
+                                config.getValue("options.strip-spaces", false)
+                        );
+
+                MessageSender.setLoaded(newSender);
 
                 return fromSender(sender,
                         "{time}", System.currentTimeMillis() - start,

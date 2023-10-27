@@ -1,13 +1,14 @@
-package me.croabeast.sir.gui;
+package me.croabeast.sir.api.gui;
 
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.pane.component.ToggleButton;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public final class ButtonCreator {
+public final class ButtonCreator implements PaneCreatable<ToggleButton> {
 
     private final ToggleButton button;
 
@@ -48,11 +49,10 @@ public final class ButtonCreator {
     }
 
     public ButtonCreator onClick(Function<ToggleButton, Consumer<InventoryClickEvent>> function) {
-        button.setOnClick(function.apply(button));
-        return this;
+        return onClick(function.apply(button));
     }
 
-    public ToggleButton create() {
+    public @NotNull ToggleButton create() {
         return button;
     }
 

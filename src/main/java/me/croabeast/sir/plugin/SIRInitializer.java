@@ -14,10 +14,10 @@ import org.bstats.charts.DrilldownPie;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.ServicesManager;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 @UtilityClass
 public class SIRInitializer {
@@ -76,9 +76,16 @@ public class SIRInitializer {
         }));
     }
 
+    String pluginProperty(Plugin plugin, Function<Plugin, String> function) {
+        return plugin == null ? "" : function.apply(plugin);
+    }
+
+    String pluginVersion(Plugin plugin) {
+        return pluginProperty(plugin, p -> p.getDescription().getVersion());
+    }
+
     String pluginVersion(String name) {
-        Plugin plugin = Bukkit.getPluginManager().getPlugin(name);
-        return plugin != null ? plugin.getDescription().getVersion() : "";
+        return pluginVersion(Bukkit.getPluginManager().getPlugin(name));
     }
 
     void setPluginHooks() {
@@ -106,26 +113,26 @@ public class SIRInitializer {
         }
 
         if (LoginHook.isEnabled()) {
-            LoginHook.loadHook();
-            Plugin p = LoginHook.getHook();
+            StringBuilder builder = new StringBuilder("&7Login Plugin: &e");
+            final Plugin p = LoginHook.getHook();
 
-            String name = p != null ? p.getName() : "";
-            String pV = p != null ?
-                    p.getDescription().getVersion() : "";
+            builder.append(pluginProperty(p, Plugin::getName))
+                    .append(' ')
+                    .append(pluginVersion(p));
 
-            LogUtils.doLog("&7Login Plugin: " + "&e" + name + " v. " + pV);
+            LogUtils.doLog(builder.toString());
             logLines++;
         }
 
         if (VanishHook.isEnabled()) {
-            VanishHook.loadHook();
-            Plugin p = VanishHook.getHook();
+            StringBuilder builder = new StringBuilder("&7Vanish Plugin: &e");
+            final Plugin p = VanishHook.getHook();
 
-            String name = p != null ? p.getName() : "";
-            String pV = p != null ?
-                    p.getDescription().getVersion() : "";
+            builder.append(pluginProperty(p, Plugin::getName))
+                    .append(' ')
+                    .append(pluginVersion(p));
 
-            LogUtils.doLog("&7Vanish Plugin: " + "&e" + name + " v. " + pV);
+            LogUtils.doLog(builder.toString());
             logLines++;
         }
 

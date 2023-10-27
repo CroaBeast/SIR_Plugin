@@ -1,4 +1,4 @@
-package me.croabeast.sir.gui;
+package me.croabeast.sir.api.gui;
 
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import org.bukkit.Material;

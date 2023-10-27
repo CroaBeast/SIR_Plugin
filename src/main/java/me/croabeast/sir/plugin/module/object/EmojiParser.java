@@ -26,9 +26,7 @@ public class EmojiParser extends SIRModule implements CacheHandler {
     }
 
     @Override
-    public void register() {
-        loadCache();
-    }
+    public void register() {}
 
     @Priority(level = 1)
     static void loadCache() {

@@ -55,7 +55,7 @@ public class PrinterTask extends SIRTask {
 
         TargetCatcher catcher = new TargetCatcher(sender, args.length > 1 ? args[1] : null);
 
-        if (args[0].matches("(?i)ACTION-BAR")) {
+        if (args[0].matches("(?i)ACTION[-_]BAR")) {
             if (fromSender(sender, "print.action-bar")) return true;
 
             if (args.length == 1) return fromSender(sender, "commands.print.help.action-bar");

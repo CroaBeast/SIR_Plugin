@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.var;
 import me.croabeast.beanslib.analytic.UpdateChecker;
 import me.croabeast.beanslib.message.MessageSender;
+import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
@@ -14,7 +15,6 @@ import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.SIRModule;
 import me.croabeast.sir.plugin.module.object.AnnounceHandler;
 import me.croabeast.sir.plugin.module.object.EmojiParser;
-import me.croabeast.sir.plugin.module.object.listener.JoinQuitHandler;
 import me.croabeast.sir.plugin.task.SIRTask;
 import me.croabeast.sir.plugin.task.object.message.DirectTask;
 import me.croabeast.sir.plugin.utility.LangUtils;
@@ -73,12 +73,16 @@ public final class SIRPlugin extends JavaPlugin {
                 .getLocation().getPath();
 
         try (JarFile j = new JarFile(new File(URLDecoder.decode(path)))) {
-            String prefix = "me/croabeast/sir/plugin";
+            final String prefix = "me/croabeast/sir/plugin";
 
             JAR_ENTRIES.addAll(
                     Collections.list(j.entries()).stream()
                             .map(ZipEntry::getName)
-                            .filter(s -> s.startsWith(prefix))
+                            .filter(s -> {
+                                if (s.startsWith(prefix + "/hook"))
+                                    return false;
+                                return s.startsWith(prefix);
+                            })
                             .collect(Collectors.toList())
             );
         } catch (Exception ignored) {}
@@ -88,6 +92,9 @@ public final class SIRPlugin extends JavaPlugin {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        LoginHook.loadHook();
+        VanishHook.loadHook();
 
         final FileCache config = FileCache.MAIN_CONFIG;
 
@@ -103,7 +110,8 @@ public final class SIRPlugin extends JavaPlugin {
         LogUtils.rawLog(
                 "&0* &7Developer: " + author,
                 "&0* &7Software: " + LibUtils.serverFork(),
-                "&0* &7Java Version: " + SystemUtils.JAVA_VERSION, ""
+                "&0* &7Java Version: " +
+                        SystemUtils.JAVA_VERSION, ""
         );
 
         SIRInitializer.startMetrics();
@@ -112,10 +120,8 @@ public final class SIRPlugin extends JavaPlugin {
         registerCommands();
         registerModules();
 
-        ModuleName<AnnounceHandler> name = ModuleName.ANNOUNCEMENTS;
-
-        if (name.isEnabled()) {
-            name.get().startTask();
+        if (ModuleName.ANNOUNCEMENTS.isEnabled()) {
+            AnnounceHandler.startTask();
             LogUtils.doLog("&7The announcement task has been started.");
         }
 
@@ -126,7 +132,7 @@ public final class SIRPlugin extends JavaPlugin {
         );
 
         if (LoginHook.isEnabled())
-            JoinQuitHandler.LOGGED_PLAYERS.addAll(Bukkit.getOnlinePlayers());
+            Bukkit.getOnlinePlayers().forEach(LoginHook::addPlayer);
 
         runTaskWhenLoaded(() -> checkUpdater(null));
     }
@@ -141,15 +147,12 @@ public final class SIRPlugin extends JavaPlugin {
             e.printStackTrace();
         }
 
-        ModuleName.ANNOUNCEMENTS.get().cancelTask();
+        AnnounceHandler.cancelTask();
 
         LogUtils.mixLog(
                 "&7The announcement task has been stopped.", "",
                 "&7SIR &c" + version + "&7 was totally disabled.", EMPTY_LINE
         );
-
-        VanishHook.unloadHook();
-        LoginHook.unloadHook();
 
         HandlerList.unregisterAll(this);
 
@@ -281,7 +284,10 @@ public final class SIRPlugin extends JavaPlugin {
         });
     }
 
+    @SneakyThrows
     public static void checkUpdater(@Nullable Player player) {
+        checkAccess(SIRPlugin.class);
+
         if (player == null) {
             if (!FileCache.MAIN_CONFIG.getValue("updater.plugin.on-start", false))
                 return;
@@ -312,17 +318,10 @@ public final class SIRPlugin extends JavaPlugin {
      * @throws IllegalAccessException if the plugin of the class is not SIR
      */
     public static void checkAccess(Class<?> clazz) throws IllegalAccessException {
-        JavaPlugin plugin = null;
-
         try {
-            plugin = JavaPlugin.getProvidingPlugin(clazz);
-            if (plugin != instance) plugin = null;
+            Exceptions.hasPluginAccess(clazz);
+        } catch (Exception e) {
+            throw new IllegalAccessException(e.getLocalizedMessage());
         }
-        catch (Exception ignored) {}
-
-        if (plugin != null) return;
-
-        String e = " is only accessible using the SIR plugin";
-        throw new IllegalAccessException(clazz.getSimpleName() + e);
     }
 }

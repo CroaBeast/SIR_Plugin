@@ -6,7 +6,7 @@
 
     <groupId>me.croabeast</groupId>
     <artifactId>SIR_Plugin</artifactId>
-    <version>3.0</version>
+    <version>3.0.4</version>
     <packaging>jar</packaging>
 
     <name>SIR_Plugin</name> <!--Simple In-game Receptionist-->
@@ -191,7 +191,7 @@
         <dependency>
             <groupId>io.github.croabeast</groupId>
             <artifactId>BeansLib</artifactId>
-            <version>1.4-SNAPSHOT-94</version>
+            <version>1.4-SNAPSHOT-109</version>
             <scope>compile</scope>
         </dependency>
 
@@ -225,7 +225,7 @@
         <dependency>
             <groupId>com.github.CroaBeast</groupId>
             <artifactId>AdvancementInfo</artifactId>
-            <version>2.2.3</version>
+            <version>933c42be49</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>

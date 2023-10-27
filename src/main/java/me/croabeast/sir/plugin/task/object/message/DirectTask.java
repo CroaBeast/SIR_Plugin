@@ -57,7 +57,8 @@ public abstract class DirectTask extends SIRTask {
         PlayerUtils.playSound(sender, getSound(true));
         PlayerUtils.playSound(target, getSound(false));
 
-        getClonedSender(sender).setKeys("{receiver}", "{message}")
+        MessageSender.fromLoaded().setTargets(sender)
+                .setKeys("{receiver}", "{message}")
                 .setValues(
                         isMsg ? args[0] : isConsole(target),
                         message
@@ -65,7 +66,8 @@ public abstract class DirectTask extends SIRTask {
                 .setLogger(false)
                 .send(getMessagingOutput(true));
 
-        getClonedSender(target).setKeys("{sender}", "{message}")
+        MessageSender.fromLoaded().setTargets(sender)
+                .setKeys("{sender}", "{message}")
                 .setValues(
                         isConsole(sender),
                         message

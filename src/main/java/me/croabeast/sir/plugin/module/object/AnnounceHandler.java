@@ -3,7 +3,7 @@ package me.croabeast.sir.plugin.module.object;
 import lombok.Getter;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.TextUtils;
-import me.croabeast.sir.plugin.SIRRunnable;
+import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.hook.VanishHook;
@@ -16,28 +16,20 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class AnnounceHandler extends SIRModule implements CacheHandler {
 
     private static final Map<Integer, Announce> ANNOUNCE_MAP = new HashMap<>();
+
+    private static int taskId = -1;
     private static int order = 0;
 
     @Getter
-    private boolean running = false;
-
-    private SIRRunnable runnable;
+    private static boolean running = false;
 
     AnnounceHandler() {
         super(ModuleName.ANNOUNCEMENTS);
-    }
-
-    @Override
-    public void register() {
-        loadCache();
-    }
-
-    private static ConfigurationSection announceSection() {
-        return FileCache.ANNOUNCE_CACHE.getCache("announces").getSection("announces");
     }
 
     @Priority(level = 1)
@@ -49,7 +41,7 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
 
         List<String> keys = new ArrayList<>(section.getKeys(false));
 
-        for (String key : keys) {
+        for (String key : section.getKeys(false)) {
             ConfigurationSection s = section.getConfigurationSection(key);
             if (s == null) continue;
 
@@ -57,81 +49,99 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
         }
     }
 
-    public static void displayAnnounce(ConfigurationSection id) {
-        for (Announce a : ANNOUNCE_MAP.values()) if (a.id == id) a.display();
+    @Override
+    public void register() {}
+
+    private static ConfigurationSection announceSection() {
+        return FileCache.ANNOUNCE_CACHE.getCache("announces").getSection("announces");
     }
 
-    public void startTask() {
-        int delay = FileCache.ANNOUNCE_CACHE.getConfig().getValue("interval", 0);
+    private static FileCache config() {
+        return FileCache.ANNOUNCE_CACHE.getConfig();
+    }
+
+    private static final Function<ConfigurationSection, List<Player>> PLAYERS = (c) -> {
+        String perm = c.getString("permission", "DEFAULT");
+
+        List<String> worlds = TextUtils.toList(c, "worlds");
+        List<Player> players = new ArrayList<>();
+
+        for (Player p : Bukkit.getOnlinePlayers()) {
+            String world = p.getWorld().getName();
+
+            if (!worlds.isEmpty() && !worlds.contains(world))
+                continue;
+
+            if (VanishHook.isVanished(p)) continue;
+            if (!PlayerUtils.hasPerm(p, perm)) continue;
+
+            players.add(p);
+        }
+
+        return players;
+    };
+
+    public static void startTask() {
+        final int delay = config().getValue("interval", 0);
         ConfigurationSection section = announceSection();
 
-        if (!isEnabled() || delay <= 0 || section == null) {
-            cancelTask();
+        if (!ModuleName.ANNOUNCEMENTS.isEnabled() ||
+                delay <= 0 ||
+                section == null)
             return;
-        }
+
+        if (running) return;
+
+        taskId = Bukkit.getScheduler().runTaskTimer(
+                SIRPlugin.getInstance(),
+                () -> {
+                    int count = ANNOUNCE_MAP.size() - 1;
+                    if (order > count) order = 0;
+
+                    Announce announce = ANNOUNCE_MAP.get(order);
+                    announce.display(PLAYERS.apply(announce.id));
+
+                    order = config().getValue("random", false) ?
+                            new Random().nextInt(count + 1) :
+                            (order < count ? (order + 1) : 0);
+                },
+                0L, delay
+        ).getTaskId();
 
         running = true;
-
-        int count = ANNOUNCE_MAP.size() - 1;
-        if (order > count) order = 0;
-
-        ANNOUNCE_MAP.get(order).display();
-
-        if (!FileCache.ANNOUNCE_CACHE.getConfig().getValue("random", false)) {
-            if (order < count) order++;
-            else order = 0;
-        }
-        else order = new Random().nextInt(count + 1);
-
-        runnable = new SIRRunnable(this::startTask);
-        runnable.runTaskLater(delay);
     }
 
-    public void cancelTask() {
-        if (runnable == null) return;
+    public static void cancelTask() {
+        if (!running) return;
 
+        Bukkit.getScheduler().cancelTask(taskId);
         running = false;
-        runnable.cancel();
+    }
+
+    public static void displayAnnounce(ConfigurationSection id) {
+        for (Announce a : ANNOUNCE_MAP.values())
+            if (a.id == id) a.display(PLAYERS.apply(a.id));
     }
 
     private static class Announce {
 
-        private final ConfigurationSection id;
-
         private final List<String> lines, commands;
-        private final List<Player> players;
+
+        private final ConfigurationSection id;
 
         private Announce(ConfigurationSection id) {
             this.id = id;
 
             this.commands = TextUtils.toList(id, "commands");
             this.lines = TextUtils.toList(id, "lines");
-
-            String perm = id.getString("permission", "DEFAULT");
-
-            List<String> worlds = TextUtils.toList(id, "worlds");
-            List<Player> players = new ArrayList<>();
-
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                String world = p.getWorld().getName();
-
-                if (!worlds.isEmpty() && !worlds.contains(world))
-                    continue;
-
-                if (VanishHook.isVanished(p)) continue;
-                if (!PlayerUtils.hasPerm(p, perm)) continue;
-
-                players.add(p);
-            }
-
-            this.players = players;
         }
 
-        void display() {
+        void display(Collection<Player> players) {
             if (players.isEmpty()) return;
 
-            MessageSender.fromLoaded().setTargets(players).send(lines);
             LangUtils.executeCommands(null, commands);
+            MessageSender.fromLoaded()
+                    .setTargets(players).send(lines);
         }
     }
 }

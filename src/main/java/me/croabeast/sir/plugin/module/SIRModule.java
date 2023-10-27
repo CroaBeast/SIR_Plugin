@@ -14,12 +14,12 @@ public abstract class SIRModule {
     /**
      * The Map that stores all the plugin's modules.
      */
-    static final Map<ModuleName<?>, SIRModule> MODULE_MAP = new HashMap<>();
+    static final Map<ModuleName, SIRModule> MODULE_MAP = new HashMap<>();
 
-    private final ModuleName<?> name;
+    private final ModuleName name;
 
     @SneakyThrows
-    protected SIRModule(ModuleName<?> name) {
+    protected SIRModule(ModuleName name) {
         SIRPlugin.checkAccess(SIRModule.class);
 
         this.name = name;

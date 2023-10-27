@@ -1,12 +1,12 @@
 package me.croabeast.sir.plugin;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.function.Predicate;
 
 public final class SIRCollector {
 
-    private final List<Class<?>> classes = new ArrayList<>();
+    private final List<Class<?>> classes = new LinkedList<>();
 
     SIRCollector() {
         for (String s : SIRPlugin.JAR_ENTRIES) {
@@ -15,7 +15,7 @@ public final class SIRCollector {
 
             try {
                 classes.add(Class.forName(s));
-            } catch (ClassNotFoundException ignored) {}
+            } catch (Exception ignored) {}
         }
     }
 
@@ -25,7 +25,7 @@ public final class SIRCollector {
     }
 
     public List<Class<?>> collect() {
-        return new ArrayList<>(classes);
+        return new LinkedList<>(classes);
     }
 
     public static SIRCollector from() {

@@ -5,8 +5,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import me.croabeast.beanslib.Beans;
+import me.croabeast.beanslib.key.PlayerKey;
 import me.croabeast.beanslib.key.ValueReplacer;
-import me.croabeast.beanslib.misc.StringApplier;
+import me.croabeast.beanslib.applier.StringApplier;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sir.plugin.SIRPlugin;
@@ -41,6 +42,7 @@ abstract class AbstractChatChannel implements ChatChannel {
 
     @Nullable
     private final String prefix, suffix;
+    private final String color;
 
     @Getter(AccessLevel.NONE)
     @NotNull
@@ -78,6 +80,8 @@ abstract class AbstractChatChannel implements ChatChannel {
 
         prefix = fromParent("prefix", ChatChannel::getPrefix, null);
         suffix = fromParent("suffix", ChatChannel::getSuffix, null);
+
+        color = fromParent("color", ChatChannel::getSuffix, null);
 
         colorChecker = new ColorChecker(
                 fromBoolean("color.normal"), fromBoolean("color.special"),
@@ -121,8 +125,8 @@ abstract class AbstractChatChannel implements ChatChannel {
     public String formatOutput(Player t, Player p, String message, boolean isChat) {
         String rawFormat = isChat ? getChatFormat() : getLogFormat();
 
-        StringApplier applier = StringApplier.of(rawFormat)
-                .apply(s -> Beans.parsePlayerKeys(p, s))
+        StringApplier applier = StringApplier.simplified(rawFormat)
+                .apply(s -> PlayerKey.replaceKeys(p, s))
                 .apply(s -> {
                     String[] values = getChatValues(colorChecker.check(message));
                     return ValueReplacer.forEach(getChatKeys(), values, s);
@@ -170,7 +174,7 @@ abstract class AbstractChatChannel implements ChatChannel {
         final boolean normal, special, rgb;
 
         String check(String s) {
-            StringApplier applier = StringApplier.of(s);
+            StringApplier applier = StringApplier.simplified(s);
 
             if (!normal) applier.apply(NeoPrismaticAPI::stripBukkit);
             if (!rgb) applier.apply(NeoPrismaticAPI::stripRGB);

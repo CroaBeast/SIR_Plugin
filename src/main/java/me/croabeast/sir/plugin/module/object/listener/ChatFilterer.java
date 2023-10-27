@@ -25,14 +25,9 @@ public class ChatFilterer extends SIRModule implements CustomListener {
         super(ModuleName.CHAT_FILTERS);
     }
 
-    private boolean registered = false;
-
     @Override
     public void register() {
-        if (registered) return;
-
-        CustomListener.super.register();
-        registered = true;
+        registerOnSIR();
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -45,7 +40,8 @@ public class ChatFilterer extends SIRModule implements CustomListener {
         ConfigurationSection filters = FileCache.CHAT_FILTERS_CACHE.getSection("filters");
         if (filters == null) return;
 
-        MessageSender sender = MessageSender.fromLoaded().setKeys("{word}");
+        MessageSender sender = MessageSender.fromLoaded();
+        String key = "{word}";
 
         for (String f : filters.getKeys(false)) {
             FilterSection section = null;
@@ -66,7 +62,7 @@ public class ChatFilterer extends SIRModule implements CustomListener {
                     if (!match.find()) continue;
 
                     if (isCancellable) {
-                        sender.setValues(line.line).send(section.cancelList);
+                        sender.addKeyValue(key, line.line).send(section.cancelList);
                         event.setCancelled(true);
                         return;
                     }
@@ -81,7 +77,7 @@ public class ChatFilterer extends SIRModule implements CustomListener {
                 if (!message.contains(line.line)) continue;
 
                 if (isCancellable) {
-                    sender.setValues(line.line).send(section.cancelList);
+                    sender.addKeyValue(key, line.line).send(section.cancelList);
                     event.setCancelled(true);
                     return;
                 }

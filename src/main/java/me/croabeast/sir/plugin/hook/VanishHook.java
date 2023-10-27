@@ -30,63 +30,9 @@ public class VanishHook {
     };
 
     private final List<Plugin> ENABLED_HOOKS = new ArrayList<>();
-    private final List<CustomListener> REGISTERED_LISTENERS = new ArrayList<>();
-
     private boolean areHooksRegistered = false;
 
     public void loadHook() {
-        if (!isEnabled()) return;
-
-        if (Exceptions.isPluginEnabled("Essentials")) {
-            CustomListener s = new CustomListener() {
-                @EventHandler
-                private void onEvent(VanishStatusChangeEvent event) {
-                    IUser user = event.getAffected();
-                    new SIRVanishEvent(user.getBase(), user.isVanished()).call();
-                }
-            };
-
-            s.register();
-            REGISTERED_LISTENERS.add(s);
-        }
-
-        if (Exceptions.isPluginEnabled("CMI")) {
-            CustomListener s = new CustomListener() {
-                @EventHandler
-                private void onEvent(CMIPlayerUnVanishEvent event) {
-                    new SIRVanishEvent(event.getPlayer(), true).call();
-                }
-
-                @EventHandler
-                private void onOther(CMIPlayerVanishEvent event) {
-                    new SIRVanishEvent(event.getPlayer(), false).call();
-                }
-            };
-
-            s.register();
-            REGISTERED_LISTENERS.add(s);
-        }
-
-        if (Exceptions.arePluginsEnabled(false, "SuperVanish", "PremiumVanish")) {
-            CustomListener s = new CustomListener() {
-                @EventHandler
-                private void onEvent(PlayerVanishStateChangeEvent event) {
-                    Player player = Bukkit.getPlayer(event.getUUID());
-                    new SIRVanishEvent(player, !event.isVanishing()).call();
-                }
-            };
-
-            s.register();
-            REGISTERED_LISTENERS.add(s);
-        }
-    }
-
-    public void unloadHook() {
-        if (!isEnabled()) return;
-        REGISTERED_LISTENERS.forEach(CustomListener::unregister);
-    }
-
-    public boolean isEnabled() {
         if (!areHooksRegistered) {
             for (String s : SUPPORTED_PLUGINS) {
                 Plugin p = Bukkit.getPluginManager().getPlugin(s);
@@ -94,11 +40,47 @@ public class VanishHook {
 
                 if (ENABLED_HOOKS.isEmpty()) ENABLED_HOOKS.add(p);
             }
+
             areHooksRegistered = true;
         }
 
-        return ENABLED_HOOKS.size() == 1 &&
-                FileCache.JOIN_QUIT_CACHE.getConfig().getValue("vanish.enabled", true);
+        if (!isEnabled()) return;
+
+        if (Exceptions.isPluginEnabled("Essentials"))
+            new CustomListener() {
+                @EventHandler
+                private void onVanish(VanishStatusChangeEvent event) {
+                    IUser user = event.getAffected();
+                    new SIRVanishEvent(user.getBase(), user.isVanished()).call();
+                }
+            }.registerOnSIR();
+
+        if (Exceptions.isPluginEnabled("CMI")) {
+            new CustomListener() {
+                @EventHandler
+                private void onVanish(CMIPlayerVanishEvent event) {
+                    new SIRVanishEvent(event.getPlayer(), false).call();
+                }
+                @EventHandler
+                private void onUnVanish(CMIPlayerUnVanishEvent event) {
+                    new SIRVanishEvent(event.getPlayer(), true).call();
+                }
+            }.registerOnSIR();
+        }
+
+        if (Exceptions.arePluginsEnabled(false, "SuperVanish", "PremiumVanish"))
+            new CustomListener() {
+                @EventHandler
+                private void onVanish(PlayerVanishStateChangeEvent event) {
+                    Player player = Bukkit.getPlayer(event.getUUID());
+                    new SIRVanishEvent(player, !event.isVanishing()).call();
+                }
+            }.registerOnSIR();
+    }
+
+    public boolean isEnabled() {
+        if (ENABLED_HOOKS.size() != 1) return false;
+        return FileCache.JOIN_QUIT_CACHE.getConfig().getValue("vanish.enabled", true);
     }
 
     public boolean isVanished(Player player) {

@@ -1,7 +1,6 @@
 package me.croabeast.sir.plugin.task.object;
 
 import me.croabeast.sir.plugin.file.FileCache;
-import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.object.AnnounceHandler;
 import me.croabeast.sir.plugin.task.SIRTask;
 import me.croabeast.sir.plugin.utility.LogUtils;
@@ -26,9 +25,8 @@ public class AnnounceTask extends SIRTask {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        AnnounceHandler announcer = ModuleName.ANNOUNCEMENTS.get();
-
         if (isProhibited(sender, "announcer.*")) return true;
+
         if (args.length == 0) return fromSender(sender, "commands.announcer.help");
         if (args.length > 2) return isWrongArgument(sender, args[args.length - 1]);
 
@@ -36,25 +34,25 @@ public class AnnounceTask extends SIRTask {
             case "start":
                 if (isProhibited(sender, "announcer.start")) return true;
                 if (args.length > 1) return isWrongArgument(sender, args[args.length - 1]);
-                if (announcer.isRunning())
+                if (AnnounceHandler.isRunning())
                     return fromSender(sender, "commands.announcer.cant-start");
 
-                announcer.startTask();
+                AnnounceHandler.startTask();
                 return fromSender(sender, "commands.announcer.started");
 
             case "cancel":
                 if (isProhibited(sender, "announcer.cancel")) return true;
                 if (args.length > 1) return isWrongArgument(sender, args[args.length - 1]);
-                if (!announcer.isRunning())
+                if (!AnnounceHandler.isRunning())
                     return fromSender(sender, "commands.announcer.cant-stop");
 
-                announcer.cancelTask();
+                AnnounceHandler.cancelTask();
                 return fromSender(sender, "commands.announcer.stopped");
 
             case "reboot":
                 if (isProhibited(sender, "announcer.reboot")) return true;
                 if (args.length > 1) return isWrongArgument(sender, args[args.length - 1]);
-                if (!announcer.isRunning()) announcer.startTask();
+                if (!AnnounceHandler.isRunning()) AnnounceHandler.startTask();
 
                 return fromSender(sender, "commands.announcer.rebooted");
 

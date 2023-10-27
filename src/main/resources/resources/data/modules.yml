@@ -10,4 +10,4 @@ modules:
   emojis: true
   chat-filters: true
   mentions: true
-  chat-color: true
+  chat-colors: true

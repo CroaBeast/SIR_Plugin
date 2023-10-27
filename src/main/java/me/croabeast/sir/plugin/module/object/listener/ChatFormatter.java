@@ -3,6 +3,7 @@ package me.croabeast.sir.plugin.module.object.listener;
 import com.Zrips.CMI.Containers.CMIUser;
 import com.earth2me.essentials.Essentials;
 import com.google.common.collect.Lists;
+import lombok.SneakyThrows;
 import lombok.var;
 import me.croabeast.beanslib.Beans;
 import me.croabeast.beanslib.builder.ChatMessageBuilder;
@@ -13,6 +14,7 @@ import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.event.chat.SIRChatEvent;
 import me.croabeast.sir.api.misc.CustomListener;
 import me.croabeast.sir.plugin.SIRInitializer;
+import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.channel.ChatChannel;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
@@ -51,14 +53,9 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
         super(ModuleName.CHAT_CHANNELS);
     }
 
-    private boolean registered = false;
-
     @Override
     public void register() {
-        if (registered) return;
-
-        CustomListener.super.register();
-        registered = true;
+        registerOnSIR();
     }
 
     private static FileCache config() {
@@ -141,8 +138,7 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
         if (Exceptions.isPluginEnabled("CMI") &&
                 CMIUser.getUser(player).isMuted()) return true;
 
-        return LoginHook.isEnabled() &&
-                !JoinQuitHandler.LOGGED_PLAYERS.contains(player);
+        return !LoginHook.isLogged(player);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -242,26 +238,27 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
                 int t = timer - ((int) (Math.round(rest / 100D) / 10));
 
                 MessageSender.fromLoaded().setTargets(player)
-                        .setKeys("{time}").setValues(t)
+                        .addKeyValue("{time}", t)
                         .setLogger(false)
                         .send(channel.getCdMessages());
                 return;
             }
         }
 
+        String[] keys = channel.getChatKeys();
+
         if (SIRInitializer.hasDiscord()) {
             String m = Beans.formatPlaceholders(player, message);
             String name = event.isGlobal() ? "global-chat" : channel.getName();
 
             new DiscordSender(player, name)
-                    .setKeys(channel.getChatKeys())
+                    .setKeys(keys)
                     .setValues(channel.getChatValues(m))
                     .send();
         }
 
         LogUtils.doLog(channel.formatOutput(player, message, false));
 
-        String[] keys = channel.getChatKeys();
         String[] values = channel.getChatValues(message);
 
         List<String> hover = channel.getHoverList();
@@ -272,22 +269,29 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
         if (StringUtils.isNotBlank(click))
             click = ValueReplacer.forEach(keys, values, click);
 
-        String fc = click;
+        String resultClick = click;
 
         event.getRecipients().stream()
                 .map(p ->
                         new ChatMessageBuilder(
                                 p, player,
                                 channel.formatOutput(p, player, message, true)
-                        ).setHoverToAll(hover).setClickToAll(fc)
+                        ).setHoverToAll(hover).setClickToAll(resultClick)
                 )
                 .forEach(ChatMessageBuilder::send);
 
         if (timer > 0) map.put(player, System.currentTimeMillis());
     }
 
+    @SneakyThrows
+    static void check() {
+        SIRPlugin.checkAccess(ChatFormatter.class);
+    }
+
     @Nullable
     public static ChatChannel getGlobalFormat(Player player) {
+        check();
+
         for (var entry : GLOBAL_MAP.entrySet())
             for (var c : entry.getValue())
                 if (PlayerUtils.hasPerm(player, c.getPermission()))
@@ -298,6 +302,8 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
 
     @Nullable
     public static ChatChannel getLocalFromMessage(Player player, String message) {
+        check();
+
         for (var entry : LOCAL_MAP.entrySet())
             for (var c : entry.getValue()) {
                 if (!PlayerUtils.hasPerm(player, c.getPermission()))
@@ -314,6 +320,8 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
 
     @Nullable
     public static ChatChannel getLocalFromCommand(Player player, String command) {
+        check();
+
         for (var entry : LOCAL_MAP.entrySet())
             for (var c : entry.getValue()) {
                 if (!PlayerUtils.hasPerm(player, c.getPermission()))

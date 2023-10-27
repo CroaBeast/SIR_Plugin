@@ -18,6 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.server.ServerListPingEvent;
 import org.bukkit.util.CachedServerIcon;
+import org.bukkit.util.Consumer;
 
 import java.io.File;
 import java.net.InetSocketAddress;
@@ -30,7 +31,7 @@ public class MotdHandler extends SIRModule implements CustomListener {
 
     private static final String SP = File.separator;
 
-    private int motdIndex = 0, ICON = 0;
+    private int motdIndex = 0, iconCount = 0;
 
     MotdHandler() {
         super(ModuleName.MOTD);
@@ -56,14 +57,9 @@ public class MotdHandler extends SIRModule implements CustomListener {
         }
     }
 
-    private boolean registered = false;
-
     @Override
     public void register() {
-        if (registered) return;
-
-        CustomListener.super.register();
-        registered = true;
+        registerOnSIR();
     }
 
     private static ConfigurationSection motds() {
@@ -87,10 +83,24 @@ public class MotdHandler extends SIRModule implements CustomListener {
         return FileCache.MOTD_CACHE.getConfig();
     }
 
-    private static String usageType() {
-        return config()
-                .getValue("server-icon.usage", "DISABLED")
-                .toUpperCase(Locale.ENGLISH);
+    private static MaxPlayers getMaxPlayers() {
+        String input = config().getValue("max-players.type", "DEFAULT");
+
+        try {
+            return MaxPlayers.valueOf(input.toUpperCase(Locale.ENGLISH));
+        } catch (Exception e) {
+            return MaxPlayers.DEFAULT;
+        }
+    }
+
+    private static IconInput getIconInput() {
+        String input = config().getValue("server-icon.usage", "DISABLED");
+
+        try {
+            return IconInput.valueOf(input.toUpperCase(Locale.ENGLISH));
+        } catch (Exception e) {
+            return IconInput.DISABLED;
+        }
     }
 
     @EventHandler
@@ -105,12 +115,12 @@ public class MotdHandler extends SIRModule implements CustomListener {
 
             Player player = null;
 
-            for (Player p : Bukkit.getOnlinePlayers()) {
-                InetSocketAddress address = p.getAddress();
+            for (Player tempPlayer : Bukkit.getOnlinePlayers()) {
+                InetSocketAddress address = tempPlayer.getAddress();
 
                 if (address == null) continue;
                 if (address.getAddress() == event.getAddress())
-                    player = p;
+                    player = tempPlayer;
             }
 
             var id = motds().getConfigurationSection(keys.get(motdIndex));
@@ -120,9 +130,11 @@ public class MotdHandler extends SIRModule implements CustomListener {
                 StringBuilder builder = new StringBuilder();
                 String two = id.getString("2");
 
-                CenteredMessage center = new CenteredMessage(player).setLimit(130);
+                CenteredMessage center = new CenteredMessage(player);
+                center.setLimit(130);
 
                 builder.append(center.center(id.getString("1", "")));
+
                 if (StringUtils.isNotBlank(two))
                     builder.append("\n").append(center.center(two));
 
@@ -134,29 +146,49 @@ public class MotdHandler extends SIRModule implements CustomListener {
                     motdIndex < count ? motdIndex + 1 : 0;
         }
 
-        if (!usageType().equals("DISABLED")) {
-            File folder = new File(SIRPlugin.getSIRFolder(), "modules" + SP + "motd" + SP + "icons");
-            File single = new File(folder, config().getValue("server-icon.image", ""));
+        ((Consumer<MaxPlayers>) maxInput -> {
+            if (maxInput == MaxPlayers.DEFAULT) return;
 
-            File[] icons = folder.listFiles((dir, name) -> name.endsWith(".png"));
+            int custom = config().getValue("max-players.count", 0);
+
+            event.setMaxPlayers(
+                    maxInput == MaxPlayers.CUSTOM ?
+                            custom :
+                            Bukkit.getOnlinePlayers().size() + 1
+            );
+        }).accept(getMaxPlayers());
+
+        ((Consumer<IconInput>) input -> {
+            if (input == IconInput.DISABLED) return;
+
+            final String folderName =  "modules" + SP + "motd" + SP + "icons";
+            File folder = new File(SIRPlugin.getSIRFolder(), folderName);
+
+            File single = new File(
+                    folder,
+                    config().getValue("server-icon.image", "")
+            );
+
+            File[] icons = folder.listFiles((dir, n) -> n.endsWith(".png"));
             if (icons == null) {
                 initServerIcon(event, null);
                 return;
             }
 
+            boolean isSingle = input == IconInput.SINGLE;
+
             int count = icons.length - 1;
-            if (!usageType().equals("SINGLE") && ICON > count) ICON = 0;
+            if (!isSingle && iconCount > count) iconCount = 0;
 
             CachedServerIcon icon = null;
 
             try {
-                icon = Bukkit.loadServerIcon(usageType().equals("SINGLE") ? single : icons[ICON]);
+                icon = Bukkit.loadServerIcon(isSingle ? single : icons[iconCount]);
             }
             catch (Exception e) {
                 String error = e.getLocalizedMessage();
                 initServerIcon(event, null);
 
-                event.setMotd(NeoPrismaticAPI.colorize("&cError loading your custom icon: \n&7" + error));
                 LogUtils.doLog("&7Error loading the icon: &c" + error);
             }
 
@@ -166,25 +198,22 @@ public class MotdHandler extends SIRModule implements CustomListener {
             }
 
             initServerIcon(event, icon);
-            if (usageType().equals("SINGLE")) return;
+            if (isSingle) return;
 
-            if (usageType().equals("LIST")) {
-                if (ICON < count) ICON++;
-                else ICON = 0;
+            if (input == IconInput.LIST) {
+                if (iconCount < count) iconCount++;
+                else iconCount = 0;
             }
-            else if (usageType().equals("RANDOM"))
-                ICON = new Random().nextInt(count + 1);
-        }
+            else if (input == IconInput.RANDOM)
+                iconCount = new Random().nextInt(count + 1);
+        }).accept(getIconInput());
+    }
 
-        String type = config()
-                .getValue("max-players.type", "DEFAULT")
-                .toUpperCase(Locale.ENGLISH);
+    enum MaxPlayers {
+        MAXIMUM, CUSTOM, DEFAULT
+    }
 
-        if (!type.matches("(?i)MAXIMUM|CUSTOM")) return;
-
-        event.setMaxPlayers(type.matches("(?i)CUSTOM") ?
-                config().getValue("max-players.count", 0) :
-                Bukkit.getOnlinePlayers().size() + 1
-        );
+    enum IconInput {
+        DISABLED, SINGLE, RANDOM, LIST
     }
 }

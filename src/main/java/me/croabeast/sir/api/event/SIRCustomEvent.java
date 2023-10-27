@@ -6,13 +6,13 @@ import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
-public abstract class SIREvent extends Event {
+public abstract class SIRCustomEvent extends Event {
 
-    public SIREvent(boolean isAsync) {
+    public SIRCustomEvent(boolean isAsync) {
         super(isAsync);
     }
 
-    public SIREvent() {
+    public SIRCustomEvent() {
         super();
     }
 

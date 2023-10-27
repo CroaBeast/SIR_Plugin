@@ -1,13 +1,11 @@
 package me.croabeast.sir.plugin.utility;
 
-import me.croabeast.beanslib.Beans;
 import me.croabeast.beanslib.BeansLib;
-import me.croabeast.beanslib.misc.StringApplier;
+import me.croabeast.beanslib.key.PlayerKey;
+import me.croabeast.beanslib.applier.StringApplier;
 import me.croabeast.beanslib.utility.TextUtils;
-import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.FileCache;
-import net.milkbowl.vault.chat.Chat;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -15,7 +13,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,13 +20,19 @@ public final class LangUtils extends BeansLib {
 
     public LangUtils(SIRPlugin instance) {
         super(instance);
-        getKeyManager().setKey(2, "{uuid}").setKey(3, "{world}")
-                .setKey(1, "{displayName}")
-                .setKey(4, "{gameMode}").setKey(5, "{x}")
-                .setKey(6, "{y}").setKey(7, "{z}")
-                .setKey(8, "{yaw}").setKey(9, "{pitch}")
-                .createKey("{prefix}", PlayerUtils::getPrefix)
-                .createKey("{suffix}", PlayerUtils::getSuffix);
+
+        PlayerKey.editKey("{playerDisplayName}", "{displayName}");
+        PlayerKey.editKey("{playerUUID}", "{uuid}");
+        PlayerKey.editKey("{playerWorld}", "{world}");
+        PlayerKey.editKey("{playerGameMode}", "{gamemode}");
+        PlayerKey.editKey("{playerX}", "{x}");
+        PlayerKey.editKey("{playerY}", "{y}");
+        PlayerKey.editKey("{playerZ}", "{z}");
+        PlayerKey.editKey("{playerYaw}", "{yaw}");
+        PlayerKey.editKey("{playerPitch}", "{pitch}");
+
+        PlayerKey.loadKey("{prefix}", PlayerUtils::getPrefix);
+        PlayerKey.loadKey("{suffix}", PlayerUtils::getSuffix);
     }
 
     public @NotNull String getLangPrefixKey() {
@@ -65,7 +68,7 @@ public final class LangUtils extends BeansLib {
     }
 
     public static void executeCommands(Player player, List<String> commands) {
-        if (commands.isEmpty()) return;
+        if (commands == null || commands.isEmpty()) return;
 
         Pattern cPattern = Pattern.compile("(?i)^\\[(global|console)]");
         Pattern pPattern = Pattern.compile("(?i)^\\[player]");
@@ -75,8 +78,8 @@ public final class LangUtils extends BeansLib {
 
             Matcher pm = pPattern.matcher(c), cm = cPattern.matcher(c);
 
-            StringApplier applier = StringApplier.of(c)
-                    .apply(s -> Beans.parsePlayerKeys(player, s))
+            StringApplier applier = StringApplier.simplified(c)
+                    .apply(s -> PlayerKey.replaceKeys(player, s))
                     .apply(TextUtils.STRIP_FIRST_SPACES);
 
             if (pm.find() && player != null) {
@@ -86,11 +89,8 @@ public final class LangUtils extends BeansLib {
                 continue;
             }
 
-            String text = applier.toString();
-            if (cm.find())
-                text = text.replace(cm.group(), "");
-
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), text);
+            if (cm.find()) applier.apply(s -> s.replace(cm.group(), ""));
+            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), applier.toString());
         }
     }
 }

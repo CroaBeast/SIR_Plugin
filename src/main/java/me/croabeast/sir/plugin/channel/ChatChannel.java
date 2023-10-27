@@ -2,6 +2,7 @@ package me.croabeast.sir.plugin.channel;
 
 import lombok.SneakyThrows;
 import me.croabeast.beanslib.utility.TextUtils;
+import me.croabeast.sir.api.misc.ConfigUnit;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.task.object.ChatViewTask;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
@@ -23,15 +24,9 @@ import java.util.stream.Stream;
 /**
  * Represents a chat channel that can be received from available and allowed players.
  */
-public interface ChatChannel {
+public interface ChatChannel extends ConfigUnit {
 
     String DEF_FORMAT = " &7{player}: {message}";
-
-    /**
-     * Returns the bukkit section object from this channel.
-     * @return the section
-     */
-    @NotNull ConfigurationSection getSection();
 
     /**
      * If the channel represents the global channel or if it's a custom local channel.
@@ -74,20 +69,6 @@ public interface ChatChannel {
     @Nullable ChatChannel getSubChannel();
 
     /**
-     * Returns the permission needed to use/view this channel.
-     * @return the permission
-     */
-    @NotNull String getPermission();
-
-    /**
-     * Returns the priority defined of this channel. This allows a channel
-     * to be in front or below of other loaded channels.
-     *
-     * @return the priority
-     */
-    int getPriority();
-
-    /**
      * Returns the player's prefix of this channel.
      * @return the prefix, can be null
      */
@@ -98,6 +79,8 @@ public interface ChatChannel {
      * @return the suffix, can be null
      */
     @Nullable String getSuffix();
+
+    @Nullable String getColor();
 
     /**
      * Returns the channel's cooldown, to avoid spam in that channel.
@@ -232,11 +215,11 @@ public interface ChatChannel {
     }
 
     default String[] getChatKeys() {
-        return new String[] {"{prefix}", "{suffix}", "{message}"};
+        return new String[] {"{prefix}", "{suffix}", "{color}", "{message}"};
     }
 
     default String[] getChatValues(String message) {
-        return new String[] {getPrefix(), getSuffix(), message};
+        return new String[] {getPrefix(), getSuffix(), getColor(), message};
     }
 
     boolean equals(Object object);

@@ -1,6 +1,7 @@
 package me.croabeast.sir.plugin.task.object.ignore;
 
 import com.google.common.collect.Lists;
+import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.task.SIRTask;
 import me.croabeast.sir.plugin.utility.LogUtils;
@@ -42,8 +43,8 @@ public class IgnoreTask extends SIRTask {
 
             String path = MAIN_PATH + (b ? "success" : "remove") + ".all";
 
-            return getClonedSender(player).setKeys(keys)
-                    .setValues(null, t)
+            return MessageSender.fromLoaded().setTargets(player)
+                    .addKeysValues(keys, null, t)
                     .send(FileCache.getLang().toList(path));
         }
 
@@ -59,8 +60,8 @@ public class IgnoreTask extends SIRTask {
         String path = MAIN_PATH +
                 (cache.contains(target) ? "success" : "remove") + ".all";
 
-        return getClonedSender(player).setKeys(keys)
-                .setValues(target, t)
+        return MessageSender.fromLoaded().setTargets(player)
+                .addKeysValues(keys, target, t)
                 .send(FileCache.getLang().toList(path));
     }
 

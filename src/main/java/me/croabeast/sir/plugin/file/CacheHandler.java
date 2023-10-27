@@ -48,7 +48,7 @@ public interface CacheHandler {
      * @throws IllegalAccessException if this method is being called by another plugin
      */
     static void load() throws IllegalAccessException {
-        final Map<Integer, List<Method>> methodsMap = new HashMap<>();
+        final Map<Integer, List<Method>> methodsMap = new LinkedHashMap<>();
 
         loadedHandlers()
                 .forEach(c -> {
@@ -94,7 +94,7 @@ public interface CacheHandler {
      * @throws IllegalAccessException if this method is being called by another plugin
      */
     static void save() throws IllegalAccessException {
-        final Map<Integer, List<Method>> methodsMap = new HashMap<>();
+        final Map<Integer, List<Method>> methodsMap = new LinkedHashMap<>();
 
         loadedHandlers()
                 .forEach(c -> {
