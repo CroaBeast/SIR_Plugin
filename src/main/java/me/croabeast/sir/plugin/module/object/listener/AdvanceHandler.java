@@ -109,7 +109,7 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
 
             advances.set(key + ".path", "type." + type);
 
-            advances.set(key + ".frame", info.getFrame());
+            advances.set(key + ".frame", info.getFrame().toString());
             advances.set(key + ".name", title);
             advances.set(key + ".description", info.getDescription());
 

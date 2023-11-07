@@ -3,6 +3,7 @@ package me.croabeast.sir.plugin.module;
 import lombok.SneakyThrows;
 import me.croabeast.sir.plugin.SIRPlugin;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,7 +22,6 @@ public abstract class SIRModule {
     @SneakyThrows
     protected SIRModule(ModuleName name) {
         SIRPlugin.checkAccess(SIRModule.class);
-
         this.name = name;
 
         if (MODULE_MAP.containsKey(name))
@@ -30,10 +30,18 @@ public abstract class SIRModule {
         MODULE_MAP.put(name, this);
     }
 
+    public File getFolder() {
+        return new File(SIRPlugin.getSIRFolder(), "modules" + File.separator + name.toFolder);
+    }
+
+    public File getFolder(String child) {
+        return new File(getFolder(), child);
+    }
+
     /**
      * Registers the module in the server.
      */
-    public abstract void register();
+    public void register() {}
 
     /**
      * Checks if the module is enabled in the GUI.

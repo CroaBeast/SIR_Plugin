@@ -57,7 +57,6 @@ abstract class SIRExtension {
             return false;
         }
 
-        hashCode();
         return enabled = loaded = true;
     }
 

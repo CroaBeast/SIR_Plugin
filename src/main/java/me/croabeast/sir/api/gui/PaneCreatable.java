@@ -1,23 +1,43 @@
 package me.croabeast.sir.api.gui;
 
 import com.github.stefvanschie.inventoryframework.pane.Pane;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public interface PaneCreatable<P extends Pane> {
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
+public abstract class PaneCreatable<P extends Pane> {
 
-    PaneCreatable<P> setLength(int length);
+    protected final P pane;
 
-    PaneCreatable<P> setHeight(int height);
+    @NotNull
+    public PaneCreatable<P> modifyPane(Consumer<P> consumer) {
+        consumer.accept(pane);
+        return this;
+    }
 
-    PaneCreatable<P> modify(Consumer<P> consumer);
+    @NotNull
+    public PaneCreatable<P> setAction(Consumer<InventoryClickEvent> consumer) {
+        pane.setOnClick(consumer);
+        return this;
+    }
 
-    PaneCreatable<P> onClick(Consumer<InventoryClickEvent> event);
+    @NotNull
+    public PaneCreatable<P> setAction(Function<P, Consumer<InventoryClickEvent>> function) {
+        return setAction(function.apply(pane));
+    }
 
-    PaneCreatable<P> onClick(Function<P, Consumer<InventoryClickEvent>> function);
+    @NotNull
+    public P create() {
+        return pane;
+    }
 
-    @NotNull P create();
+    public boolean compare(P pane) {
+        return Objects.equals(this.pane, pane);
+    }
 }

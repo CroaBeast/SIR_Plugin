@@ -4,7 +4,9 @@ import lombok.Getter;
 import lombok.var;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.file.YAMLFile;
+import me.croabeast.sir.api.misc.ConfigUnit;
 import me.croabeast.sir.plugin.SIRPlugin;
+import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
@@ -34,20 +36,20 @@ public final class FileCache implements CacheHandler {
         return LANG_CACHE.getCache("lang-" + MAIN_CONFIG.getValue("lang", "en"));
     }
 
-    public static final ModuleCache ADVANCE_CACHE = new ModuleCache("advancements", "lang", "messages");
-    public static final ModuleCache ANNOUNCE_CACHE = new ModuleCache("announcements", "announces");
+    public static final ModuleCache ADVANCE_CACHE = new ModuleCache(ModuleName.ADVANCEMENTS, "lang", "messages");
+    public static final ModuleCache ANNOUNCE_CACHE = new ModuleCache(ModuleName.ANNOUNCEMENTS, "announces");
 
-    public static final ModuleCache CHAT_CHANNELS_CACHE = new ModuleCache("chat_channels", "channels");
-    //public static final ModuleCache CHAT_COLORS_CACHE = new ModuleCache("chat_colors", "gui");
-    //public static final ModuleCache CHAT_TAGS_CACHE = new ModuleCache("chat_tags", "tags");
+    public static final ModuleCache CHAT_CHANNELS_CACHE = new ModuleCache(ModuleName.CHAT_CHANNELS, "channels");
+    // public static final ModuleCache CHAT_COLORS_CACHE = new ModuleCache(ModuleName.CHAT_COLORS, "gui", "player-data");
+    // public static final ModuleCache CHAT_TAGS_CACHE = new ModuleCache("chat_tags", "tags");
 
-    public static final ModuleCache DISCORD_HOOK_CACHE = new ModuleCache("discord_hook", "channels");
-    public static final ModuleCache JOIN_QUIT_CACHE = new ModuleCache("join_quit", "messages");
-    public static final ModuleCache MOTD_CACHE = new ModuleCache("motd", "motds");
+    public static final ModuleCache JOIN_QUIT_CACHE = new ModuleCache(ModuleName.JOIN_QUIT, "messages");
+    public static final ModuleCache DISCORD_HOOK_CACHE = new ModuleCache(ModuleName.DISCORD_HOOK, "channels");
+    public static final ModuleCache MOTD_CACHE = new ModuleCache(ModuleName.MOTD, "motds");
 
-    public static final FileCache CHAT_FILTERS_CACHE = createUnaryModuleCache("chat_filters", "filters");
-    public static final FileCache EMOJIS_CACHE = createUnaryModuleCache("emojis");
-    public static final FileCache MENTIONS_CACHE = createUnaryModuleCache("mentions");
+    public static final FileCache CHAT_FILTERS_CACHE = createUnaryModuleCache(ModuleName.CHAT_FILTERS, "filters");
+    public static final FileCache EMOJIS_CACHE = createUnaryModuleCache(ModuleName.EMOJIS);
+    public static final FileCache MENTIONS_CACHE = createUnaryModuleCache(ModuleName.MENTIONS);
 
     public static final FileCache MODULES_DATA = new FileCache("data", "modules");
     public static final FileCache IGNORE_DATA = new FileCache("data", "ignore");
@@ -157,26 +159,22 @@ public final class FileCache implements CacheHandler {
         return getFile() == null ? null : getFile().get();
     }
 
-    public static Map<Integer, Map<String, ConfigurationSection>> getPermSections(
-            ConfigurationSection mainSection, String path
+    public static Map<Integer, Set<ConfigUnit>> getUnitsByPermission(
+            ConfigurationSection main, String path
     ) {
-        Objects.requireNonNull(mainSection);
-
         var section = StringUtils.isNotBlank(path) ?
-                mainSection.getConfigurationSection(path) :
-                mainSection;
+                Objects.requireNonNull(main).getConfigurationSection(path) :
+                main;
 
         Objects.requireNonNull(section);
 
         Set<String> sectionKeys = section.getKeys(false);
-        if (sectionKeys.isEmpty())
-            throw new NullPointerException();
+        if (sectionKeys.isEmpty()) throw new NullPointerException();
 
-        Map<Integer, Map<String, ConfigurationSection>>
-                map = new HashMap<>();
+        Map<Integer, Set<ConfigUnit>> map = new HashMap<>();
 
         for (String key : sectionKeys) {
-            var id = section.getConfigurationSection(key);
+            ConfigurationSection id = section.getConfigurationSection(key);
             if (id == null) continue;
 
             String perm = id.getString("permission", "DEFAULT");
@@ -184,69 +182,23 @@ public final class FileCache implements CacheHandler {
 
             int priority = id.getInt("priority", def);
 
-            var m = map.getOrDefault(priority, new HashMap<>());
-            m.put(perm, id);
+            var m = map.getOrDefault(priority, new LinkedHashSet<>());
+            m.add(ConfigUnit.of(id));
 
             map.put(priority, m);
         }
 
         var entries = new ArrayList<>(map.entrySet());
-        entries.sort((e1, e2) ->
-                e2.getKey().compareTo(e1.getKey()));
+        entries.sort((e1, e2) -> e2.getKey().compareTo(e1.getKey()));
 
-        Map<Integer, Map<String, ConfigurationSection>>
-                r = new LinkedHashMap<>();
+        Map<Integer, Set<ConfigUnit>> r = new LinkedHashMap<>();
         entries.forEach(e -> r.put(e.getKey(), e.getValue()));
 
         return r;
     }
 
-    public Map<Integer, Map<String, ConfigurationSection>> getPermSections(String path) {
-        return getPermSections(get(), path);
-    }
-
-    public ConfigurationSection permSection(Player player, String path) {
-        ConfigurationSection maxSection = null, id = get();
-        String maxPerm = null, defKey = null;
-
-        if (player == null) return null;
-
-        if (StringUtils.isNotBlank(path) && id != null)
-            id = id.getConfigurationSection(path);
-
-        if (id == null) return null;
-
-        Set<String> keys = id.getKeys(false);
-        if (keys.isEmpty()) return null;
-
-        int highestPriority = 0;
-        boolean notDef = true;
-
-        for (String k : keys) {
-            ConfigurationSection i = id.getConfigurationSection(k);
-            if (i == null) continue;
-
-            String perm = i.getString("permission", "DEFAULT");
-
-            if (perm.matches("(?i)DEFAULT") && notDef) {
-                defKey = k;
-                notDef = false;
-                continue;
-            }
-
-            int p = i.getInt("priority", perm.matches("(?i)DEFAULT") ? 0 : 1);
-
-            if (PlayerUtils.hasPerm(player, perm) && p > highestPriority) {
-                maxSection = i;
-                maxPerm = perm;
-                highestPriority = p;
-            }
-        }
-
-        if (maxPerm != null && PlayerUtils.hasPerm(player, maxPerm))
-            return maxSection;
-
-        return defKey == null ? null : id.getConfigurationSection(defKey);
+    public Map<Integer, Set<ConfigUnit>> getUnitsByPermission(String path) {
+        return getUnitsByPermission(get(), path);
     }
 
     public List<String> toList(String path) {
@@ -258,12 +210,12 @@ public final class FileCache implements CacheHandler {
         return "FileCache{folder='" + folder + "', name='" + name + "'}";
     }
 
-    private static FileCache createUnaryModuleCache(String folder, String name) {
-        return new FileCache("modules" + File.separator + folder, name);
+    private static FileCache createUnaryModuleCache(ModuleName module, String name) {
+        return new FileCache("modules" + File.separator + module.folderName(), name);
     }
 
-    private static FileCache createUnaryModuleCache(String name) {
-        return createUnaryModuleCache(name, name);
+    private static FileCache createUnaryModuleCache(ModuleName name) {
+        return createUnaryModuleCache(name, name.folderName());
     }
 
     static class MultiFileCache {
@@ -314,8 +266,8 @@ public final class FileCache implements CacheHandler {
 
     public static final class ModuleCache extends MultiFileCache {
 
-        private ModuleCache(String folder, String... files) {
-            super("modules" + File.separator + folder, moduleFiles(files));
+        private ModuleCache(ModuleName name, String... files) {
+            super("modules" + File.separator + name.folderName(), moduleFiles(files));
         }
 
         @NotNull

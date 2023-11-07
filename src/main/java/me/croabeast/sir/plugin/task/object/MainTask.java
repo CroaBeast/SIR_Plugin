@@ -8,6 +8,7 @@ import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.module.ModuleGUI;
 import me.croabeast.sir.plugin.task.SIRTask;
 import org.apache.commons.lang.SystemUtils;
+import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -33,27 +34,33 @@ public class MainTask extends SIRTask {
         if (args.length > 1)
             return isWrongArgument(sender, args[args.length - 1]);
 
+        MessageSender message = MessageSender.fromLoaded().setTargets(sender)
+                .setLogger(true);
+
         switch (args[0].toLowerCase(Locale.ENGLISH)) {
             case "modules":
+
                 Player player = sender instanceof Player ? (Player) sender : null;
 
                 if (player == null)
-                    return MessageSender.fromLoaded().setTargets(sender)
-                            .setLogger(true)
-                            .send("[SIR] &cThis command is only for players.");
+                    return message.send("&cThis command is only for players.");
 
-                ModuleGUI.getModulesGUI().show(player);
+                if (LibUtils.getMainVersion() < 14.0)
+                    return message.send(
+                            " &cModules GUI is not supported on this version.",
+                            " &7Enable/disable modules in data/modules.yml file"
+                    );
+
+                ModuleGUI.showGUI(player);
                 return true;
 
             case "about":
-                return MessageSender.fromLoaded()
-                        .setTargets(sender).setLogger(true)
-                        .send(
-                            "", " &eSIR &7- &f" + version + "&7:",
-                            "   &8• &7Server Software: &f" + LibUtils.serverFork(),
-                            "   &8• &7Developer: &f" + SIRPlugin.getAuthor(),
-                            "   &8• &7Java Version: &f" + SystemUtils.JAVA_VERSION, ""
-                        );
+                return message.send(
+                        "", " &eSIR &7- &f" + version + "&7:",
+                        "   &8• &7Server Software: &f" + Bukkit.getVersion(),
+                        "   &8• &7Developer: &f" + SIRPlugin.getAuthor(),
+                        "   &8• &7Java Version: &f" + SystemUtils.JAVA_VERSION, ""
+                );
 
             case "help":
                 return isProhibited(sender, "admin.help") ||

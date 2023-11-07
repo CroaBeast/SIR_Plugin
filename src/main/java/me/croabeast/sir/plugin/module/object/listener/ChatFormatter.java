@@ -3,6 +3,7 @@ package me.croabeast.sir.plugin.module.object.listener;
 import com.Zrips.CMI.Containers.CMIUser;
 import com.earth2me.essentials.Essentials;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import lombok.var;
 import me.croabeast.beanslib.Beans;
@@ -12,6 +13,7 @@ import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.event.chat.SIRChatEvent;
+import me.croabeast.sir.api.misc.ConfigUnit;
 import me.croabeast.sir.api.misc.CustomListener;
 import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.SIRPlugin;
@@ -28,7 +30,6 @@ import me.croabeast.sir.plugin.utility.PlayerUtils;
 import me.leoko.advancedban.manager.PunishmentManager;
 import me.leoko.advancedban.manager.UUIDManager;
 import org.apache.commons.lang.StringUtils;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -41,10 +42,10 @@ import java.util.*;
 
 public class ChatFormatter extends SIRModule implements CustomListener, CacheHandler {
 
-    private static final Map<Integer, List<ChatChannel>> CHANNELS_MAP = new LinkedHashMap<>();
+    private static final Map<Integer, Set<ChatChannel>> CHANNELS_MAP = new LinkedHashMap<>();
 
-    public static final Map<Integer, List<ChatChannel>> LOCAL_MAP = new LinkedHashMap<>();
-    private static final Map<Integer, List<ChatChannel>> GLOBAL_MAP = new LinkedHashMap<>();
+    public static final Map<Integer, Set<ChatChannel>> LOCAL_MAP = new LinkedHashMap<>();
+    private static final Map<Integer, Set<ChatChannel>> GLOBAL_MAP = new LinkedHashMap<>();
 
     private static final HashMap<Player, Long>
             GLOBAL_PLAYERS = new HashMap<>(), LOCAL_PLAYERS = new HashMap<>();
@@ -76,13 +77,13 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
 
         final ChatChannel def = ChatChannel.getDefaults();
 
-        List<ChatChannel> defs = def != null ?
-                Lists.newArrayList(def) : new ArrayList<>();
+        Set<ChatChannel> defs = def != null ?
+                Sets.newHashSet(def) : new HashSet<>();
 
-        Map<Integer, Map<String, ConfigurationSection>> channels;
+        Map<Integer, Set<ConfigUnit>> channels;
 
         try {
-            channels = channels().getPermSections("channels");
+            channels = channels().getUnitsByPermission("channels");
         } catch (Exception e) {
             CHANNELS_MAP.put(0, defs);
             return;
@@ -94,13 +95,13 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
         }
 
         for (var entry : channels.entrySet()) {
-            List<ChatChannel> values = new ArrayList<>();
+            Set<ChatChannel> values = new LinkedHashSet<>();
             final int i = entry.getKey();
 
-            for (var id : entry.getValue().values()) {
+            for (var id : entry.getValue()) {
                 ChatChannel channel;
                 try {
-                    channel = ChatChannel.of(id);
+                    channel = ChatChannel.of(id.getSection());
                 } catch (Exception e) {
                     continue;
                 }
@@ -111,8 +112,8 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
                 if (local != null) values.add(local);
             }
 
-            List<ChatChannel> globals = new ArrayList<>();
-            List<ChatChannel> locals = new ArrayList<>();
+            Set<ChatChannel> globals = new LinkedHashSet<>();
+            Set<ChatChannel> locals = new LinkedHashSet<>();
 
             for (var c : values)
                 (c.isGlobal() ? globals : locals).add(c);
@@ -269,16 +270,13 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
         if (StringUtils.isNotBlank(click))
             click = ValueReplacer.forEach(keys, values, click);
 
-        String resultClick = click;
+        for (Player p : event.getRecipients()) {
+            String temp = channel.formatOutput(p, player, message, true);
 
-        event.getRecipients().stream()
-                .map(p ->
-                        new ChatMessageBuilder(
-                                p, player,
-                                channel.formatOutput(p, player, message, true)
-                        ).setHoverToAll(hover).setClickToAll(resultClick)
-                )
-                .forEach(ChatMessageBuilder::send);
+            new ChatMessageBuilder(p, player, temp)
+                    .setHoverToAll(hover)
+                    .setClickToAll(click).send();
+        }
 
         if (timer > 0) map.put(player, System.currentTimeMillis());
     }
@@ -322,8 +320,8 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
     public static ChatChannel getLocalFromCommand(Player player, String command) {
         check();
 
-        for (var entry : LOCAL_MAP.entrySet())
-            for (var c : entry.getValue()) {
+        for (var entry : LOCAL_MAP.values())
+            for (var c : entry) {
                 if (!PlayerUtils.hasPerm(player, c.getPermission()))
                     continue;
 

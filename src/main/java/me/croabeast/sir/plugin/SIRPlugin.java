@@ -6,7 +6,6 @@ import lombok.var;
 import me.croabeast.beanslib.analytic.UpdateChecker;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.Exceptions;
-import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.hook.LoginHook;
@@ -99,9 +98,13 @@ public final class SIRPlugin extends JavaPlugin {
         final FileCache config = FileCache.MAIN_CONFIG;
 
         MessageSender.setLoaded(new MessageSender()
-                .setLogger(config.getValue("options.send-console", true))
+                .setLogger(
+                        config.getValue("options.send-console", true)
+                )
                 .setCaseSensitive(false)
-                .setNoFirstSpaces(config.getValue("options.strip-spaces", false))
+                .setNoFirstSpaces(
+                        config.getValue("options.strip-spaces", false)
+                )
                 .addFunctions(EmojiParser::parse)
         );
 
@@ -109,7 +112,7 @@ public final class SIRPlugin extends JavaPlugin {
 
         LogUtils.rawLog(
                 "&0* &7Developer: " + author,
-                "&0* &7Software: " + LibUtils.serverFork(),
+                "&0* &7Software: " + Bukkit.getVersion(),
                 "&0* &7Java Version: " +
                         SystemUtils.JAVA_VERSION, ""
         );
@@ -151,7 +154,8 @@ public final class SIRPlugin extends JavaPlugin {
 
         LogUtils.mixLog(
                 "&7The announcement task has been stopped.", "",
-                "&7SIR &c" + version + "&7 was totally disabled.", EMPTY_LINE
+                "&7SIR &c" + version + "&7 was totally disabled.",
+                EMPTY_LINE
         );
 
         HandlerList.unregisterAll(this);
@@ -160,7 +164,7 @@ public final class SIRPlugin extends JavaPlugin {
         instance = null;
     }
 
-    private boolean commandsRegistered = false, modulesRegistered = false;
+    boolean commandsRegistered = false, modulesRegistered = false;
 
     private void registerCommands() {
         if (commandsRegistered)
@@ -205,15 +209,7 @@ public final class SIRPlugin extends JavaPlugin {
                     }
                 });
 
-        new SIRModule(ModuleName.DISCORD_HOOK) {
-            @Override
-            public void register() {}
-        };
-
-        new SIRModule(ModuleName.CHAT_COLORS) {
-            @Override
-            public void register() {}
-        };
+        new SIRModule(ModuleName.DISCORD_HOOK) {};
 
         modulesRegistered = true;
     }

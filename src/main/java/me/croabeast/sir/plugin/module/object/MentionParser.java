@@ -5,6 +5,7 @@ import me.croabeast.beanslib.Beans;
 import me.croabeast.beanslib.key.ValueReplacer;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.TextUtils;
+import me.croabeast.sir.api.misc.ConfigUnit;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.module.ModuleName;
@@ -26,23 +27,23 @@ public class MentionParser extends SIRModule implements CacheHandler {
         super(ModuleName.MENTIONS);
     }
 
-    @Override
-    public void register() {}
-
     @Priority(level = 1)
     static void loadCache() {
         if (!ModuleName.MENTIONS.isEnabled()) return;
         MENTIONS_MAP.clear();
 
-        FileCache.MENTIONS_CACHE.getPermSections("mentions").forEach((k, v) -> {
-            List<Mention> mentions = MENTIONS_MAP.get(k);
-            if (mentions == null) mentions = new LinkedList<>();
+        FileCache.MENTIONS_CACHE
+                .getUnitsByPermission("mentions")
+                .forEach((k, v) -> {
+                    List<Mention> mentions = MENTIONS_MAP.get(k);
+                    if (mentions == null)
+                        mentions = new LinkedList<>();
 
-            List<Mention> result = mentions;
-            v.values().forEach(c -> result.add(new Mention(c)));
+                    List<Mention> result = mentions;
+                    v.forEach(c -> result.add(new Mention(c)));
 
-            MENTIONS_MAP.put(k, result);
-        });
+                    MENTIONS_MAP.put(k, result);
+                });
     }
 
     static Mention getMention(Player player) {
@@ -169,7 +170,9 @@ public class MentionParser extends SIRModule implements CacheHandler {
 
         private Two sound = Two.EMPTY, messages = Two.EMPTY;
 
-        Mention(ConfigurationSection s) {
+        Mention(ConfigUnit unit) {
+            ConfigurationSection s = unit.getSection();
+
             permission = s.getString("permission", "DEFAULT");
 
             prefix = s.getString("prefix", "");

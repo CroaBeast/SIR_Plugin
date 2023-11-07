@@ -2,7 +2,6 @@ package me.croabeast.sir.plugin.module.object.listener;
 
 import lombok.var;
 import me.croabeast.beanslib.message.CenteredMessage;
-import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sir.api.misc.CustomListener;
 import me.croabeast.sir.api.misc.JavaLoader;
 import me.croabeast.sir.plugin.SIRPlugin;
@@ -31,7 +30,7 @@ public class MotdHandler extends SIRModule implements CustomListener {
 
     private static final String SP = File.separator;
 
-    private int motdIndex = 0, iconCount = 0;
+    private int motdIndex = 0, iconIndex = 0;
 
     MotdHandler() {
         super(ModuleName.MOTD);
@@ -45,10 +44,11 @@ public class MotdHandler extends SIRModule implements CustomListener {
         if (icon.exists()) return;
 
         String s = "resources" + SP + path + SP + "server-icon.png";
+        s = s.replace('\\', '/');
 
         try {
             JavaLoader.saveResourceFrom(
-                    SIRPlugin.getInstance().getResource(s.replace('\\', '/')),
+                    SIRPlugin.getInstance().getResource(s),
                     SIRPlugin.getSIRFolder(),
                     path + SP + "server-icon.png", false
             );
@@ -178,12 +178,12 @@ public class MotdHandler extends SIRModule implements CustomListener {
             boolean isSingle = input == IconInput.SINGLE;
 
             int count = icons.length - 1;
-            if (!isSingle && iconCount > count) iconCount = 0;
+            if (!isSingle && iconIndex > count) iconIndex = 0;
 
             CachedServerIcon icon = null;
 
             try {
-                icon = Bukkit.loadServerIcon(isSingle ? single : icons[iconCount]);
+                icon = Bukkit.loadServerIcon(isSingle ? single : icons[iconIndex]);
             }
             catch (Exception e) {
                 String error = e.getLocalizedMessage();
@@ -201,11 +201,11 @@ public class MotdHandler extends SIRModule implements CustomListener {
             if (isSingle) return;
 
             if (input == IconInput.LIST) {
-                if (iconCount < count) iconCount++;
-                else iconCount = 0;
+                if (iconIndex < count) iconIndex++;
+                else iconIndex = 0;
             }
             else if (input == IconInput.RANDOM)
-                iconCount = new Random().nextInt(count + 1);
+                iconIndex = new Random().nextInt(count + 1);
         }).accept(getIconInput());
     }
 

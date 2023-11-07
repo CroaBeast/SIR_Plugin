@@ -8,52 +8,44 @@ import org.jetbrains.annotations.NotNull;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public final class ButtonCreator implements PaneCreatable<ToggleButton> {
-
-    private final ToggleButton button;
+public final class ButtonCreator extends PaneCreatable<ToggleButton> {
 
     private ButtonCreator(int x, int y, boolean value) {
-        button = new ToggleButton(x, y, 1, 1, value);
+        super(new ToggleButton(x, y, 1, 1, value));
     }
 
-    public ButtonCreator setLength(int length) {
-        button.setLength(length);
+    @NotNull
+    public ButtonCreator modifyPane(Consumer<ToggleButton> consumer) {
+        super.modifyPane(consumer);
         return this;
     }
 
-    public ButtonCreator setHeight(int height) {
-        button.setHeight(height);
-        return this;
-    }
-
-    public ButtonCreator modify(Consumer<ToggleButton> consumer) {
-        consumer.accept(button);
-        return this;
-    }
-
+    @NotNull
     public ButtonCreator setItem(GuiItem item, boolean isEnabled) {
-        if (isEnabled)
-            button.setEnabledItem(item);
-        else
-            button.setDisabledItem(item);
+        if (isEnabled) {
+            pane.setEnabledItem(item);
+            return this;
+        }
+
+        pane.setDisabledItem(item);
         return this;
     }
 
+    @NotNull
     public ButtonCreator setItem(ItemCreator item, boolean isEnabled) {
         return setItem(item.create(), isEnabled);
     }
 
-    public ButtonCreator onClick(Consumer<InventoryClickEvent> event) {
-        button.setOnClick(event);
+    @NotNull
+    public ButtonCreator setAction(Consumer<InventoryClickEvent> consumer) {
+        super.setAction(consumer);
         return this;
     }
 
-    public ButtonCreator onClick(Function<ToggleButton, Consumer<InventoryClickEvent>> function) {
-        return onClick(function.apply(button));
-    }
-
-    public @NotNull ToggleButton create() {
-        return button;
+    @NotNull
+    public ButtonCreator setAction(Function<ToggleButton, Consumer<InventoryClickEvent>> function) {
+        super.setAction(function);
+        return this;
     }
 
     public static ButtonCreator of(int x, int y, boolean value) {

@@ -1,4 +1,4 @@
-package me.croabeast.sir.plugin.module.object;
+package me.croabeast.sir.plugin.module.object.listener;
 
 import lombok.Getter;
 import lombok.var;
@@ -7,8 +7,8 @@ import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.event.hook.SIRLoginEvent;
 import me.croabeast.sir.api.event.hook.SIRVanishEvent;
-import me.croabeast.sir.api.misc.CustomListener;
 import me.croabeast.sir.api.misc.ConfigUnit;
+import me.croabeast.sir.api.misc.CustomListener;
 import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.CacheHandler;
@@ -55,29 +55,27 @@ public class JoinQuitHandler extends SIRModule implements CustomListener, CacheH
         UNIT_MAP = new LinkedHashMap<>();
     }
 
-    static void loadFromType(Type type) {
-        var first = messages().getPermSections(type.name);
-        if (first.isEmpty()) return;
-
-        var loaded = UNIT_MAP.getOrDefault(type, new LinkedHashMap<>());
-
-        for (var maps : first.entrySet()) {
-            var map = maps.getValue();
-            int i = maps.getKey();
-
-            var set = loaded.getOrDefault(i, new LinkedHashSet<>());
-            for (var section : map.values())
-                set.add(new ConnectionUnit(section, type));
-
-            loaded.put(i, set);
-        }
-
-        UNIT_MAP.put(type, loaded);
-    }
-
     static void loadCache() {
         UNIT_MAP.clear();
-        for (Type type : Type.values()) loadFromType(type);
+
+        for (Type type : Type.values()) {
+            var first = messages().getUnitsByPermission(type.name);
+            if (first.isEmpty()) return;
+
+            var loaded = UNIT_MAP.getOrDefault(type, new LinkedHashMap<>());
+
+            for (var entry : first.entrySet()) {
+                int i = entry.getKey();
+
+                var before = loaded.getOrDefault(i, new LinkedHashSet<>());
+                entry.getValue().forEach(c ->
+                        before.add(new ConnectionUnit(c.getSection(), type)));
+
+                loaded.put(i, before);
+            }
+
+            UNIT_MAP.put(type, loaded);
+        }
     }
 
     JoinQuitHandler() {
@@ -123,6 +121,9 @@ public class JoinQuitHandler extends SIRModule implements CustomListener, CacheH
         ConnectionUnit unit = get(type, player);
         if (unit == null) return;
 
+        if (config().getValue("default-messages.disable-join", true))
+            event.setJoinMessage(null);
+
         int joinTime = config().getValue("cooldown.join", 0);
         UUID uuid = player.getUniqueId();
 
@@ -140,9 +141,6 @@ public class JoinQuitHandler extends SIRModule implements CustomListener, CacheH
                 unit.teleportToSpawn(player);
             return;
         }
-
-        if (config().getValue("default-messages.disable-join", true))
-            event.setJoinMessage(null);
 
         unit.performAllActions(player);
 
@@ -173,6 +171,9 @@ public class JoinQuitHandler extends SIRModule implements CustomListener, CacheH
         ConnectionUnit unit = get(Type.QUIT, player);
         if (unit == null) return;
 
+        if (config().getValue("default-messages.disable-quit", true))
+            event.setQuitMessage(null);
+
         UUID uuid = player.getUniqueId();
 
         int playTime = config().getValue("cooldown.between", 0);
@@ -191,9 +192,6 @@ public class JoinQuitHandler extends SIRModule implements CustomListener, CacheH
             LoginHook.removePlayer(player);
             return;
         }
-
-        if (config().getValue("default-messages.disable-join", true))
-            event.setQuitMessage(null);
 
         unit.performAllActions(player);
 

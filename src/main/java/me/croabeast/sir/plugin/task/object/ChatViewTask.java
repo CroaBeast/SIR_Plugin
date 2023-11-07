@@ -12,6 +12,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class ChatViewTask extends SIRTask {
 
@@ -22,7 +23,7 @@ public class ChatViewTask extends SIRTask {
     static List<String> getKeys(Player player) {
         List<String> keys = new ArrayList<>();
 
-        for (List<ChatChannel> channels : ChatFormatter.LOCAL_MAP.values()) {
+        for (Set<ChatChannel> channels : ChatFormatter.LOCAL_MAP.values()) {
             channels.forEach(c -> {
                 if (PlayerUtils.hasPerm(player, c.getPermission())) keys.add(c.getName());
             });

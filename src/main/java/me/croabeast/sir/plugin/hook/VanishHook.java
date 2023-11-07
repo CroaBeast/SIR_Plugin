@@ -20,10 +20,14 @@ import org.bukkit.plugin.Plugin;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 @UtilityClass
 public class VanishHook {
+
+    private final Set<LoadedListener> LISTENER_SET = new LinkedHashSet<>();
 
     private final String[] SUPPORTED_PLUGINS = {
             "Essentials", "CMI", "SuperVanish", "PremiumVanish"
@@ -47,7 +51,7 @@ public class VanishHook {
         if (!isEnabled()) return;
 
         if (Exceptions.isPluginEnabled("Essentials"))
-            new CustomListener() {
+            new LoadedListener() {
                 @EventHandler
                 private void onVanish(VanishStatusChangeEvent event) {
                     IUser user = event.getAffected();
@@ -56,7 +60,7 @@ public class VanishHook {
             }.registerOnSIR();
 
         if (Exceptions.isPluginEnabled("CMI")) {
-            new CustomListener() {
+            new LoadedListener() {
                 @EventHandler
                 private void onVanish(CMIPlayerVanishEvent event) {
                     new SIRVanishEvent(event.getPlayer(), false).call();
@@ -69,13 +73,17 @@ public class VanishHook {
         }
 
         if (Exceptions.arePluginsEnabled(false, "SuperVanish", "PremiumVanish"))
-            new CustomListener() {
+            new LoadedListener() {
                 @EventHandler
                 private void onVanish(PlayerVanishStateChangeEvent event) {
                     Player player = Bukkit.getPlayer(event.getUUID());
                     new SIRVanishEvent(player, !event.isVanishing()).call();
                 }
             }.registerOnSIR();
+    }
+
+    public void unloadHook() {
+        if (isEnabled()) LISTENER_SET.forEach(LoadedListener::unregister);
     }
 
     public boolean isEnabled() {
@@ -109,5 +117,17 @@ public class VanishHook {
     @Nullable
     public Plugin getHook() {
         return isEnabled() ? ENABLED_HOOKS.get(0) : null;
+    }
+
+    static class LoadedListener implements CustomListener {
+
+        LoadedListener() {
+            LISTENER_SET.add(this);
+        }
+
+        public void unregister() {
+            CustomListener.super.unregister();
+            LISTENER_SET.remove(this);
+        }
     }
 }

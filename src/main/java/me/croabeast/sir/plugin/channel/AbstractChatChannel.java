@@ -81,7 +81,7 @@ abstract class AbstractChatChannel implements ChatChannel {
         prefix = fromParent("prefix", ChatChannel::getPrefix, null);
         suffix = fromParent("suffix", ChatChannel::getSuffix, null);
 
-        color = fromParent("color", ChatChannel::getSuffix, null);
+        color = fromParent("color-string", ChatChannel::getColor, null);
 
         colorChecker = new ColorChecker(
                 fromBoolean("color.normal"), fromBoolean("color.special"),
@@ -125,27 +125,43 @@ abstract class AbstractChatChannel implements ChatChannel {
     public String formatOutput(Player t, Player p, String message, boolean isChat) {
         String rawFormat = isChat ? getChatFormat() : getLogFormat();
 
-        StringApplier applier = StringApplier.simplified(rawFormat)
-                .apply(s -> PlayerKey.replaceKeys(p, s))
-                .apply(s -> {
+        StringApplier applier = StringApplier.prioritized(rawFormat)
+                .apply(
+                        StringApplier.Priority.NORMAL,
+                        s -> PlayerKey.replaceKeys(p, s)
+                )
+                .apply(StringApplier.Priority.HIGHEST, s -> {
                     String[] values = getChatValues(colorChecker.check(message));
                     return ValueReplacer.forEach(getChatKeys(), values, s);
                 })
-                .apply(s -> EmojiParser.parse(p, s))
-                .apply(s -> MentionParser.parseMentions(p, s));
+                .apply(
+                        StringApplier.Priority.HIGHEST,
+                        s -> EmojiParser.parse(p, s)
+                )
+                .apply(
+                        StringApplier.Priority.HIGHEST,
+                        s -> MentionParser.parseMentions(p, s)
+                );
 
-        if (isChat) applier.apply(Beans::convertToSmallCaps);
+        if (isChat)
+            applier.apply(
+                    StringApplier.Priority.NORMAL,
+                    Beans::convertToSmallCaps
+            );
 
         final String format = applier.toString();
 
         if (isDefault() && !TextUtils.IS_JSON.test(format)) {
-            return applier
+            return StringApplier.simplified(format)
                     .apply(s -> Beans.createCenteredChatMessage(t, p, s))
                     .toString();
         }
 
-        if (noChatEvents()) return format;
-        return applier.apply(TextUtils.STRIP_JSON).toString();
+        return noChatEvents() ?
+                format :
+                StringApplier.simplified(format)
+                        .apply(TextUtils.STRIP_JSON)
+                        .toString();
     }
 
     @Override

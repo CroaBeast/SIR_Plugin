@@ -23,14 +23,12 @@ import su.nexmedia.auth.api.event.AuthPlayerLoginEvent;
 import su.nexmedia.auth.api.event.AuthPlayerRegisterEvent;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @UtilityClass
 public class LoginHook {
 
+    private final Set<LoadedListener> LISTENER_SET = new LinkedHashSet<>();
     private final Set<Player> LOGGED_PLAYERS = new HashSet<>();
 
     private final String[] SUPPORTED_PLUGINS = {
@@ -67,7 +65,7 @@ public class LoginHook {
         if (!isEnabled()) return;
 
         if (Exceptions.isPluginEnabled("AuthMe"))
-            new CustomListener() {
+            new LoadedListener() {
                 @EventHandler
                 private void onLogin(LoginEvent event) {
                     createLoginEventCall(event);
@@ -75,7 +73,7 @@ public class LoginHook {
             }.registerOnSIR();
 
         if (Exceptions.isPluginEnabled("UserLogin"))
-            new CustomListener() {
+            new LoadedListener() {
                 @EventHandler
                 private void onLogin(AuthenticationEvent event) {
                     createLoginEventCall(event);
@@ -85,7 +83,7 @@ public class LoginHook {
         if (Exceptions.isPluginEnabled("nLogin"))
             try {
                 Class.forName("com.nickuc.login.api.nLoginAPIHolder");
-                new CustomListener() {
+                new LoadedListener() {
                     @EventHandler
                     private void onLogin(AuthenticateEvent event) {
                         createLoginEventCall(event);
@@ -97,7 +95,7 @@ public class LoginHook {
             }
 
         if (Exceptions.isPluginEnabled("OpeNLogin")) {
-            new CustomListener() {
+            new LoadedListener() {
                 @EventHandler
                 private void onLogin(AsyncLoginEvent event) {
                     createLoginEventCall(event);
@@ -110,7 +108,7 @@ public class LoginHook {
         }
 
         if (Exceptions.isPluginEnabled("NexAuth")) {
-            new CustomListener() {
+            new LoadedListener() {
                 @EventHandler
                 private void onLogin(AuthPlayerLoginEvent event) {
                     createLoginEventCall(event);
@@ -121,6 +119,10 @@ public class LoginHook {
                 }
             }.registerOnSIR();
         }
+    }
+
+    public void unloadHook() {
+        if (isEnabled()) LISTENER_SET.forEach(LoadedListener::unregister);
     }
 
     public boolean isEnabled() {
@@ -151,5 +153,17 @@ public class LoginHook {
     @SuppressWarnings("all")
     public boolean isLogged(Player player) {
         return isEnabled() && LOGGED_PLAYERS.contains(player);
+    }
+
+    static class LoadedListener implements CustomListener {
+
+        LoadedListener() {
+            LISTENER_SET.add(this);
+        }
+
+        public void unregister() {
+            CustomListener.super.unregister();
+            LISTENER_SET.remove(this);
+        }
     }
 }

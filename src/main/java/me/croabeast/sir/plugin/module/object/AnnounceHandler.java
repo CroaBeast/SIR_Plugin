@@ -32,6 +32,10 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
         super(ModuleName.ANNOUNCEMENTS);
     }
 
+    private static ConfigurationSection announceSection() {
+        return FileCache.ANNOUNCE_CACHE.getCache("announces").getSection("announces");
+    }
+
     @Priority(level = 1)
     static void loadCache() {
         ConfigurationSection section = announceSection();
@@ -43,17 +47,9 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
 
         for (String key : section.getKeys(false)) {
             ConfigurationSection s = section.getConfigurationSection(key);
-            if (s == null) continue;
-
-            ANNOUNCE_MAP.put(keys.indexOf(key), new Announce(s));
+            if (s != null)
+                ANNOUNCE_MAP.put(keys.indexOf(key), new Announce(s));
         }
-    }
-
-    @Override
-    public void register() {}
-
-    private static ConfigurationSection announceSection() {
-        return FileCache.ANNOUNCE_CACHE.getCache("announces").getSection("announces");
     }
 
     private static FileCache config() {
@@ -82,8 +78,8 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
     };
 
     public static void startTask() {
-        final int delay = config().getValue("interval", 0);
         ConfigurationSection section = announceSection();
+        int delay = config().getValue("interval", 0);
 
         if (!ModuleName.ANNOUNCEMENTS.isEnabled() ||
                 delay <= 0 ||
@@ -98,12 +94,15 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
                     int count = ANNOUNCE_MAP.size() - 1;
                     if (order > count) order = 0;
 
-                    Announce announce = ANNOUNCE_MAP.get(order);
-                    announce.display(PLAYERS.apply(announce.id));
+                    Announce a = ANNOUNCE_MAP.get(order);
+                    a.display(PLAYERS.apply(a.id));
 
-                    order = config().getValue("random", false) ?
-                            new Random().nextInt(count + 1) :
-                            (order < count ? (order + 1) : 0);
+                    if (config().getValue("random", false)) {
+                        order = new Random().nextInt(count + 1);
+                        return;
+                    }
+
+                    order = order < count ? (order + 1) : 0;
                 },
                 0L, delay
         ).getTaskId();
