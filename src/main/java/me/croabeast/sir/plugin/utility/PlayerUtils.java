@@ -7,8 +7,8 @@ import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.FileCache;
-import me.croabeast.sir.plugin.task.object.ignore.IgnoreSettings;
-import me.croabeast.sir.plugin.task.object.ignore.IgnoreTask;
+import me.croabeast.sir.plugin.command.object.ignore.IgnoreSettings;
+import me.croabeast.sir.plugin.command.object.ignore.IgnoreTask;
 import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -161,7 +161,7 @@ public class PlayerUtils {
     }
 
     public void giveImmunity(Player player, int time) {
-        if (LibUtils.getMainVersion() <= 8 | time <= 0)
+        if (LibUtils.MAIN_VERSION <= 8 | time <= 0)
             return;
 
         addToImmunePlayers(player);
@@ -211,7 +211,7 @@ public class PlayerUtils {
     }
 
     public void addChatCompletions(Player player, List<String> list) {
-        if (LibUtils.getMainVersion() < 19.0 ||
+        if (LibUtils.MAIN_VERSION < 19.0 ||
                 player == null || list.isEmpty()) return;
 
         final String m = "addAdditionalChatCompletions";

@@ -1,4 +1,4 @@
-package me.croabeast.sir.plugin.task.object.ignore;
+package me.croabeast.sir.plugin.command.object.ignore;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

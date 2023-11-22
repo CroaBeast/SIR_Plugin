@@ -1,4 +1,4 @@
-package me.croabeast.sir.plugin.task.object;
+package me.croabeast.sir.plugin.command.object;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -8,7 +8,10 @@ import me.croabeast.beanslib.Beans;
 import me.croabeast.beanslib.message.MessageExecutor;
 import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.module.object.EmojiParser;
-import me.croabeast.sir.plugin.task.SIRTask;
+import me.croabeast.sir.plugin.command.SIRCommand;
+import me.croabeast.sir.plugin.command.tab.TabBuilder;
+import me.croabeast.sir.plugin.command.tab.TabPredicate;
+import me.croabeast.sir.plugin.utility.LangUtils;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import net.milkbowl.vault.permission.Permission;
@@ -19,115 +22,123 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class PrinterTask extends SIRTask {
+public class PrinterTask extends SIRCommand {
 
     PrinterTask() {
         super("print");
     }
 
     @Override
-    protected boolean execute(CommandSender sender, String[] args) {
-        if (isProhibited(sender, "print.*")) return true;
-        if (args.length == 0) return fromSender(sender, "commands.print.help.main");
+    protected TabPredicate executor() {
+        return (sender, args) -> {
+            if (isProhibited(sender, "print.*")) return true;
+            if (args.length == 0) return fromSender(sender, "commands.print.help.main");
 
-        if (args[0].matches("(?i)targets")) {
-            if (isProhibited(sender, "print.targets")) return true;
+            if (args[0].matches("(?i)targets")) {
+                if (isProhibited(sender, "print.targets")) return true;
 
-            if (args.length > 1) return isWrongArgument(sender, args[args.length - 1]);
-            return fromSender(sender, "commands.print.help.targets");
-        }
+                if (args.length > 1) return isWrongArgument(sender, args[args.length - 1]);
+                return fromSender(sender, "commands.print.help.targets");
+            }
 
-        else if (args[0].matches("(?i)-CONSOLE")) {
-            if (isProhibited(sender, "print.logger")) return true;
+            else if (args[0].matches("(?i)-CONSOLE")) {
+                if (isProhibited(sender, "print.logger")) return true;
 
-            if (args.length < 2) {
-                LogUtils.doLog(sender, "<P> &7Use my secret command wisely...");
+                if (args.length < 2) {
+                    LogUtils.doLog(sender, "<P> &7Use my secret command wisely...");
+                    return true;
+                }
+
+                LogUtils.doLog(LangUtils.messageFromArray(args, 1));
                 return true;
             }
 
-            LogUtils.doLog(createMessageFromArray(args, 1));
+            TargetCatcher catcher = new TargetCatcher(sender, args.length > 1 ? args[1] : null);
+
+            if (args[0].matches("(?i)ACTION[-_]BAR")) {
+                if (fromSender(sender, "print.action-bar")) return true;
+
+                if (args.length == 1) return fromSender(sender, "commands.print.help.action-bar");
+                if (args.length < 3) return fromSender(sender, "commands.print.empty-message");
+
+                catcher.sendConfirmation();
+                new Printer(catcher, args, 2).print("ACTION-BAR");
+                return true;
+            }
+
+            else if (args[0].matches("(?i)CHAT")) {
+                if (isProhibited(sender, "print.chat")) return true;
+
+                if (args.length == 1)
+                    return fromSender(sender, "commands.print.help.chat");
+                if (args.length < 4)
+                    return fromSender(sender, "commands.print.empty-message");
+
+                catcher.sendConfirmation();
+
+                boolean hasArg = args[2].matches("(?i)DEFAULT|CENTERED|MIXED");
+                new Printer(catcher, args, hasArg ? 3 : 2).print("");
+
+                return true;
+            }
+
+            else if (args[0].matches("(?i)TITLE")) {
+                if (isProhibited(sender, "print.title")) return true;
+
+                if (args.length == 1)
+                    return fromSender(sender, "commands.print.help.title");
+                if (args.length < 4)
+                    return fromSender(sender, "commands.print.empty-message");
+
+                catcher.sendConfirmation();
+                new Printer(catcher, args, 3).print("TITLE");
+                return true;
+            }
+
+            isWrongArgument(sender, args[0]);
             return true;
-        }
-
-        TargetCatcher catcher = new TargetCatcher(sender, args.length > 1 ? args[1] : null);
-
-        if (args[0].matches("(?i)ACTION[-_]BAR")) {
-            if (fromSender(sender, "print.action-bar")) return true;
-
-            if (args.length == 1) return fromSender(sender, "commands.print.help.action-bar");
-            if (args.length < 3) return fromSender(sender, "commands.print.empty-message");
-
-            catcher.sendConfirmation();
-            new Printer(catcher, args, 2).print("ACTION-BAR");
-            return true;
-        }
-
-        else if (args[0].matches("(?i)CHAT")) {
-            if (isProhibited(sender, "print.chat")) return true;
-
-            if (args.length == 1)
-                return fromSender(sender, "commands.print.help.chat");
-            if (args.length < 4)
-                return fromSender(sender, "commands.print.empty-message");
-
-            catcher.sendConfirmation();
-
-            boolean hasArg = args[2].matches("(?i)DEFAULT|CENTERED|MIXED");
-            new Printer(catcher, args, hasArg ? 3 : 2).print("");
-
-            return true;
-        }
-
-        else if (args[0].matches("(?i)TITLE")) {
-            if (isProhibited(sender, "print.title")) return true;
-
-            if (args.length == 1)
-                return fromSender(sender, "commands.print.help.title");
-            if (args.length < 4)
-                return fromSender(sender, "commands.print.empty-message");
-
-            catcher.sendConfirmation();
-            new Printer(catcher, args, 3).print("TITLE");
-            return true;
-        }
-
-        isWrongArgument(sender, args[0]);
-        return true;
+        };
     }
 
     @Override
-    protected @NotNull List<String> complete(CommandSender sender, String[] args) {
-        if (args.length == 1)
-            return generateList(args, "targets", "ACTION-BAR", "CHAT", "TITLE");
+    @NotNull
+    protected TabBuilder completer() {
+        TabBuilder builder = TabBuilder.of()
+                .addArgument("sir.print.targets", "targets")
+                .addArgument("sir.print.chat", "chat")
+                .addArgument("sir.print.action-bar", "action-bar")
+                .addArgument("sir.print.TITLE", "TITLE")
+                .addArguments(1, "@a", "perm:", "world:")
+                .addArguments(1, getPlayersNames());
 
-        if (args.length == 2) {
-            if (args[1].matches("(?i)targets"))
-                return new ArrayList<>();
+        if (SIRInitializer.hasVault())
+            builder.addArgument(1, "group:");
 
-            ArrayList<String> l = Lists.newArrayList("@a", "PERM:", "WORLD:");
-            if (SIRInitializer.hasVault()) l.add("GROUP:");
+        builder.setIndex(2)
+                .addArgument(
+                        (s, a) -> a[0].matches("(?i)action-bar"),
+                        "<message>"
+                )
+                .addArguments(
+                        (s, a) -> a[0].matches("(?i)chat"),
+                        "default", "centered", "mixed"
+                )
+                .addArguments(
+                        (s, a) -> a[0].matches("(?i)title"),
+                        "default", "10,50,10"
+                );
 
-            return generateList(args, l, getPlayersNames());
-        }
-
-        if (args.length == 3) {
-            if (args[0].matches("(?i)ACTION-BAR")) return generateList(args, "<message>");
-            else if (args[0].matches("(?i)TITLE"))
-                return generateList(args, "DEFAULT", "10,50,10");
-            else if (args[0].matches("(?i)CHAT"))
-                return generateList(args, "DEFAULT", "CENTERED", "MIXED");
-        }
-
-        if (args.length == 4) {
-            if (!args[0].matches("(?i)CHAT|TITLE")) return new ArrayList<>();
-            return generateList(args, "<message>");
-        }
-
-        return new ArrayList<>();
+        return builder.addArgument(3,
+                (s, a) -> a[0].matches("(?i)chat|title"),
+                "<message>"
+        );
     }
 
     class TargetCatcher {
@@ -233,7 +244,7 @@ public class PrinterTask extends SIRTask {
 
         private void print(String key) {
             final String center = Beans.getCenterPrefix();
-            final String message = createMessageFromArray(args, argumentIndex);
+            final String message = LangUtils.messageFromArray(args, argumentIndex);
 
             for (Player player : catcher.targets) {
                 MessageExecutor k = MessageExecutor.matchKey(key);

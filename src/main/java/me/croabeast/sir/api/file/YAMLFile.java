@@ -192,7 +192,7 @@ public class YAMLFile {
 
         try {
             YAMLUpdater.updateFrom(resource, file);
-            if (LibUtils.getMainVersion() < 13) YAMLUpdater.updateFrom(resource, file);
+            if (LibUtils.MAIN_VERSION < 13) YAMLUpdater.updateFrom(resource, file);
 
             if (log) LogUtils.doLog(msg + "has been&a updated&7.");
             return true;

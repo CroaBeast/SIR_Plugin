@@ -5,8 +5,10 @@ import com.github.stefvanschie.inventoryframework.pane.Pane;
 import com.github.stefvanschie.inventoryframework.pane.component.ToggleButton;
 import lombok.experimental.UtilityClass;
 import lombok.var;
+import me.croabeast.beanslib.character.SmallCaps;
 import me.croabeast.beanslib.map.MapBuilder;
 import me.croabeast.beanslib.utility.ArrayUtils;
+import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sir.api.gui.*;
 import me.croabeast.sir.plugin.file.CacheHandler;
@@ -29,7 +31,7 @@ public class ModuleGUI implements CacheHandler {
     GuiItem getButton(Material material, String name, String... lore) {
         return ItemCreator.of(material).modifyName(name)
                 .modifyMeta(m -> {
-                    List<String> list = new LinkedList<>();
+                    final List<String> list = new LinkedList<>();
 
                     list.add("");
                     list.addAll(ArrayUtils.fromArray(lore));
@@ -99,6 +101,8 @@ public class ModuleGUI implements CacheHandler {
             boolean status = data.getBoolean(name + "");
             MODULE_STATUS_MAP.put(name, status);
         }
+
+        if (LibUtils.MAIN_VERSION < 14.0 || modulesMenu != null) return;
 
         if (moduleEntries == null) {
             moduleEntries = new MapBuilder<ModuleName, ButtonCreator>()
@@ -170,20 +174,20 @@ public class ModuleGUI implements CacheHandler {
                     .map();
         }
 
-        if (modulesMenu != null) return;
-
-        MenuCreator menu = MenuCreator.of(4, "&8Loaded SIR Modules:");
+        MenuCreator menu = MenuCreator.of(4, "&8Loaded SIR Modules:", true);
 
         for (ButtonCreator button : moduleEntries.values())
             menu.addPane(0, button.create());
 
+        String caps = SmallCaps.toSmallCaps("[Paid Version]");
+
         menu.addSingleItem(0, 1, 1, ItemCreator.of(Material.BARREL)
-                .modifyLore("",
+                .modifyLore(
                         "&7Opens a new menu with all the available",
                         "&7options from each module.",
-                        "&eComing soon in SIR+. &8&o(Paid Version)"
+                        "&eComing soon in SIR+. &8" + caps
                 )
-                .modifyName("&fModules Options:")
+                .modifyName(SmallCaps.toSmallCaps("&f&lModules Options:"))
                 .setAction(e -> e.setCancelled(true))
         );
 
@@ -192,12 +196,12 @@ public class ModuleGUI implements CacheHandler {
         menu.addPane(0, ButtonCreator.of(1, 2, check() != Result.ALL_ENABLED)
                 .setItem(
                         ItemCreator.of(Material.LIME_DYE)
-                                .modifyName("&a&lENABLE ALL")
+                                .modifyName("&a&lENABLE ALL:")
                                 .modifyLore("&f➤ &7En" + message),
                         true
                 )
                 .setItem(ItemCreator.of(Material.RED_DYE)
-                                .modifyName("&c&lDISABLE ALL")
+                                .modifyName("&c&lDISABLE ALL:")
                                 .modifyLore("&f➤ &7Dis" + message),
                         false
                 )

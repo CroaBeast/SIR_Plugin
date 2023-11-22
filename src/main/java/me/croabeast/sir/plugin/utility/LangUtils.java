@@ -93,4 +93,16 @@ public final class LangUtils extends BeansLib {
             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), applier.toString());
         }
     }
+
+    public static String messageFromArray(String[] args, int argumentIndex) {
+        if (argumentIndex >= args.length) return null;
+        StringBuilder b = new StringBuilder();
+
+        for (int i = argumentIndex; i < args.length; i++)  {
+            b.append(args[i]);
+            if (i != args.length - 1) b.append(" ");
+        }
+
+        return b.toString();
+    }
 }

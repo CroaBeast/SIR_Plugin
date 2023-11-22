@@ -1,0 +1,16 @@
+commands:
+  print:
+    enabled: true
+    aliases: [ rawmsg, rm ]
+  chat-view:
+    enabled: true
+    aliases: [ c-v ]
+  msg:
+    enabled: true
+    aliases: [ m, tell ]
+  reply:
+    enabled: true
+    aliases: [ r ]
+  ignore:
+    enabled: true
+    aliases: [ ig ]

@@ -2,7 +2,6 @@ package me.croabeast.sir.plugin.module.object.listener;
 
 import com.Zrips.CMI.Containers.CMIUser;
 import com.earth2me.essentials.Essentials;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import lombok.SneakyThrows;
 import lombok.var;
@@ -14,7 +13,6 @@ import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.event.chat.SIRChatEvent;
 import me.croabeast.sir.api.misc.ConfigUnit;
-import me.croabeast.sir.api.misc.CustomListener;
 import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.channel.ChatChannel;
@@ -23,8 +21,7 @@ import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.hook.DiscordSender;
 import me.croabeast.sir.plugin.hook.LoginHook;
 import me.croabeast.sir.plugin.module.ModuleName;
-import me.croabeast.sir.plugin.module.SIRModule;
-import me.croabeast.sir.plugin.task.SIRTask;
+import me.croabeast.sir.plugin.utility.LangUtils;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import me.leoko.advancedban.manager.PunishmentManager;
@@ -40,7 +37,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class ChatFormatter extends SIRModule implements CustomListener, CacheHandler {
+public class ChatFormatter extends ModuleListener implements CacheHandler {
 
     private static final Map<Integer, Set<ChatChannel>> CHANNELS_MAP = new LinkedHashMap<>();
 
@@ -52,11 +49,6 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
 
     ChatFormatter() {
         super(ModuleName.CHAT_CHANNELS);
-    }
-
-    @Override
-    public void register() {
-        registerOnSIR();
     }
 
     private static FileCache config() {
@@ -210,7 +202,7 @@ public class ChatFormatter extends SIRModule implements CustomListener, CacheHan
 
         event.setCancelled(true);
 
-        String message = SIRTask.createMessageFromArray(args, 1);
+        String message = LangUtils.messageFromArray(args, 1);
         if (StringUtils.isBlank(message)) return;
 
         boolean b = event.isAsynchronous();

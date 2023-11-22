@@ -1,5 +1,6 @@
 package me.croabeast.sir.plugin.file;
 
+import lombok.SneakyThrows;
 import lombok.var;
 import me.croabeast.sir.plugin.SIRCollector;
 import me.croabeast.sir.plugin.SIRPlugin;
@@ -31,7 +32,8 @@ public interface CacheHandler {
      * @return all the loaded handlers in SIR plugin.
      * @throws IllegalAccessException if this method is being called by another plugin
      */
-    static List<Class<?>> loadedHandlers() throws IllegalAccessException {
+    @SneakyThrows
+    static List<Class<?>> loadedHandlers() {
         SIRPlugin.checkAccess(CacheHandler.class);
 
         return SIRCollector.from()
@@ -47,8 +49,9 @@ public interface CacheHandler {
      *
      * @throws IllegalAccessException if this method is being called by another plugin
      */
-    static void load() throws IllegalAccessException {
-        final Map<Integer, List<Method>> methodsMap = new LinkedHashMap<>();
+    @SneakyThrows
+    static void load() {
+        Map<Integer, List<Method>> methodsMap = new LinkedHashMap<>();
 
         loadedHandlers()
                 .forEach(c -> {
@@ -93,8 +96,9 @@ public interface CacheHandler {
      *
      * @throws IllegalAccessException if this method is being called by another plugin
      */
-    static void save() throws IllegalAccessException {
-        final Map<Integer, List<Method>> methodsMap = new LinkedHashMap<>();
+    @SneakyThrows
+    static void save() {
+        Map<Integer, List<Method>> methodsMap = new LinkedHashMap<>();
 
         loadedHandlers()
                 .forEach(c -> {
@@ -118,7 +122,7 @@ public interface CacheHandler {
         var entries = new ArrayList<>(methodsMap.entrySet());
         entries.sort((e1, e2) -> e2.getKey().compareTo(e1.getKey()));
 
-        entries.stream().map(Map.Entry::getValue).forEach(mList -> mList
+        entries.stream().map(Map.Entry::getValue).forEach(l -> l
                 .forEach(m -> {
                     try {
                         m.setAccessible(true);

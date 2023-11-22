@@ -2,9 +2,8 @@ package me.croabeast.sir.plugin;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
-import lombok.var;
-import me.croabeast.beanslib.analytic.UpdateChecker;
 import me.croabeast.beanslib.message.MessageSender;
+import me.croabeast.beanslib.misc.UpdateChecker;
 import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
@@ -14,8 +13,7 @@ import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.SIRModule;
 import me.croabeast.sir.plugin.module.object.AnnounceHandler;
 import me.croabeast.sir.plugin.module.object.EmojiParser;
-import me.croabeast.sir.plugin.task.SIRTask;
-import me.croabeast.sir.plugin.task.object.message.DirectTask;
+import me.croabeast.sir.plugin.command.SIRCommand;
 import me.croabeast.sir.plugin.utility.LangUtils;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
@@ -27,6 +25,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,7 +49,8 @@ public final class SIRPlugin extends JavaPlugin {
 
     static String[] pluginHeader() {
         return new String[] {
-                "", "&0* *&e____ &0* &e___ &0* &e____", "&0* &e(___&0 * * &e|&0* * &e|___)",
+                "", "&0* *&e____ &0* &e___ &0* &e____",
+                "&0* &e(___&0 * * &e|&0* * &e|___)",
                 "&0* &e____) . _|_ . | &0* &e\\ . &f" + getVersion(), ""
         };
     }
@@ -120,7 +120,11 @@ public final class SIRPlugin extends JavaPlugin {
         SIRInitializer.startMetrics();
         SIRInitializer.setPluginHooks();
 
-        registerCommands();
+        try {
+            SIRCommand.registerCommands();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         registerModules();
 
         if (ModuleName.ANNOUNCEMENTS.isEnabled()) {
@@ -158,36 +162,15 @@ public final class SIRPlugin extends JavaPlugin {
                 EMPTY_LINE
         );
 
+        LoginHook.unloadHook();        VanishHook.unloadHook();
+
         HandlerList.unregisterAll(this);
 
         utils = null;
         instance = null;
     }
 
-    boolean commandsRegistered = false, modulesRegistered = false;
-
-    private void registerCommands() {
-        if (commandsRegistered)
-            throw new IllegalStateException("Commands are already registered.");
-
-        SIRCollector.from("me.croabeast.sir.plugin.task.object")
-                .filter(c -> !c.getName().contains("$"))
-                .filter(SIRTask.class::isAssignableFrom)
-                .filter(c -> c != SIRTask.class && c != DirectTask.class)
-                .collect()
-                .forEach(c -> {
-                    try {
-                        var co = c.getDeclaredConstructor();
-                        co.setAccessible(true);
-                        ((SIRTask) co.newInstance()).register();
-                        co.setAccessible(false);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                });
-
-        commandsRegistered = true;
-    }
+    boolean modulesRegistered = false;
 
     private void registerModules() {
         if (modulesRegistered)
@@ -197,16 +180,15 @@ public final class SIRPlugin extends JavaPlugin {
                 .filter(c -> !c.getName().contains("$"))
                 .filter(SIRModule.class::isAssignableFrom)
                 .filter(c -> c != SIRModule.class)
-                .collect()
-                .forEach(c -> {
+                .collect().forEach(c -> {
                     try {
-                        var co = c.getDeclaredConstructor();
-                        co.setAccessible(true);
-                        ((SIRModule) co.newInstance()).register();
-                        co.setAccessible(false);
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                        Constructor<?> constructor = c.getDeclaredConstructor();
+                        constructor.setAccessible(true);
+
+                        c.getMethod("register").invoke(constructor.newInstance());
+                        constructor.setAccessible(false);
                     }
+                    catch (Exception ignored) {}
                 });
 
         new SIRModule(ModuleName.DISCORD_HOOK) {};

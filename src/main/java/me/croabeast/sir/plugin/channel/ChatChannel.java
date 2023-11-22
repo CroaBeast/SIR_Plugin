@@ -4,7 +4,7 @@ import lombok.SneakyThrows;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.misc.ConfigUnit;
 import me.croabeast.sir.plugin.file.FileCache;
-import me.croabeast.sir.plugin.task.object.ChatViewTask;
+import me.croabeast.sir.plugin.command.object.ChatViewTask;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;

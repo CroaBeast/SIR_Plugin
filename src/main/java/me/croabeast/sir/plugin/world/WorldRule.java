@@ -1,8 +1,8 @@
 package me.croabeast.sir.plugin.world;
 
 import lombok.Getter;
+import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
-import lombok.var;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import org.apache.commons.lang.StringUtils;
@@ -69,22 +69,26 @@ public class WorldRule implements CacheHandler {
     private final Map<World, Map<Rule<?>, String>> LOADED_RULES_MAP = new HashMap<>();
     public boolean areWorldsLoaded = false;
 
+    @Priority(level = 4)
     void loadCache() {
         if (areWorldsLoaded) return;
 
         SIRPlugin.runTaskWhenLoaded(() -> {
-            Bukkit.getWorlds().forEach(world -> {
-                var v = LOADED_RULES_MAP.get(world);
-                if (v == null) v = new HashMap<>();
+            for (World world : Bukkit.getWorlds()) {
+                Map<Rule<?>, String> v =
+                        LOADED_RULES_MAP.getOrDefault(
+                                world,
+                                new HashMap<>()
+                        );
 
-                for (var rule : WorldRule.values()) {
+                for (Rule<?> rule : WorldRule.values()) {
                     Object value = rule.getValue(world);
                     if (value != null)
                         v.put(rule, value.toString());
                 }
 
                 LOADED_RULES_MAP.put(world, v);
-            });
+            }
 
             areWorldsLoaded = true;
         });
@@ -122,13 +126,13 @@ public class WorldRule implements CacheHandler {
         private final Class<T> c;
         private final T defValue;
 
+        @SneakyThrows
         private Rule(@NotNull String rule, Class<T> clazz, T def) {
+            SIRPlugin.checkAccess(Rule.class);
+
             this.rule = rule;
             this.defValue = def;
             this.c = clazz;
-
-            if (RULE_MAP.containsValue(this))
-                throw new UnsupportedOperationException();
 
             RULE_MAP.put(GameRule.getByName(rule), this);
         }

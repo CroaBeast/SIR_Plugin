@@ -8,11 +8,9 @@ import me.croabeast.sir.api.misc.ConfigUnit;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.utility.LogUtils;
-import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -54,6 +52,7 @@ public final class FileCache implements CacheHandler {
     public static final FileCache MODULES_DATA = new FileCache("data", "modules");
     public static final FileCache IGNORE_DATA = new FileCache("data", "ignore");
     public static final FileCache CHAT_VIEW_DATA = new FileCache("data", "chat-view");
+    public static final FileCache COMMANDS_DATA = new FileCache("data", "commands");
 
     @Priority(level = 3)
     static void loadCache() {

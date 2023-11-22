@@ -17,8 +17,7 @@ import me.croabeast.sir.plugin.hook.DiscordSender;
 import me.croabeast.sir.plugin.hook.LoginHook;
 import me.croabeast.sir.plugin.hook.VanishHook;
 import me.croabeast.sir.plugin.module.ModuleName;
-import me.croabeast.sir.plugin.module.SIRModule;
-import me.croabeast.sir.plugin.task.object.message.DirectTask;
+import me.croabeast.sir.plugin.command.object.message.DirectTask;
 import me.croabeast.sir.plugin.utility.LangUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
@@ -34,7 +33,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class JoinQuitHandler extends SIRModule implements CustomListener, CacheHandler {
+public class JoinQuitHandler extends ModuleListener implements CacheHandler {
 
     private static final Map<UUID, Long> JOIN_MAP, QUIT_MAP, PLAY_MAP;
 

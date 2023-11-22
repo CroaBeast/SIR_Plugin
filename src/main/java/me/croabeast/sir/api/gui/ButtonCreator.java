@@ -2,6 +2,7 @@ package me.croabeast.sir.api.gui;
 
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.pane.component.ToggleButton;
+import com.github.stefvanschie.inventoryframework.pane.util.Slot;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.jetbrains.annotations.NotNull;
 
@@ -9,6 +10,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 public final class ButtonCreator extends PaneCreatable<ToggleButton> {
+
+    private ButtonCreator(Slot slot, boolean value) {
+        super(new ToggleButton(slot, 1, 1, value));
+    }
 
     private ButtonCreator(int x, int y, boolean value) {
         super(new ToggleButton(x, y, 1, 1, value));
@@ -46,6 +51,10 @@ public final class ButtonCreator extends PaneCreatable<ToggleButton> {
     public ButtonCreator setAction(Function<ToggleButton, Consumer<InventoryClickEvent>> function) {
         super.setAction(function);
         return this;
+    }
+
+    public static ButtonCreator of(Slot slot, boolean value) {
+        return new ButtonCreator(slot, value);
     }
 
     public static ButtonCreator of(int x, int y, boolean value) {

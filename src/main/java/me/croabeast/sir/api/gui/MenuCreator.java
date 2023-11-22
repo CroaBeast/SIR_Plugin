@@ -5,6 +5,7 @@ import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.OutlinePane;
 import com.github.stefvanschie.inventoryframework.pane.PaginatedPane;
 import com.github.stefvanschie.inventoryframework.pane.Pane;
+import me.croabeast.beanslib.character.SmallCaps;
 import me.croabeast.beanslib.utility.ArrayUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import org.bukkit.entity.HumanEntity;
@@ -22,9 +23,17 @@ public final class MenuCreator {
 
     private boolean isLoaded = false;
 
-    private MenuCreator(int rows, String name) {
-        gui = new ChestGui(rows, NeoPrismaticAPI.colorize(name));
+    private MenuCreator(int rows, String name, boolean useCaps) {
+        gui = new ChestGui(rows, NeoPrismaticAPI.colorize(
+                useCaps ?
+                        SmallCaps.toSmallCaps(name) :
+                        name
+        ));
         paginatedPane = new PaginatedPane(0, 0, 9, rows);
+    }
+
+    private MenuCreator(int rows, String name) {
+        this(rows, name, false);
     }
 
     public MenuCreator modifyGUI(Consumer<ChestGui> consumer) {
@@ -102,6 +111,11 @@ public final class MenuCreator {
             isLoaded = true;
         }
         gui.show(entity);
+    }
+
+    @NotNull
+    public static MenuCreator of(int rows, String name, boolean useCaps) {
+        return new MenuCreator(rows, Objects.requireNonNull(name), useCaps);
     }
 
     @NotNull

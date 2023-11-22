@@ -8,7 +8,6 @@ import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.file.YAMLFile;
-import me.croabeast.sir.api.misc.CustomListener;
 import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.CacheHandler;
@@ -16,7 +15,6 @@ import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.hook.DiscordSender;
 import me.croabeast.sir.plugin.hook.VanishHook;
 import me.croabeast.sir.plugin.module.ModuleName;
-import me.croabeast.sir.plugin.module.SIRModule;
 import me.croabeast.sir.plugin.utility.LangUtils;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.world.WorldRule;
@@ -40,7 +38,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class AdvanceHandler extends SIRModule implements CustomListener, CacheHandler {
+public class AdvanceHandler extends ModuleListener implements CacheHandler {
 
     private static final Map<FrameType, Set<AdvancementInfo>> ADV_INFO_MAP = new HashMap<>();
 
@@ -134,7 +132,7 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
     }
 
     static void loadCache() {
-        if (LibUtils.getMainVersion() < 12) return;
+        if (LibUtils.MAIN_VERSION < 12) return;
 
         if (WorldRule.areWorldsLoaded) checkAdvancements();
         if (areAdvancementsLoaded) return;
@@ -186,7 +184,7 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
     }
 
     static void saveCache() {
-        if (LibUtils.getMainVersion() < 12) return;
+        if (LibUtils.MAIN_VERSION < 12) return;
 
         for (World w : Bukkit.getWorlds()) {
             var announces = WorldRule.ANNOUNCE_ADVANCEMENTS;
@@ -203,11 +201,6 @@ public class AdvanceHandler extends SIRModule implements CustomListener, CacheHa
 
     AdvanceHandler() {
         super(ModuleName.ADVANCEMENTS);
-    }
-
-    @Override
-    public void register() {
-        registerOnSIR();
     }
 
     private static List<String> advList(String path) {

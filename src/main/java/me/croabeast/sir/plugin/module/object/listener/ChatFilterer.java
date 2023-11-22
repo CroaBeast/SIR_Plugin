@@ -2,10 +2,8 @@ package me.croabeast.sir.plugin.module.object.listener;
 
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.TextUtils;
-import me.croabeast.sir.api.misc.CustomListener;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.module.ModuleName;
-import me.croabeast.sir.plugin.module.SIRModule;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
@@ -19,15 +17,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ChatFilterer extends SIRModule implements CustomListener {
+public class ChatFilterer extends ModuleListener {
 
     ChatFilterer() {
         super(ModuleName.CHAT_FILTERS);
-    }
-
-    @Override
-    public void register() {
-        registerOnSIR();
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

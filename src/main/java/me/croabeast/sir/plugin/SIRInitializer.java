@@ -37,43 +37,45 @@ public class SIRInitializer {
     }
 
     void startMetrics() {
-        Metrics metrics = new Metrics(SIRPlugin.getInstance(), 12806);
+        try {
+            Metrics metrics = new Metrics(SIRPlugin.getInstance(), 12806);
 
-        metrics.addCustomChart(new SimplePie("hasPAPI", () -> hasPAPI() + ""));
-        metrics.addCustomChart(new SimplePie("hasVault", () -> hasVault() + ""));
+            metrics.addCustomChart(new SimplePie("hasPAPI", () -> hasPAPI() + ""));
+            metrics.addCustomChart(new SimplePie("hasVault", () -> hasVault() + ""));
 
-        metrics.addCustomChart(new SimplePie("hasDiscord", () ->
-                (Exceptions.isPluginEnabled("DiscordSRV")) + ""));
+            metrics.addCustomChart(new SimplePie("hasDiscord", () ->
+                    (Exceptions.isPluginEnabled("DiscordSRV")) + ""));
 
-        metrics.addCustomChart(new DrilldownPie("loginPlugins", () -> {
-            Map<String, Map<String, Integer>> map = new HashMap<>();
-            Map<String, Integer> entry = new HashMap<>();
+            metrics.addCustomChart(new DrilldownPie("loginPlugins", () -> {
+                Map<String, Map<String, Integer>> map = new HashMap<>();
+                Map<String, Integer> entry = new HashMap<>();
 
-            entry.put("Login Plugins", 1);
+                entry.put("Login Plugins", 1);
 
-            if (LoginHook.isEnabled()) {
-                Plugin p = LoginHook.getHook();
-                map.put(p != null ? p.getName() : "None / Other", entry);
-            }
-            else map.put("None / Other", entry);
+                if (LoginHook.isEnabled()) {
+                    Plugin p = LoginHook.getHook();
+                    map.put(p != null ? p.getName() : "None / Other", entry);
+                }
+                else map.put("None / Other", entry);
 
-            return map;
-        }));
+                return map;
+            }));
 
-        metrics.addCustomChart(new DrilldownPie("vanishPlugins", () -> {
-            Map<String, Map<String, Integer>> map = new HashMap<>();
-            Map<String, Integer> entry = new HashMap<>();
+            metrics.addCustomChart(new DrilldownPie("vanishPlugins", () -> {
+                Map<String, Map<String, Integer>> map = new HashMap<>();
+                Map<String, Integer> entry = new HashMap<>();
 
-            entry.put("Vanish Plugins", 1);
+                entry.put("Vanish Plugins", 1);
 
-            if (VanishHook.isEnabled()) {
-                Plugin p = VanishHook.getHook();
-                map.put(p != null ? p.getName() : "None / Other", entry);
-            }
-            else map.put("None / Other", entry);
+                if (VanishHook.isEnabled()) {
+                    Plugin p = VanishHook.getHook();
+                    map.put(p != null ? p.getName() : "None / Other", entry);
+                }
+                else map.put("None / Other", entry);
 
-            return map;
-        }));
+                return map;
+            }));
+        } catch (Exception ignored) {}
     }
 
     String pluginProperty(Plugin plugin, Function<Plugin, String> function) {

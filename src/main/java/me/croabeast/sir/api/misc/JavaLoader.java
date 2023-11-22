@@ -77,7 +77,7 @@ public interface JavaLoader {
     static void saveResourceFrom(
             InputStream resource, File dataFolder, String path, boolean replace
     ) {
-        if (StringUtils.isBlank(path) || resource == null)
+        if (path == null || resource == null)
             throw new NullPointerException("Path or resource is null");
 
         path = path.replace('\\', '/');

@@ -2,12 +2,10 @@ package me.croabeast.sir.plugin.module.object.listener;
 
 import lombok.var;
 import me.croabeast.beanslib.message.CenteredMessage;
-import me.croabeast.sir.api.misc.CustomListener;
 import me.croabeast.sir.api.misc.JavaLoader;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.module.ModuleName;
-import me.croabeast.sir.plugin.module.SIRModule;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -26,7 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
-public class MotdHandler extends SIRModule implements CustomListener {
+public class MotdHandler extends ModuleListener {
 
     private static final String SP = File.separator;
 
@@ -57,11 +55,6 @@ public class MotdHandler extends SIRModule implements CustomListener {
         }
     }
 
-    @Override
-    public void register() {
-        registerOnSIR();
-    }
-
     private static ConfigurationSection motds() {
         return FileCache.MOTD_CACHE.getCache("motds").getSection("motds");
     }
@@ -81,6 +74,14 @@ public class MotdHandler extends SIRModule implements CustomListener {
 
     private static FileCache config() {
         return FileCache.MOTD_CACHE.getConfig();
+    }
+
+    enum MaxPlayers {
+        MAXIMUM, CUSTOM, DEFAULT
+    }
+
+    enum IconInput {
+        DISABLED, SINGLE, RANDOM, LIST
     }
 
     private static MaxPlayers getMaxPlayers() {
@@ -124,9 +125,9 @@ public class MotdHandler extends SIRModule implements CustomListener {
             }
 
             var id = motds().getConfigurationSection(keys.get(motdIndex));
-            if (id == null)
+            if (id == null) {
                 event.setMotd(ChatColor.RED + "SIR error: Incorrect MOTD");
-            else {
+            } else {
                 StringBuilder builder = new StringBuilder();
                 String two = id.getString("2");
 
@@ -141,9 +142,12 @@ public class MotdHandler extends SIRModule implements CustomListener {
                 event.setMotd(builder.toString());
             }
 
-            motdIndex = config().getValue("random-motds", false) ?
-                    new Random().nextInt(count + 1) :
-                    motdIndex < count ? motdIndex + 1 : 0;
+            if (config().getValue("random-motds", false)) {
+                motdIndex = new Random().nextInt(count + 1);
+                return;
+            }
+
+            motdIndex = motdIndex < count ? (motdIndex + 1) : 0;
         }
 
         ((Consumer<MaxPlayers>) maxInput -> {
@@ -200,20 +204,17 @@ public class MotdHandler extends SIRModule implements CustomListener {
             initServerIcon(event, icon);
             if (isSingle) return;
 
-            if (input == IconInput.LIST) {
-                if (iconIndex < count) iconIndex++;
-                else iconIndex = 0;
+            switch (input) {
+                case LIST:
+                    iconIndex = iconIndex < count ? (iconIndex + 1) : 0;
+                    break;
+
+                case RANDOM:
+                    iconIndex = new Random().nextInt(count + 1);
+                    break;
+
+                default: break;
             }
-            else if (input == IconInput.RANDOM)
-                iconIndex = new Random().nextInt(count + 1);
         }).accept(getIconInput());
-    }
-
-    enum MaxPlayers {
-        MAXIMUM, CUSTOM, DEFAULT
-    }
-
-    enum IconInput {
-        DISABLED, SINGLE, RANDOM, LIST
     }
 }
