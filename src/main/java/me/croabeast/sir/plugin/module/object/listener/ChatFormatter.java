@@ -75,7 +75,7 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
         Map<Integer, Set<ConfigUnit>> channels;
 
         try {
-            channels = channels().getUnitsByPermission("channels");
+            channels = channels().getUnitsByPriority("channels");
         } catch (Exception e) {
             CHANNELS_MAP.put(0, defs);
             return;
@@ -196,8 +196,9 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
         if (event.isCancelled()) return;
 
         String[] args = event.getMessage().split(" ");
+        Player player = event.getPlayer();
 
-        ChatChannel local = getLocalFromCommand(event.getPlayer(), args[0]);
+        ChatChannel local = getLocalFromCommand(player, args[0]);
         if (local == null) return;
 
         event.setCancelled(true);
@@ -206,7 +207,6 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
         if (StringUtils.isBlank(message)) return;
 
         boolean b = event.isAsynchronous();
-        Player player = event.getPlayer();
 
         new SIRChatEvent(player, local, message, b).call();
     }

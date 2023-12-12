@@ -1,5 +1,6 @@
 package me.croabeast.sir.plugin.command.object.message;
 
+import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.sir.plugin.hook.VanishHook;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.command.tab.TabBuilder;
@@ -9,7 +10,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
-import java.util.stream.Collectors;
+import java.util.HashSet;
 
 public class MessageTask extends DirectTask {
 
@@ -59,11 +60,9 @@ public class MessageTask extends DirectTask {
     protected TabBuilder completer() {
         return TabBuilder
                 .of().addArguments(
-                        Bukkit.getOnlinePlayers()
-                                .stream()
+                        CollectionBuilder.of(Bukkit.getOnlinePlayers())
                                 .filter(VanishHook::isVisible)
-                                .map(HumanEntity::getName)
-                                .collect(Collectors.toList())
+                                .map(HumanEntity::getName).toList()
                 )
                 .addArgument(1, "<message>");
     }

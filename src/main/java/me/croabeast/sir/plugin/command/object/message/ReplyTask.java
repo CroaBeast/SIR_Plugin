@@ -1,5 +1,6 @@
 package me.croabeast.sir.plugin.command.object.message;
 
+import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.sir.plugin.hook.VanishHook;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.command.tab.TabBuilder;
@@ -9,8 +10,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
-
-import java.util.stream.Collectors;
 
 public class ReplyTask extends DirectTask {
 
@@ -69,10 +68,9 @@ public class ReplyTask extends DirectTask {
         return TabBuilder.of()
                 .addArguments(
                         (s, a) -> !getReceiverMap().containsKey(s),
-                        Bukkit.getOnlinePlayers().stream()
+                        CollectionBuilder.of(Bukkit.getOnlinePlayers())
                                 .filter(VanishHook::isVisible)
-                                .map(HumanEntity::getName)
-                                .collect(Collectors.toList())
+                                .map(HumanEntity::getName).toList()
                 )
                 .addArgument(
                         (s, a) -> getReceiverMap().containsKey(s),

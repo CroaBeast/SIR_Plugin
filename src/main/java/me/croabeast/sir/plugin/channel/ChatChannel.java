@@ -1,6 +1,7 @@
 package me.croabeast.sir.plugin.channel;
 
 import lombok.SneakyThrows;
+import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.misc.ConfigUnit;
 import me.croabeast.sir.plugin.file.FileCache;
@@ -18,15 +19,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Represents a chat channel that can be received from available and allowed players.
  */
 public interface ChatChannel extends ConfigUnit {
-
-    String DEF_FORMAT = " &7{player}: {message}";
 
     /**
      * If the channel represents the global channel or if it's a custom local channel.
@@ -118,14 +115,16 @@ public interface ChatChannel extends ConfigUnit {
      *
      * @return the bukkit worlds, can be null
      */
+    @SuppressWarnings("all")
     @Nullable
     default List<World> getWorlds() {
-        List<String> w = getWorldsNames();
-        if (w == null) return null;
-
-        return w.stream().map(Bukkit::getWorld).
-                filter(Objects::nonNull).
-                collect(Collectors.toList());
+        try {
+            return CollectionBuilder.of(getWorldsNames())
+                    .map(Bukkit::getWorld)
+                    .filter(Objects::nonNull).toList();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**
@@ -155,30 +154,31 @@ public interface ChatChannel extends ConfigUnit {
 
         if (player == null) return set;
 
-        Stream<Player> stream = set.stream();
+        CollectionBuilder<Player> stream = CollectionBuilder.of(set);
 
-        if (isLocal())
-            stream = stream.filter(p -> {
+        if (isLocal()) {
+            stream.filter(p -> {
                 boolean b = PlayerUtils.hasPerm(p, getPermission());
                 return b && ChatViewTask.isToggled(p, getName());
             });
+        }
 
-        stream = stream.filter(p -> {
-                    if (r >= 0) {
-                        Set<Player> e = PlayerUtils.getNearbyPlayers(p, r);
-                        return e.isEmpty() || e.contains(p);
-                    }
+        stream.filter(p -> {
+            if (r >= 0) {
+                Set<Player> e = PlayerUtils.getNearbyPlayers(p, r);
+                return e.isEmpty() || e.contains(p);
+            }
 
-                    List<World> worlds = getWorlds();
-                    if (worlds == null || worlds.isEmpty()) return true;
+            List<World> worlds = getWorlds();
+            if (worlds == null || worlds.isEmpty()) return true;
 
-                    for (World w : worlds)
-                        if (w.getPlayers().contains(p)) return true;
+            for (World w : worlds)
+                if (w.getPlayers().contains(p)) return true;
 
-                    return false;
+            return false;
         });
 
-        set = stream.collect(Collectors.toSet());
+        set = stream.toSet();
         set.add(player);
 
         return new HashSet<>(set);
@@ -190,21 +190,22 @@ public interface ChatChannel extends ConfigUnit {
 
     default String getLogFormat() {
         FileCache config = FileCache.CHAT_CHANNELS_CACHE.getConfig();
+        String format = AbstractChatChannel.DEF_FORMAT;
 
         String log = !config.getValue("simple-logger.enabled", false) ?
                 getChatFormat() :
-                config.getValue("simple-logger.format", DEF_FORMAT);
+                config.getValue("simple-logger.format", format);
 
         return TextUtils.STRIP_FIRST_SPACES.apply(log);
     }
 
-    default boolean noChatEvents() {
+    default boolean isChatEventless() {
         final List<String> h = getHoverList();
         return StringUtils.isBlank(getClickAction()) && (h == null || h.isEmpty());
     }
 
     default boolean isDefault() {
-        return noChatEvents() && getRadius() <= 0;
+        return isChatEventless() && getRadius() <= 0;
     }
 
     @NotNull String formatOutput(Player target, Player parser, String message, boolean isChat);

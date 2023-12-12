@@ -2,6 +2,7 @@ package me.croabeast.sir.plugin.file;
 
 import lombok.SneakyThrows;
 import lombok.var;
+import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.sir.plugin.SIRCollector;
 import me.croabeast.sir.plugin.SIRPlugin;
 
@@ -75,18 +76,20 @@ public interface CacheHandler {
         var entries = new ArrayList<>(methodsMap.entrySet());
         entries.sort((e1, e2) -> e2.getKey().compareTo(e1.getKey()));
 
-        entries.stream().map(Map.Entry::getValue).forEach(l -> l
-                .forEach(m -> {
-                    try {
-                        m.setAccessible(true);
-                        m.invoke(null);
-                        m.setAccessible(false);
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                })
-        );
+        CollectionBuilder.of(entries)
+                .map(Map.Entry::getValue).toList()
+                .forEach(l ->
+                        l.forEach(m -> {
+                            try {
+                                m.setAccessible(true);
+                                m.invoke(null);
+                                m.setAccessible(false);
+                            }
+                            catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        })
+                );
     }
 
     /**
@@ -122,18 +125,20 @@ public interface CacheHandler {
         var entries = new ArrayList<>(methodsMap.entrySet());
         entries.sort((e1, e2) -> e2.getKey().compareTo(e1.getKey()));
 
-        entries.stream().map(Map.Entry::getValue).forEach(l -> l
-                .forEach(m -> {
-                    try {
-                        m.setAccessible(true);
-                        m.invoke(null);
-                        m.setAccessible(false);
-                    }
-                    catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                })
-        );
+        CollectionBuilder.of(entries)
+                .map(Map.Entry::getValue).toList()
+                .forEach(l ->
+                        l.forEach(m -> {
+                            try {
+                                m.setAccessible(true);
+                                m.invoke(null);
+                                m.setAccessible(false);
+                            }
+                            catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        })
+                );
     }
 
     /**

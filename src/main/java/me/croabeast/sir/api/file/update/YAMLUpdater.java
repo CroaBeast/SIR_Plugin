@@ -337,7 +337,7 @@ public final class YAMLUpdater {
         List<String> ignoreList = null;
 
         try {
-            ignoreList = ArrayUtils.fromArray(null, ignored);
+            ignoreList = ArrayUtils.toList(null, ignored);
         } catch (Exception e) {}
 
         updateFrom(resource, toUpdate, ignoreList);

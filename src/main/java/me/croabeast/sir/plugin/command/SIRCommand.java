@@ -3,12 +3,13 @@ package me.croabeast.sir.plugin.command;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import me.croabeast.beanslib.message.MessageSender;
+import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.sir.plugin.SIRCollector;
 import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.command.object.message.DirectTask;
 import me.croabeast.sir.plugin.command.tab.TabBuilder;
 import me.croabeast.sir.plugin.command.tab.TabPredicate;
+import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
@@ -22,7 +23,6 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public abstract class SIRCommand extends BukkitCommand {
 
@@ -148,7 +148,6 @@ public abstract class SIRCommand extends BukkitCommand {
         return commands;
     }
 
-    @SneakyThrows
     public boolean register() {
         if (!isEnabled() || registered) return false;
 
@@ -163,18 +162,22 @@ public abstract class SIRCommand extends BukkitCommand {
                 .getDescription()
                 .getName().toLowerCase(Locale.ENGLISH);
 
-        if (!getKnownCommands().containsKey(getName())) {
-            getKnownCommands().put(getName(), this);
-            getKnownCommands().put(pluginName + ":" + getName(), this);
-        }
+        try {
+            if (!getKnownCommands().containsKey(getName())) {
+                getKnownCommands().put(getName(), this);
+                getKnownCommands().put(pluginName + ":" + getName(), this);
+            }
 
-        if (getAliases().isEmpty()) return true;
+            if (getAliases().isEmpty()) return true;
 
-        for (String alias : getAliases()) {
-            if (getKnownCommands().containsKey(alias)) continue;
+            for (String alias : getAliases()) {
+                if (getKnownCommands().containsKey(alias)) continue;
 
-            getKnownCommands().put(alias, this);
-            getKnownCommands().put(pluginName + ":" + alias, this);
+                getKnownCommands().put(alias, this);
+                getKnownCommands().put(pluginName + ":" + alias, this);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         return registered = true;
@@ -202,7 +205,7 @@ public abstract class SIRCommand extends BukkitCommand {
     }
 
     protected List<String> getPlayersNames() {
-        return Bukkit.getOnlinePlayers().stream().map(Player::getName).collect(Collectors.toList());
+        return CollectionBuilder.of(Bukkit.getOnlinePlayers()).map(Player::getName).toList();
     }
 
     @SneakyThrows
@@ -210,8 +213,7 @@ public abstract class SIRCommand extends BukkitCommand {
         SIRPlugin.checkAccess(SIRCommand.class);
 
         if (!areCommandsLoaded) {
-            SIRCollector.from("me.croabeast.sir.plugin.task.object")
-                    .filter(c -> !c.getName().contains("$"))
+            SIRCollector.from("me.croabeast.sir.plugin.command.object")
                     .filter(SIRCommand.class::isAssignableFrom)
                     .filter(c -> c != SIRCommand.class && c != DirectTask.class)
                     .collect().forEach(c -> {
@@ -222,7 +224,9 @@ public abstract class SIRCommand extends BukkitCommand {
                             cons.newInstance();
                             cons.setAccessible(false);
                         }
-                        catch (Exception ignored) {}
+                        catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     });
 
             areCommandsLoaded = true;

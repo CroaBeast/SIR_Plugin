@@ -56,7 +56,7 @@ public final class ItemCreator {
     }
 
     public ItemCreator modifyLore(String... lore) {
-        return modifyLore(ArrayUtils.fromArray(lore));
+        return modifyLore(ArrayUtils.toList(lore));
     }
 
     public GuiItem create() {

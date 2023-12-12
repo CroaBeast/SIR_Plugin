@@ -58,7 +58,7 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
         UNIT_MAP.clear();
 
         for (Type type : Type.values()) {
-            var first = messages().getUnitsByPermission(type.name);
+            var first = messages().getUnitsByPriority(type.name);
             if (first.isEmpty()) return;
 
             var loaded = UNIT_MAP.getOrDefault(type, new LinkedHashMap<>());

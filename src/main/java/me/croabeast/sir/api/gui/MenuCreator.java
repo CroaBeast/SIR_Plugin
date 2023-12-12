@@ -5,7 +5,6 @@ import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.OutlinePane;
 import com.github.stefvanschie.inventoryframework.pane.PaginatedPane;
 import com.github.stefvanschie.inventoryframework.pane.Pane;
-import me.croabeast.beanslib.character.SmallCaps;
 import me.croabeast.beanslib.utility.ArrayUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import org.bukkit.entity.HumanEntity;
@@ -23,17 +22,9 @@ public final class MenuCreator {
 
     private boolean isLoaded = false;
 
-    private MenuCreator(int rows, String name, boolean useCaps) {
-        gui = new ChestGui(rows, NeoPrismaticAPI.colorize(
-                useCaps ?
-                        SmallCaps.toSmallCaps(name) :
-                        name
-        ));
-        paginatedPane = new PaginatedPane(0, 0, 9, rows);
-    }
-
     private MenuCreator(int rows, String name) {
-        this(rows, name, false);
+        gui = new ChestGui(rows, NeoPrismaticAPI.colorize(name));
+        paginatedPane = new PaginatedPane(0, 0, 9, rows);
     }
 
     public MenuCreator modifyGUI(Consumer<ChestGui> consumer) {
@@ -46,7 +37,7 @@ public final class MenuCreator {
         Objects.requireNonNull(pane);
 
         if (!ArrayUtils.isArrayEmpty(consumers)) {
-            for (Consumer<Pane> c : ArrayUtils.fromArray(consumers))
+            for (Consumer<Pane> c : ArrayUtils.toList(consumers))
                 if (c != null) c.accept(pane);
         }
 
@@ -59,7 +50,7 @@ public final class MenuCreator {
         P pane = creatable.create();
 
         if (!ArrayUtils.isArrayEmpty(consumers)) {
-            for (Consumer<P> c : ArrayUtils.fromArray(consumers))
+            for (Consumer<P> c : ArrayUtils.toList(consumers))
                 if (c != null) c.accept(pane);
         }
 
@@ -72,7 +63,7 @@ public final class MenuCreator {
         OutlinePane pane = new OutlinePane(x, y, 1, 1);
 
         if (!ArrayUtils.isArrayEmpty(consumers)) {
-            for (Consumer<OutlinePane> c : ArrayUtils.fromArray(consumers))
+            for (Consumer<OutlinePane> c : ArrayUtils.toList(consumers))
                 if (c != null) c.accept(pane);
         }
 
@@ -111,11 +102,6 @@ public final class MenuCreator {
             isLoaded = true;
         }
         gui.show(entity);
-    }
-
-    @NotNull
-    public static MenuCreator of(int rows, String name, boolean useCaps) {
-        return new MenuCreator(rows, Objects.requireNonNull(name), useCaps);
     }
 
     @NotNull

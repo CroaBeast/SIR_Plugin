@@ -12,9 +12,11 @@ public interface ConfigUnit {
 
     /**
      * Returns the bukkit section object from this channel.
+     *
      * @return the section
+     * @throws NullPointerException if section is null
      */
-    @NotNull ConfigurationSection getSection();
+    @NotNull ConfigurationSection getSection() throws NullPointerException;
 
     /**
      * Returns the name of the channel defined from its {@link #getSection()} object.
@@ -35,7 +37,7 @@ public interface ConfigUnit {
     }
 
     /**
-     * Checks if the sender has the respective permission.
+     * Checks if the sender has the respective permission of this unit.
      *
      * @param sender a sender
      * @return true if the sender has the permission, false otherwise

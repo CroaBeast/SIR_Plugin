@@ -1,12 +1,12 @@
 package me.croabeast.sir.api.loot;
 
+import me.croabeast.beanslib.misc.CollectionBuilder;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 public interface LootCollection {
 
@@ -15,7 +15,7 @@ public interface LootCollection {
 
     @NotNull
     default List<ItemStack> getDrops() {
-        return getLoot().stream().map(LootItem::getItem).collect(Collectors.toList());
+        return CollectionBuilder.of(getLoot()).map(LootItem::getItem).toList();
     }
 
     @Nullable

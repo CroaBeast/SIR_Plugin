@@ -3,8 +3,10 @@ package me.croabeast.sir.plugin;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import me.croabeast.beanslib.message.MessageSender;
+import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.beanslib.misc.UpdateChecker;
 import me.croabeast.beanslib.utility.Exceptions;
+import me.croabeast.sir.plugin.command.SIRCommand;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.hook.LoginHook;
@@ -13,7 +15,6 @@ import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.SIRModule;
 import me.croabeast.sir.plugin.module.object.AnnounceHandler;
 import me.croabeast.sir.plugin.module.object.EmojiParser;
-import me.croabeast.sir.plugin.command.SIRCommand;
 import me.croabeast.sir.plugin.utility.LangUtils;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
@@ -28,15 +29,14 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.jar.JarFile;
-import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
 public final class SIRPlugin extends JavaPlugin {
 
-    static final List<String> JAR_ENTRIES = new ArrayList<>();
+    static final List<Class<?>> JAR_ENTRIES = new ArrayList<>();
     static final String EMPTY_LINE = "true::";
 
     @Getter
@@ -75,14 +75,30 @@ public final class SIRPlugin extends JavaPlugin {
             final String prefix = "me/croabeast/sir/plugin";
 
             JAR_ENTRIES.addAll(
-                    Collections.list(j.entries()).stream()
+                    CollectionBuilder.of(j.entries())
                             .map(ZipEntry::getName)
                             .filter(s -> {
+                                if (s.contains("$")) return false;
+
                                 if (s.startsWith(prefix + "/hook"))
                                     return false;
-                                return s.startsWith(prefix);
+
+                                if (!s.startsWith(prefix))
+                                    return false;
+
+                                return s.endsWith(".class");
                             })
-                            .collect(Collectors.toList())
+                            .map(s -> {
+                                s = s.replace('/', '.')
+                                        .replace(".class", "");
+
+                                try {
+                                    return Class.forName(s);
+                                } catch (Exception ignored) {
+                                    return null;
+                                }
+                            })
+                            .filter(Objects::nonNull).toList()
             );
         } catch (Exception ignored) {}
 
@@ -97,14 +113,16 @@ public final class SIRPlugin extends JavaPlugin {
 
         final FileCache config = FileCache.MAIN_CONFIG;
 
-        MessageSender.setLoaded(new MessageSender()
-                .setLogger(
-                        config.getValue("options.send-console", true)
-                )
-                .setCaseSensitive(false)
-                .setNoFirstSpaces(
-                        config.getValue("options.strip-spaces", false)
-                )
+        MessageSender sender = new MessageSender() {
+            @Override
+            public boolean shouldTrimSpaces() {
+                return config.getValue("options.strip-spaces", false);
+            }
+        };
+
+        MessageSender.setLoaded(sender
+                .setLogger(config.getValue("options.send-console", true))
+                .setSensitive(false)
                 .addFunctions(EmojiParser::parse)
         );
 
@@ -177,7 +195,6 @@ public final class SIRPlugin extends JavaPlugin {
             throw new IllegalStateException("Modules are already registered.");
 
         SIRCollector.from("me.croabeast.sir.plugin.module.object")
-                .filter(c -> !c.getName().contains("$"))
                 .filter(SIRModule.class::isAssignableFrom)
                 .filter(c -> c != SIRModule.class)
                 .collect().forEach(c -> {

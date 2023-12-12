@@ -158,10 +158,8 @@ public final class FileCache implements CacheHandler {
         return getFile() == null ? null : getFile().get();
     }
 
-    public static Map<Integer, Set<ConfigUnit>> getUnitsByPermission(
-            ConfigurationSection main, String path
-    ) {
-        var section = StringUtils.isNotBlank(path) ?
+    public static Map<Integer, Set<ConfigUnit>> getUnitsByPriority(ConfigurationSection main, String path) {
+        ConfigurationSection section = StringUtils.isNotBlank(path) ?
                 Objects.requireNonNull(main).getConfigurationSection(path) :
                 main;
 
@@ -187,17 +185,15 @@ public final class FileCache implements CacheHandler {
             map.put(priority, m);
         }
 
-        var entries = new ArrayList<>(map.entrySet());
-        entries.sort((e1, e2) -> e2.getKey().compareTo(e1.getKey()));
+        Comparator<Integer> sort = Comparator.reverseOrder();
+        Map<Integer, Set<ConfigUnit>> result = new TreeMap<>(sort);
 
-        Map<Integer, Set<ConfigUnit>> r = new LinkedHashMap<>();
-        entries.forEach(e -> r.put(e.getKey(), e.getValue()));
-
-        return r;
+        result.putAll(map);
+        return result;
     }
 
-    public Map<Integer, Set<ConfigUnit>> getUnitsByPermission(String path) {
-        return getUnitsByPermission(get(), path);
+    public Map<Integer, Set<ConfigUnit>> getUnitsByPriority(String path) {
+        return getUnitsByPriority(get(), path);
     }
 
     public List<String> toList(String path) {

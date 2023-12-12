@@ -1,6 +1,5 @@
 package me.croabeast.sir.plugin.module.object;
 
-import lombok.var;
 import me.croabeast.beanslib.Beans;
 import me.croabeast.beanslib.key.ValueReplacer;
 import me.croabeast.beanslib.message.MessageSender;
@@ -14,6 +13,7 @@ import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 import java.util.regex.Matcher;
@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
 
 public class MentionParser extends SIRModule implements CacheHandler {
 
-    private static final Map<Integer, List<Mention>> MENTIONS_MAP = new LinkedHashMap<>();
+    private static final Map<Integer, Set<Mention>> MENTIONS_MAP = new LinkedHashMap<>();
 
     MentionParser() {
         super(ModuleName.MENTIONS);
@@ -33,13 +33,13 @@ public class MentionParser extends SIRModule implements CacheHandler {
         MENTIONS_MAP.clear();
 
         FileCache.MENTIONS_CACHE
-                .getUnitsByPermission("mentions")
+                .getUnitsByPriority("mentions")
                 .forEach((k, v) -> {
-                    List<Mention> mentions = MENTIONS_MAP.get(k);
+                    Set<Mention> mentions = MENTIONS_MAP.get(k);
                     if (mentions == null)
-                        mentions = new LinkedList<>();
+                        mentions = new LinkedHashSet<>();
 
-                    List<Mention> result = mentions;
+                    Set<Mention> result = mentions;
                     v.forEach(c -> result.add(new Mention(c)));
 
                     MENTIONS_MAP.put(k, result);
@@ -47,20 +47,96 @@ public class MentionParser extends SIRModule implements CacheHandler {
     }
 
     static Mention getMention(Player player) {
-        for (var entries : MENTIONS_MAP.entrySet())
-            for (var m : entries.getValue()) {
-                if (PlayerUtils.hasPerm(player, m.permission))
-                    return m;
-            }
+        for (Map.Entry<Integer, Set<Mention>> e : MENTIONS_MAP.entrySet())
+            for (Mention m : e.getValue())
+                if (m.hasPerm(player)) return m;
 
         return null;
+    }
+
+    static Set<Mention> getMentions(Player player) {
+        final Set<Mention> list = new LinkedHashSet<>();
+
+        for (Map.Entry<Integer, Set<Mention>> e : MENTIONS_MAP.entrySet())
+            for (Mention m : e.getValue())
+                if (m.hasPerm(player)) list.add(m);
+
+        return list;
     }
 
     static String stripJoiner(StringJoiner joiner) {
         return joiner.toString().replaceAll("\\\\[QE]", "");
     }
 
-    public static String parseMentions(Player player, String string) {
+    static Mention from(String word, Map<String, String> map, Set<Mention> mentions) {
+        String result = map.get(word);
+
+        for (final Mention mention : mentions) {
+            String prefix = mention.prefix;
+            if (StringUtils.isBlank(prefix)) continue;
+
+            if (result.startsWith(prefix))
+                return mention;
+        }
+
+        return null;
+    }
+
+    public static String parsing(Player player, String string) {
+        if (StringUtils.isBlank(string) ||
+                !ModuleName.MENTIONS.isEnabled())
+            return string;
+
+        Set<Mention> mentions = getMentions(player);
+        if (mentions.isEmpty()) return string;
+
+        final String name = player.getName(),
+                split = Beans.getLineSeparator();
+
+        String[] words = string.split(" ");
+
+        Map<String, String> map = new LinkedHashMap<>();
+        for (String s : words) map.put(s, s);
+
+        int count = 0;
+
+        StringJoiner joiner = new StringJoiner(" ");
+
+        for (String word : words) {
+            Mention mention = from(word, map, mentions);
+            if (mention == null) {
+                joiner.add(word);
+                continue;
+            }
+
+            Matcher matcher = Pattern
+                    .compile("(?i)" + mention.prefix)
+                    .matcher(word);
+
+            if (!matcher.find()) {
+                joiner.add(word);
+                continue;
+            }
+
+            final String match = matcher.group();
+            int index = word.lastIndexOf(match) + match.length();
+
+            String raw = word.substring(index);
+            Player target = PlayerUtils.getClosestPlayer(raw);
+
+            if ((target == null || player == target) ||
+                    PlayerUtils.isIgnoring(target, player, true)) {
+                joiner.add(word);
+                continue;
+            }
+
+            joiner.add(word);
+        }
+
+        return stripJoiner(joiner);
+    }
+
+    public static String parse(Player player, String string) {
         if (StringUtils.isBlank(string)) return string;
         if (!ModuleName.MENTIONS.isEnabled()) return string;
 
@@ -73,7 +149,7 @@ public class MentionParser extends SIRModule implements CacheHandler {
         String prefix = mention.prefix;
         if (StringUtils.isBlank(prefix)) return string;
 
-        var sound = mention.sound;
+        Entry sound = mention.sound;
 
         final String[] stringArray = string.split(" ");
         boolean atLeastOne = false;
@@ -160,20 +236,20 @@ public class MentionParser extends SIRModule implements CacheHandler {
         return stripJoiner(joiner);
     }
 
-    static class Mention {
+    static class Mention implements ConfigUnit {
 
-        private final String permission;
-        private final String prefix, value;
+        ConfigUnit unit;
+        String prefix, value;
 
-        private final String click;
-        private final List<String> hover;
+        String click;
+        List<String> hover;
 
-        private Two sound = Two.EMPTY, messages = Two.EMPTY;
+        Entry sound = Entry.EMPTY, messages = Entry.EMPTY;
 
         Mention(ConfigUnit unit) {
-            ConfigurationSection s = unit.getSection();
+            this.unit = unit;
 
-            permission = s.getString("permission", "DEFAULT");
+            ConfigurationSection s = getSection();
 
             prefix = s.getString("prefix", "");
             value = s.getString("value", "");
@@ -182,17 +258,22 @@ public class MentionParser extends SIRModule implements CacheHandler {
             hover = TextUtils.toList(s, "hover");
 
             try {
-                sound = new Two(s.getConfigurationSection("sound"));
+                sound = new Entry(s, "sound");
             } catch (Exception ignored) {}
             try {
-                messages = new Two(s.getConfigurationSection("messages"));
+                messages = new Entry(s, "messages");
             } catch (Exception ignored) {}
+        }
+
+        @Override
+        public @NotNull ConfigurationSection getSection() {
+            return unit.getSection();
         }
     }
 
-    static class Two {
+    static class Entry {
 
-        static final Two EMPTY = new Two() {
+        static final Entry EMPTY = new Entry() {
             @Override
             boolean isEmpty() {
                 return true;
@@ -202,11 +283,13 @@ public class MentionParser extends SIRModule implements CacheHandler {
         private List<String> sender = new ArrayList<>(),
                 receiver = new ArrayList<>();
 
-        Two() {}
+        Entry() {}
 
-        Two(ConfigurationSection s) {
-            if (s == null)
-                throw new NullPointerException();
+        Entry(ConfigurationSection s, String path) {
+            Objects.requireNonNull(s);
+
+            s = s.getConfigurationSection(path);
+            Objects.requireNonNull(s);
 
             sender = TextUtils.toList(s, "sender");
             receiver = TextUtils.toList(s, "receiver");

@@ -29,6 +29,8 @@ import java.util.function.Function;
 @Getter
 abstract class AbstractChatChannel implements ChatChannel {
 
+    static final String DEF_FORMAT = " &7{player}: {message}";
+
     @NotNull
     private final ConfigurationSection section;
     private final boolean isGlobal;
@@ -125,29 +127,16 @@ abstract class AbstractChatChannel implements ChatChannel {
     public String formatOutput(Player t, Player p, String message, boolean isChat) {
         String rawFormat = isChat ? getChatFormat() : getLogFormat();
 
-        StringApplier applier = StringApplier.prioritized(rawFormat)
-                .apply(
-                        StringApplier.Priority.NORMAL,
-                        s -> PlayerKey.replaceKeys(p, s)
-                )
-                .apply(StringApplier.Priority.HIGHEST, s -> {
+        StringApplier applier = StringApplier.simplified(rawFormat)
+                .apply(s -> PlayerKey.replaceKeys(p, s))
+                .apply(s -> {
                     String[] values = getChatValues(colorChecker.check(message));
                     return ValueReplacer.forEach(getChatKeys(), values, s);
                 })
-                .apply(
-                        StringApplier.Priority.HIGHEST,
-                        s -> EmojiParser.parse(p, s)
-                )
-                .apply(
-                        StringApplier.Priority.HIGHEST,
-                        s -> MentionParser.parseMentions(p, s)
-                );
+                .apply(s -> EmojiParser.parse(p, s))
+                .apply(s -> MentionParser.parse(p, s));
 
-        if (isChat)
-            applier.apply(
-                    StringApplier.Priority.NORMAL,
-                    Beans::convertToSmallCaps
-            );
+        if (isChat) applier.apply(Beans::convertToSmallCaps);
 
         final String format = applier.toString();
 
@@ -157,7 +146,7 @@ abstract class AbstractChatChannel implements ChatChannel {
                     .toString();
         }
 
-        return noChatEvents() ?
+        return isChatEventless() ?
                 format :
                 StringApplier.simplified(format)
                         .apply(TextUtils.STRIP_JSON)

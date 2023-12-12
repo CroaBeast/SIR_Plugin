@@ -63,7 +63,7 @@ public abstract class DirectTask extends SIRCommand {
         MessageSender msg = MessageSender.fromLoaded()
                 .addKeyValue("{message}", message).setLogger(false);
 
-        msg.clone().setTargets(sender)
+        new MessageSender(msg).setTargets(sender)
                 .addKeyValue("{receiver}",
                         !isMsg ?
                                 isConsole(target) :
@@ -71,7 +71,7 @@ public abstract class DirectTask extends SIRCommand {
                 )
                 .send(getMessagingOutput(true));
 
-        msg.clone().setTargets(target)
+        new MessageSender(msg).setTargets(target)
                 .addKeyValue("{sender}", isConsole(sender))
                 .send(getMessagingOutput(false));
 

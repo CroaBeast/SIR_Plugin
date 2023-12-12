@@ -1,5 +1,9 @@
 package me.croabeast.sir.plugin.command.tab;
 
+import jdk.internal.joptsimple.internal.Strings;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.beanslib.utility.ArrayUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.bukkit.command.CommandSender;
@@ -7,27 +11,37 @@ import org.bukkit.command.CommandSender;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public final class TabBuilder {
 
-    private final Map<Integer, Map<TabFunction<?>, TabPredicate>> argPredicateMap;
+    private final Map<Integer, Set<TabObject<?>>> argPredicateMap;
     private int actualIndex = 0;
 
     private TabBuilder() {
         argPredicateMap = new LinkedHashMap<>();
     }
 
-    private Map<TabFunction<?>, TabPredicate> mapFromIndex(int index) {
-        return argPredicateMap.getOrDefault(index, new LinkedHashMap<>());
+    private Set<TabObject<?>> fromIndex(int index) {
+        return argPredicateMap.getOrDefault(index, new LinkedHashSet<>());
     }
 
-    private TabBuilder addArg0(int index, TabPredicate predicate, TabFunction<?> arg) {
+    private TabBuilder addArg0(int index, TabPredicate predicate, TabFunction<String> arg) {
         Objects.requireNonNull(predicate);
         Objects.requireNonNull(arg);
 
-        Map<TabFunction<?>, TabPredicate> args = mapFromIndex(index);
-        args.put(arg, predicate);
+        Set<TabObject<?>> args = fromIndex(index);
+        args.add(new StringObject(predicate, arg));
+
+        argPredicateMap.put(index, args);
+        return this;
+    }
+
+    private TabBuilder addCollectionArg0(int index, TabPredicate predicate, TabFunction<Collection<String>> arg) {
+        Objects.requireNonNull(predicate);
+        Objects.requireNonNull(arg);
+
+        Set<TabObject<?>> args = fromIndex(index);
+        args.add(new CollectionObject(predicate, arg));
 
         argPredicateMap.put(index, args);
         return this;
@@ -87,16 +101,16 @@ public final class TabBuilder {
     }
 
     public TabBuilder addArguments(int index, TabPredicate predicate, TabFunction<Collection<String>> function) {
-        return addArg0(index, Objects.requireNonNull(predicate), Objects.requireNonNull(function));
+        return addCollectionArg0(index, Objects.requireNonNull(predicate), Objects.requireNonNull(function));
     }
 
     public TabBuilder addArguments(int index, TabPredicate predicate, Collection<String> arguments) {
         Objects.requireNonNull(arguments);
-        return addArg0(index, Objects.requireNonNull(predicate), (s, a) -> arguments);
+        return addCollectionArg0(index, Objects.requireNonNull(predicate), (s, a) -> arguments);
     }
 
     public TabBuilder addArguments(int index, TabPredicate predicate, String... arguments) {
-        return addArguments(index, predicate, ArrayUtils.fromArray(arguments));
+        return addArguments(index, predicate, ArrayUtils.toList(arguments));
     }
 
     public TabBuilder addArguments(TabPredicate predicate, TabFunction<Collection<String>> function) {
@@ -109,22 +123,6 @@ public final class TabBuilder {
 
     public TabBuilder addArguments(TabPredicate predicate, String... arguments) {
         return addArguments(actualIndex, predicate, arguments);
-    }
-
-    public TabBuilder addArguments(int index, Supplier<String> permission, TabFunction<Collection<String>> function) {
-        return addArguments(index, (s, a) -> PlayerUtils.hasPerm(s, permission.get()), function);
-    }
-
-    public TabBuilder addArguments(int index, Supplier<String> permission, Collection<String> arguments) {
-        return addArguments(index, (s, a) -> PlayerUtils.hasPerm(s, permission.get()), arguments);
-    }
-
-    public TabBuilder addArguments(Supplier<String> permission, TabFunction<Collection<String>> function) {
-        return addArguments(actualIndex, permission, function);
-    }
-
-    public TabBuilder addArguments(Supplier<String> permission, Collection<String> arguments) {
-        return addArguments(actualIndex, permission, arguments);
     }
 
     public TabBuilder addArguments(int index, TabFunction<Collection<String>> function) {
@@ -155,38 +153,51 @@ public final class TabBuilder {
         return argPredicateMap.isEmpty();
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> build(CommandSender sender, String[] args) {
-        List<Object> first = mapFromIndex(args.length - 1)
-                .entrySet().stream()
-                .filter(e -> {
-                    final TabPredicate tab = e.getValue();
-                    return tab != null && tab.test(sender, args);
-                })
-                .map(e -> {
-                    TabFunction<?> function = e.getKey();
-                    return function.apply(sender, args);
-                })
-                .collect(Collectors.toList());
-
         List<String> list = new LinkedList<>();
-        Consumer<Object> consumer = o -> list.add(String.valueOf(o));
 
-        first.forEach(o -> {
-            if (o instanceof Collection) {
-                ((Collection<?>) o).forEach(consumer);
-                return;
-            }
-            consumer.accept(o);
-        });
-        first.removeIf(s -> s.equals("null"));
+        CollectionBuilder.of(fromIndex(args.length - 1))
+                .filter(o -> o.predicate.test(sender, args))
+                .collect(new LinkedList<>())
+                .forEach(o -> {
+                    if (o instanceof StringObject) {
+                        list.add((String) o
+                                .function
+                                .apply(sender, args));
+                        return;
+                    }
+
+                    list.addAll(((Collection<String>) o
+                            .function
+                            .apply(sender, args)));
+                });
 
         final String t = args[args.length - 1];
-        return list.stream()
+        return CollectionBuilder.of(list)
                 .filter(s -> s.regionMatches(true, 0, t, 0, t.length()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public static TabBuilder of() {
         return new TabBuilder();
+    }
+
+    @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
+    static class TabObject<T> {
+        protected final TabPredicate predicate;
+        protected final TabFunction<T> function;
+    }
+
+    static class StringObject extends TabObject<String> {
+        StringObject(TabPredicate predicate, TabFunction<String> function) {
+            super(predicate, function);
+        }
+    }
+
+    static class CollectionObject extends TabObject<Collection<String>> {
+        CollectionObject(TabPredicate predicate, TabFunction<Collection<String>> function) {
+            super(predicate, function);
+        }
     }
 }

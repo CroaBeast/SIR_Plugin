@@ -6,11 +6,12 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import me.croabeast.beanslib.Beans;
 import me.croabeast.beanslib.message.MessageExecutor;
+import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.sir.plugin.SIRInitializer;
-import me.croabeast.sir.plugin.module.object.EmojiParser;
 import me.croabeast.sir.plugin.command.SIRCommand;
 import me.croabeast.sir.plugin.command.tab.TabBuilder;
 import me.croabeast.sir.plugin.command.tab.TabPredicate;
+import me.croabeast.sir.plugin.module.object.EmojiParser;
 import me.croabeast.sir.plugin.utility.LangUtils;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
@@ -26,8 +27,6 @@ import java.util.HashSet;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class PrinterTask extends SIRCommand {
 
@@ -179,7 +178,8 @@ public class PrinterTask extends SIRCommand {
             final String id = array[0].toUpperCase(Locale.ENGLISH);
 
             if (notLoaded) {
-                Stream<? extends Player> stream = Bukkit.getOnlinePlayers().stream();
+                CollectionBuilder<Player> stream =
+                        CollectionBuilder.of(Bukkit.getOnlinePlayers()).map(p -> p);
 
                 switch (id) {
                     case "WORLD":
@@ -193,26 +193,26 @@ public class PrinterTask extends SIRCommand {
                     case "PERM":
                         targets = stream
                                 .filter(p -> PlayerUtils.hasPerm(p, array[1]))
-                                .collect(Collectors.toSet());
+                                .toSet();
                         break;
 
                     case "GROUP":
                         targets = stream.filter(
-                                        p -> {
-                                            Permission perms = SIRInitializer.getPerms();
-                                            if (perms == null) return false;
+                                p -> {
+                                    Permission perms = SIRInitializer.getPerms();
+                                    if (perms == null) return false;
 
-                                            return perms.getPrimaryGroup(null, p).
-                                                    matches("(?i)" + array[1]);
-                                        }).
-                                collect(Collectors.toSet());
+                                    return perms.getPrimaryGroup(null, p).
+                                            matches("(?i)" + array[1]);
+                                })
+                                .toSet();
                         break;
 
                     default:
                 }}
 
-            return this.targets = targets.stream()
-                    .filter(Objects::nonNull).collect(Collectors.toSet());
+            return this.targets =
+                    CollectionBuilder.of(targets).filter(Objects::nonNull).toSet();
         }
 
         private boolean sendConfirmation() {

@@ -1,10 +1,10 @@
 package me.croabeast.sir.plugin.module.object.listener;
 
-import com.google.common.collect.Lists;
 import lombok.var;
 import me.croabeast.advancementinfo.AdvancementInfo;
 import me.croabeast.advancementinfo.FrameType;
 import me.croabeast.beanslib.message.MessageSender;
+import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.file.YAMLFile;
@@ -36,25 +36,25 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class AdvanceHandler extends ModuleListener implements CacheHandler {
 
     private static final Map<FrameType, Set<AdvancementInfo>> ADV_INFO_MAP = new HashMap<>();
 
     private static final List<Advancement> ADV_LIST =
-            Lists.newArrayList(Bukkit.advancementIterator())
-                    .stream().filter(a -> {
+            CollectionBuilder.of(Bukkit.advancementIterator())
+                    .filter(a -> {
                         String k = a.getKey().toString();
                         return !k.contains("recipes") && !k.contains("root");
                     })
-                    .collect(Collectors.toList());
+                    .toList();
 
     private static boolean areAdvancementsLoaded = false;
 
     private static void forList(Set<AdvancementInfo> set, FrameType frame) {
-        set.stream()
+        CollectionBuilder.of(set)
                 .filter(info -> info.getFrame() == frame)
+                .toSet()
                 .forEach(info -> {
                     Set<AdvancementInfo> s = ADV_INFO_MAP.get(frame);
                     if (s == null) s = new LinkedHashSet<>();
@@ -65,8 +65,9 @@ public class AdvanceHandler extends ModuleListener implements CacheHandler {
     }
 
     static {
-        Set<AdvancementInfo> infoSet = ADV_LIST
-                .stream().map(a -> {
+        Set<AdvancementInfo> infoSet = CollectionBuilder
+                .of(ADV_LIST)
+                .map(a -> {
                     AdvancementInfo info = null;
                     try {
                         info = new AdvancementInfo(a);
@@ -74,7 +75,7 @@ public class AdvanceHandler extends ModuleListener implements CacheHandler {
                     return info;
                 })
                 .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+                .toSet();
 
         forList(infoSet, FrameType.TASK);
         forList(infoSet, FrameType.GOAL);

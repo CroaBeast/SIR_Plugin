@@ -85,9 +85,6 @@ public class MainTask extends SIRCommand {
                     MessageSender newSender = MessageSender.fromLoaded()
                             .setLogger(
                                     config.getValue("options.send-console", true)
-                            )
-                            .setNoFirstSpaces(
-                                    config.getValue("options.strip-spaces", false)
                             );
 
                     MessageSender.setLoaded(newSender);

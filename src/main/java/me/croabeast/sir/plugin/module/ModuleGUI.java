@@ -7,6 +7,7 @@ import lombok.experimental.UtilityClass;
 import lombok.var;
 import me.croabeast.beanslib.character.SmallCaps;
 import me.croabeast.beanslib.map.MapBuilder;
+import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.beanslib.utility.ArrayUtils;
 import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
@@ -18,7 +19,6 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 @UtilityClass
 public class ModuleGUI implements CacheHandler {
@@ -34,7 +34,7 @@ public class ModuleGUI implements CacheHandler {
                     final List<String> list = new LinkedList<>();
 
                     list.add("");
-                    list.addAll(ArrayUtils.fromArray(lore));
+                    list.addAll(ArrayUtils.toList(lore));
                     list.add("");
 
                     list.replaceAll(s -> "&7" + s);
@@ -171,10 +171,12 @@ public class ModuleGUI implements CacheHandler {
                             "tagged in the chat, similar how Discord",
                             "use their mentions."
                     ))
-                    .map();
+                    .toMap();
         }
 
-        MenuCreator menu = MenuCreator.of(4, "&8Loaded SIR Modules:", true);
+        MenuCreator menu = MenuCreator.of(4,
+                "&8" + SmallCaps.toSmallCaps("Loaded SIR Modules:")
+        );
 
         for (ButtonCreator button : moduleEntries.values())
             menu.addPane(0, button.create());
@@ -187,7 +189,7 @@ public class ModuleGUI implements CacheHandler {
                         "&7options from each module.",
                         "&eComing soon in SIR+. &8" + caps
                 )
-                .modifyName(SmallCaps.toSmallCaps("&f&lModules Options:"))
+                .modifyName("&f&lModules Options:")
                 .setAction(e -> e.setCancelled(true))
         );
 
@@ -209,11 +211,10 @@ public class ModuleGUI implements CacheHandler {
                 .setAction(b -> e -> {
                     final boolean is = b.isEnabled();
 
-                    for (ToggleButton button : menu.getPanes(0)
-                            .stream()
+                    for (ToggleButton button : CollectionBuilder
+                            .of(menu.getPanes(0))
                             .filter(p -> p.getPriority() == Pane.Priority.HIGHEST)
-                            .map(p -> (ToggleButton) p)
-                            .collect(Collectors.toList()))
+                            .map(p -> (ToggleButton) p).toList())
                     {
                         if (is != button.isEnabled()) continue;
 
