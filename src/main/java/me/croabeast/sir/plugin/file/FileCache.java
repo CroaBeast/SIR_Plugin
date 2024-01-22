@@ -1,7 +1,6 @@
 package me.croabeast.sir.plugin.file;
 
 import lombok.Getter;
-import lombok.var;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.api.misc.ConfigUnit;
@@ -179,7 +178,7 @@ public final class FileCache implements CacheHandler {
 
             int priority = id.getInt("priority", def);
 
-            var m = map.getOrDefault(priority, new LinkedHashSet<>());
+            Set<ConfigUnit> m = map.getOrDefault(priority, new LinkedHashSet<>());
             m.add(ConfigUnit.of(id));
 
             map.put(priority, m);

@@ -1,6 +1,5 @@
 package me.croabeast.sir.plugin.module.object.listener;
 
-import lombok.var;
 import me.croabeast.beanslib.message.CenteredMessage;
 import me.croabeast.sir.api.misc.JavaLoader;
 import me.croabeast.sir.plugin.SIRPlugin;
@@ -124,7 +123,7 @@ public class MotdHandler extends ModuleListener {
                     player = tempPlayer;
             }
 
-            var id = motds().getConfigurationSection(keys.get(motdIndex));
+            ConfigurationSection id = motds().getConfigurationSection(keys.get(motdIndex));
             if (id == null) {
                 event.setMotd(ChatColor.RED + "SIR error: Incorrect MOTD");
             } else {

@@ -1,8 +1,8 @@
 package me.croabeast.sir.plugin.utility;
 
 import me.croabeast.beanslib.BeansLib;
-import me.croabeast.beanslib.key.PlayerKey;
 import me.croabeast.beanslib.applier.StringApplier;
+import me.croabeast.beanslib.key.PlayerKey;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.FileCache;

@@ -3,18 +3,15 @@ package me.croabeast.sir.plugin.module.object.listener;
 import com.Zrips.CMI.Containers.CMIUser;
 import com.earth2me.essentials.Essentials;
 import com.google.common.collect.Sets;
-import lombok.SneakyThrows;
-import lombok.var;
 import me.croabeast.beanslib.Beans;
-import me.croabeast.beanslib.builder.ChatMessageBuilder;
 import me.croabeast.beanslib.key.ValueReplacer;
+import me.croabeast.beanslib.message.ChatMessageBuilder;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.event.chat.SIRChatEvent;
 import me.croabeast.sir.api.misc.ConfigUnit;
 import me.croabeast.sir.plugin.SIRInitializer;
-import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.channel.ChatChannel;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
@@ -44,7 +41,7 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
     public static final Map<Integer, Set<ChatChannel>> LOCAL_MAP = new LinkedHashMap<>();
     private static final Map<Integer, Set<ChatChannel>> GLOBAL_MAP = new LinkedHashMap<>();
 
-    private static final HashMap<Player, Long>
+    private static final Map<Player, Long>
             GLOBAL_PLAYERS = new HashMap<>(), LOCAL_PLAYERS = new HashMap<>();
 
     ChatFormatter() {
@@ -86,11 +83,11 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
             return;
         }
 
-        for (var entry : channels.entrySet()) {
+        for (Map.Entry<Integer, Set<ConfigUnit>> entry : channels.entrySet()) {
             Set<ChatChannel> values = new LinkedHashSet<>();
             final int i = entry.getKey();
 
-            for (var id : entry.getValue()) {
+            for (ConfigUnit id : entry.getValue()) {
                 ChatChannel channel;
                 try {
                     channel = ChatChannel.of(id.getSection());
@@ -107,7 +104,7 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
             Set<ChatChannel> globals = new LinkedHashSet<>();
             Set<ChatChannel> locals = new LinkedHashSet<>();
 
-            for (var c : values)
+            for (ChatChannel c : values)
                 (c.isGlobal() ? globals : locals).add(c);
 
             CHANNELS_MAP.put(i, values);
@@ -117,7 +114,7 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
         }
     }
 
-    private static boolean canBeCancelled(Player player) {
+    public static boolean isMuted(Player player) {
         if (Exceptions.isPluginEnabled("AdvancedBan")) {
             String id = UUIDManager.get().getUUID(player.getName());
             if (PunishmentManager.get().isMuted(id)) return true;
@@ -128,10 +125,8 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
             return e.getUser(player).isVanished();
         }
 
-        if (Exceptions.isPluginEnabled("CMI") &&
-                CMIUser.getUser(player).isMuted()) return true;
-
-        return !LoginHook.isLogged(player);
+        return Exceptions.isPluginEnabled("CMI")
+                && CMIUser.getUser(player).isMuted();
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -141,7 +136,7 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
 
         Player player = event.getPlayer();
 
-        if (canBeCancelled(player)) {
+        if (isMuted(player) || !LoginHook.isLogged(player)) {
             event.setCancelled(true);
             return;
         }
@@ -220,7 +215,7 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
 
         String message = event.getMessage();
 
-        HashMap<Player, Long> map = event.isGlobal() ? GLOBAL_PLAYERS : LOCAL_PLAYERS;
+        Map<Player, Long> map = event.isGlobal() ? GLOBAL_PLAYERS : LOCAL_PLAYERS;
         int timer = channel.getCooldown();
 
         if (timer > 0 && map.containsKey(player)) {
@@ -273,17 +268,10 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
         if (timer > 0) map.put(player, System.currentTimeMillis());
     }
 
-    @SneakyThrows
-    static void check() {
-        SIRPlugin.checkAccess(ChatFormatter.class);
-    }
-
     @Nullable
     public static ChatChannel getGlobalFormat(Player player) {
-        check();
-
-        for (var entry : GLOBAL_MAP.entrySet())
-            for (var c : entry.getValue())
+        for (Map.Entry<Integer, Set<ChatChannel>> entry : GLOBAL_MAP.entrySet())
+            for (ChatChannel c : entry.getValue())
                 if (PlayerUtils.hasPerm(player, c.getPermission()))
                     return c;
 
@@ -292,10 +280,8 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
 
     @Nullable
     public static ChatChannel getLocalFromMessage(Player player, String message) {
-        check();
-
-        for (var entry : LOCAL_MAP.entrySet())
-            for (var c : entry.getValue()) {
+        for (Map.Entry<Integer, Set<ChatChannel>> entry : LOCAL_MAP.entrySet())
+            for (ChatChannel c : entry.getValue()) {
                 if (!PlayerUtils.hasPerm(player, c.getPermission()))
                     continue;
 
@@ -310,10 +296,8 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
 
     @Nullable
     public static ChatChannel getLocalFromCommand(Player player, String command) {
-        check();
-
-        for (var entry : LOCAL_MAP.values())
-            for (var c : entry) {
+        for (Set<ChatChannel> entry : LOCAL_MAP.values())
+            for (ChatChannel c : entry) {
                 if (!PlayerUtils.hasPerm(player, c.getPermission()))
                     continue;
 

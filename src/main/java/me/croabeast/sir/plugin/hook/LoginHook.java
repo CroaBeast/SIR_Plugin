@@ -152,7 +152,7 @@ public class LoginHook {
 
     @SuppressWarnings("all")
     public boolean isLogged(Player player) {
-        return isEnabled() && LOGGED_PLAYERS.contains(player);
+        return !isEnabled() || LOGGED_PLAYERS.contains(player);
     }
 
     static class LoadedListener implements CustomListener {

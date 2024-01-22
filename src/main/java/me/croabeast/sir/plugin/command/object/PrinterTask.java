@@ -240,16 +240,16 @@ public class PrinterTask extends SIRCommand {
 
         private final TargetCatcher catcher;
         private final String[] args;
-        private final int argumentIndex;
+        private final int index;
 
         private void print(String key) {
-            final String center = Beans.getCenterPrefix();
-            final String message = LangUtils.messageFromArray(args, argumentIndex);
+            String message = LangUtils.messageFromArray(args, index);
+            String center = Beans.getCenterPrefix();
 
             for (Player player : catcher.targets) {
                 MessageExecutor k = MessageExecutor.matchKey(key);
 
-                if (k == MessageExecutor.CHAT_EXECUTOR) {
+                if (k == MessageExecutor.CHAT) {
                     String[] a = Beans.splitLine(message);
 
                     for (int i = 0; i < a.length; i++) {
@@ -268,8 +268,8 @@ public class PrinterTask extends SIRCommand {
                     continue;
                 }
 
-                else if (k == MessageExecutor.TITLE_EXECUTOR) {
-                    String[] d = Beans.getKeysDelimiters();
+                else if (k == MessageExecutor.TITLE) {
+                    String[] d = MessageExecutor.getDelimiters();
 
                     String time = null;
                     try {

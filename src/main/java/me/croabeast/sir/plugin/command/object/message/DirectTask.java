@@ -3,6 +3,7 @@ package me.croabeast.sir.plugin.command.object.message;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.sir.plugin.command.SIRCommand;
 import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.module.object.listener.ChatFormatter;
 import me.croabeast.sir.plugin.utility.LangUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
@@ -49,10 +50,11 @@ public abstract class DirectTask extends SIRCommand {
     }
 
     boolean sendMessagingResult(CommandSender sender, CommandSender target, String[] args, boolean isMsg) {
+        if (sender instanceof Player && ChatFormatter.isMuted((Player) sender))
+            return fromSender(sender, MSG_PATH + "is-muted");
+
         String message = LangUtils.messageFromArray(
-                args,
-                isMsg || !RECEIVER_MAP.containsKey(sender) ? 1 : 0
-        );
+                args, isMsg || !RECEIVER_MAP.containsKey(sender) ? 1 : 0);
 
         if (StringUtils.isBlank(message))
             return fromSender(sender, MSG_PATH + "empty-message");

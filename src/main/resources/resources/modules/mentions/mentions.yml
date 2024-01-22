@@ -22,9 +22,6 @@ mentions:
       # Can be null or empty.
       receiver: ENTITY_PLAYER_LEVELUP
     messages:
-      multiple-targets:
-        player: "{player}"
-        separator: ", "
       # Messages that will be sent to the sender.
       # Can be null or empty.
       sender: []

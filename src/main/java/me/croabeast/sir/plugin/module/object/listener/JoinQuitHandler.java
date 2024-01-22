@@ -1,8 +1,7 @@
 package me.croabeast.sir.plugin.module.object.listener;
 
 import lombok.Getter;
-import lombok.var;
-import me.croabeast.beanslib.builder.BossbarBuilder;
+import me.croabeast.beanslib.misc.BossbarBuilder;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.event.hook.SIRLoginEvent;
@@ -50,7 +49,9 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
     private static final Map<Type, Map<Integer, Set<ConnectionUnit>>> UNIT_MAP;
 
     static {
-        JOIN_MAP = QUIT_MAP = PLAY_MAP = new LinkedHashMap<>();
+        JOIN_MAP = new LinkedHashMap<>();
+        QUIT_MAP = new LinkedHashMap<>();
+        PLAY_MAP = new LinkedHashMap<>();
         UNIT_MAP = new LinkedHashMap<>();
     }
 
@@ -58,15 +59,15 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
         UNIT_MAP.clear();
 
         for (Type type : Type.values()) {
-            var first = messages().getUnitsByPriority(type.name);
+            Map<Integer, Set<ConfigUnit>> first = messages().getUnitsByPriority(type.name);
             if (first.isEmpty()) return;
 
-            var loaded = UNIT_MAP.getOrDefault(type, new LinkedHashMap<>());
+            Map<Integer, Set<ConnectionUnit>> loaded = UNIT_MAP.getOrDefault(type, new LinkedHashMap<>());
 
-            for (var entry : first.entrySet()) {
+            for (Map.Entry<Integer, Set<ConfigUnit>> entry : first.entrySet()) {
                 int i = entry.getKey();
 
-                var before = loaded.getOrDefault(i, new LinkedHashSet<>());
+                Set<ConnectionUnit> before = loaded.getOrDefault(i, new LinkedHashSet<>());
                 entry.getValue().forEach(c ->
                         before.add(new ConnectionUnit(c.getSection(), type)));
 
@@ -90,11 +91,11 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
     }
 
     static ConnectionUnit get(Type type, Player player) {
-        var loaded = UNIT_MAP.getOrDefault(type, new LinkedHashMap<>());
+        Map<Integer, Set<ConnectionUnit>> loaded = UNIT_MAP.getOrDefault(type, new LinkedHashMap<>());
         if (loaded.isEmpty()) return null;
 
-        for (var maps : loaded.entrySet())
-            for (var unit : maps.getValue()) {
+        for (Map.Entry<Integer, Set<ConnectionUnit>> maps : loaded.entrySet())
+            for (ConnectionUnit unit : maps.getValue()) {
                 final String perm = unit.getPermission();
 
                 if (PlayerUtils.hasPerm(player, perm))
@@ -155,7 +156,8 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
         Player player = event.getPlayer();
 
         Set<BossbarBuilder> bar = BossbarBuilder.getBuilders(player);
-        if (bar != null) bar.forEach(BossbarBuilder::unregister);
+        if (!bar.isEmpty())
+            bar.forEach(BossbarBuilder::unregister);
 
         if (PlayerUtils.isImmune(player)) {
             player.setInvulnerable(false);
@@ -182,6 +184,7 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
 
         if (quitTime > 0 && QUIT_MAP.containsKey(uuid) &&
                 now - QUIT_MAP.get(uuid) < quitTime * 1000L) return;
+
         if (playTime > 0 && PLAY_MAP.containsKey(uuid) &&
                 now - PLAY_MAP.get(uuid) < playTime * 1000L) return;
 
@@ -339,7 +342,7 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
         private List<String> commandList;
 
         private String sound;
-        private int invulnerability = 0;
+        private int invulnerability;
 
         private ConfigurationSection spawn;
 

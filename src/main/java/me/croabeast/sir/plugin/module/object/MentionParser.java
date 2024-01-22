@@ -1,10 +1,13 @@
 package me.croabeast.sir.plugin.module.object;
 
-import me.croabeast.beanslib.Beans;
 import me.croabeast.beanslib.key.ValueReplacer;
+import me.croabeast.beanslib.message.ChatMessageBuilder;
 import me.croabeast.beanslib.message.MessageSender;
+import me.croabeast.beanslib.utility.ArrayUtils;
 import me.croabeast.beanslib.utility.TextUtils;
+import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sir.api.misc.ConfigUnit;
+import me.croabeast.sir.plugin.channel.ChatChannel;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.module.ModuleName;
@@ -16,6 +19,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,75 +50,63 @@ public class MentionParser extends SIRModule implements CacheHandler {
                 });
     }
 
-    static Mention getMention(Player player) {
-        for (Map.Entry<Integer, Set<Mention>> e : MENTIONS_MAP.entrySet())
-            for (Mention m : e.getValue())
-                if (m.hasPerm(player)) return m;
-
-        return null;
-    }
-
-    static Set<Mention> getMentions(Player player) {
-        final Set<Mention> list = new LinkedHashSet<>();
-
-        for (Map.Entry<Integer, Set<Mention>> e : MENTIONS_MAP.entrySet())
-            for (Mention m : e.getValue())
-                if (m.hasPerm(player)) list.add(m);
-
-        return list;
-    }
-
-    static String stripJoiner(StringJoiner joiner) {
-        return joiner.toString().replaceAll("\\\\[QE]", "");
-    }
-
-    static Mention from(String word, Map<String, String> map, Set<Mention> mentions) {
-        String result = map.get(word);
-
+    static Mention from(String word, Set<Mention> mentions) {
         for (final Mention mention : mentions) {
             String prefix = mention.prefix;
-            if (StringUtils.isBlank(prefix)) continue;
 
-            if (result.startsWith(prefix))
-                return mention;
+            if (StringUtils.isBlank(prefix)) continue;
+            if (word.startsWith(prefix)) return mention;
         }
 
         return null;
     }
 
-    public static String parsing(Player player, String string) {
+    public static String parse(Player player, ChatChannel channel, String string) {
         if (StringUtils.isBlank(string) ||
                 !ModuleName.MENTIONS.isEnabled())
             return string;
 
-        Set<Mention> mentions = getMentions(player);
-        if (mentions.isEmpty()) return string;
+        Set<Mention> mentions = new LinkedHashSet<>();
+        MENTIONS_MAP.forEach((k, v) -> mentions.addAll(v));
 
-        final String name = player.getName(),
-                split = Beans.getLineSeparator();
+        if (mentions.isEmpty()) return string;
 
         String[] words = string.split(" ");
 
-        Map<String, String> map = new LinkedHashMap<>();
-        for (String s : words) map.put(s, s);
+        UnaryOperator<String> op = null;
 
-        int count = 0;
+        List<String> messages = null;
+        String firstSound = null;
 
-        StringJoiner joiner = new StringJoiner(" ");
+        List<String> keys = ArrayUtils.toList(
+                "{prefix}", "{sender}", "{receiver}"
+        );
 
-        for (String word : words) {
-            Mention mention = from(word, map, mentions);
+        StringBuilder builder = new StringBuilder();
+
+        String lastColor = null;
+        int modCount = 0;
+
+        for (int i = 0; i < words.length; i++)  {
+            String space = i == words.length - 1 ? "" : " ";
+
+            String word = words[i];
+            String temp = NeoPrismaticAPI.stripAll(word);
+
+            String rawResult = word + space;
+
+            Mention mention = from(temp, mentions);
             if (mention == null) {
-                joiner.add(word);
+                builder.append(rawResult);
                 continue;
             }
 
-            Matcher matcher = Pattern
-                    .compile("(?i)" + mention.prefix)
-                    .matcher(word);
+            String prefix = mention.prefix;
+            Pattern pattern = Pattern.compile("(?i)" + prefix);
 
+            Matcher matcher = pattern.matcher(word);
             if (!matcher.find()) {
-                joiner.add(word);
+                builder.append(rawResult);
                 continue;
             }
 
@@ -126,114 +118,69 @@ public class MentionParser extends SIRModule implements CacheHandler {
 
             if ((target == null || player == target) ||
                     PlayerUtils.isIgnoring(target, player, true)) {
-                joiner.add(word);
+                builder.append(rawResult);
                 continue;
             }
 
-            joiner.add(word);
-        }
-
-        return stripJoiner(joiner);
-    }
-
-    public static String parse(Player player, String string) {
-        if (StringUtils.isBlank(string)) return string;
-        if (!ModuleName.MENTIONS.isEnabled()) return string;
-
-        final String plName = player.getName();
-        String split = Beans.getLineSeparator();
-
-        Mention mention = getMention(player);
-        if (mention == null) return string;
-
-        String prefix = mention.prefix;
-        if (StringUtils.isBlank(prefix)) return string;
-
-        Entry sound = mention.sound;
-
-        final String[] stringArray = string.split(" ");
-        boolean atLeastOne = false;
-        Player firstTarget = null;
-
-        String[] keys = {"{sender}", "{receiver}", "{prefix}"};
-        MessageSender sender = MessageSender.fromLoaded().setKeys(keys);
-
-        for (int i = 0; i < stringArray.length; i++) {
-            final String word = stringArray[i];
-
-            Matcher matcher = Pattern.compile("(?i)" + prefix).matcher(word);
-            if (!matcher.find()) continue;
-
-            final String match = matcher.group();
-            int index = word.lastIndexOf(match) + match.length();
-
-            String raw = word.substring(index);
-            Player target = PlayerUtils.getClosestPlayer(raw);
-
-            if (target == null || player == target) continue;
-            if (PlayerUtils.isIgnoring(target, player, true)) continue;
-
-            String[] values = {plName, target.getName(), prefix};
-            if (firstTarget == null) firstTarget = target;
-
-            atLeastOne = true;
-            String output = mention.value;
-
-            List<String> hover = mention.hover;
-            String click = mention.click;
-
-            boolean hasHover = !hover.isEmpty();
-            boolean hasClick = StringUtils.isNotBlank(click);
-
-            if (hasHover || hasClick) {
-                StringBuilder builder = new StringBuilder();
-
-                if (hasHover) {
-                    StringJoiner joiner = new StringJoiner(split);
-                    hover.forEach(joiner::add);
-
-                    builder.append("<hover:")
-                            .append('"')
-                            .append(stripJoiner(joiner))
-                            .append('"');
-                }
-
-                if (hasClick) {
-                    builder.append(hasHover ? '|' : '<');
-
-                    String[] array = click.split(":", 2);
-
-                    builder.append(array[0].toLowerCase(Locale.ENGLISH))
-                            .append(":\"")
-                            .append(array[1]).append("\">");
-                }
-                else builder.append('>');
-
-                if (builder.length() > 0) output = builder + output + "</text>";
-                stringArray[i] = ValueReplacer.forEach(keys, values, output);
+            if (!channel.getRecipients(player).contains(target)) {
+                builder.append(rawResult);
+                continue;
             }
 
-            sender.clone().setValues(values)
+            if (modCount < 2)
+                try {
+                    if (modCount == 0)
+                        lastColor = NeoPrismaticAPI.getLastColor(word, word);
+                    modCount++;
+                } catch (Exception ignored) {}
+            else lastColor = null;
+
+            List<String> values = ArrayUtils.toList(
+                    prefix, player.getName(), target.getName());
+
+            if (op == null)
+                op = s -> ValueReplacer.forEach(keys, values, s);
+
+            MessageSender.fromLoaded().addFunctions(op)
+                    .setLogger(false)
                     .setTargets(target)
                     .send(mention.messages.receiver);
 
-            if (!sound.receiver.isEmpty())
-                PlayerUtils.playSound(target, sound.receiver.get(0));
+            if (messages == null)
+                messages = mention.messages.sender;
+
+            final Entry e = mention.sound;
+
+            if (!e.receiver.isEmpty())
+                PlayerUtils.playSound(target, e.receiver.get(0));
+
+            if (firstSound == null)
+                firstSound = e.sender.get(0);
+
+            List<String> hover = mention.hover;
+            hover.replaceAll(op);
+
+            String click = op.apply(mention.click);
+            String[] c = click.split(":", 2);
+
+            if (lastColor != null) rawResult = lastColor + rawResult;
+
+            ChatMessageBuilder b =
+                    new ChatMessageBuilder(rawResult)
+                            .setHover(hover)
+                            .setClick(c[0], c[1].replace("\"", ""));
+
+            builder.append(b.toPatternString());
         }
 
-        if (atLeastOne) {
-            sender.clone().setTargets(player)
-                    .setValues(plName, firstTarget.getName(), prefix)
-                    .send(mention.messages.sender);
+        if (messages != null && !messages.isEmpty())
+            MessageSender.fromLoaded().addFunctions(op)
+                    .setLogger(false)
+                    .setTargets(player)
+                    .send(messages);
 
-            if (!sound.sender.isEmpty())
-                PlayerUtils.playSound(player, sound.sender.get(0));
-        }
-
-        StringJoiner joiner = new StringJoiner(" ");
-        for (String s : stringArray) joiner.add(s);
-
-        return stripJoiner(joiner);
+        PlayerUtils.playSound(player, firstSound);
+        return builder.toString();
     }
 
     static class Mention implements ConfigUnit {
@@ -244,7 +191,7 @@ public class MentionParser extends SIRModule implements CacheHandler {
         String click;
         List<String> hover;
 
-        Entry sound = Entry.EMPTY, messages = Entry.EMPTY;
+        Entry sound = Entry.empty(), messages = Entry.empty();
 
         Mention(ConfigUnit unit) {
             this.unit = unit;
@@ -273,13 +220,6 @@ public class MentionParser extends SIRModule implements CacheHandler {
 
     static class Entry {
 
-        static final Entry EMPTY = new Entry() {
-            @Override
-            boolean isEmpty() {
-                return true;
-            }
-        };
-
         private List<String> sender = new ArrayList<>(),
                 receiver = new ArrayList<>();
 
@@ -295,8 +235,8 @@ public class MentionParser extends SIRModule implements CacheHandler {
             receiver = TextUtils.toList(s, "receiver");
         }
 
-        boolean isEmpty() {
-            return sender.isEmpty() && receiver.isEmpty();
+        static Entry empty() {
+            return new Entry();
         }
     }
 }

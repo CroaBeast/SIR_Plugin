@@ -4,7 +4,6 @@ import com.github.stefvanschie.inventoryframework.gui.GuiItem;
 import com.github.stefvanschie.inventoryframework.pane.Pane;
 import com.github.stefvanschie.inventoryframework.pane.component.ToggleButton;
 import lombok.experimental.UtilityClass;
-import lombok.var;
 import me.croabeast.beanslib.character.SmallCaps;
 import me.croabeast.beanslib.map.MapBuilder;
 import me.croabeast.beanslib.misc.CollectionBuilder;
@@ -24,7 +23,7 @@ import java.util.*;
 public class ModuleGUI implements CacheHandler {
 
     final Map<ModuleName, Boolean> MODULE_STATUS_MAP = new LinkedHashMap<>();
-    private MenuCreator modulesMenu = null;
+    private MenuCreator modulesMenu;
 
     Map<ModuleName, ButtonCreator> moduleEntries;
 
@@ -95,14 +94,14 @@ public class ModuleGUI implements CacheHandler {
     @Priority(level = 2)
     void loadCache() {
         ConfigurationSection data = FileCache.MODULES_DATA.getSection("modules");
-        if (data == null) return;
 
         for (ModuleName name : ModuleName.values()) {
-            boolean status = data.getBoolean(name + "");
+            boolean status = data == null || data.getBoolean(name + "");
             MODULE_STATUS_MAP.put(name, status);
         }
 
-        if (LibUtils.MAIN_VERSION < 14.0 || modulesMenu != null) return;
+        if (LibUtils.MAIN_VERSION < 14.0) return;
+        if (modulesMenu != null) return;
 
         if (moduleEntries == null) {
             moduleEntries = new MapBuilder<ModuleName, ButtonCreator>()
@@ -175,8 +174,7 @@ public class ModuleGUI implements CacheHandler {
         }
 
         MenuCreator menu = MenuCreator.of(4,
-                "&8" + SmallCaps.toSmallCaps("Loaded SIR Modules:")
-        );
+                "&8" + SmallCaps.toSmallCaps("Loaded SIR Modules:"));
 
         for (ButtonCreator button : moduleEntries.values())
             menu.addPane(0, button.create());
@@ -220,7 +218,7 @@ public class ModuleGUI implements CacheHandler {
 
                         button.toggle();
 
-                        for (var en : moduleEntries.entrySet()) {
+                        for (Map.Entry<ModuleName, ButtonCreator> en : moduleEntries.entrySet()) {
                             if (!en.getValue().compare(button))
                                 continue;
 

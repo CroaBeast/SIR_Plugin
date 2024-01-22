@@ -7,6 +7,7 @@ import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.beanslib.misc.UpdateChecker;
 import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.sir.plugin.command.SIRCommand;
+import me.croabeast.sir.plugin.command.object.ignore.IgnoreSettings;
 import me.croabeast.sir.plugin.file.CacheHandler;
 import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.hook.LoginHook;
@@ -20,6 +21,7 @@ import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -59,6 +61,7 @@ public final class SIRPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         final long start = System.currentTimeMillis();
+        ConfigurationSerialization.registerClass(IgnoreSettings.class);
 
         instance = this;
 

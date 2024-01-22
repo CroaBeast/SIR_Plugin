@@ -1,6 +1,5 @@
 package me.croabeast.sir.plugin.command.tab;
 
-import jdk.internal.joptsimple.internal.Strings;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import me.croabeast.beanslib.misc.CollectionBuilder;
@@ -9,8 +8,6 @@ import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.bukkit.command.CommandSender;
 
 import java.util.*;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public final class TabBuilder {
 

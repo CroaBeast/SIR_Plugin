@@ -1,7 +1,6 @@
 package me.croabeast.sir.plugin.file;
 
 import lombok.SneakyThrows;
-import lombok.var;
 import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.sir.plugin.SIRCollector;
 import me.croabeast.sir.plugin.SIRPlugin;
@@ -73,7 +72,7 @@ public interface CacheHandler {
                     catch (Exception ignored) {}
                 });
 
-        var entries = new ArrayList<>(methodsMap.entrySet());
+        List<Map.Entry<Integer, List<Method>>> entries = new ArrayList<>(methodsMap.entrySet());
         entries.sort((e1, e2) -> e2.getKey().compareTo(e1.getKey()));
 
         CollectionBuilder.of(entries)
@@ -122,7 +121,7 @@ public interface CacheHandler {
                     catch (Exception ignored) {}
                 });
 
-        var entries = new ArrayList<>(methodsMap.entrySet());
+        List<Map.Entry<Integer, List<Method>>> entries = new ArrayList<>(methodsMap.entrySet());
         entries.sort((e1, e2) -> e2.getKey().compareTo(e1.getKey()));
 
         CollectionBuilder.of(entries)

@@ -56,11 +56,11 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
         return FileCache.ANNOUNCE_CACHE.getConfig();
     }
 
-    private static final Function<ConfigurationSection, List<Player>> PLAYERS = (c) -> {
+    private static final Function<ConfigurationSection, Set<Player>> PLAYERS = (c) -> {
         String perm = c.getString("permission", "DEFAULT");
 
         List<String> worlds = TextUtils.toList(c, "worlds");
-        List<Player> players = new ArrayList<>();
+        Set<Player> players = new HashSet<>();
 
         for (Player p : Bukkit.getOnlinePlayers()) {
             String world = p.getWorld().getName();
@@ -135,7 +135,7 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
             this.lines = TextUtils.toList(id, "lines");
         }
 
-        void display(Collection<Player> players) {
+        void display(Set<Player> players) {
             if (players.isEmpty()) return;
 
             LangUtils.executeCommands(null, commands);

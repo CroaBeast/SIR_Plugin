@@ -3,12 +3,12 @@ package me.croabeast.sir.plugin.command.object;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.file.CacheHandler;
-import me.croabeast.sir.plugin.file.FileCache;
-import me.croabeast.sir.plugin.module.ModuleGUI;
 import me.croabeast.sir.plugin.command.SIRCommand;
 import me.croabeast.sir.plugin.command.tab.TabBuilder;
 import me.croabeast.sir.plugin.command.tab.TabPredicate;
+import me.croabeast.sir.plugin.file.CacheHandler;
+import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.module.ModuleGUI;
 import org.apache.commons.lang.SystemUtils;
 import org.bukkit.entity.Player;
 
@@ -80,14 +80,8 @@ public class MainTask extends SIRCommand {
                         e.printStackTrace();
                     }
 
-                    final FileCache config = FileCache.MAIN_CONFIG;
-
-                    MessageSender newSender = MessageSender.fromLoaded()
-                            .setLogger(
-                                    config.getValue("options.send-console", true)
-                            );
-
-                    MessageSender.setLoaded(newSender);
+                    boolean b = FileCache.MAIN_CONFIG.getValue("options.send-console", true);
+                    MessageSender.setLoaded(MessageSender.fromLoaded().setLogger(b));
 
                     return fromSender(sender,
                             "{time}", System.currentTimeMillis() - start,

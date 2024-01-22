@@ -84,6 +84,7 @@ commands:
     select: '<P> Please select a valid announce from&a announces.yml'
   # The /msg and /reply commands.
   msg-reply:
+    is-muted: '<P> &cYou are muted, and not allowed to send private messages.'
     empty-message: '<P> &cYou can not send an empty message.'
     need-player: '<P> &cYou need a player to use this command.'
     not-player: '<P> &cThe player {target} does not exist.'
@@ -106,8 +107,8 @@ commands:
     help:
       - '&7'
       - ' &6>> &eIgnore command Help'
-      - '  &7- &b/ignore chat [player]&7: Ignores/un-ignores the player in chat.'
-      - '  &7- &b/ignore msg [player]&7: Ignores/un-ignores the messages of the player.'
+      - '  &7- &b/ignore <player> [-chat]&7: Ignores/un-ignores the messages of the player.'
+      - '    &7 The -chat argument indicates that you want to ignore chat messages only.'
       - '&7'
     need-player: '<P> &cYou need a player to use this command.'
     not-yourself: '<P> &cYou can not ignore yourself.'

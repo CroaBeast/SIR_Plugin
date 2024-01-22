@@ -1,6 +1,5 @@
 package me.croabeast.sir.plugin.module.object.listener;
 
-import lombok.var;
 import me.croabeast.advancementinfo.AdvancementInfo;
 import me.croabeast.advancementinfo.FrameType;
 import me.croabeast.beanslib.message.MessageSender;
@@ -41,13 +40,17 @@ public class AdvanceHandler extends ModuleListener implements CacheHandler {
 
     private static final Map<FrameType, Set<AdvancementInfo>> ADV_INFO_MAP = new HashMap<>();
 
-    private static final List<Advancement> ADV_LIST =
+    private static final Set<Advancement> ADV_SET =
             CollectionBuilder.of(Bukkit.advancementIterator())
                     .filter(a -> {
                         String k = a.getKey().toString();
                         return !k.contains("recipes") && !k.contains("root");
                     })
-                    .toList();
+                    .collect(new LinkedHashSet<>());
+
+    private static final Set<String> ADV_KEYS = CollectionBuilder.of(ADV_SET)
+            .map(a -> a.getKey().toString())
+            .collect(new LinkedHashSet<>());
 
     private static boolean areAdvancementsLoaded = false;
 
@@ -66,7 +69,7 @@ public class AdvanceHandler extends ModuleListener implements CacheHandler {
 
     static {
         Set<AdvancementInfo> infoSet = CollectionBuilder
-                .of(ADV_LIST)
+                .of(ADV_SET)
                 .map(a -> {
                     AdvancementInfo info = null;
                     try {
@@ -124,7 +127,7 @@ public class AdvanceHandler extends ModuleListener implements CacheHandler {
         if (!ModuleName.ADVANCEMENTS.isEnabled()) return;
 
         for (World w : Bukkit.getWorlds()) {
-            var announcesEnabled = WorldRule.ANNOUNCE_ADVANCEMENTS;
+            WorldRule.Rule<Boolean> announcesEnabled = WorldRule.ANNOUNCE_ADVANCEMENTS;
             if (advList("worlds").contains(w.getName())) continue;
 
             if (announcesEnabled.getValue(w))
@@ -188,7 +191,7 @@ public class AdvanceHandler extends ModuleListener implements CacheHandler {
         if (LibUtils.MAIN_VERSION < 12) return;
 
         for (World w : Bukkit.getWorlds()) {
-            var announces = WorldRule.ANNOUNCE_ADVANCEMENTS;
+            WorldRule.Rule<Boolean> announces = WorldRule.ANNOUNCE_ADVANCEMENTS;
             if (advList("worlds").contains(w.getName()))
                 return;
 
@@ -225,13 +228,10 @@ public class AdvanceHandler extends ModuleListener implements CacheHandler {
             } catch (Exception ignored) {}
         }
 
-        Advancement adv = event.getAdvancement();
-        if (!ADV_LIST.contains(adv)) return;
+        final Advancement adv = event.getAdvancement();
 
         String key = adv.getKey().toString();
-
-        if (key.contains("root") || key.contains("recipes")) return;
-        if (advList("advs").contains(key)) return;
+        if (!ADV_KEYS.contains(key) || advList("advs").contains(key)) return;
 
         List<String> norms = new ArrayList<>(adv.getCriteria());
         if (norms.isEmpty()) return;
@@ -244,7 +244,7 @@ public class AdvanceHandler extends ModuleListener implements CacheHandler {
 
         String path = key.replaceAll("[/:]", ".");
 
-        var section = FileCache.ADVANCE_CACHE.getCache("lang").getSection(path);
+        ConfigurationSection section = FileCache.ADVANCE_CACHE.getCache("lang").getSection(path);
         if (section == null) return;
 
         String messagePath = section.getString("path");

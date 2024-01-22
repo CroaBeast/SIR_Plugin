@@ -14,7 +14,7 @@ import java.util.Set;
 @Getter @Setter
 public class SIRChatEvent extends SIRPlayerEvent implements Cancellable {
 
-    private static final HandlerList list = new HandlerList();
+    private static final HandlerList handlers = new HandlerList();
 
     private ChatChannel channel;
     private String message;
@@ -42,11 +42,11 @@ public class SIRChatEvent extends SIRPlayerEvent implements Cancellable {
 
     @Override
     public @NotNull HandlerList getHandlers() {
-        return list;
+        return handlers;
     }
 
     @NotNull
     public static HandlerList getHandlerList() {
-        return list;
+        return handlers;
     }
 }

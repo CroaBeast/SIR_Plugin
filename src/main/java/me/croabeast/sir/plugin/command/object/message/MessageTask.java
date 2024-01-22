@@ -10,8 +10,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
-import java.util.HashSet;
-
 public class MessageTask extends DirectTask {
 
     MessageTask() {

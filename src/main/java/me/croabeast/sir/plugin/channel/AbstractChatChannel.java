@@ -134,7 +134,7 @@ abstract class AbstractChatChannel implements ChatChannel {
                     return ValueReplacer.forEach(getChatKeys(), values, s);
                 })
                 .apply(s -> EmojiParser.parse(p, s))
-                .apply(s -> MentionParser.parse(p, s));
+                .apply(s -> MentionParser.parse(p, this, s));
 
         if (isChat) applier.apply(Beans::convertToSmallCaps);
 

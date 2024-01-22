@@ -79,6 +79,7 @@ public abstract class SIRCommand extends BukkitCommand {
         try {
             success = executor.onCommand(sender, this, label, args);
         } catch (Throwable ex) {
+            ex.printStackTrace();
             success = MessageSender.fromLoaded().setTargets(sender).send(
                     "<P> &7Error handling the command " +
                             getName() +

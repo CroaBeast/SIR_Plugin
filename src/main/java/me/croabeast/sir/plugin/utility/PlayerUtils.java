@@ -65,9 +65,7 @@ public class PlayerUtils {
 
     public boolean isIgnoring(Player source, Player target, boolean isChat) {
         IgnoreSettings s = IgnoreTask.getSettings(source);
-        if (s == null) return false;
-
-        IgnoreSettings.DoubleObject cache =
+        IgnoreSettings.Entry cache =
                 isChat ? s.getChatCache() : s.getMsgCache();
 
         return cache.isForAll() ||
@@ -199,7 +197,7 @@ public class PlayerUtils {
         if (world == null) return players;
 
         world.getPlayers().forEach(p -> {
-            if (p.getLocation().distanceSquared(location) <= range)
+            if (p.getLocation().distance(location) <= range)
                 players.add(p);
         });
 

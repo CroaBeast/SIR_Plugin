@@ -84,6 +84,7 @@ commands:
     select: '<P> Por favor, selecciona un anuncio válido.'
   # Los comandos /msg y /reply.
   msg-reply:
+    is-muted: '<P> &cEstás silenciado y no puedes enviar mensajes privados.'
     empty-message: '<P> &cNo puedes enviar un mensaje vacío.'
     need-player: '<P> &cNecesitas mencionar un jugador para usar el comando.'
     not-player: '<P> &cEl jugador {target} no existe.'

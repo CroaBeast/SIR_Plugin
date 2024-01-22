@@ -1,7 +1,6 @@
 package me.croabeast.sir.plugin;
 
 import lombok.experimental.UtilityClass;
-import lombok.var;
 import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.sir.plugin.hook.LoginHook;
 import me.croabeast.sir.plugin.hook.VanishHook;
@@ -14,6 +13,8 @@ import org.bstats.charts.DrilldownPie;
 import org.bstats.charts.SimplePie;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
+import org.bukkit.plugin.ServicesManager;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -100,10 +101,10 @@ public class SIRInitializer {
         }
 
         if (hasVault()) {
-            var servMngr = Bukkit.getServer().getServicesManager();
+            ServicesManager servMngr = Bukkit.getServer().getServicesManager();
 
-            var rsp = servMngr.getRegistration(Permission.class);
-            var rsc = servMngr.getRegistration(Chat.class);
+            RegisteredServiceProvider<Permission> rsp = servMngr.getRegistration(Permission.class);
+            RegisteredServiceProvider<Chat> rsc = servMngr.getRegistration(Chat.class);
 
             if (rsp != null) permProvider = rsp.getProvider();
             if (rsc != null) chatProvider = rsc.getProvider();

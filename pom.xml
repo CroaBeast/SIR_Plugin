@@ -190,7 +190,7 @@
         <dependency>
             <groupId>io.github.croabeast</groupId>
             <artifactId>BeansLib</artifactId>
-            <version>1.4-SNAPSHOT-144</version>
+            <version>1.4-SNAPSHOT-157</version>
             <scope>compile</scope>
         </dependency>
 

@@ -1,15 +1,15 @@
 package me.croabeast.sir.plugin.command.object.ignore;
 
 import me.croabeast.beanslib.message.MessageSender;
-import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.command.SIRCommand;
 import me.croabeast.sir.plugin.command.tab.TabBuilder;
 import me.croabeast.sir.plugin.command.tab.TabPredicate;
+import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.bukkit.entity.Player;
 
-import java.util.Locale;
+import java.util.UUID;
 
 public class IgnoreTask extends SIRCommand {
 
@@ -20,16 +20,17 @@ public class IgnoreTask extends SIRCommand {
     }
 
     @SuppressWarnings("all")
-    private boolean changeSettings(IgnoreSettings settings, Player player, String type, String token) {
+    private boolean changeSettings(IgnoreSettings settings, Player player, String token, boolean isMsg) {
         final String[] keys = {"{target}", "{type}"};
+        final String type = isMsg ? "msg" : "chat";
 
-        IgnoreSettings.DoubleObject cache = type.matches("(?i)CHAT") ?
+        IgnoreSettings.Entry cache = !isMsg ?
                 settings.getChatCache() : settings.getMsgCache();
 
-        java.util.UUID uuid = player.getUniqueId();
+        final UUID uuid = player.getUniqueId();
 
         String t = FileCache.getLang().getValue(
-                MAIN_PATH + "channels." + type.toLowerCase(Locale.ENGLISH), String.class);
+                MAIN_PATH + "channels." + type, String.class);
 
         if (token.matches("(?i)@a")) {
             boolean b = !cache.isForAll();
@@ -73,34 +74,33 @@ public class IgnoreTask extends SIRCommand {
             if (isProhibited(sender, "ignore")) return true;
 
             if (args.length == 0) return fromSender(sender, MAIN_PATH + "help");
-            if (args.length == 1) return fromSender(sender, MAIN_PATH + "need-player");
-
             if (args.length > 2)
                 return isWrongArgument(sender, args[args.length - 1]);
 
-            final Player player = ((Player) sender);
-
+            Player player = ((Player) sender);
             IgnoreSettings settings = getSettings(player);
-            if (settings == null) settings = new IgnoreSettings(player);
 
-            switch (args[0].toUpperCase(Locale.ENGLISH)) {
-                case "CHAT": return changeSettings(settings, player, "CHAT", args[1]);
-                case "MSG": return changeSettings(settings, player, "MSG", args[1]);
+            if (args.length == 2 && args[1].matches("(?i)-chat"))
+                return changeSettings(settings, player, args[1], false);
 
-                default: return isWrongArgument(sender, args[0]);
-            }
+            if (args.length == 1)
+                return changeSettings(settings, player, args[0], true);
+
+            return isWrongArgument(sender, args[0]);
         };
     }
 
     @Override
     protected TabBuilder completer() {
         return TabBuilder.of()
-                .addArguments("chat", "msg")
-                .addArguments(1, getPlayersNames())
-                .addArgument(1, "@a");
+                .addArguments(getPlayersNames())
+                .addArgument(1, "-chat");
     }
 
     public static IgnoreSettings getSettings(Player player) {
-        return FileCache.IGNORE_DATA.getValue("data." + player.getUniqueId(), IgnoreSettings.class);
+        String path = "data." + player.getUniqueId();
+
+        IgnoreSettings i = FileCache.IGNORE_DATA.getValue(path, IgnoreSettings.class);
+        return i == null ? new IgnoreSettings(player) : i;
     }
 }

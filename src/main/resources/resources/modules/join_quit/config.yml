@@ -11,11 +11,11 @@ default-messages:
 # messages if the players joins/leaves the server really quick.
 cooldown:
   # Cooldown between join messages.
-  join: 5
+  join: 0
   # Cooldown between join and quit message.
   between: 0 # Not enabled by default
   # Cooldown between quit messages.
-  quit: 5
+  quit: 0
 
 # If a login plugin is installed, this section will be activated.
 # Compatible login plugins: [ AuthMe, UserLogin ]

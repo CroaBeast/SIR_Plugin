@@ -115,16 +115,16 @@ public interface ChatChannel extends ConfigUnit {
      *
      * @return the bukkit worlds, can be null
      */
-    @SuppressWarnings("all")
-    @Nullable
+    @NotNull
     default List<World> getWorlds() {
-        try {
-            return CollectionBuilder.of(getWorldsNames())
-                    .map(Bukkit::getWorld)
-                    .filter(Objects::nonNull).toList();
-        } catch (Exception e) {
-            return null;
-        }
+        List<String> list = getWorldsNames();
+
+        if (list == null || list.isEmpty())
+            return Bukkit.getWorlds();
+
+        return CollectionBuilder.of(getWorldsNames())
+                .map(Bukkit::getWorld)
+                .filter(Objects::nonNull).toList();
     }
 
     /**
@@ -150,38 +150,23 @@ public interface ChatChannel extends ConfigUnit {
     @NotNull
     default Set<Player> getRecipients(Player player) {
         Set<Player> set = new HashSet<>(Bukkit.getOnlinePlayers());
-        final int r = getRadius();
-
         if (player == null) return set;
 
-        CollectionBuilder<Player> stream = CollectionBuilder.of(set);
+        CollectionBuilder<Player> builder = CollectionBuilder
+                .of(set)
+                .filter(p -> getWorlds().contains(p.getWorld()));
 
-        if (isLocal()) {
-            stream.filter(p -> {
-                boolean b = PlayerUtils.hasPerm(p, getPermission());
-                return b && ChatViewTask.isToggled(p, getName());
-            });
+        final int r = getRadius();
+        if (r > 0) {
+            Set<Player> e = PlayerUtils.getNearbyPlayers(player, r);
+            if (!e.isEmpty()) builder.filter(e::contains);
         }
 
-        stream.filter(p -> {
-            if (r >= 0) {
-                Set<Player> e = PlayerUtils.getNearbyPlayers(p, r);
-                return e.isEmpty() || e.contains(p);
-            }
+        builder.filter(p -> PlayerUtils.hasPerm(p, getPermission()));
+        if (isLocal())
+            builder.filter(p -> ChatViewTask.isToggled(p, getName()));
 
-            List<World> worlds = getWorlds();
-            if (worlds == null || worlds.isEmpty()) return true;
-
-            for (World w : worlds)
-                if (w.getPlayers().contains(p)) return true;
-
-            return false;
-        });
-
-        set = stream.toSet();
-        set.add(player);
-
-        return new HashSet<>(set);
+        return builder.add(player).toSet();
     }
 
     @NotNull String getChatFormat();
@@ -216,11 +201,11 @@ public interface ChatChannel extends ConfigUnit {
     }
 
     default String[] getChatKeys() {
-        return new String[] {"{prefix}", "{suffix}", "{color}", "{message}"};
+        return new String[] {"{prefix}", "{sir-prefix}", "{suffix}", "{sir-suffix}", "{color}", "{message}"};
     }
 
     default String[] getChatValues(String message) {
-        return new String[] {getPrefix(), getSuffix(), getColor(), message};
+        return new String[] {getPrefix(), getPrefix(), getSuffix(), getSuffix(), getColor(), message};
     }
 
     boolean equals(Object object);
