@@ -2,21 +2,21 @@ package me.croabeast.sir.plugin.command.object;
 
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.LibUtils;
+import me.croabeast.sir.plugin.SIRCache;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.command.SIRCommand;
 import me.croabeast.sir.plugin.command.tab.TabBuilder;
 import me.croabeast.sir.plugin.command.tab.TabPredicate;
-import me.croabeast.sir.plugin.file.CacheHandler;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.module.ModuleGUI;
 import org.apache.commons.lang.SystemUtils;
 import org.bukkit.entity.Player;
 
 import java.util.Locale;
 
-public class MainTask extends SIRCommand {
+class MainCommand extends SIRCommand {
 
-    MainTask() {
+    MainCommand() {
         super("sir", false);
     }
 
@@ -70,17 +70,17 @@ public class MainTask extends SIRCommand {
                     long start = System.currentTimeMillis();
 
                     try {
-                        CacheHandler.save();
+                        SIRCache.save();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     try {
-                        CacheHandler.load();
+                        SIRCache.load();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
 
-                    boolean b = FileCache.MAIN_CONFIG.getValue("options.send-console", true);
+                    boolean b = YAMLCache.getMainConfig().get("options.send-console", true);
                     MessageSender.setLoaded(MessageSender.fromLoaded().setLogger(b));
 
                     return fromSender(sender,

@@ -6,17 +6,18 @@ import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.event.hook.SIRLoginEvent;
 import me.croabeast.sir.api.event.hook.SIRVanishEvent;
+import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.api.misc.ConfigUnit;
 import me.croabeast.sir.api.misc.CustomListener;
 import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.file.CacheHandler;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.CacheManageable;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.hook.DiscordSender;
 import me.croabeast.sir.plugin.hook.LoginHook;
 import me.croabeast.sir.plugin.hook.VanishHook;
 import me.croabeast.sir.plugin.module.ModuleName;
-import me.croabeast.sir.plugin.command.object.message.DirectTask;
+import me.croabeast.sir.plugin.command.object.message.DirectCommand;
 import me.croabeast.sir.plugin.utility.LangUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
@@ -32,7 +33,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class JoinQuitHandler extends ModuleListener implements CacheHandler {
+class JoinQuitHandler extends ModuleListener implements CacheManageable {
 
     private static final Map<UUID, Long> JOIN_MAP, QUIT_MAP, PLAY_MAP;
 
@@ -82,12 +83,12 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
         super(ModuleName.JOIN_QUIT);
     }
 
-    static FileCache config() {
-        return FileCache.JOIN_QUIT_CACHE.getConfig();
+    static YAMLFile config() {
+        return YAMLCache.fromJoinQuit("config");
     }
 
-    static FileCache messages() {
-        return FileCache.JOIN_QUIT_CACHE.getCache("messages");
+    static YAMLFile messages() {
+        return YAMLCache.fromJoinQuit("messages");
     }
 
     static ConnectionUnit get(Type type, Player player) {
@@ -121,10 +122,10 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
         ConnectionUnit unit = get(type, player);
         if (unit == null) return;
 
-        if (config().getValue("default-messages.disable-join", true))
+        if (config().get("default-messages.disable-join", true))
             event.setJoinMessage(null);
 
-        int joinTime = config().getValue("cooldown.join", 0);
+        int joinTime = config().get("cooldown.join", 0);
         UUID uuid = player.getUniqueId();
 
         if (joinTime > 0 && JOIN_MAP.containsKey(uuid)) {
@@ -135,9 +136,9 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
         if (VanishHook.isVanished(player)) return;
 
         if (LoginHook.isEnabled()
-                && config().getValue("login.enabled", true))
+                && config().get("login.enabled", true))
         {
-            if (config().getValue("login.spawn-before", false))
+            if (config().get("login.spawn-before", false))
                 unit.teleportToSpawn(player);
             return;
         }
@@ -147,7 +148,7 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
         final long data = current();
         if (joinTime > 0) JOIN_MAP.put(uuid, data);
 
-        if (config().getValue("cooldown.between", 0) > 0)
+        if (config().get("cooldown.between", 0) > 0)
             PLAY_MAP.put(uuid, data);
     }
 
@@ -164,21 +165,21 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
             PlayerUtils.removeFromImmunePlayers(player);
         }
 
-        DirectTask.getReceiverMap().remove(Bukkit.getConsoleSender(), player);
-        DirectTask.getReceiverMap().remove(player);
+        DirectCommand.getReceiverMap().remove(Bukkit.getConsoleSender(), player);
+        DirectCommand.getReceiverMap().remove(player);
 
         if (!isEnabled()) return;
 
         ConnectionUnit unit = get(Type.QUIT, player);
         if (unit == null) return;
 
-        if (config().getValue("default-messages.disable-quit", true))
+        if (config().get("default-messages.disable-quit", true))
             event.setQuitMessage(null);
 
         UUID uuid = player.getUniqueId();
 
-        int playTime = config().getValue("cooldown.between", 0);
-        int quitTime = config().getValue("cooldown.quit", 0);
+        int playTime = config().get("cooldown.between", 0);
+        int quitTime = config().get("cooldown.quit", 0);
 
         final long now = current();
 
@@ -222,7 +223,7 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
             UUID uuid = player.getUniqueId();
             LoginHook.addPlayer(player);
 
-            if (!config().getValue("login.enabled", false)) return;
+            if (!config().get("login.enabled", false)) return;
             if (VanishHook.isVanished(player)) return;
 
             Type type = player.hasPlayedBefore() ? Type.JOIN : Type.FIRST;
@@ -230,7 +231,7 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
             ConnectionUnit unit = get(type, player);
             if (unit == null) return;
 
-            int joinTime = config().getValue("cooldown.join", 0);
+            int joinTime = config().get("cooldown.join", 0);
 
             if (joinTime > 0 && JOIN_MAP.containsKey(uuid)) {
                 long rest = current() - JOIN_MAP.get(uuid);
@@ -242,7 +243,7 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
             final long data = current();
             if (joinTime > 0) JOIN_MAP.put(uuid, data);
 
-            if (config().getValue("cooldown.between", 0) > 0)
+            if (config().get("cooldown.between", 0) > 0)
                 PLAY_MAP.put(uuid, data);
         }
     }
@@ -259,7 +260,7 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
             UUID uuid = player.getUniqueId();
 
             if (!VanishHook.isEnabled() ||
-                    !config().getValue("vanish.enabled", false)) return;
+                    !config().get("vanish.enabled", false)) return;
 
             if (LoginHook.isEnabled())
                 if (isVanished) LoginHook.addPlayer(player);
@@ -270,7 +271,7 @@ public class JoinQuitHandler extends ModuleListener implements CacheHandler {
             ConnectionUnit unit = get(type, player);
             if (unit == null) return;
 
-            int timer = config().getValue("cooldown." + type.name, 0);
+            int timer = config().get("cooldown." + type.name, 0);
             Map<UUID, Long> players = isVanished ? JOIN_MAP : QUIT_MAP;
 
             if (timer > 0 && players.containsKey(uuid)) {

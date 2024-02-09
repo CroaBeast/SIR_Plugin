@@ -6,10 +6,10 @@ import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.ArrayUtils;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
+import me.croabeast.sir.plugin.file.CacheManageable;
 import me.croabeast.sir.api.misc.ConfigUnit;
 import me.croabeast.sir.plugin.channel.ChatChannel;
-import me.croabeast.sir.plugin.file.CacheHandler;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.SIRModule;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
@@ -23,7 +23,7 @@ import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MentionParser extends SIRModule implements CacheHandler {
+public class MentionParser extends SIRModule implements CacheManageable {
 
     private static final Map<Integer, Set<Mention>> MENTIONS_MAP = new LinkedHashMap<>();
 
@@ -31,12 +31,12 @@ public class MentionParser extends SIRModule implements CacheHandler {
         super(ModuleName.MENTIONS);
     }
 
-    @Priority(level = 1)
+    @Priority(1)
     static void loadCache() {
         if (!ModuleName.MENTIONS.isEnabled()) return;
         MENTIONS_MAP.clear();
 
-        FileCache.MENTIONS_CACHE
+        YAMLCache.getMentions()
                 .getUnitsByPriority("mentions")
                 .forEach((k, v) -> {
                     Set<Mention> mentions = MENTIONS_MAP.get(k);

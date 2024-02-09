@@ -10,7 +10,6 @@ import me.croabeast.beanslib.key.ValueReplacer;
 import me.croabeast.beanslib.applier.StringApplier;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
-import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.module.object.EmojiParser;
 import me.croabeast.sir.plugin.module.object.MentionParser;
 import org.bukkit.configuration.ConfigurationSection;
@@ -67,8 +66,6 @@ abstract class AbstractChatChannel implements ChatChannel {
     private String chatFormat;
 
     AbstractChatChannel(ConfigurationSection section, @Nullable ChatChannel parent) throws IllegalAccessException {
-        SIRPlugin.checkAccess(getClass());
-
         this.section = section;
         isGlobal = section.getBoolean("global", true);
 

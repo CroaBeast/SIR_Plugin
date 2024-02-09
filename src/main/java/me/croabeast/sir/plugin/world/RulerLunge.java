@@ -4,8 +4,7 @@ import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import me.croabeast.beanslib.utility.ArrayUtils;
 import me.croabeast.beanslib.utility.LibUtils;
-import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.file.CacheHandler;
+import me.croabeast.sir.plugin.file.CacheManageable;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.World;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +16,7 @@ import java.util.Objects;
 
 @SuppressWarnings({"deprecation"})
 @UtilityClass
-public class RulerLunge implements CacheHandler {
+public class RulerLunge implements CacheManageable {
 
     private final Map<String, Rule<?>> RULE_MAP = new LinkedHashMap<>();
 
@@ -36,8 +35,6 @@ public class RulerLunge implements CacheHandler {
 
         @SneakyThrows
         private Rule(String rule, Class<T> clazz, T def, double minVersion) {
-            SIRPlugin.checkAccess(Rule.class);
-
             this.rule = rule;
             this.clazz = clazz;
             this.def = def;

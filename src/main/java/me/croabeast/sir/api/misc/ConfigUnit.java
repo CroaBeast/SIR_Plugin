@@ -11,7 +11,7 @@ import java.util.Objects;
 public interface ConfigUnit {
 
     /**
-     * Returns the bukkit section object from this channel.
+     * Returns the bukkit section object from this config unit.
      *
      * @return the section
      * @throws NullPointerException if section is null
@@ -19,7 +19,7 @@ public interface ConfigUnit {
     @NotNull ConfigurationSection getSection() throws NullPointerException;
 
     /**
-     * Returns the name of the channel defined from its {@link #getSection()} object.
+     * Returns the name of the config unit defined from its {@link #getSection()} object.
      * @return the channel's name
      */
     @NotNull
@@ -28,7 +28,7 @@ public interface ConfigUnit {
     }
 
     /**
-     * Returns the permission needed to use/view this channel.
+     * Returns the permission needed to use/view this config unit.
      * @return the permission
      */
     @NotNull
@@ -37,7 +37,7 @@ public interface ConfigUnit {
     }
 
     /**
-     * Checks if the sender has the respective permission of this unit.
+     * Checks if the sender has the respective permission of this config unit.
      *
      * @param sender a sender
      * @return true if the sender has the permission, false otherwise
@@ -47,8 +47,8 @@ public interface ConfigUnit {
     }
 
     /**
-     * Returns the priority defined of this channel. This allows a channel
-     * to be in front or below of other loaded channels.
+     * Returns the priority defined of this config unit. This allows a config unit
+     * to be in front or below of other loaded config unit.
      *
      * @return the priority
      */

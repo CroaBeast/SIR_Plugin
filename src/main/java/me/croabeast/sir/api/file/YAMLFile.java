@@ -1,8 +1,11 @@
 package me.croabeast.sir.api.file;
 
 import lombok.Getter;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import me.croabeast.beanslib.utility.LibUtils;
-import me.croabeast.sir.api.file.update.YAMLUpdater;
+import me.croabeast.beanslib.utility.TextUtils;
+import me.croabeast.sir.api.misc.ConfigUnit;
 import me.croabeast.sir.api.misc.JavaLoader;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import org.apache.commons.lang.StringUtils;
@@ -10,52 +13,42 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
+@SuppressWarnings("unchecked")
+@Accessors(chain = true)
 public class YAMLFile {
 
     private final Loader loader;
 
-    /**
-     * The name of the file without its extension.
-     */
     @Getter
     private final String name;
+    @Getter @Nullable
+    private String folder;
 
-    /**
-     * The folder denomination of the file, can be null.
-     */
-    @Getter
-    private String folder = null;
-
-    /**
-     * The location of the file with its extension.
-     */
     @Getter
     private final String location;
-
-    /**
-     * The raw file that is inside the specified location.
-     */
     @Getter @NotNull
     private final File file;
 
-    private InputStream resource = null;
+    private InputStream resource;
+    private FileConfiguration configuration;
 
-    private FileConfiguration fc = null;
-
-    @Getter
+    @Getter @Setter
     private boolean updatable = true;
+    @Getter @Setter
+    private boolean debug = false;
 
-    public <T> YAMLFile(T loader, String folder, String name) throws IOException {
-        this.loader = new Loader(loader);
+    public <T> YAMLFile(T loaderObject, @Nullable String folder, String name) throws IOException {
+        loader = new Loader(loaderObject);
         this.name = StringUtils.isBlank(name) ? ("file-" + hashCode()) : name;
 
         String location = name + ".yml";
@@ -63,26 +56,26 @@ public class YAMLFile {
         if (StringUtils.isNotBlank(folder)) {
             this.folder = folder;
 
-            File file = new File(this.loader.getDataFolder(), folder);
+            File file = new File(loader.getDataFolder(), folder);
             if (!file.exists()) file.mkdirs();
 
             location = folder + File.separator + location;
         }
 
         this.location = location;
-        this.file = new File(this.loader.getDataFolder(), location);
+        file = new File(loader.getDataFolder(), location);
 
         try {
             setResource(location);
         } catch (Exception ignored) {}
     }
 
-    public YAMLFile setResource(InputStream resource) throws NullPointerException {
+    public YAMLFile setResource(InputStream resource) {
         this.resource = Objects.requireNonNull(resource, "There is no resource in plugin's jar file");
         return this;
     }
 
-    public YAMLFile setResource(String resourcePath) throws NullPointerException {
+    public YAMLFile setResource(String resourcePath) {
         if (StringUtils.isBlank(resourcePath))
             throw new NullPointerException("The resource path is blank or empty");
 
@@ -92,78 +85,53 @@ public class YAMLFile {
         return this;
     }
 
-    public YAMLFile setUpdatable(boolean isUpdatable) {
-        this.updatable = isUpdatable;
-        return this;
-    }
-
-    /**
-     * Reloads the file to update new edited values.
-     *
-     * @return the loaded configuration
-     */
     @NotNull
     public FileConfiguration reload() {
-        return fc = YamlConfiguration.loadConfiguration(getFile());
+        return configuration = YamlConfiguration.loadConfiguration(file);
     }
 
-    /**
-     * Similar to {@link JavaPlugin#saveDefaultConfig()}. It will initialize the file.
-     *
-     * @return true if the file was saved as default or
-     *              that file already exists, false otherwise
-     */
     public boolean saveDefaults() {
         if (file.exists()) return true;
 
         try {
-            LogUtils.doLog("&cFile " + location + " missing... &7Generating!");
-            try {
-                JavaLoader.saveResourceFrom(
-                        resource, loader.getDataFolder(), location, false);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            reload();
-            return true;
-        }
-        catch (Exception e) {
-            String msg = e.getLocalizedMessage();
-
-            LogUtils.doLog("&cError generating file " + location + ": " + msg);
+            JavaLoader.saveResource(resource, loader.getDataFolder(), location);
+        } catch (Exception e) {
+            if (isDebug()) e.printStackTrace();
             return false;
         }
+
+        if (isDebug())
+            LogUtils.doLog("&cFile " + location + " missing... &7Generating!");
+
+        reload();
+        return true;
     }
 
-    /**
-     * Returns the {@link FileConfiguration} instance of the .yml file.
-     *
-     * @return the requested configuration
-     */
     @NotNull
-    public FileConfiguration get() {
-        return fc == null ? reload() : fc;
+    private FileConfiguration getConfiguration() {
+        return configuration == null ? reload() : configuration;
     }
 
-    /**
-     * Saves the file to update new set values. It will delete all the file's comments.
-     *
-     * @param log if you want to show output when the file is saved
-     * @return true if the file was saved, false otherwise
-     */
-    public boolean save(boolean log) {
+    public void acceptTo(Consumer<FileConfiguration> consumer) {
+        Objects.requireNonNull(consumer).accept(getConfiguration());
+    }
+
+    public <T> T getFrom(Function<FileConfiguration, T> function) {
+        return Objects.requireNonNull(function).apply(getConfiguration());
+    }
+
+    public boolean save() {
         String msg = "&7The &e" + location + "&7 file ";
 
         try {
-            get().save(file);
+            getConfiguration().save(file);
 
-            if (log)
+            if (isDebug())
                 LogUtils.doLog(msg + "has been&a saved&7.");
             return true;
         }
         catch (Exception e) {
-            if (log) {
+            if (isDebug()) {
                 LogUtils.doLog(msg + "&ccouldn't be saved&7.");
                 e.printStackTrace();
             }
@@ -171,34 +139,21 @@ public class YAMLFile {
         }
     }
 
-    /**
-     * Saves the file to update new set values. It will delete all the file's comments.
-     *
-     * @return true if the file was saved, false otherwise
-     */
-    public boolean save() {
-        return save(true);
-    }
-
-    /**
-     * Tries the file to change all the old values from older versions to newer versions.
-     *
-     * @param log if you want to show output when the file is saved
-     * @return true if the file was updated, false otherwise
-     */
-    public boolean update(boolean log) {
+    public boolean update() {
         String msg = "&7The &e" + location + "&7 file ";
         if (!isUpdatable()) return false;
 
         try {
             YAMLUpdater.updateFrom(resource, file);
-            if (LibUtils.MAIN_VERSION < 13) YAMLUpdater.updateFrom(resource, file);
+            if (LibUtils.MAIN_VERSION < 13)
+                YAMLUpdater.updateFrom(resource, file);
 
-            if (log) LogUtils.doLog(msg + "has been&a updated&7.");
+            if (isDebug())
+                LogUtils.doLog(msg + "has been&a updated&7.");
             return true;
         }
         catch (Exception e) {
-            if (log) {
+            if (isDebug()) {
                 LogUtils.doLog(msg + "&ccouldn't be updated&7.");
                 e.printStackTrace();
             }
@@ -206,41 +161,50 @@ public class YAMLFile {
         }
     }
 
-    /**
-     * Tries the file to change all the old values from older versions to newer versions.
-     *
-     * @return true if the file was updated, false otherwise
-     */
-    public boolean update() {
-        return update(true);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T getValue(String path, T def) {
-        return (T) get().get(path, def);
+    public <T> T get(String path, T def) {
+        return (T) getConfiguration().get(path, def);
     }
 
     @Nullable
-    public <T> T getValue(String path, Class<T> clazz) {
+    public <T> T get(String path, Class<T> clazz) {
         try {
-            return clazz.cast(get().get(path));
+            return clazz.cast(getConfiguration().get(path));
         } catch (Exception e) {
             return null;
         }
     }
 
-    public <T> T setValue(String path, T value) {
-        try {
-            get().set(path, value);
-            return save(false) ? getValue(path, value) : null;
-        } catch (Exception e) {
-            return null;
-        }
+    public <T> void set(String path, T value) {
+        getConfiguration().set(path, value);
     }
 
     @Nullable
     public ConfigurationSection getSection(String path) {
-        return get().getConfigurationSection(path);
+        return StringUtils.isBlank(path) ?
+                getConfiguration() :
+                getConfiguration().getConfigurationSection(path);
+    }
+
+    @NotNull
+    public List<String> getKeys(String path, boolean deep) {
+        ConfigurationSection section = getSection(path);
+
+        return section != null ?
+                new ArrayList<>(section.getKeys(deep)) :
+                new ArrayList<>();
+    }
+
+    public Map<Integer, Set<ConfigUnit>> getUnitsByPriority(String path) {
+        return getUnitsByPriority(getConfiguration(), path);
+    }
+
+    public List<String> toList(String path) {
+        return TextUtils.toList(getConfiguration(), path);
+    }
+
+    @Override
+    public String toString() {
+        return "YAMLFile{folder='" + folder + "', name='" + name + "'}";
     }
 
     public boolean equals(String folder, String name) {
@@ -258,6 +222,38 @@ public class YAMLFile {
         return equals(f.folder, f.name);
     }
 
+    public static Map<Integer, Set<ConfigUnit>> getUnitsByPriority(ConfigurationSection main, String path) {
+        ConfigurationSection section = StringUtils.isNotBlank(path) ?
+                Objects.requireNonNull(main).getConfigurationSection(path) :
+                main;
+
+        Objects.requireNonNull(section);
+
+        Set<String> sectionKeys = section.getKeys(false);
+        if (sectionKeys.isEmpty()) throw new NullPointerException();
+
+
+        Comparator<Integer> sort = Comparator.reverseOrder();
+        Map<Integer, Set<ConfigUnit>> map = new TreeMap<>(sort);
+
+        for (String key : sectionKeys) {
+            ConfigurationSection id = section.getConfigurationSection(key);
+            if (id == null) continue;
+
+            String perm = id.getString("permission", "DEFAULT");
+            int def = perm.matches("(?i)default") ? 0 : 1;
+
+            int priority = id.getInt("priority", def);
+
+            Set<ConfigUnit> m = map.getOrDefault(priority, new LinkedHashSet<>());
+            m.add(ConfigUnit.of(id));
+
+            map.put(priority, m);
+        }
+
+        return map;
+    }
+
     private static class Loader {
 
         private final Class<?> clazz;
@@ -271,14 +267,6 @@ public class YAMLFile {
             }
 
             throw new IOException("Loader object is not valid.");
-        }
-
-        String getName() {
-            try {
-                return (String) clazz.getMethod("getName").invoke(loader);
-            } catch (Exception e) {
-                return null;
-            }
         }
 
         File getDataFolder() {
@@ -296,15 +284,6 @@ public class YAMLFile {
                 e.printStackTrace();
                 return null;
             }
-        }
-
-        void saveResource(String resourcePath, boolean replace) {
-            try {
-                loader.getClass()
-                        .getMethod("saveResource", String.class, boolean.class)
-                        .invoke(loader, resourcePath, replace);
-            }
-            catch (Exception ignored) {}
         }
     }
 }

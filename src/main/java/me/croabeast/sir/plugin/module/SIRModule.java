@@ -21,7 +21,6 @@ public abstract class SIRModule {
 
     @SneakyThrows
     protected SIRModule(ModuleName name) {
-        SIRPlugin.checkAccess(SIRModule.class);
         this.name = name;
 
         if (MODULE_MAP.containsKey(name))

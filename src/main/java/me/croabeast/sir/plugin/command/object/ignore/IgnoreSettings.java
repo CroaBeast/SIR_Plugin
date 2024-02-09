@@ -1,22 +1,27 @@
 package me.croabeast.sir.plugin.command.object.ignore;
 
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import me.croabeast.sir.plugin.file.CacheManageable;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
+import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-@RequiredArgsConstructor
-@Getter
 @SuppressWarnings("unchecked")
-public class IgnoreSettings implements ConfigurationSerializable {
+@Getter
+public class IgnoreSettings implements ConfigurationSerializable, CacheManageable {
 
     private final Entry msgCache = new Entry();
     private final Entry chatCache = new Entry();
 
     private final UUID uuid;
+
+    @Priority(4)
+    static void loadCache() {
+        ConfigurationSerialization.registerClass(IgnoreSettings.class);
+    }
 
     public IgnoreSettings(Map<String, Object> args) {
         Object u = args.get("uuid");

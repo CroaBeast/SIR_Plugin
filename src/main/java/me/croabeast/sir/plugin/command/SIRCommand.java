@@ -4,61 +4,50 @@ import lombok.Getter;
 import lombok.SneakyThrows;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.misc.CollectionBuilder;
-import me.croabeast.sir.plugin.SIRCollector;
+import me.croabeast.beanslib.utility.ArrayUtils;
+import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.command.object.message.DirectTask;
 import me.croabeast.sir.plugin.command.tab.TabBuilder;
 import me.croabeast.sir.plugin.command.tab.TabPredicate;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
 import org.bukkit.command.*;
-import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.*;
 
-public abstract class SIRCommand extends BukkitCommand {
+public abstract class SIRCommand extends Command {
 
-    private static final Set<SIRCommand> COMMAND_SET = new LinkedHashSet<>();
-    private static boolean areCommandsLoaded = false;
+    static final Set<SIRCommand> COMMAND_SET = new LinkedHashSet<>();
 
-    private final CommandExecutor executor;
-    private final TabCompleter completer;
+    private CommandExecutor executor = SIRPlugin.getInstance();
+    private TabCompleter completer = SIRPlugin.getInstance();
 
     private final boolean alwaysEnabled;
-    @Getter private boolean registered = false;
+    @Getter
+    private boolean registered = false;
+
+    static YAMLFile commandsFile() {
+        return YAMLCache.fromData("commands");
+    }
 
     static List<String> toAliases(String name) {
-        return FileCache.COMMANDS_DATA.toList("commands." + name + ".aliases");
+        return commandsFile().toList("commands." + name + ".aliases");
     }
 
     @SneakyThrows
     protected SIRCommand(String name, boolean isModifiable) {
         super(name);
 
-        SIRPlugin.checkAccess(SIRCommand.class);
-        SIRPlugin plugin = SIRPlugin.getInstance();
-
         if (isModifiable)
             setAliases(toAliases(name));
-
-        TabPredicate tab = executor();
-        executor = tab != null ?
-                ((s, c, l, a) -> tab.test(s, a)) :
-                plugin;
-
-        TabBuilder b = completer();
-
-        completer = b != null && !b.isEmpty() ?
-                ((s, c, l, a) -> b.build(s, a)) :
-                plugin;
 
         alwaysEnabled = !isModifiable;
         COMMAND_SET.add(this);
@@ -71,6 +60,9 @@ public abstract class SIRCommand extends BukkitCommand {
     @Nullable
     protected abstract TabPredicate executor();
 
+    @Nullable
+    protected abstract TabBuilder completer();
+
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String label, @NotNull String[] args) {
         if (!testPermission(sender)) return true;
@@ -79,19 +71,16 @@ public abstract class SIRCommand extends BukkitCommand {
         try {
             success = executor.onCommand(sender, this, label, args);
         } catch (Throwable ex) {
-            ex.printStackTrace();
             success = MessageSender.fromLoaded().setTargets(sender).send(
                     "<P> &7Error handling the command " +
                             getName() +
                             ": &c" + ex.getLocalizedMessage()
             );
+            ex.printStackTrace();
         }
 
         return success;
     }
-
-    @Nullable
-    protected abstract TabBuilder completer();
 
     @NotNull
     public List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) {
@@ -100,6 +89,10 @@ public abstract class SIRCommand extends BukkitCommand {
         Validate.notNull(alias, "Alias cannot be null");
 
         List<String> completions = null;
+        final TabBuilder b = completer();
+
+        if (b != null && !b.isEmpty())
+            completer = (s, c, l, a) -> b.build(s, a);
 
         try {
             if (completer != null)
@@ -114,7 +107,7 @@ public abstract class SIRCommand extends BukkitCommand {
     }
 
     public boolean isEnabled() {
-        return alwaysEnabled || FileCache.COMMANDS_DATA.getValue("commands." + getName() + ".enabled", true);
+        return alwaysEnabled || commandsFile().get("commands." + getName() + ".enabled", true);
     }
 
     private static CommandMap getCommandMap() throws Exception {
@@ -128,72 +121,116 @@ public abstract class SIRCommand extends BukkitCommand {
 
     @SuppressWarnings("unchecked")
     private static Map<String, Command> getKnownCommands() throws Exception {
-        final CommandMap map = getCommandMap();
-        Map<String, Command> commands;
+        CommandMap map = getCommandMap();
 
         try {
-            commands = (Map<String, Command>) map
-                    .getClass()
-                    .getDeclaredMethod("getKnownCommands")
-                    .invoke(map);
+            Method m = map.getClass().getDeclaredMethod("getKnownCommands");
+            m.setAccessible(true);
+
+            return (Map<String, Command>) m.invoke(map);
         }
         catch (Exception e) {
-            final Class<?> c = SimpleCommandMap.class;
-
-            Field field = c.getDeclaredField("knownCommands");
+            Field field = map.getClass().getDeclaredField("knownCommands");
             field.setAccessible(true);
 
-            commands = (Map<String, Command>) field.get(map);
+            return (Map<String, Command>) field.get(map);
         }
-
-        return commands;
     }
 
-    public boolean register() {
-        if (!isEnabled() || registered) return false;
+    public boolean register(boolean debug) {
+        if (!isEnabled()) return false;
+        if (registered) return true;
 
+        CommandMap map;
         try {
-            getCommandMap().register("sir", this);
+            map = getCommandMap();
         } catch (Exception e) {
-            e.printStackTrace();
+            if (debug) e.printStackTrace();
             return false;
         }
 
-        final String pluginName = SIRPlugin.getInstance()
-                .getDescription()
-                .getName().toLowerCase(Locale.ENGLISH);
+        TabPredicate tab = executor();
+        if (tab != null)
+            executor = (s, c, l, a) -> tab.test(s, a);
+
+        map.register("sir", this);
+        return registered = true;
+    }
+
+    public boolean register() {
+        return register(false);
+    }
+
+    public boolean unregister(boolean debug) {
+        if (isEnabled()) return false;
+        if (!registered) return true;
+
+        Map<String, Command> known;
+        CommandMap map;
 
         try {
-            if (!getKnownCommands().containsKey(getName())) {
-                getKnownCommands().put(getName(), this);
-                getKnownCommands().put(pluginName + ":" + getName(), this);
-            }
-
-            if (getAliases().isEmpty()) return true;
-
-            for (String alias : getAliases()) {
-                if (getKnownCommands().containsKey(alias)) continue;
-
-                getKnownCommands().put(alias, this);
-                getKnownCommands().put(pluginName + ":" + alias, this);
-            }
+            known = getKnownCommands();
+            map = getCommandMap();
         } catch (Exception e) {
-            e.printStackTrace();
+            if (debug) e.printStackTrace();
+            return false;
         }
 
-        return registered = true;
+        List<String> names = ArrayUtils.toList(getName());
+
+        names.add(getLabel());
+        names.addAll(getAliases());
+
+        names.replaceAll(s -> s.toUpperCase(Locale.ENGLISH));
+
+        SIRCommand loaded = null;
+
+        for (String s : names) {
+            Command cmd = known.getOrDefault(s, null);
+            if (!Objects.equals(cmd, this) &&
+                    !Objects.equals(cmd = known.get("sir:" + s), this))
+                continue;
+
+            known.remove(s, cmd);
+            if (!Objects.equals(loaded, this))
+                loaded = (SIRCommand) cmd;
+        }
+        if (loaded == null) return false;
+
+        loaded.unregister(map);
+
+        executor = null;
+        completer = null;
+
+        try {
+            Server server = Bukkit.getServer();
+            Method m = server.getClass().getDeclaredMethod("syncCommands");
+
+            m.setAccessible(true);
+            m.invoke(server);
+        } catch (Exception e) {
+            if (debug) e.printStackTrace();
+            return false;
+        }
+
+        registered = false;
+        return true;
+    }
+
+    public boolean unregister() {
+        return unregister(false);
     }
 
     protected <T> boolean fromSender(CommandSender sender, String key, T value, String path) {
         return MessageSender.fromLoaded().setTargets(sender)
                 .addKeyValue(key, value)
-                .send(FileCache.getLang().toList(path));
+                .send(YAMLCache.getLang().toList(path));
     }
 
     protected boolean fromSender(CommandSender sender, String path) {
         return MessageSender.fromLoaded()
                 .setTargets(sender)
-                .send(FileCache.getLang().toList(path));
+                .send(YAMLCache.getLang().toList(path));
     }
 
     protected boolean isProhibited(CommandSender sender, String perm) {
@@ -207,32 +244,5 @@ public abstract class SIRCommand extends BukkitCommand {
 
     protected List<String> getPlayersNames() {
         return CollectionBuilder.of(Bukkit.getOnlinePlayers()).map(Player::getName).toList();
-    }
-
-    @SneakyThrows
-    public static void registerCommands() {
-        SIRPlugin.checkAccess(SIRCommand.class);
-
-        if (!areCommandsLoaded) {
-            SIRCollector.from("me.croabeast.sir.plugin.command.object")
-                    .filter(SIRCommand.class::isAssignableFrom)
-                    .filter(c -> c != SIRCommand.class && c != DirectTask.class)
-                    .collect().forEach(c -> {
-                        try {
-                            Constructor<?> cons = c.getDeclaredConstructor();
-
-                            cons.setAccessible(true);
-                            cons.newInstance();
-                            cons.setAccessible(false);
-                        }
-                        catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    });
-
-            areCommandsLoaded = true;
-        }
-
-        COMMAND_SET.forEach(SIRCommand::register);
     }
 }

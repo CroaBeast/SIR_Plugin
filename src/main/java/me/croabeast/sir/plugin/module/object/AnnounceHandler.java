@@ -3,9 +3,10 @@ package me.croabeast.sir.plugin.module.object;
 import lombok.Getter;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.TextUtils;
+import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.file.CacheHandler;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.CacheManageable;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.hook.VanishHook;
 import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.SIRModule;
@@ -18,7 +19,7 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.function.Function;
 
-public class AnnounceHandler extends SIRModule implements CacheHandler {
+public class AnnounceHandler extends SIRModule implements CacheManageable {
 
     private static final Map<Integer, Announce> ANNOUNCE_MAP = new HashMap<>();
 
@@ -33,10 +34,10 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
     }
 
     private static ConfigurationSection announceSection() {
-        return FileCache.ANNOUNCE_CACHE.getCache("announces").getSection("announces");
+        return YAMLCache.fromAnnounces("announces").getSection("announces");
     }
 
-    @Priority(level = 1)
+    @Priority(1)
     static void loadCache() {
         ConfigurationSection section = announceSection();
         if (section == null) return;
@@ -52,8 +53,8 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
         }
     }
 
-    private static FileCache config() {
-        return FileCache.ANNOUNCE_CACHE.getConfig();
+    private static YAMLFile config() {
+        return YAMLCache.fromAnnounces("config");
     }
 
     private static final Function<ConfigurationSection, Set<Player>> PLAYERS = (c) -> {
@@ -79,7 +80,7 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
 
     public static void startTask() {
         ConfigurationSection section = announceSection();
-        int delay = config().getValue("interval", 0);
+        int delay = config().get("interval", 0);
 
         if (!ModuleName.ANNOUNCEMENTS.isEnabled() ||
                 delay <= 0 ||
@@ -97,7 +98,7 @@ public class AnnounceHandler extends SIRModule implements CacheHandler {
                     Announce a = ANNOUNCE_MAP.get(order);
                     a.display(PLAYERS.apply(a.id));
 
-                    if (config().getValue("random", false)) {
+                    if (config().get("random", false)) {
                         order = new Random().nextInt(count + 1);
                         return;
                     }

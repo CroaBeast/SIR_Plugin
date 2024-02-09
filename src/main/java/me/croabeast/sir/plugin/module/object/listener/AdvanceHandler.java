@@ -9,8 +9,8 @@ import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.file.CacheHandler;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.CacheManageable;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.hook.DiscordSender;
 import me.croabeast.sir.plugin.hook.VanishHook;
 import me.croabeast.sir.plugin.module.ModuleName;
@@ -25,7 +25,6 @@ import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
@@ -36,7 +35,7 @@ import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class AdvanceHandler extends ModuleListener implements CacheHandler {
+class AdvanceHandler extends ModuleListener implements CacheManageable {
 
     private static final Map<FrameType, Set<AdvancementInfo>> ADV_INFO_MAP = new HashMap<>();
 
@@ -97,15 +96,13 @@ public class AdvanceHandler extends ModuleListener implements CacheHandler {
 
     private static Consumer<AdvancementInfo> fromInfo(Set<Advancement> keys, String type) {
         return info -> {
-            FileConfiguration advances = FileCache.ADVANCE_CACHE.getCache("lang").get();
-            if (advances == null) return;
-
+            YAMLFile advances = YAMLCache.fromAdvances("lang");
             Advancement adv = info.getBukkit();
 
             final String k = adv.getKey().toString();
             String key = k.replaceAll("[/:]", ".");
 
-            if (advances.contains(key)) return;
+            if (advances.getKeys(null, false).contains(key)) return;
 
             String title = info.getTitle();
 
@@ -157,8 +154,7 @@ public class AdvanceHandler extends ModuleListener implements CacheHandler {
                 UNKNOWNS.forEach(fromInfo(loadedKeys, "custom"));
 
                 if (loadedKeys.size() > 0) {
-                    YAMLFile f = FileCache
-                            .ADVANCE_CACHE.getCache("lang").getFile();
+                    YAMLFile f = YAMLCache.fromAdvances("lang");
                     if (f != null) f.save();
                 }
 
@@ -208,7 +204,7 @@ public class AdvanceHandler extends ModuleListener implements CacheHandler {
     }
 
     private static List<String> advList(String path) {
-        return FileCache.ADVANCE_CACHE.getConfig().toList("disabled-" + path);
+        return YAMLCache.fromAdvances("config").toList("disabled-" + path);
     }
 
     @EventHandler
@@ -244,7 +240,7 @@ public class AdvanceHandler extends ModuleListener implements CacheHandler {
 
         String path = key.replaceAll("[/:]", ".");
 
-        ConfigurationSection section = FileCache.ADVANCE_CACHE.getCache("lang").getSection(path);
+        ConfigurationSection section = YAMLCache.fromAdvances("lang").getSection(path);
         if (section == null) return;
 
         String messagePath = section.getString("path");
@@ -263,8 +259,7 @@ public class AdvanceHandler extends ModuleListener implements CacheHandler {
                 };
 
         List<String> mList = new ArrayList<>(), cList = new ArrayList<>();
-        List<String> messages = FileCache
-                .ADVANCE_CACHE.getCache("messages").toList(messagePath);
+        List<String> messages = YAMLCache.fromAdvances("messages").toList(messagePath);
 
         for (String s : messages) {
             Matcher m = Pattern.compile("(?i)^\\[cmd]").matcher(s);

@@ -1,7 +1,5 @@
 package me.croabeast.sir.plugin;
 
-import lombok.SneakyThrows;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -23,9 +21,7 @@ public final class SIRCollector {
         return new ArrayList<>(classes);
     }
 
-    @SneakyThrows
     public static SIRCollector from() {
-        SIRPlugin.checkAccess(SIRCollector.class);
         return new SIRCollector();
     }
 

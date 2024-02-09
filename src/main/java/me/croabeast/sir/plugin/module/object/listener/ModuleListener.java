@@ -4,7 +4,7 @@ import me.croabeast.sir.api.misc.CustomListener;
 import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.SIRModule;
 
-class ModuleListener extends SIRModule implements CustomListener {
+abstract class ModuleListener extends SIRModule implements CustomListener {
 
     ModuleListener(ModuleName moduleName) {
         super(moduleName);

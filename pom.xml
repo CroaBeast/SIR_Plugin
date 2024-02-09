@@ -6,7 +6,7 @@
 
     <groupId>me.croabeast</groupId>
     <artifactId>SIR_Plugin</artifactId>
-    <version>3.0.13</version>
+    <version>3.1</version>
     <packaging>jar</packaging>
 
     <name>SIR_Plugin</name> <!--Simple In-game Receptionist-->
@@ -182,7 +182,7 @@
 
         <dependency>
             <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
+            <artifactId>spigot</artifactId>
             <version>1.16.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>

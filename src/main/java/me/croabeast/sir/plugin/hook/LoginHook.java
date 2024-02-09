@@ -5,13 +5,12 @@ import com.nickuc.login.api.event.bukkit.auth.AuthenticateEvent;
 import com.nickuc.openlogin.bukkit.api.events.AsyncLoginEvent;
 import com.nickuc.openlogin.bukkit.api.events.AsyncRegisterEvent;
 import fr.xephi.authme.events.LoginEvent;
-import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.sir.api.event.hook.SIRLoginEvent;
+import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.api.misc.CustomListener;
-import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
@@ -51,7 +50,17 @@ public class LoginHook {
         new SIRLoginEvent(player, event.isAsynchronous()).call();
     }
 
-    public void loadHook() {
+    public boolean isEnabled() {
+        YAMLFile file = YAMLCache.fromJoinQuit("config");
+        return ENABLED_HOOKS.size() == 1 && file.get("login.enabled", true);
+    }
+
+    @Nullable
+    public Plugin getHook() {
+        return isEnabled() ? ENABLED_HOOKS.get(0) : null;
+    }
+
+    void loadHook() {
         if (!areHooksRegistered) {
             for (String s : SUPPORTED_PLUGINS) {
                 Plugin p = Bukkit.getPluginManager().getPlugin(s);
@@ -121,32 +130,15 @@ public class LoginHook {
         }
     }
 
-    public void unloadHook() {
+    void unloadHook() {
         if (isEnabled()) LISTENER_SET.forEach(LoadedListener::unregister);
     }
 
-    public boolean isEnabled() {
-        FileCache file = FileCache.JOIN_QUIT_CACHE.getConfig();
-        return ENABLED_HOOKS.size() == 1 && file.getValue("login.enabled", true);
-    }
-
-    @Nullable
-    public Plugin getHook() {
-        return isEnabled() ? ENABLED_HOOKS.get(0) : null;
-    }
-
-    @SneakyThrows
-    private void checkAccess() {
-        SIRPlugin.checkAccess(LoginHook.class);
-    }
-
     public void addPlayer(Player player) {
-        checkAccess();
         LOGGED_PLAYERS.add(player);
     }
 
     public void removePlayer(Player player) {
-        checkAccess();
         LOGGED_PLAYERS.remove(player);
     }
 

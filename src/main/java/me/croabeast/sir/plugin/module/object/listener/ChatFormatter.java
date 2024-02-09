@@ -10,11 +10,13 @@ import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.sir.api.event.chat.SIRChatEvent;
+import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.api.misc.ConfigUnit;
 import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.channel.ChatChannel;
-import me.croabeast.sir.plugin.file.CacheHandler;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.command.object.mute.MuteCommand;
+import me.croabeast.sir.plugin.file.CacheManageable;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.hook.DiscordSender;
 import me.croabeast.sir.plugin.hook.LoginHook;
 import me.croabeast.sir.plugin.module.ModuleName;
@@ -34,7 +36,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
 
-public class ChatFormatter extends ModuleListener implements CacheHandler {
+public class ChatFormatter extends ModuleListener implements CacheManageable {
 
     private static final Map<Integer, Set<ChatChannel>> CHANNELS_MAP = new LinkedHashMap<>();
 
@@ -42,21 +44,21 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
     private static final Map<Integer, Set<ChatChannel>> GLOBAL_MAP = new LinkedHashMap<>();
 
     private static final Map<Player, Long>
-            GLOBAL_PLAYERS = new HashMap<>(), LOCAL_PLAYERS = new HashMap<>();
+            GLOBAL_TIMERS = new HashMap<>(), LOCAL_TIMERS = new HashMap<>();
 
     ChatFormatter() {
         super(ModuleName.CHAT_CHANNELS);
     }
 
-    private static FileCache config() {
-        return FileCache.CHAT_CHANNELS_CACHE.getConfig();
+    private static YAMLFile config() {
+        return YAMLCache.fromChannels("config");
     }
 
-    private static FileCache channels() {
-        return FileCache.CHAT_CHANNELS_CACHE.getCache("channels");
+    private static YAMLFile channels() {
+        return YAMLCache.fromChannels("channels");
     }
 
-    @Priority(level = 1)
+    @Priority(1)
     static void loadCache() {
         if (!ModuleName.CHAT_CHANNELS.isEnabled()) return;
 
@@ -125,8 +127,10 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
             return e.getUser(player).isVanished();
         }
 
-        return Exceptions.isPluginEnabled("CMI")
-                && CMIUser.getUser(player).isMuted();
+        if (Exceptions.isPluginEnabled("CMI"))
+                return CMIUser.getUser(player).isMuted();
+
+        return MuteCommand.isMuted(player);
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -143,17 +147,16 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
 
         String message = event.getMessage();
 
-        if (!config().getValue("allow-empty", false) && StringUtils.isBlank(message))
+        if (!config().get("allow-empty", false) && StringUtils.isBlank(message))
         {
             MessageSender.fromLoaded().setTargets(player)
-                    .send(FileCache.getLang().toList("chat.empty-message"));
+                    .send(YAMLCache.getLang().toList("chat.empty-message"));
 
             event.setCancelled(true);
             return;
         }
 
         final boolean b = event.isAsynchronous();
-
         ChatChannel local = getLocalFromMessage(player, message);
 
         if (local != null) {
@@ -175,9 +178,7 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
 
         String output = channel.formatOutput(player, message, true);
 
-        if (config().getValue("default-format", false) ||
-                (channel.isDefault() && !TextUtils.IS_JSON.test(output))
-        ) {
+        if (config().get("default-format", false)) {
             event.setFormat(TextUtils.STRIP_JSON.apply(output).replace("%", "%%"));
             return;
         }
@@ -209,14 +210,17 @@ public class ChatFormatter extends ModuleListener implements CacheHandler {
     @EventHandler(priority = EventPriority.LOWEST)
     private void onSIRChat(SIRChatEvent event) {
         if (event.isCancelled()) return;
+        System.out.println(7);
 
         ChatChannel channel = event.getChannel();
         Player player = event.getPlayer();
 
         String message = event.getMessage();
 
-        Map<Player, Long> map = event.isGlobal() ? GLOBAL_PLAYERS : LOCAL_PLAYERS;
+        Map<Player, Long> map = event.isGlobal() ? GLOBAL_TIMERS : LOCAL_TIMERS;
+
         int timer = channel.getCooldown();
+        System.out.println(timer);
 
         if (timer > 0 && map.containsKey(player)) {
             long rest = System.currentTimeMillis() - map.get(player);

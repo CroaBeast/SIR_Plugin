@@ -27,8 +27,6 @@ softdepend:
   - AdvancedBan
   - DiscordSRV
 
-# Roxana Ivonne Champi Benites
-
 permissions:
   sir.*:
     default: op
@@ -36,9 +34,6 @@ permissions:
       sir.admin.*: true
       sir.print.*: true
       sir.announcer.*: true
-      sir.message.*: true
-      sir.ignore: true
-      sir.chat-view: true
 
   sir.admin.*:
     default: op
@@ -65,12 +60,6 @@ permissions:
       sir.announcer.start: true
       sir.announcer.stop: true
       sir.announcer.reboot: true
-
-  sir.message.*:
-    default: op
-    children:
-      sir.message.default: true
-      sir.message.reply: true
 
   sir.admin.about:
     default: op
@@ -101,14 +90,4 @@ permissions:
   sir.announcer.stop:
     default: op
   sir.announcer.reboot:
-    default: op
-
-  sir.message.default:
-    default: op
-  sir.message.reply:
-    default: op
-
-  sir.ignore:
-    default: op
-  sir.chat-view:
     default: op

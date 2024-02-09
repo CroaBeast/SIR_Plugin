@@ -5,15 +5,10 @@ import lombok.SneakyThrows;
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.beanslib.misc.UpdateChecker;
-import me.croabeast.beanslib.utility.Exceptions;
-import me.croabeast.sir.plugin.command.SIRCommand;
-import me.croabeast.sir.plugin.command.object.ignore.IgnoreSettings;
-import me.croabeast.sir.plugin.file.CacheHandler;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.api.file.YAMLFile;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.hook.LoginHook;
-import me.croabeast.sir.plugin.hook.VanishHook;
 import me.croabeast.sir.plugin.module.ModuleName;
-import me.croabeast.sir.plugin.module.SIRModule;
 import me.croabeast.sir.plugin.module.object.AnnounceHandler;
 import me.croabeast.sir.plugin.module.object.EmojiParser;
 import me.croabeast.sir.plugin.utility.LangUtils;
@@ -21,14 +16,12 @@ import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.lang.reflect.Constructor;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,8 +54,6 @@ public final class SIRPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         final long start = System.currentTimeMillis();
-        ConfigurationSerialization.registerClass(IgnoreSettings.class);
-
         instance = this;
 
         author = getDescription().getAuthors().get(0);
@@ -106,25 +97,22 @@ public final class SIRPlugin extends JavaPlugin {
         } catch (Exception ignored) {}
 
         try {
-            CacheHandler.load();
+            SIRCache.load();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        LoginHook.loadHook();
-        VanishHook.loadHook();
-
-        final FileCache config = FileCache.MAIN_CONFIG;
+        final YAMLFile config = YAMLCache.getMainConfig();
 
         MessageSender sender = new MessageSender() {
             @Override
             public boolean shouldTrimSpaces() {
-                return config.getValue("options.strip-spaces", false);
+                return config.get("options.strip-spaces", false);
             }
         };
 
         MessageSender.setLoaded(sender
-                .setLogger(config.getValue("options.send-console", true))
+                .setLogger(config.get("options.send-console", true))
                 .setSensitive(false)
                 .addFunctions(EmojiParser::parse)
         );
@@ -140,13 +128,6 @@ public final class SIRPlugin extends JavaPlugin {
 
         SIRInitializer.startMetrics();
         SIRInitializer.setPluginHooks();
-
-        try {
-            SIRCommand.registerCommands();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        registerModules();
 
         if (ModuleName.ANNOUNCEMENTS.isEnabled()) {
             AnnounceHandler.startTask();
@@ -170,7 +151,7 @@ public final class SIRPlugin extends JavaPlugin {
         LogUtils.rawLog(pluginHeader());
 
         try {
-            CacheHandler.save();
+            SIRCache.save();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -183,37 +164,10 @@ public final class SIRPlugin extends JavaPlugin {
                 EMPTY_LINE
         );
 
-        LoginHook.unloadHook();        VanishHook.unloadHook();
-
         HandlerList.unregisterAll(this);
 
         utils = null;
         instance = null;
-    }
-
-    boolean modulesRegistered = false;
-
-    private void registerModules() {
-        if (modulesRegistered)
-            throw new IllegalStateException("Modules are already registered.");
-
-        SIRCollector.from("me.croabeast.sir.plugin.module.object")
-                .filter(SIRModule.class::isAssignableFrom)
-                .filter(c -> c != SIRModule.class)
-                .collect().forEach(c -> {
-                    try {
-                        Constructor<?> constructor = c.getDeclaredConstructor();
-                        constructor.setAccessible(true);
-
-                        c.getMethod("register").invoke(constructor.newInstance());
-                        constructor.setAccessible(false);
-                    }
-                    catch (Exception ignored) {}
-                });
-
-        new SIRModule(ModuleName.DISCORD_HOOK) {};
-
-        modulesRegistered = true;
     }
 
     private static void updaterLog(Player player, String... strings) {
@@ -284,15 +238,13 @@ public final class SIRPlugin extends JavaPlugin {
 
     @SneakyThrows
     public static void checkUpdater(@Nullable Player player) {
-        checkAccess(SIRPlugin.class);
-
         if (player == null) {
-            if (!FileCache.MAIN_CONFIG.getValue("updater.plugin.on-start", false))
+            if (!YAMLCache.getMainConfig().get("updater.plugin.on-start", false))
                 return;
             runUpdater(null);
         }
         else {
-            if (!FileCache.MAIN_CONFIG.getValue("updater.plugin.send-op", false) ||
+            if (!YAMLCache.getMainConfig().get("updater.plugin.send-op", false) ||
                     !PlayerUtils.hasPerm(player, "sir.admin.updater")) return;
             runUpdater(player);
         }
@@ -300,26 +252,10 @@ public final class SIRPlugin extends JavaPlugin {
 
     @SneakyThrows
     public static void runTaskWhenLoaded(Runnable runnable) {
-        checkAccess(SIRPlugin.class);
         Bukkit.getScheduler().scheduleSyncDelayedTask(instance, runnable);
     }
 
     public static File getSIRFolder() {
         return instance.getDataFolder();
-    }
-
-    /**
-     * Checks if the providing plugin of the class is SIR, otherwise will
-     * throw an Exception.
-     *
-     * @param clazz a class
-     * @throws IllegalAccessException if the plugin of the class is not SIR
-     */
-    public static void checkAccess(Class<?> clazz) throws IllegalAccessException {
-        try {
-            Exceptions.hasPluginAccess(clazz);
-        } catch (Exception e) {
-            throw new IllegalAccessException(e.getLocalizedMessage());
-        }
     }
 }

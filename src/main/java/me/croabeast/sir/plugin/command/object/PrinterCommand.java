@@ -28,9 +28,9 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
-public class PrinterTask extends SIRCommand {
+class PrinterCommand extends SIRCommand {
 
-    PrinterTask() {
+    PrinterCommand() {
         super("print");
     }
 

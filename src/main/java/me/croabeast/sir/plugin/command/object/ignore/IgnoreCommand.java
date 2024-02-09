@@ -1,21 +1,22 @@
 package me.croabeast.sir.plugin.command.object.ignore;
 
 import me.croabeast.beanslib.message.MessageSender;
+import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.plugin.command.SIRCommand;
 import me.croabeast.sir.plugin.command.tab.TabBuilder;
 import me.croabeast.sir.plugin.command.tab.TabPredicate;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.bukkit.entity.Player;
 
 import java.util.UUID;
 
-public class IgnoreTask extends SIRCommand {
+public class IgnoreCommand extends SIRCommand {
 
     private static final String MAIN_PATH = "commands.ignore.";
 
-    public IgnoreTask() {
+    public IgnoreCommand() {
         super("ignore");
     }
 
@@ -29,21 +30,23 @@ public class IgnoreTask extends SIRCommand {
 
         final UUID uuid = player.getUniqueId();
 
-        String t = FileCache.getLang().getValue(
+        String t = YAMLCache.getLang().get(
                 MAIN_PATH + "channels." + type, String.class);
 
         if (token.matches("(?i)@a")) {
             boolean b = !cache.isForAll();
             cache.setForAll(b);
 
-            FileCache.IGNORE_DATA.get().set("data." + uuid, settings);
-            FileCache.IGNORE_DATA.getFile().save(false);
+            YAMLFile file = YAMLCache.fromData("ignore");
+
+            file.set("data." + uuid, settings);
+            file.save();
 
             String path = MAIN_PATH + (b ? "success" : "remove") + ".all";
 
             return MessageSender.fromLoaded().setTargets(player)
                     .addKeysValues(keys, null, t)
-                    .send(FileCache.getLang().toList(path));
+                    .send(YAMLCache.getLang().toList(path));
         }
 
         Player target = PlayerUtils.getClosestPlayer(token);
@@ -52,15 +55,17 @@ public class IgnoreTask extends SIRCommand {
 
         if (!cache.remove(target)) cache.add(target);
 
-        FileCache.IGNORE_DATA.get().set("data." + uuid, settings);
-        FileCache.IGNORE_DATA.getFile().save(false);
+        YAMLFile file = YAMLCache.fromData("ignore");
+
+        file.set("data." + uuid, settings);
+        file.save();
 
         String path = MAIN_PATH +
                 (cache.contains(target) ? "success" : "remove") + ".all";
 
         return MessageSender.fromLoaded().setTargets(player)
                 .addKeysValues(keys, target, t)
-                .send(FileCache.getLang().toList(path));
+                .send(YAMLCache.getLang().toList(path));
     }
 
     @Override
@@ -100,7 +105,7 @@ public class IgnoreTask extends SIRCommand {
     public static IgnoreSettings getSettings(Player player) {
         String path = "data." + player.getUniqueId();
 
-        IgnoreSettings i = FileCache.IGNORE_DATA.getValue(path, IgnoreSettings.class);
+        IgnoreSettings i = YAMLCache.fromData("ignore").get(path, IgnoreSettings.class);
         return i == null ? new IgnoreSettings(player) : i;
     }
 }

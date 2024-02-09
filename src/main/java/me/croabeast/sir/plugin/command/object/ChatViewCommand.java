@@ -1,7 +1,8 @@
 package me.croabeast.sir.plugin.command.object;
 
+import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.plugin.channel.ChatChannel;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.module.object.listener.ChatFormatter;
 import me.croabeast.sir.plugin.command.SIRCommand;
 import me.croabeast.sir.plugin.command.tab.TabBuilder;
@@ -14,9 +15,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class ChatViewTask extends SIRCommand {
+public class ChatViewCommand extends SIRCommand {
 
-    ChatViewTask() {
+    ChatViewCommand() {
         super("chat-view");
     }
 
@@ -55,13 +56,14 @@ public class ChatViewTask extends SIRCommand {
             if (key == null) return isWrongArgument(p, args[0]);
 
             String path = "data." + p.getUniqueId() + "." + key;
-            boolean isToggled = FileCache.CHAT_VIEW_DATA.getValue(path, false);
+            YAMLFile file = YAMLCache.fromData("chat-view");
 
-            FileCache.CHAT_VIEW_DATA.get().set(path, !isToggled);
-            FileCache.CHAT_VIEW_DATA.getFile().save(false);
+            boolean isToggled = file.get(path, false);
 
-            return fromSender(p,
-                    "{channel}", key, "commands.chat-view." + !isToggled);
+            file.set(path, !isToggled);
+            file.save();
+
+            return fromSender(p, "{channel}", key, "commands.chat-view." + !isToggled);
         };
     }
 
@@ -71,6 +73,6 @@ public class ChatViewTask extends SIRCommand {
     }
 
     public static boolean isToggled(Player player, String key) {
-        return FileCache.CHAT_VIEW_DATA.getValue("data." + player.getUniqueId() + "." + key, true);
+        return YAMLCache.fromData("chat-view").get("data." + player.getUniqueId() + "." + key, true);
     }
 }

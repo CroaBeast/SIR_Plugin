@@ -3,9 +3,10 @@ package me.croabeast.sir.plugin.channel;
 import lombok.SneakyThrows;
 import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.beanslib.utility.TextUtils;
+import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.api.misc.ConfigUnit;
-import me.croabeast.sir.plugin.file.FileCache;
-import me.croabeast.sir.plugin.command.object.ChatViewTask;
+import me.croabeast.sir.plugin.file.YAMLCache;
+import me.croabeast.sir.plugin.command.object.ChatViewCommand;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
@@ -164,7 +165,7 @@ public interface ChatChannel extends ConfigUnit {
 
         builder.filter(p -> PlayerUtils.hasPerm(p, getPermission()));
         if (isLocal())
-            builder.filter(p -> ChatViewTask.isToggled(p, getName()));
+            builder.filter(p -> ChatViewCommand.isToggled(p, getName()));
 
         return builder.add(player).toSet();
     }
@@ -174,12 +175,12 @@ public interface ChatChannel extends ConfigUnit {
     void setChatFormat(@NotNull String format);
 
     default String getLogFormat() {
-        FileCache config = FileCache.CHAT_CHANNELS_CACHE.getConfig();
+        YAMLFile config = YAMLCache.fromChannels("config");
         String format = AbstractChatChannel.DEF_FORMAT;
 
-        String log = !config.getValue("simple-logger.enabled", false) ?
+        String log = !config.get("simple-logger.enabled", false) ?
                 getChatFormat() :
-                config.getValue("simple-logger.format", format);
+                config.get("simple-logger.format", format);
 
         return TextUtils.STRIP_FIRST_SPACES.apply(log);
     }

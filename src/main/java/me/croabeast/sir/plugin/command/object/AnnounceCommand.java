@@ -1,6 +1,6 @@
 package me.croabeast.sir.plugin.command.object;
 
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.module.object.AnnounceHandler;
 import me.croabeast.sir.plugin.command.SIRCommand;
 import me.croabeast.sir.plugin.command.tab.TabBuilder;
@@ -11,14 +11,14 @@ import org.bukkit.entity.Player;
 
 import java.util.Locale;
 
-public class AnnounceTask extends SIRCommand {
+class AnnounceCommand extends SIRCommand {
 
-    AnnounceTask() {
+    AnnounceCommand() {
         super("announcer", false);
     }
 
     private static ConfigurationSection announceSection() {
-        return FileCache.ANNOUNCE_CACHE.getCache("announces").getSection("announces");
+        return YAMLCache.fromAnnounces("announces").getSection("announces");
     }
 
     @Override

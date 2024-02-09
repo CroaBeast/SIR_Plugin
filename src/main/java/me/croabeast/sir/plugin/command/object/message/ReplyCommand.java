@@ -2,7 +2,7 @@ package me.croabeast.sir.plugin.command.object.message;
 
 import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.sir.plugin.hook.VanishHook;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.command.tab.TabBuilder;
 import me.croabeast.sir.plugin.command.tab.TabPredicate;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
@@ -11,9 +11,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
-public class ReplyTask extends DirectTask {
+public class ReplyCommand extends DirectCommand {
 
-    ReplyTask() {
+    ReplyCommand() {
         super("reply");
     }
 
@@ -50,11 +50,11 @@ public class ReplyTask extends DirectTask {
 
                 if (PlayerUtils.isIgnoring(t, player, false))
                     return fromSender(sender, "{type}",
-                            FileCache.getLang().getValue(IG_PATH + "channels.msg", ""),
+                            YAMLCache.getLang().get(IG_PATH + "channels.msg", ""),
                             ignoring + (player == null ? "all" : "player")
                     );
 
-                if (FileCache.getLang().getValue(vanish + "enabled", false) &&
+                if (YAMLCache.getLang().get(vanish + "enabled", false) &&
                         VanishHook.isVanished(t))
                     return fromSender(sender, vanish + "message");
             }

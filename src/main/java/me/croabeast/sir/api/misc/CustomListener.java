@@ -1,6 +1,5 @@
 package me.croabeast.sir.api.misc;
 
-import lombok.SneakyThrows;
 import me.croabeast.sir.plugin.SIRPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
@@ -32,11 +31,8 @@ public interface CustomListener extends Listener {
      * This method requires access permission from the SIR plugin to operate.
      *
      * @return this listener instance.
-     * @throws IllegalAccessException If the access permission is denied.
      */
-    @SneakyThrows
     default void registerOnSIR() {
-        SIRPlugin.checkAccess(CustomListener.class);
         register(SIRPlugin.getInstance());
     }
 

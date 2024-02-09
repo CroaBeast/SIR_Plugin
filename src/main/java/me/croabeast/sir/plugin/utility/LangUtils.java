@@ -4,8 +4,9 @@ import me.croabeast.beanslib.BeansLib;
 import me.croabeast.beanslib.applier.StringApplier;
 import me.croabeast.beanslib.key.PlayerKey;
 import me.croabeast.beanslib.utility.TextUtils;
+import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.ConfigurationSection;
@@ -35,36 +36,40 @@ public final class LangUtils extends BeansLib {
         PlayerKey.loadKey("{suffix}", PlayerUtils::getSuffix);
     }
 
+    static YAMLFile config() {
+        return YAMLCache.getMainConfig();
+    }
+
     public @NotNull String getLangPrefixKey() {
-        return FileCache.MAIN_CONFIG.getValue("values.lang-prefix-key", "<P>");
+        return config().get("values.lang-prefix-key", "<P>");
     }
 
     public @NotNull String getLangPrefix() {
-        return FileCache.getLang().getValue("main-prefix", " &e&lSIR &8>");
+        return YAMLCache.getLang().get("main-prefix", " &e&lSIR &8>");
     }
 
     public @NotNull String getCenterPrefix() {
-        return FileCache.MAIN_CONFIG.getValue("values.center-prefix", "<C>");
+        return config().get("values.center-prefix", "<C>");
     }
 
     public @NotNull String getLineSeparator() {
-        return Pattern.quote(FileCache.MAIN_CONFIG.getValue("values.line-separator", "<n>"));
+        return Pattern.quote(config().get("values.line-separator", "<n>"));
     }
 
     public boolean isColoredConsole() {
-        return !FileCache.MAIN_CONFIG.getValue("options.fix-logger", false);
+        return !config().get("options.fix-logger", false);
     }
 
     public ConfigurationSection getWebhookSection() {
-        return FileCache.WEBHOOKS.getSection("webhooks");
+        return YAMLCache.getWebhooks().getSection("webhooks");
     }
 
     public ConfigurationSection getBossbarSection() {
-        return FileCache.BOSSBARS.getSection("bossbars");
+        return YAMLCache.getBossbars().getSection("bossbars");
     }
 
     public boolean isStripPrefix() {
-        return !FileCache.MAIN_CONFIG.getValue("options.show-prefix", false);
+        return !config().get("options.show-prefix", false);
     }
 
     public static void executeCommands(Player player, List<String> commands) {

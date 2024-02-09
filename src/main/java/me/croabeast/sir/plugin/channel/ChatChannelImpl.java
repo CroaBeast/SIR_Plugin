@@ -2,12 +2,13 @@ package me.croabeast.sir.plugin.channel;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
-import me.croabeast.sir.plugin.file.CacheHandler;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.api.file.YAMLFile;
+import me.croabeast.sir.plugin.file.CacheManageable;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
 
-final class ChatChannelImpl extends AbstractChatChannel implements CacheHandler {
+final class ChatChannelImpl extends AbstractChatChannel implements CacheManageable {
 
     private static ChatChannel defs = null;
 
@@ -31,8 +32,8 @@ final class ChatChannelImpl extends AbstractChatChannel implements CacheHandler 
         };
     }
 
-    static FileCache config() {
-        return FileCache.CHAT_CHANNELS_CACHE.getConfig();
+    static YAMLFile config() {
+        return YAMLCache.fromChannels("config");
     }
 
     @SneakyThrows
@@ -52,7 +53,7 @@ final class ChatChannelImpl extends AbstractChatChannel implements CacheHandler 
         });
     }
 
-    @Priority(level = 1)
+    @Priority(1)
     static void loadCache() {
         try {
             loadDefaults();
@@ -60,7 +61,7 @@ final class ChatChannelImpl extends AbstractChatChannel implements CacheHandler 
     }
 
     static ChatChannel getDefaults() {
-        if (!config().getValue("default-channel.enabled", true))
+        if (!config().get("default-channel.enabled", true))
             return null;
 
         try {

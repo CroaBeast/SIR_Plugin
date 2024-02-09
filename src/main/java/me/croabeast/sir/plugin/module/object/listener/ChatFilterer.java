@@ -2,7 +2,7 @@ package me.croabeast.sir.plugin.module.object.listener;
 
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.TextUtils;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ChatFilterer extends ModuleListener {
+class ChatFilterer extends ModuleListener {
 
     ChatFilterer() {
         super(ModuleName.CHAT_FILTERS);
@@ -30,7 +30,7 @@ public class ChatFilterer extends ModuleListener {
         Player player = event.getPlayer();
         String message = event.getMessage();
 
-        ConfigurationSection filters = FileCache.CHAT_FILTERS_CACHE.getSection("filters");
+        ConfigurationSection filters = YAMLCache.getFilters().getSection("filters");
         if (filters == null) return;
 
         MessageSender sender = MessageSender.fromLoaded();

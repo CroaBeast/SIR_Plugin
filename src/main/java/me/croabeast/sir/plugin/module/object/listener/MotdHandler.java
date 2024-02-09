@@ -1,9 +1,10 @@
 package me.croabeast.sir.plugin.module.object.listener;
 
 import me.croabeast.beanslib.message.CenteredMessage;
+import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.api.misc.JavaLoader;
 import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import org.apache.commons.lang.StringUtils;
@@ -23,7 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Random;
 
-public class MotdHandler extends ModuleListener {
+class MotdHandler extends ModuleListener {
 
     private static final String SP = File.separator;
 
@@ -44,7 +45,7 @@ public class MotdHandler extends ModuleListener {
         s = s.replace('\\', '/');
 
         try {
-            JavaLoader.saveResourceFrom(
+            JavaLoader.saveResource(
                     SIRPlugin.getInstance().getResource(s),
                     SIRPlugin.getSIRFolder(),
                     path + SP + "server-icon.png", false
@@ -55,7 +56,7 @@ public class MotdHandler extends ModuleListener {
     }
 
     private static ConfigurationSection motds() {
-        return FileCache.MOTD_CACHE.getCache("motds").getSection("motds");
+        return YAMLCache.fromMotd("motds").getSection("motds");
     }
 
     private void initServerIcon(ServerListPingEvent event, CachedServerIcon icon) {
@@ -71,8 +72,8 @@ public class MotdHandler extends ModuleListener {
         }
     }
 
-    private static FileCache config() {
-        return FileCache.MOTD_CACHE.getConfig();
+    private static YAMLFile config() {
+        return YAMLCache.fromMotd("config");
     }
 
     enum MaxPlayers {
@@ -84,7 +85,7 @@ public class MotdHandler extends ModuleListener {
     }
 
     private static MaxPlayers getMaxPlayers() {
-        String input = config().getValue("max-players.type", "DEFAULT");
+        String input = config().get("max-players.type", "DEFAULT");
 
         try {
             return MaxPlayers.valueOf(input.toUpperCase(Locale.ENGLISH));
@@ -94,7 +95,7 @@ public class MotdHandler extends ModuleListener {
     }
 
     private static IconInput getIconInput() {
-        String input = config().getValue("server-icon.usage", "DISABLED");
+        String input = config().get("server-icon.usage", "DISABLED");
 
         try {
             return IconInput.valueOf(input.toUpperCase(Locale.ENGLISH));
@@ -141,7 +142,7 @@ public class MotdHandler extends ModuleListener {
                 event.setMotd(builder.toString());
             }
 
-            if (config().getValue("random-motds", false)) {
+            if (config().get("random-motds", false)) {
                 motdIndex = new Random().nextInt(count + 1);
                 return;
             }
@@ -152,7 +153,7 @@ public class MotdHandler extends ModuleListener {
         ((Consumer<MaxPlayers>) maxInput -> {
             if (maxInput == MaxPlayers.DEFAULT) return;
 
-            int custom = config().getValue("max-players.count", 0);
+            int custom = config().get("max-players.count", 0);
 
             event.setMaxPlayers(
                     maxInput == MaxPlayers.CUSTOM ?
@@ -169,7 +170,7 @@ public class MotdHandler extends ModuleListener {
 
             File single = new File(
                     folder,
-                    config().getValue("server-icon.image", "")
+                    config().get("server-icon.image", "")
             );
 
             File[] icons = folder.listFiles((dir, n) -> n.endsWith(".png"));

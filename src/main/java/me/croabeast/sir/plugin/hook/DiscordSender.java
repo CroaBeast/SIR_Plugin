@@ -12,7 +12,7 @@ import me.croabeast.beanslib.applier.StringApplier;
 import me.croabeast.beanslib.key.ValueReplacer;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Color;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -72,11 +72,11 @@ public final class DiscordSender {
     }
 
     FileConfiguration getModules() {
-        return FileCache.DISCORD_HOOK_CACHE.getConfig().get();
+        return YAMLCache.fromDiscordHook("config").getFrom(c -> c);
     }
 
     FileConfiguration getChannels() {
-        return FileCache.DISCORD_HOOK_CACHE.getCache("channels").get();
+        return YAMLCache.fromDiscordHook("channels").getFrom(c -> c);
     }
 
     void generateEmbed() {

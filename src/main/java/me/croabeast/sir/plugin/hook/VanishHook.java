@@ -9,7 +9,7 @@ import lombok.experimental.UtilityClass;
 import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.sir.api.event.hook.SIRVanishEvent;
 import me.croabeast.sir.api.misc.CustomListener;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import net.ess3.api.IUser;
 import net.ess3.api.events.VanishStatusChangeEvent;
 import org.bukkit.Bukkit;
@@ -36,7 +36,17 @@ public class VanishHook {
     private final List<Plugin> ENABLED_HOOKS = new ArrayList<>();
     private boolean areHooksRegistered = false;
 
-    public void loadHook() {
+    public boolean isEnabled() {
+        if (ENABLED_HOOKS.size() != 1) return false;
+        return YAMLCache.fromJoinQuit("config").get("vanish.enabled", true);
+    }
+
+    @Nullable
+    public Plugin getHook() {
+        return isEnabled() ? ENABLED_HOOKS.get(0) : null;
+    }
+
+    void loadHook() {
         if (!areHooksRegistered) {
             for (String s : SUPPORTED_PLUGINS) {
                 Plugin p = Bukkit.getPluginManager().getPlugin(s);
@@ -82,13 +92,8 @@ public class VanishHook {
             }.registerOnSIR();
     }
 
-    public void unloadHook() {
+    void unloadHook() {
         if (isEnabled()) LISTENER_SET.forEach(LoadedListener::unregister);
-    }
-
-    public boolean isEnabled() {
-        if (ENABLED_HOOKS.size() != 1) return false;
-        return FileCache.JOIN_QUIT_CACHE.getConfig().getValue("vanish.enabled", true);
     }
 
     public boolean isVanished(Player player) {
@@ -112,11 +117,6 @@ public class VanishHook {
 
     public boolean isVisible(Player player) {
         return !isVanished(player);
-    }
-
-    @Nullable
-    public Plugin getHook() {
-        return isEnabled() ? ENABLED_HOOKS.get(0) : null;
     }
 
     static class LoadedListener implements CustomListener {

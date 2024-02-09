@@ -68,13 +68,13 @@ public interface JavaLoader {
         path = path.replace('\\', '/');
 
         try {
-            saveResourceFrom(getResource(path), getDataFolder(), path, replace);
+            saveResource(getResource(path), getDataFolder(), path, replace);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    static void saveResourceFrom(
+    static void saveResource(
             InputStream resource, File dataFolder, String path, boolean replace
     ) {
         if (path == null || resource == null)
@@ -103,7 +103,11 @@ public interface JavaLoader {
             resource.close();
         }
         catch (IOException e) {
-            throw new UnsupportedOperationException(e.getLocalizedMessage());
+            throw new UnsupportedOperationException(e);
         }
+    }
+
+    static void saveResource(InputStream resource, File dataFolder, String path) {
+        saveResource(resource, dataFolder, path, false);
     }
 }

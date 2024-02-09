@@ -1,14 +1,13 @@
 package me.croabeast.sir.plugin.utility;
 
 import lombok.Getter;
-import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
 import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.command.object.ignore.IgnoreSettings;
-import me.croabeast.sir.plugin.command.object.ignore.IgnoreTask;
+import me.croabeast.sir.plugin.command.object.ignore.IgnoreCommand;
 import net.milkbowl.vault.chat.Chat;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -39,7 +38,7 @@ public class PlayerUtils {
         final boolean b = sender.hasPermission(perm);
         final String s = "options.override-op";
 
-        if (!FileCache.MAIN_CONFIG.getValue(s, false))
+        if (!YAMLCache.getMainConfig().get(s, false))
             return b;
 
         return (!sender.isOp() ||
@@ -64,7 +63,7 @@ public class PlayerUtils {
     }
 
     public boolean isIgnoring(Player source, Player target, boolean isChat) {
-        IgnoreSettings s = IgnoreTask.getSettings(source);
+        IgnoreSettings s = IgnoreCommand.getSettings(source);
         IgnoreSettings.Entry cache =
                 isChat ? s.getChatCache() : s.getMsgCache();
 
@@ -138,23 +137,15 @@ public class PlayerUtils {
         player.teleport(loc);
     }
 
-    @SneakyThrows
-    private void check() {
-        SIRPlugin.checkAccess(PlayerUtils.class);
-    }
-
     public boolean isImmune(Player player) {
-        check();
         return GOD_PLAYERS.contains(player);
     }
 
     public boolean addToImmunePlayers(Player player) {
-        check();
         return GOD_PLAYERS.add(player);
     }
 
     public boolean removeFromImmunePlayers(Player player) {
-        check();
         return GOD_PLAYERS.remove(player);
     }
 

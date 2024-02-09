@@ -1,10 +1,9 @@
 package me.croabeast.sir.plugin.world;
 
 import lombok.Getter;
-import lombok.SneakyThrows;
 import lombok.experimental.UtilityClass;
+import me.croabeast.sir.plugin.file.CacheManageable;
 import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.file.CacheHandler;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
@@ -16,7 +15,7 @@ import java.util.Map;
 
 @SuppressWarnings({"deprecation", "unchecked"})
 @UtilityClass
-public class WorldRule implements CacheHandler {
+public class WorldRule implements CacheManageable {
     
     private final Map<GameRule<?>, Rule<?>> RULE_MAP = new HashMap<>();
 
@@ -69,7 +68,7 @@ public class WorldRule implements CacheHandler {
     private final Map<World, Map<Rule<?>, String>> LOADED_RULES_MAP = new HashMap<>();
     public boolean areWorldsLoaded = false;
 
-    @Priority(level = 4)
+    @Priority(4)
     void loadCache() {
         if (areWorldsLoaded) return;
 
@@ -126,10 +125,7 @@ public class WorldRule implements CacheHandler {
         private final Class<T> c;
         private final T defValue;
 
-        @SneakyThrows
         private Rule(@NotNull String rule, Class<T> clazz, T def) {
-            SIRPlugin.checkAccess(Rule.class);
-
             this.rule = rule;
             this.defValue = def;
             this.c = clazz;

@@ -1,8 +1,9 @@
 package me.croabeast.sir.plugin.command.object.message;
 
 import me.croabeast.beanslib.message.MessageSender;
+import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.plugin.command.SIRCommand;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.module.object.listener.ChatFormatter;
 import me.croabeast.sir.plugin.utility.LangUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
@@ -14,7 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class DirectTask extends SIRCommand {
+public abstract class DirectCommand extends SIRCommand {
 
     private static final Map<CommandSender, CommandSender> RECEIVER_MAP = new HashMap<>();
 
@@ -23,17 +24,17 @@ public abstract class DirectTask extends SIRCommand {
 
     private static final String CONSOLE_PATH = MSG_PATH + "console-formatting.";
 
-    DirectTask(String name) {
+    DirectCommand(String name) {
         super(name);
     }
 
-    private static FileCache lang() {
-        return FileCache.getLang();
+    private static YAMLFile lang() {
+        return YAMLCache.getLang();
     }
 
     static String isConsole(CommandSender sender) {
         return !(sender instanceof Player) ?
-                lang().getValue(CONSOLE_PATH + "name-value", String.class) :
+                lang().get(CONSOLE_PATH + "name-value", String.class) :
                 sender.getName();
     }
 
@@ -42,7 +43,7 @@ public abstract class DirectTask extends SIRCommand {
     }
 
     static String getSound(boolean isSender) {
-        return lang().getValue(MSG_PATH + "for-" + getPath(isSender) + ".sound", "");
+        return lang().get(MSG_PATH + "for-" + getPath(isSender) + ".sound", "");
     }
 
     static List<String> getMessagingOutput(boolean isSender) {
@@ -78,7 +79,6 @@ public abstract class DirectTask extends SIRCommand {
                 .send(getMessagingOutput(false));
 
         return MessageSender.fromLoaded()
-                .setTargets((List<CommandSender>) null)
                 .addKeyValue("{receiver}",
                         !isMsg ?
                                 isConsole(target) :

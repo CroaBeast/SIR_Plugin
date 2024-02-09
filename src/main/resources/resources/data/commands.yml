@@ -14,3 +14,9 @@ commands:
   ignore:
     enabled: true
     aliases: [ ig ]
+  mute:
+    enabled: true
+  tempmute:
+    enabled: true
+  unmute:
+    enabled: true

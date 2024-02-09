@@ -1,8 +1,8 @@
 package me.croabeast.sir.plugin.command.object.message;
 
 import me.croabeast.beanslib.misc.CollectionBuilder;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.hook.VanishHook;
-import me.croabeast.sir.plugin.file.FileCache;
 import me.croabeast.sir.plugin.command.tab.TabBuilder;
 import me.croabeast.sir.plugin.command.tab.TabPredicate;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
@@ -10,9 +10,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
-public class MessageTask extends DirectTask {
+public class MessageCommand extends DirectCommand {
 
-    MessageTask() {
+    MessageCommand() {
         super("msg");
     }
 
@@ -38,12 +38,12 @@ public class MessageTask extends DirectTask {
 
             if (PlayerUtils.isIgnoring(target, player, false))
                 return fromSender(sender, "{type}",
-                        FileCache.getLang().getValue(IG_PATH + "channels.msg", ""),
+                        YAMLCache.getLang().get(IG_PATH + "channels.msg", ""),
                         ignoring + (player == null ? "all" : "player"));
 
             final String vanish = MSG_PATH + "vanish-messages.";
 
-            if (FileCache.getLang().getValue(vanish + "enabled", false) &&
+            if (YAMLCache.getLang().get(vanish + "enabled", false) &&
                     VanishHook.isVanished(target))
                 return fromSender(sender, vanish + "message");
 

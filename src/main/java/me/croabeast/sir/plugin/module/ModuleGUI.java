@@ -10,9 +10,10 @@ import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.beanslib.utility.ArrayUtils;
 import me.croabeast.beanslib.utility.LibUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
+import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.api.gui.*;
-import me.croabeast.sir.plugin.file.CacheHandler;
-import me.croabeast.sir.plugin.file.FileCache;
+import me.croabeast.sir.plugin.file.CacheManageable;
+import me.croabeast.sir.plugin.file.YAMLCache;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -20,7 +21,7 @@ import org.bukkit.entity.Player;
 import java.util.*;
 
 @UtilityClass
-public class ModuleGUI implements CacheHandler {
+public class ModuleGUI implements CacheManageable {
 
     final Map<ModuleName, Boolean> MODULE_STATUS_MAP = new LinkedHashMap<>();
     private MenuCreator modulesMenu;
@@ -54,11 +55,13 @@ public class ModuleGUI implements CacheHandler {
                         Material.RED_STAINED_GLASS_PANE,
                         "&7• " + name + " &c&l❌", lore), false
                 )
-                .setAction(b -> e ->
-                        FileCache.MODULES_DATA.setValue(
-                                "modules." + module,
-                                MODULE_STATUS_MAP.put(module, b.isEnabled())
-                        ))
+                .setAction(b -> e -> {
+                    YAMLCache.fromData("modules").set(
+                            "modules." + module,
+                            MODULE_STATUS_MAP.put(module, b.isEnabled())
+                    );
+                    YAMLCache.fromData("modules").save();
+                })
                 .modifyPane(b -> b.setPriority(Pane.Priority.HIGHEST));
     }
 
@@ -91,9 +94,9 @@ public class ModuleGUI implements CacheHandler {
         return Result.COMBINED;
     }
 
-    @Priority(level = 2)
+    @Priority(2)
     void loadCache() {
-        ConfigurationSection data = FileCache.MODULES_DATA.getSection("modules");
+        ConfigurationSection data = YAMLCache.fromData("modules").getSection("modules");
 
         for (ModuleName name : ModuleName.values()) {
             boolean status = data == null || data.getBoolean(name + "");
@@ -227,7 +230,8 @@ public class ModuleGUI implements CacheHandler {
 
                             String n = "modules." + name;
 
-                            FileCache.MODULES_DATA.setValue(n, !is);
+                            YAMLCache.fromData("modules").set(n, !is);
+                            YAMLCache.fromData("modules").save();
                             break;
                         }
                     }
@@ -236,10 +240,14 @@ public class ModuleGUI implements CacheHandler {
         modulesMenu = menu;
     }
 
-    @Priority(level = 2)
+    @Priority(2)
     void saveCache() {
-        MODULE_STATUS_MAP.forEach((k, v) -> FileCache.MODULES_DATA.setValue("modules." + k, v));
+        YAMLFile file = YAMLCache.fromData("modules");
+
+        MODULE_STATUS_MAP.forEach((k, v) -> file.set("modules." + k, v));
         MODULE_STATUS_MAP.clear();
+
+        YAMLCache.fromData("modules").save();
     }
 
     public void showGUI(Player player) {
