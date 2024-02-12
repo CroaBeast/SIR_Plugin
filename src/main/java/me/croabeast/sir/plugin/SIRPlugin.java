@@ -10,7 +10,9 @@ import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.hook.LoginHook;
 import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.object.AnnounceHandler;
-import me.croabeast.sir.plugin.module.object.EmojiParser;
+import me.croabeast.sir.plugin.module.object.ChatTagsParser;
+import me.croabeast.sir.plugin.module.object.EmojisParser;
+import me.croabeast.sir.plugin.utility.CacheUtils;
 import me.croabeast.sir.plugin.utility.LangUtils;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
@@ -97,7 +99,7 @@ public final class SIRPlugin extends JavaPlugin {
         } catch (Exception ignored) {}
 
         try {
-            SIRCache.load();
+            CacheUtils.load();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -114,7 +116,8 @@ public final class SIRPlugin extends JavaPlugin {
         MessageSender.setLoaded(sender
                 .setLogger(config.get("options.send-console", true))
                 .setSensitive(false)
-                .addFunctions(EmojiParser::parse)
+                .addFunctions(ChatTagsParser::parse)
+                .addFunctions(EmojisParser::parse)
         );
 
         LogUtils.rawLog(pluginHeader());
@@ -151,7 +154,7 @@ public final class SIRPlugin extends JavaPlugin {
         LogUtils.rawLog(pluginHeader());
 
         try {
-            SIRCache.save();
+            CacheUtils.save();
         } catch (Exception e) {
             e.printStackTrace();
         }

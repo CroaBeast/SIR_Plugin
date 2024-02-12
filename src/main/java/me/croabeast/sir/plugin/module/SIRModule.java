@@ -12,29 +12,11 @@ import java.util.Map;
  */
 public abstract class SIRModule {
 
-    /**
-     * The Map that stores all the plugin's modules.
-     */
-    static final Map<ModuleName, SIRModule> MODULE_MAP = new HashMap<>();
-
     private final ModuleName name;
 
     @SneakyThrows
     protected SIRModule(ModuleName name) {
         this.name = name;
-
-        if (MODULE_MAP.containsKey(name))
-            throw new UnsupportedOperationException("This module already exists");
-
-        MODULE_MAP.put(name, this);
-    }
-
-    public File getFolder() {
-        return new File(SIRPlugin.getSIRFolder(), "modules" + File.separator + name.toFolder);
-    }
-
-    public File getFolder(String child) {
-        return new File(getFolder(), child);
     }
 
     /**

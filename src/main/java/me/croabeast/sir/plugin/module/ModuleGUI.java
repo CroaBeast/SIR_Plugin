@@ -160,18 +160,26 @@ public class ModuleGUI implements CacheManageable {
                             "added in chat and/or other SIR features",
                             "and files."
                     ))
-                    .put(ModuleName.CHAT_FILTERS, createButton(
-                            5, 2, ModuleName.CHAT_FILTERS,
-                            "&fChat Filters:",
-                            "Handles if filters will be applied on",
-                            "the chat to avoid insults or spamming."
-                    ))
                     .put(ModuleName.MENTIONS, createButton(
-                            6, 2, ModuleName.MENTIONS,
+                            5, 2, ModuleName.MENTIONS,
                             "&fMentions:",
                             "Handles if players can be mentioned or",
                             "tagged in the chat, similar how Discord",
                             "use their mentions."
+                    ))
+                    .put(ModuleName.CHAT_FILTERS, createButton(
+                            6, 2, ModuleName.CHAT_FILTERS,
+                            "&fChat Filters:",
+                            "Handles if filters will be applied on",
+                            "the chat to avoid insults or spamming."
+                    ))
+                    .put(ModuleName.CHAT_TAGS, createButton(
+                            7, 2, ModuleName.CHAT_TAGS,
+                            "&fChat tags:",
+                            "Handles if SIR can create custom tags for",
+                            "chat. Also, those tags can be parsed through",
+                            "PlaceholderAPI in any plugin or any message",
+                            "that can be parsed by PlaceholderAPI."
                     ))
                     .toMap();
         }

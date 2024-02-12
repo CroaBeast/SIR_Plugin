@@ -4,9 +4,9 @@ import me.croabeast.sir.plugin.file.CacheManageable;
 import me.croabeast.sir.plugin.module.ModuleName;
 import me.croabeast.sir.plugin.module.SIRModule;
 
-public class ChatColorHandler extends ModuleCache {
+abstract class ModuleCache extends SIRModule implements CacheManageable {
 
-    ChatColorHandler() {
-        super(ModuleName.CHAT_COLORS);
+    protected ModuleCache(ModuleName name) {
+        super(name);
     }
 }

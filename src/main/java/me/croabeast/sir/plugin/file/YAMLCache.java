@@ -80,6 +80,7 @@ public class YAMLCache implements CacheManageable {
         moduleFolder(ModuleName.DISCORD_HOOK, "channels");
         moduleFolder(ModuleName.MOTD, "motds");
 
+        singleModule(ModuleName.CHAT_TAGS, "tags");
         singleModule(ModuleName.CHAT_FILTERS, "filters");
         singleModule(ModuleName.EMOJIS, null);
         singleModule(ModuleName.MENTIONS, null);
@@ -201,6 +202,10 @@ public class YAMLCache implements CacheManageable {
 
     public YAMLFile fromMotd(String name) {
         return FILE_MAP.get(ModuleName.MOTD.getFolderPath() + ':' + name);
+    }
+
+    public YAMLFile getTags() {
+        return FILE_MAP.get(ModuleName.CHAT_TAGS.getFolderPath() + ":tags");
     }
 
     public YAMLFile getFilters() {

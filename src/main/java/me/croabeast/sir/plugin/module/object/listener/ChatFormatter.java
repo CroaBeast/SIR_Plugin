@@ -210,7 +210,6 @@ public class ChatFormatter extends ModuleListener implements CacheManageable {
     @EventHandler(priority = EventPriority.LOWEST)
     private void onSIRChat(SIRChatEvent event) {
         if (event.isCancelled()) return;
-        System.out.println(7);
 
         ChatChannel channel = event.getChannel();
         Player player = event.getPlayer();
@@ -218,9 +217,7 @@ public class ChatFormatter extends ModuleListener implements CacheManageable {
         String message = event.getMessage();
 
         Map<Player, Long> map = event.isGlobal() ? GLOBAL_TIMERS : LOCAL_TIMERS;
-
         int timer = channel.getCooldown();
-        System.out.println(timer);
 
         if (timer > 0 && map.containsKey(player)) {
             long rest = System.currentTimeMillis() - map.get(player);
@@ -237,10 +234,10 @@ public class ChatFormatter extends ModuleListener implements CacheManageable {
             }
         }
 
-        String[] keys = channel.getChatKeys();
+        final String[] keys = channel.getChatKeys();
 
         if (SIRInitializer.hasDiscord()) {
-            String m = Beans.formatPlaceholders(player, message);
+            final String m = Beans.formatPlaceholders(player, message);
             String name = event.isGlobal() ? "global-chat" : channel.getName();
 
             new DiscordSender(player, name)

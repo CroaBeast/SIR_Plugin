@@ -1,0 +1,9 @@
+tags:
+  custom-tag:
+    tag: "[I'M GOD]"
+    permission: "tag.god"
+    priority: 20
+    group: vip
+    description:
+      - "This tag can only be obtained having VIP"
+      - "Buy one in walmart.com"

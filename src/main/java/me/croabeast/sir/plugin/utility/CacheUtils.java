@@ -1,6 +1,7 @@
-package me.croabeast.sir.plugin;
+package me.croabeast.sir.plugin.utility;
 
 import lombok.experimental.UtilityClass;
+import me.croabeast.sir.plugin.SIRCollector;
 import me.croabeast.sir.plugin.file.CacheManageable;
 import org.bukkit.Bukkit;
 
@@ -9,7 +10,7 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 @UtilityClass
-public class SIRCache {
+public class CacheUtils {
 
     int getLevel(Method method) {
         CacheManageable.Priority a = method.getAnnotation(CacheManageable.Priority.class);

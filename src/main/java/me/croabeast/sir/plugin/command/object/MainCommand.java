@@ -2,7 +2,7 @@ package me.croabeast.sir.plugin.command.object;
 
 import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.LibUtils;
-import me.croabeast.sir.plugin.SIRCache;
+import me.croabeast.sir.plugin.utility.CacheUtils;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.command.SIRCommand;
 import me.croabeast.sir.plugin.command.tab.TabBuilder;
@@ -70,12 +70,12 @@ class MainCommand extends SIRCommand {
                     long start = System.currentTimeMillis();
 
                     try {
-                        SIRCache.save();
+                        CacheUtils.save();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                     try {
-                        SIRCache.load();
+                        CacheUtils.load();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

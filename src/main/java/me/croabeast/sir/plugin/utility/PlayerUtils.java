@@ -45,6 +45,13 @@ public class PlayerUtils {
                 sender.isPermissionSet(perm)) && b;
     }
 
+    public Player getClosestPlayer(String input) {
+        for (Player p : Bukkit.getOnlinePlayers())
+            if (p.getName().matches("(?i)" + input)) return p;
+
+        return null;
+    }
+
     public String getPrefix(Player player) {
         final Chat chat = SIRInitializer.getChatMeta();
         return chat != null ? chat.getPlayerPrefix(player) : null;
@@ -53,13 +60,6 @@ public class PlayerUtils {
     public String getSuffix(Player player) {
         final Chat chat = SIRInitializer.getChatMeta();
         return chat != null ? chat.getPlayerSuffix(player) : null;
-    }
-
-    public Player getClosestPlayer(String input) {
-        for (Player p : Bukkit.getOnlinePlayers())
-            if (p.getName().matches("(?i)" + input)) return p;
-
-        return null;
     }
 
     public boolean isIgnoring(Player source, Player target, boolean isChat) {

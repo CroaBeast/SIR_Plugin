@@ -3,10 +3,8 @@ package me.croabeast.sir.plugin.module.object;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
-import me.croabeast.sir.plugin.file.CacheManageable;
 import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.module.ModuleName;
-import me.croabeast.sir.plugin.module.SIRModule;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
@@ -17,11 +15,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class EmojiParser extends SIRModule implements CacheManageable {
+public class EmojisParser extends ModuleCache {
 
     private static final List<Emoji> EMOJI_LIST = new ArrayList<>();
 
-    EmojiParser() {
+    EmojisParser() {
         super(ModuleName.EMOJIS);
     }
 
@@ -95,7 +93,7 @@ public class EmojiParser extends SIRModule implements CacheManageable {
             return Pattern.compile(inCase + k).matcher(line);
         }
 
-        public String parseEmoji(Player player, String line) {
+        String parseEmoji(Player player, String line) {
             if (StringUtils.isBlank(line) || key == null) return line;
 
             if (player != null &&
@@ -144,28 +142,28 @@ public class EmojiParser extends SIRModule implements CacheManageable {
             return "Emoji{" + "perm='" + permission + '\'' + ", key='" + key +
                     '\'' + ", value='" + value + '\'' + ", checks=" + checks + '}';
         }
+    }
 
-        @RequiredArgsConstructor
-        @Getter
-        private static class Checks {
+    @RequiredArgsConstructor
+    @Getter
+    static class Checks {
 
-            private final boolean regex, isWord, sensitive;
+        private final boolean regex, isWord, sensitive;
 
-            public Checks(ConfigurationSection id) {
-                if (id == null) throw new NullPointerException();
+        public Checks(ConfigurationSection id) {
+            if (id == null) throw new NullPointerException();
 
-                id = id.getConfigurationSection("checks");
-                if (id == null) throw new NullPointerException();
+            id = id.getConfigurationSection("checks");
+            if (id == null) throw new NullPointerException();
 
-                regex = id.getBoolean("is-regex");
-                isWord = id.getBoolean("is-word");
-                sensitive = id.getBoolean("case-sensitive");
-            }
+            regex = id.getBoolean("is-regex");
+            isWord = id.getBoolean("is-word");
+            sensitive = id.getBoolean("case-sensitive");
+        }
 
-            @Override
-            public String toString() {
-                return '{' + "regex=" + regex + ", isWord=" + isWord + ", sensitive=" + sensitive + '}';
-            }
+        @Override
+        public String toString() {
+            return '{' + "regex=" + regex + ", isWord=" + isWord + ", sensitive=" + sensitive + '}';
         }
     }
 }

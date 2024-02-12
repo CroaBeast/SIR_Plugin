@@ -2,7 +2,7 @@ package me.croabeast.sir.plugin.utility;
 
 import lombok.experimental.UtilityClass;
 import me.croabeast.beanslib.Beans;
-import me.croabeast.sir.plugin.module.object.EmojiParser;
+import me.croabeast.sir.plugin.module.object.EmojisParser;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -14,7 +14,7 @@ public class LogUtils {
 
         for (int i = 0; i < lines.length; i++) {
             try {
-                results[i] = EmojiParser.parse(null, lines[i]);
+                results[i] = EmojisParser.parse(null, lines[i]);
             } catch (Exception e) {
                 results[i] = lines[i];
             }

@@ -11,7 +11,8 @@ import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.command.SIRCommand;
 import me.croabeast.sir.plugin.command.tab.TabBuilder;
 import me.croabeast.sir.plugin.command.tab.TabPredicate;
-import me.croabeast.sir.plugin.module.object.EmojiParser;
+import me.croabeast.sir.plugin.module.object.ChatTagsParser;
+import me.croabeast.sir.plugin.module.object.EmojisParser;
 import me.croabeast.sir.plugin.utility.LangUtils;
 import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
@@ -199,7 +200,7 @@ class PrinterCommand extends SIRCommand {
                     case "GROUP":
                         targets = stream.filter(
                                 p -> {
-                                    Permission perms = SIRInitializer.getPerms();
+                                    Permission perms = SIRInitializer.getPermsMeta();
                                     if (perms == null) return false;
 
                                     return perms.getPrimaryGroup(null, p).
@@ -263,8 +264,10 @@ class PrinterCommand extends SIRCommand {
                             a[i] = s.substring(center.length());
                     }
 
-                    for (String s : a)
-                        k.execute(player, EmojiParser.parse(player, s));
+                    for (String s : a) {
+                        s = ChatTagsParser.parse(player, s);
+                        k.execute(player, EmojisParser.parse(player, s));
+                    }
                     continue;
                 }
 
@@ -278,14 +281,17 @@ class PrinterCommand extends SIRCommand {
 
                     time = time != null ? (":" + time) : "";
 
+                    message = ChatTagsParser.parse(player, message);
+
                     k.execute(player,
                             d[0] + k.getFlag() + time + d[1] + " " +
-                            EmojiParser.parse(player, message)
+                            EmojisParser.parse(player, message)
                     );
                     continue;
                 }
 
-                k.execute(player, EmojiParser.parse(player, message));
+                message = ChatTagsParser.parse(player, message);
+                k.execute(player, EmojisParser.parse(player, message));
             }
         }
     }

@@ -6,12 +6,11 @@ import me.croabeast.beanslib.message.MessageSender;
 import me.croabeast.beanslib.utility.ArrayUtils;
 import me.croabeast.beanslib.utility.TextUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
-import me.croabeast.sir.plugin.file.CacheManageable;
 import me.croabeast.sir.api.misc.ConfigUnit;
 import me.croabeast.sir.plugin.channel.ChatChannel;
+import me.croabeast.sir.plugin.file.CacheManageable;
 import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.module.ModuleName;
-import me.croabeast.sir.plugin.module.SIRModule;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
@@ -23,11 +22,11 @@ import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class MentionParser extends SIRModule implements CacheManageable {
+public class MentionsParser extends ModuleCache {
 
     private static final Map<Integer, Set<Mention>> MENTIONS_MAP = new LinkedHashMap<>();
 
-    MentionParser() {
+    MentionsParser() {
         super(ModuleName.MENTIONS);
     }
 

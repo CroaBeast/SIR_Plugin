@@ -1,9 +1,13 @@
 package me.croabeast.sir.api.misc;
 
+import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -44,6 +48,22 @@ public interface ConfigUnit {
      */
     default boolean hasPerm(CommandSender sender) {
         return PlayerUtils.hasPerm(sender, getPermission());
+    }
+
+    @Nullable
+    default String getGroup() {
+        return getSection().getString("group");
+    }
+
+    default boolean isInGroup(CommandSender sender) {
+        Player player = sender instanceof Player ? (Player) sender : null;
+
+        return player != null &&
+                SIRInitializer.getPermsMeta().playerInGroup(player, getGroup());
+    }
+
+    default boolean isInGroupNonNull(CommandSender sender) {
+        return StringUtils.isNotBlank(getGroup()) && isInGroup(sender);
     }
 
     /**

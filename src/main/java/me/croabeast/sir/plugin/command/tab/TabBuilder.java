@@ -181,18 +181,18 @@ public final class TabBuilder {
     }
 
     @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
-    static class TabObject<T> {
+    private static class TabObject<T> {
         protected final TabPredicate predicate;
         protected final TabFunction<T> function;
     }
 
-    static class StringObject extends TabObject<String> {
+    private static class StringObject extends TabObject<String> {
         StringObject(TabPredicate predicate, TabFunction<String> function) {
             super(predicate, function);
         }
     }
 
-    static class CollectionObject extends TabObject<Collection<String>> {
+    private static class CollectionObject extends TabObject<Collection<String>> {
         CollectionObject(TabPredicate predicate, TabFunction<Collection<String>> function) {
             super(predicate, function);
         }

@@ -21,9 +21,10 @@ class ModuleCache implements CacheManageable {
                 .collect().forEach(c -> {
                     try {
                         Constructor<?> ct = c.getDeclaredConstructor();
-
                         ct.setAccessible(true);
-                        c.getMethod("register").invoke(ct.newInstance());
+
+                        SIRModule module = (SIRModule) ct.newInstance();
+                        module.register();
                     } catch (Exception ignored) {}
                 });
 

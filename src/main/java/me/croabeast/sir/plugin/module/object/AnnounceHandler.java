@@ -19,7 +19,7 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.function.Function;
 
-public class AnnounceHandler extends SIRModule implements CacheManageable {
+public class AnnounceHandler extends ModuleCache {
 
     private static final Map<Integer, Announce> ANNOUNCE_MAP = new HashMap<>();
 

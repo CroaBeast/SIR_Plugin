@@ -163,9 +163,13 @@ public interface ChatChannel extends ConfigUnit {
             if (!e.isEmpty()) builder.filter(e::contains);
         }
 
-        builder.filter(p -> PlayerUtils.hasPerm(p, getPermission()));
-        if (isLocal())
-            builder.filter(p -> ChatViewCommand.isToggled(p, getName()));
+        if (isLocal()) {
+            if (StringUtils.isNotBlank(getGroup()))
+                builder.filter(this::isInGroup);
+
+            builder.filter(this::hasPerm)
+                    .filter(p -> ChatViewCommand.isToggled(p, getName()));
+        }
 
         return builder.add(player).toSet();
     }

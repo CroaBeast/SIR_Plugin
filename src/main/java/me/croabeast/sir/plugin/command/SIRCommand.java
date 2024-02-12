@@ -223,7 +223,7 @@ public abstract class SIRCommand extends Command {
 
     protected <T> boolean fromSender(CommandSender sender, String key, T value, String path) {
         return MessageSender.fromLoaded().setTargets(sender)
-                .addKeyValue(key, value)
+                .addKeyValue(key, value).setLogger(false)
                 .send(YAMLCache.getLang().toList(path));
     }
 

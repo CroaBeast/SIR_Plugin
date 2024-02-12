@@ -143,7 +143,7 @@ public class SIRInitializer {
             LogUtils.doLog("&cThere is no compatible hooks available.");
     }
 
-    public Permission getPerms() {
+    public Permission getPermsMeta() {
         return permProvider;
     }
 
