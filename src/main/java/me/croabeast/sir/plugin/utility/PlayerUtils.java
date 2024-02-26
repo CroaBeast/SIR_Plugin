@@ -18,10 +18,7 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @UtilityClass
 public class PlayerUtils {
@@ -45,7 +42,7 @@ public class PlayerUtils {
                 sender.isPermissionSet(perm)) && b;
     }
 
-    public Player getClosestPlayer(String input) {
+    public Player getClosest(String input) {
         for (Player p : Bukkit.getOnlinePlayers())
             if (p.getName().matches("(?i)" + input)) return p;
 
@@ -64,11 +61,10 @@ public class PlayerUtils {
 
     public boolean isIgnoring(Player source, Player target, boolean isChat) {
         IgnoreSettings s = IgnoreCommand.getSettings(source);
-        IgnoreSettings.Entry cache =
-                isChat ? s.getChatCache() : s.getMsgCache();
+        Set<UUID> cache = s.getCache(isChat);
 
-        return cache.isForAll() ||
-                (target != null && cache.contains(target));
+        return s.isForAll(isChat) ||
+                (target != null && cache.contains(target.getUniqueId()));
     }
 
     public void teleport(ConfigurationSection id, Player player) {
@@ -197,20 +193,5 @@ public class PlayerUtils {
 
     public Set<Player> getNearbyPlayers(Player player, double range) {
         return getNearbyPlayers(player.getLocation(), range);
-    }
-
-    public void addChatCompletions(Player player, List<String> list) {
-        if (LibUtils.MAIN_VERSION < 19.0 ||
-                player == null || list.isEmpty()) return;
-
-        final String m = "addAdditionalChatCompletions";
-        try {
-            player.getClass()
-                    .getDeclaredMethod(m, Collection.class)
-                    .invoke(player, list);
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 }

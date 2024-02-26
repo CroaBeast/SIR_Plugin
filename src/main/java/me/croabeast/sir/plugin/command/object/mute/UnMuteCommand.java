@@ -6,13 +6,12 @@ import me.croabeast.sir.plugin.command.tab.TabPredicate;
 import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.utility.LangUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 class UnMuteCommand extends MuteCommand {
 
-    protected UnMuteCommand() {
+    UnMuteCommand() {
         super("unmute");
     }
 
@@ -24,7 +23,7 @@ class UnMuteCommand extends MuteCommand {
             if (args.length < 1)
                 return fromSender(sender, PATH + "help.un-mute");
 
-            Player target = PlayerUtils.getClosestPlayer(args[0]);
+            Player target = PlayerUtils.getClosest(args[0]);
             if (target == null)
                 return fromSender(sender, PATH + "not-player");
 

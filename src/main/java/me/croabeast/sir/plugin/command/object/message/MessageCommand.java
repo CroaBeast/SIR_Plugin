@@ -26,7 +26,7 @@ public class MessageCommand extends DirectCommand {
             if (args.length == 0)
                 return fromSender(sender, MSG_PATH + "need-player");
 
-            Player target = PlayerUtils.getClosestPlayer(args[0]);
+            Player target = PlayerUtils.getClosest(args[0]);
             String not = MSG_PATH + "not-";
 
             if (target == null)

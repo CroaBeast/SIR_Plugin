@@ -3,12 +3,13 @@ package me.croabeast.sir.plugin.module.object;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
+import me.croabeast.sir.api.misc.ConfigUnit;
 import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.module.ModuleName;
-import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,7 +50,7 @@ public class EmojisParser extends ModuleCache {
             if (!ModuleName.EMOJIS.isEnabled()) return line;
             if (EMOJI_LIST.isEmpty()) return line;
 
-            for (Emoji e : EMOJI_LIST) line = e.parseEmoji(player, line);
+            for (Emoji e : EMOJI_LIST) line = e.parse(player, line);
             return line;
         }
         catch (Exception e) {
@@ -57,15 +58,16 @@ public class EmojisParser extends ModuleCache {
         }
     }
 
-    static class Emoji {
+    static class Emoji implements ConfigUnit {
 
-        private final String permission, key, value;
+        private final ConfigurationSection section;
+
+        private final String key, value;
         private final Checks checks;
 
         Emoji(ConfigurationSection section) {
             if (section == null) throw new NullPointerException();
-
-            permission = section.getString("permission", "DEFAULT");
+            this.section = section;
 
             key = section.getString("key");
             value = section.getString("value");
@@ -73,10 +75,14 @@ public class EmojisParser extends ModuleCache {
             Checks checks = new Checks(false, false, true);
             try {
                 checks = new Checks(section);
-            }
-            catch (NullPointerException ignored) {}
+            } catch (NullPointerException ignored) {}
 
             this.checks = checks;
+        }
+
+        @Override
+        public @NotNull ConfigurationSection getSection() {
+            return section;
         }
 
         String convertValue(String line) {
@@ -93,13 +99,10 @@ public class EmojisParser extends ModuleCache {
             return Pattern.compile(inCase + k).matcher(line);
         }
 
-        String parseEmoji(Player player, String line) {
+        String parse(Player player, String line) {
             if (StringUtils.isBlank(line) || key == null) return line;
 
-            if (player != null &&
-                    !permission.matches("(?i)DEFAULT") &&
-                    !PlayerUtils.hasPerm(player, permission)
-            ) return line;
+            if (player != null && !hasPerm(player)) return line;
 
             if (checks.isWord()) {
                 StringBuilder builder = new StringBuilder();
@@ -139,7 +142,7 @@ public class EmojisParser extends ModuleCache {
 
         @Override
         public String toString() {
-            return "Emoji{" + "perm='" + permission + '\'' + ", key='" + key +
+            return "Emoji{" + "perm='" + getPermission() + '\'' + ", key='" + key +
                     '\'' + ", value='" + value + '\'' + ", checks=" + checks + '}';
         }
     }

@@ -1,6 +1,7 @@
 package me.croabeast.sir.plugin.command.object.message;
 
 import me.croabeast.beanslib.misc.CollectionBuilder;
+import me.croabeast.sir.plugin.command.object.ignore.IgnoreCommand;
 import me.croabeast.sir.plugin.hook.VanishHook;
 import me.croabeast.sir.plugin.file.YAMLCache;
 import me.croabeast.sir.plugin.command.tab.TabBuilder;
@@ -27,7 +28,7 @@ public class ReplyCommand extends DirectCommand {
 
             CommandSender target = getReceiverMap().getOrDefault(
                     sender,
-                    PlayerUtils.getClosestPlayer(args[0])
+                    PlayerUtils.getClosest(args[0])
             );
 
             final String not = MSG_PATH + "not-";
@@ -51,7 +52,8 @@ public class ReplyCommand extends DirectCommand {
                 if (PlayerUtils.isIgnoring(t, player, false))
                     return fromSender(sender, "{type}",
                             YAMLCache.getLang().get(IG_PATH + "channels.msg", ""),
-                            ignoring + (player == null ? "all" : "player")
+                            ignoring +
+                                    (IgnoreCommand.getSettings(t).isForAll(false) ? "all" : "player")
                     );
 
                 if (YAMLCache.getLang().get(vanish + "enabled", false) &&

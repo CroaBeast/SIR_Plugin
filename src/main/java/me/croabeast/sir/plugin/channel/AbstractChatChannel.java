@@ -13,6 +13,7 @@ import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import me.croabeast.sir.plugin.module.object.ChatTagsParser;
 import me.croabeast.sir.plugin.module.object.EmojisParser;
 import me.croabeast.sir.plugin.module.object.MentionsParser;
+import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
@@ -128,7 +129,7 @@ abstract class AbstractChatChannel implements ChatChannel {
         StringApplier applier = StringApplier.simplified(rawFormat)
                 .apply(s -> PlayerKey.replaceKeys(p, s))
                 .apply(s -> {
-                    String[] values = getChatValues(colorChecker.check(message));
+                    String[] values = getChatValues(colorChecker.check(p, message));
                     return ValueReplacer.forEach(getChatKeys(), values, s);
                 })
                 .apply(s -> ChatTagsParser.parse(p, s))
@@ -175,14 +176,34 @@ abstract class AbstractChatChannel implements ChatChannel {
     @RequiredArgsConstructor
     static class ColorChecker {
 
+        static final String PERM = "sir.color.chat.";
         final boolean normal, special, rgb;
 
-        String check(String s) {
-            StringApplier applier = StringApplier.simplified(s);
+        boolean notColor(Player player, String perm) {
+            boolean b;
+            switch (perm) {
+                case "normal": default:
+                    b = normal;
+                    break;
+                case "rgb":
+                    b = rgb;
+                    break;
+                case "special":
+                    b = special;
+                    break;
+            }
+            return !PlayerUtils.hasPerm(player, "sir.color.chat." + perm) && !b;
+        }
 
-            if (!normal) applier.apply(NeoPrismaticAPI::stripBukkit);
-            if (!rgb) applier.apply(NeoPrismaticAPI::stripRGB);
-            if (!special) applier.apply(NeoPrismaticAPI::stripSpecial);
+        String check(Player player, String string) {
+            StringApplier applier = StringApplier.simplified(string);
+
+            if (notColor(player, "normal"))
+                applier.apply(NeoPrismaticAPI::stripBukkit);
+            if (notColor(player, "rgb"))
+                applier.apply(NeoPrismaticAPI::stripRGB);
+            if (notColor(player, "special"))
+                applier.apply(NeoPrismaticAPI::stripSpecial);
 
             return applier.toString();
         }

@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 
 class TempMuteCommand extends MuteCommand {
 
-    protected TempMuteCommand() {
+    TempMuteCommand() {
         super("tempmute");
     }
 
@@ -62,7 +62,7 @@ class TempMuteCommand extends MuteCommand {
             if (args.length < 2)
                 return fromSender(sender, PATH + "help.temp");
 
-            Player target = PlayerUtils.getClosestPlayer(args[0]);
+            Player target = PlayerUtils.getClosest(args[0]);
             if (target == null)
                 return fromSender(sender, PATH + "not-player");
 

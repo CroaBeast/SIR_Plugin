@@ -10,62 +10,92 @@ import me.croabeast.sir.plugin.utility.LogUtils;
 import me.croabeast.sir.plugin.utility.PlayerUtils;
 import org.bukkit.entity.Player;
 
+import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class IgnoreCommand extends SIRCommand {
 
     private static final String MAIN_PATH = "commands.ignore.";
 
-    public IgnoreCommand() {
+    IgnoreCommand() {
         super("ignore");
     }
 
-    @SuppressWarnings("all")
-    private boolean changeSettings(IgnoreSettings settings, Player player, String token, boolean isMsg) {
-        final String[] keys = {"{target}", "{type}"};
-        final String type = isMsg ? "msg" : "chat";
+    static String getChannelTypeName(boolean isChat) {
+        return YAMLCache.getLang().get(
+                MAIN_PATH + "channels." + (isChat ? "chat" : "msg"),
+                String.class
+        );
+    }
 
-        IgnoreSettings.Entry cache = !isMsg ?
-                settings.getChatCache() : settings.getMsgCache();
+    static final String[] KEYS = {"{target}", "{type}"};
 
-        final UUID uuid = player.getUniqueId();
+    class SettingsChanger {
 
-        String t = YAMLCache.getLang().get(
-                MAIN_PATH + "channels." + type, String.class);
+        private final IgnoreSettings settings;
+        private final boolean isChat;
+        private final String channelType;
 
-        if (token.matches("(?i)@a")) {
-            boolean b = !cache.isForAll();
-            cache.setForAll(b);
-
-            YAMLFile file = YAMLCache.fromData("ignore");
-
-            file.set("data." + uuid, settings);
-            file.save();
-
-            String path = MAIN_PATH + (b ? "success" : "remove") + ".all";
-
-            return MessageSender.fromLoaded().setTargets(player)
-                    .addKeysValues(keys, null, t)
-                    .send(YAMLCache.getLang().toList(path));
+        SettingsChanger(IgnoreSettings settings, boolean isChat) {
+            this.settings = settings;
+            this.isChat = isChat;
+            this.channelType = getChannelTypeName(isChat);
         }
 
-        Player target = PlayerUtils.getClosestPlayer(token);
-        if (target == null) return
-                fromSender(player, "{target}", token, MAIN_PATH + "not-player");
+        YAMLFile data() {
+            return YAMLCache.fromData("ignore");
+        }
 
-        if (!cache.remove(target)) cache.add(target);
+        boolean change(Player player, String token) {
+            Matcher matcher = Pattern.compile("(?i)@a").matcher(token);
 
-        YAMLFile file = YAMLCache.fromData("ignore");
+            if (matcher.find()) {
+                boolean value = !settings.isForAll(isChat);
+                settings.setForAll(isChat, value);
 
-        file.set("data." + uuid, settings);
-        file.save();
+                data().set("data." + player.getUniqueId(), settings);
+                data().save();
 
-        String path = MAIN_PATH +
-                (cache.contains(target) ? "success" : "remove") + ".all";
+                String[] values = {null, channelType};
 
-        return MessageSender.fromLoaded().setTargets(player)
-                .addKeysValues(keys, target, t)
-                .send(YAMLCache.getLang().toList(path));
+                return MessageSender.fromLoaded()
+                        .addKeysValues(KEYS, values)
+                        .setTargets(player)
+                        .send(YAMLCache.getLang().toList(
+                                MAIN_PATH +
+                                        (value ? "success" : "remove") +
+                                        ".all"
+                        ));
+            }
+
+            Player target = PlayerUtils.getClosest(token);
+            if (target == null) {
+                final String path = MAIN_PATH + "not-player";
+                return fromSender(player, "{target}", token, path);
+            }
+
+            final Set<UUID> uuids = settings.getCache(isChat);
+
+            UUID uuid = target.getUniqueId();
+            if (!uuids.remove(uuid)) uuids.add(uuid);
+
+            data().set("data." + player.getUniqueId(), settings);
+            data().save();
+
+            String[] values = {target.getName(), channelType};
+            boolean value = uuids.contains(uuid);
+
+            return MessageSender.fromLoaded()
+                    .addKeysValues(KEYS, values)
+                    .setTargets(player)
+                    .send(YAMLCache.getLang().toList(
+                            MAIN_PATH +
+                                    (value ? "success" : "remove") +
+                                    ".player"
+                    ));
+        }
     }
 
     @Override
@@ -85,13 +115,17 @@ public class IgnoreCommand extends SIRCommand {
             Player player = ((Player) sender);
             IgnoreSettings settings = getSettings(player);
 
-            if (args.length == 2 && args[1].matches("(?i)-chat"))
-                return changeSettings(settings, player, args[1], false);
+            final int length = args.length;
+            switch (length) {
+                case 1: case 2:
+                    return new SettingsChanger(
+                            settings,
+                            length == 2 && args[1].matches("(?i)-chat")
+                    ).change(player, args[0]);
 
-            if (args.length == 1)
-                return changeSettings(settings, player, args[0], true);
-
-            return isWrongArgument(sender, args[0]);
+                default:
+                    return isWrongArgument(sender, args[0]);
+            }
         };
     }
 
@@ -99,6 +133,7 @@ public class IgnoreCommand extends SIRCommand {
     protected TabBuilder completer() {
         return TabBuilder.of()
                 .addArguments(getPlayersNames())
+                .addArgument("@a")
                 .addArgument(1, "-chat");
     }
 

@@ -66,6 +66,10 @@ public interface ConfigUnit {
         return StringUtils.isNotBlank(getGroup()) && isInGroup(sender);
     }
 
+    default boolean isInGroupAsNull(CommandSender sender) {
+        return StringUtils.isBlank(getGroup()) || isInGroup(sender);
+    }
+
     /**
      * Returns the priority defined of this config unit. This allows a config unit
      * to be in front or below of other loaded config unit.

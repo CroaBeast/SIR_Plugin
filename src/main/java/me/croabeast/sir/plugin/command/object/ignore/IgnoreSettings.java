@@ -1,6 +1,7 @@
 package me.croabeast.sir.plugin.command.object.ignore;
 
 import lombok.Getter;
+import me.croabeast.beanslib.misc.CollectionBuilder;
 import me.croabeast.sir.plugin.file.CacheManageable;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
@@ -10,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 @SuppressWarnings("unchecked")
-@Getter
 public class IgnoreSettings implements ConfigurationSerializable, CacheManageable {
 
     private final Entry msgCache = new Entry();
@@ -40,18 +40,30 @@ public class IgnoreSettings implements ConfigurationSerializable, CacheManageabl
         Object msgList = args.get("msg.list");
 
         if (chatAll != null)
-            chatCache.setForAll((Boolean) chatAll);
+            setForAll(true, (Boolean) chatAll);
         if (chatList != null)
-            chatCache.storedIds = new HashSet<>((List<String>) chatList);
+            chatCache.storedIds = CollectionBuilder.of((List<String>) chatList).map(UUID::fromString).toSet();
 
         if (msgAll != null)
-            msgCache.setForAll((Boolean) msgAll);
+            setForAll(false, (Boolean) msgAll);
         if (msgList != null)
-            msgCache.storedIds = new HashSet<>((List<String>) msgList);
+            msgCache.storedIds = CollectionBuilder.of((List<String>) msgList).map(UUID::fromString).toSet();
     }
 
     IgnoreSettings(Player player) {
         this.uuid = player.getUniqueId();
+    }
+
+    public Set<UUID> getCache(boolean isChat) {
+        return (!isChat ? msgCache : chatCache).storedIds;
+    }
+
+    public boolean isForAll(boolean isChat) {
+        return (!isChat ? msgCache : chatCache).isForAll();
+    }
+
+    public void setForAll(boolean isChat, boolean value) {
+        (!isChat ? msgCache : chatCache).forAll = value;
     }
 
     @NotNull
@@ -61,10 +73,10 @@ public class IgnoreSettings implements ConfigurationSerializable, CacheManageabl
         data.put("uuid", uuid.toString());
 
         data.put("chat.for-all", chatCache.forAll);
-        data.put("chat.list", chatCache.storedIds);
+        data.put("chat.list", chatCache.serialize());
 
         data.put("msg.for-all", msgCache.forAll);
-        data.put("msg.list", msgCache.storedIds);
+        data.put("msg.list", msgCache.serialize());
 
         return data;
     }
@@ -77,27 +89,14 @@ public class IgnoreSettings implements ConfigurationSerializable, CacheManageabl
         return valueOf(args);
     }
 
-    public static class Entry {
+    static class Entry {
 
-        private Set<String> storedIds = new HashSet<>();
+        private Set<UUID> storedIds = new HashSet<>();
         @Getter
         private boolean forAll = false;
 
-        public Entry setForAll(boolean b) {
-            forAll = b;
-            return this;
-        }
-
-        public boolean remove(Player player) {
-            return storedIds.remove(player.getUniqueId() + "");
-        }
-
-        public boolean add(Player player) {
-            return storedIds.add(player.getUniqueId() + "");
-        }
-
-        public boolean contains(Player player) {
-            return storedIds.contains(player.getUniqueId() + "");
+        List<String> serialize() {
+            return CollectionBuilder.of(storedIds).map(UUID::toString).toList();
         }
     }
 }

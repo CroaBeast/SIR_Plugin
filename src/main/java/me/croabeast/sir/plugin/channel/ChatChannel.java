@@ -171,6 +171,8 @@ public interface ChatChannel extends ConfigUnit {
                     .filter(p -> ChatViewCommand.isToggled(p, getName()));
         }
 
+        builder.filter(p -> !PlayerUtils.isIgnoring(p, player, true));
+
         return builder.add(player).toSet();
     }
 

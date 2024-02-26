@@ -169,6 +169,11 @@ public final class SIRPlugin extends JavaPlugin {
 
         HandlerList.unregisterAll(this);
 
+        if (SIRInitializer.hasProtocolLib())
+            SIRInitializer
+                    .getProtocolManager()
+                    .removePacketListeners(this);
+
         utils = null;
         instance = null;
     }

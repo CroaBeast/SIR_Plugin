@@ -56,7 +56,7 @@ public class CacheUtils {
                 } catch (Exception e) {
                     Bukkit.getLogger().info(
                             " • " + clazz + " can't be" +
-                                    temp + "(" +
+                                    temp + " (" +
                                     e.getLocalizedMessage()+ ")"
                     );
                 }

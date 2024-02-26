@@ -1,5 +1,7 @@
 package me.croabeast.sir.plugin;
 
+import com.comphenix.protocol.ProtocolLibrary;
+import com.comphenix.protocol.ProtocolManager;
 import lombok.experimental.UtilityClass;
 import me.croabeast.beanslib.utility.Exceptions;
 import me.croabeast.sir.plugin.hook.LoginHook;
@@ -26,11 +28,18 @@ public class SIRInitializer {
     private Permission permProvider;
     private Chat chatProvider;
 
+    ProtocolManager manager;
+
     private boolean hasPAPI() {
         return Exceptions.isPluginEnabled("PlaceholderAPI");
     }
+
     public boolean hasVault() {
         return Exceptions.isPluginEnabled("Vault");
+    }
+
+    boolean hasProtocolLib() {
+        return Exceptions.isPluginEnabled("ProtocolLib");
     }
 
     public boolean hasDiscord() {
@@ -95,6 +104,11 @@ public class SIRInitializer {
         LogUtils.doLog("&bChecking all compatible hooks...");
         int logLines = 0;
 
+        if (hasProtocolLib()) {
+            LogUtils.doLog("&7ProtocolLib: &e" + pluginVersion("ProtocolLib"));
+            logLines++;
+        }
+
         if (hasPAPI()) {
             LogUtils.doLog("&7PlaceholderAPI: &e" + pluginVersion("PlaceholderAPI"));
             logLines++;
@@ -103,8 +117,10 @@ public class SIRInitializer {
         if (hasVault()) {
             ServicesManager servMngr = Bukkit.getServer().getServicesManager();
 
-            RegisteredServiceProvider<Permission> rsp = servMngr.getRegistration(Permission.class);
-            RegisteredServiceProvider<Chat> rsc = servMngr.getRegistration(Chat.class);
+            RegisteredServiceProvider<Permission> rsp =
+                    servMngr.getRegistration(Permission.class);
+            RegisteredServiceProvider<Chat> rsc =
+                    servMngr.getRegistration(Chat.class);
 
             if (rsp != null) permProvider = rsp.getProvider();
             if (rsc != null) chatProvider = rsc.getProvider();
@@ -144,10 +160,18 @@ public class SIRInitializer {
     }
 
     public Permission getPermsMeta() {
-        return permProvider;
+        return hasVault() ? permProvider : null;
     }
 
     public Chat getChatMeta() {
-        return chatProvider;
+        return hasVault() ? chatProvider : null;
+    }
+
+    ProtocolManager initProtocolManager() {
+        return manager == null ? (manager = ProtocolLibrary.getProtocolManager()) : manager;
+    }
+
+    public ProtocolManager getProtocolManager() {
+        return hasProtocolLib() ? initProtocolManager() : null;
     }
 }

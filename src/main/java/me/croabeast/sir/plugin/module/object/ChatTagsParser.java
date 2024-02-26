@@ -124,6 +124,8 @@ public class ChatTagsParser extends ModuleCache {
         if (player == null || StringUtils.isBlank(string))
             return string;
 
+        if (!ModuleName.CHAT_TAGS.isEnabled()) return string;
+
         Pattern pattern = Pattern.compile("(?i)\\{tag_(.+)}");
 
         Matcher matcher = pattern.matcher(string);

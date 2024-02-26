@@ -12,7 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 class PermMuteCommand extends MuteCommand {
 
-    protected PermMuteCommand() {
+    PermMuteCommand() {
         super("mute");
     }
 
@@ -24,7 +24,7 @@ class PermMuteCommand extends MuteCommand {
             if (args.length == 0)
                 return fromSender(sender, PATH + "help.perm");
 
-            Player target = PlayerUtils.getClosestPlayer(args[0]);
+            Player target = PlayerUtils.getClosest(args[0]);
             if (target == null)
                 return fromSender(sender, PATH + "not-player");
 
