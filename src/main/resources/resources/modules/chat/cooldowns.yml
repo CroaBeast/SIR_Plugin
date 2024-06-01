@@ -1,0 +1,13 @@
+cooldowns:
+  default:
+    permission: DEFAULT
+    priority: 0
+    check:
+      enabled: false
+      count: 5
+      time-limit: 10
+      commands:
+        - "kick {player}"
+    time: 5
+    messages:
+      - '<P> &cYou can not send another message in {time} seconds.'

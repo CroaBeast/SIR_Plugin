@@ -1,0 +1,21 @@
+# If a vanish plugin is installed, this section will be activated.
+# Compatible vanish plugins: [ CMI, EssentialsX, SuperVanish, etc ]
+
+# If a message has a "spawn:" section, and this option is disabled,
+# that spawn section won't be executed.
+use-spawn: false
+# This option will allow vanished players to chat (or not) when enabled.
+# This feature is EXPERIMENTAL, so errors might occur using this feature
+# along with other chat-related modules.
+chat-key:
+  enabled: false
+  # The key to check in the chat message.
+  key: ''
+  # If the key is a regex one.
+  regex: false
+  # If not regex, will check if the key is a prefix or suffix.
+  # Default: PREFIX
+  place: PREFIX
+  # The message to send when players are not allowed to chat.
+  # Disable these messages setting it like this: []
+  not-allowed: '<P> &cYou are not allowed to chat when you are vanished.'

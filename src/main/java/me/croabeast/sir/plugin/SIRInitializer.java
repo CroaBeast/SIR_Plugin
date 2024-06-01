@@ -1,13 +1,9 @@
 package me.croabeast.sir.plugin;
 
-import com.comphenix.protocol.ProtocolLibrary;
-import com.comphenix.protocol.ProtocolManager;
 import lombok.experimental.UtilityClass;
-import me.croabeast.beanslib.utility.Exceptions;
-import me.croabeast.sir.plugin.hook.LoginHook;
-import me.croabeast.sir.plugin.hook.VanishHook;
-import me.croabeast.sir.plugin.module.ModuleName;
-import me.croabeast.sir.plugin.utility.LogUtils;
+import me.croabeast.lib.util.Exceptions;
+import me.croabeast.sir.plugin.module.hook.LoginHook;
+import me.croabeast.sir.plugin.module.hook.VanishHook;
 import net.milkbowl.vault.chat.Chat;
 import net.milkbowl.vault.permission.Permission;
 import org.bstats.bukkit.Metrics;
@@ -28,8 +24,6 @@ public class SIRInitializer {
     private Permission permProvider;
     private Chat chatProvider;
 
-    ProtocolManager manager;
-
     private boolean hasPAPI() {
         return Exceptions.isPluginEnabled("PlaceholderAPI");
     }
@@ -38,12 +32,16 @@ public class SIRInitializer {
         return Exceptions.isPluginEnabled("Vault");
     }
 
-    boolean hasProtocolLib() {
-        return Exceptions.isPluginEnabled("ProtocolLib");
+    public boolean hasDiscord() {
+        return Exceptions.isPluginEnabled("DiscordSRV");
     }
 
-    public boolean hasDiscord() {
-        return Exceptions.isPluginEnabled("DiscordSRV") && ModuleName.DISCORD_HOOK.isEnabled();
+    public Chat getChatMeta() {
+        return hasVault() ? chatProvider : null;
+    }
+
+    public Permission getPermsMeta() {
+        return hasVault() ? permProvider : null;
     }
 
     void startMetrics() {
@@ -53,8 +51,7 @@ public class SIRInitializer {
             metrics.addCustomChart(new SimplePie("hasPAPI", () -> hasPAPI() + ""));
             metrics.addCustomChart(new SimplePie("hasVault", () -> hasVault() + ""));
 
-            metrics.addCustomChart(new SimplePie("hasDiscord", () ->
-                    (Exceptions.isPluginEnabled("DiscordSRV")) + ""));
+            metrics.addCustomChart(new SimplePie("hasDiscord", () -> (hasDiscord()) + ""));
 
             metrics.addCustomChart(new DrilldownPie("loginPlugins", () -> {
                 Map<String, Map<String, Integer>> map = new HashMap<>();
@@ -62,7 +59,7 @@ public class SIRInitializer {
 
                 entry.put("Login Plugins", 1);
 
-                if (LoginHook.isEnabled()) {
+                if (LoginHook.isHookEnabled()) {
                     Plugin p = LoginHook.getHook();
                     map.put(p != null ? p.getName() : "None / Other", entry);
                 }
@@ -77,7 +74,7 @@ public class SIRInitializer {
 
                 entry.put("Vanish Plugins", 1);
 
-                if (VanishHook.isEnabled()) {
+                if (VanishHook.isHookEnabled()) {
                     Plugin p = VanishHook.getHook();
                     map.put(p != null ? p.getName() : "None / Other", entry);
                 }
@@ -101,16 +98,11 @@ public class SIRInitializer {
     }
 
     void setPluginHooks() {
-        LogUtils.doLog("&bChecking all compatible hooks...");
+        SIRPlugin.DELAY_LOGGER.add(true, "&bLoading all available hooks...");
         int logLines = 0;
 
-        if (hasProtocolLib()) {
-            LogUtils.doLog("&7ProtocolLib: &e" + pluginVersion("ProtocolLib"));
-            logLines++;
-        }
-
         if (hasPAPI()) {
-            LogUtils.doLog("&7PlaceholderAPI: &e" + pluginVersion("PlaceholderAPI"));
+            SIRPlugin.DELAY_LOGGER.add(true, "&7PlaceholderAPI: &e" + pluginVersion("PlaceholderAPI"));
             logLines++;
         }
 
@@ -127,11 +119,11 @@ public class SIRInitializer {
         }
 
         if (hasDiscord()) {
-            LogUtils.doLog("&7DiscordSRV: " + "&e" + pluginVersion("DiscordSRV"));
+            SIRPlugin.DELAY_LOGGER.add(true, "&7DiscordSRV: " + "&e" + pluginVersion("DiscordSRV"));
             logLines++;
         }
 
-        if (LoginHook.isEnabled()) {
+        if (LoginHook.isHookEnabled()) {
             StringBuilder builder = new StringBuilder("&7Login Plugin: &e");
             final Plugin p = LoginHook.getHook();
 
@@ -139,11 +131,11 @@ public class SIRInitializer {
                     .append(' ')
                     .append(pluginVersion(p));
 
-            LogUtils.doLog(builder.toString());
+            SIRPlugin.DELAY_LOGGER.add(true, builder.toString());
             logLines++;
         }
 
-        if (VanishHook.isEnabled()) {
+        if (VanishHook.isHookEnabled()) {
             StringBuilder builder = new StringBuilder("&7Vanish Plugin: &e");
             final Plugin p = VanishHook.getHook();
 
@@ -151,27 +143,11 @@ public class SIRInitializer {
                     .append(' ')
                     .append(pluginVersion(p));
 
-            LogUtils.doLog(builder.toString());
+            SIRPlugin.DELAY_LOGGER.add(true, builder.toString());
             logLines++;
         }
 
         if (logLines == 0)
-            LogUtils.doLog("&cThere is no compatible hooks available.");
-    }
-
-    public Permission getPermsMeta() {
-        return hasVault() ? permProvider : null;
-    }
-
-    public Chat getChatMeta() {
-        return hasVault() ? chatProvider : null;
-    }
-
-    ProtocolManager initProtocolManager() {
-        return manager == null ? (manager = ProtocolLibrary.getProtocolManager()) : manager;
-    }
-
-    public ProtocolManager getProtocolManager() {
-        return hasProtocolLib() ? initProtocolManager() : null;
+            SIRPlugin.DELAY_LOGGER.add(true, "&cThere is no compatible hooks available.");
     }
 }

@@ -1,39 +1,116 @@
 package me.croabeast.sir.plugin.module;
 
-import lombok.SneakyThrows;
-import me.croabeast.sir.plugin.SIRPlugin;
+import lombok.Getter;
+import me.croabeast.sir.api.SIRExtension;
+import me.croabeast.sir.api.file.ConfigurableFile;
+import me.croabeast.sir.plugin.file.YAMLData;
+import me.croabeast.sir.plugin.module.chat.*;
+import me.croabeast.sir.plugin.module.hook.DiscordHook;
+import me.croabeast.sir.plugin.module.hook.LoginHook;
+import me.croabeast.sir.plugin.module.hook.VanishHook;
+import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Objects;
 
-/**
- * This class represents a module used for each feature.
- */
-public abstract class SIRModule {
+@Getter
+public abstract class SIRModule implements SIRExtension {
 
-    private final ModuleName name;
+    public static final Data<JoinQuitHandler> JOIN_QUIT = new Data<>("join-quit", JoinQuitHandler.class);
+    public static final Data<AdvanceHandler> ADVANCEMENTS = new Data<>("advancements", AdvanceHandler.class);
+    public static final Data<MotdHandler> MOTD = new Data<>("motd", MotdHandler.class);
+    public static final Data<AnnounceHandler> ANNOUNCEMENTS = new Data<>("announcements", AnnounceHandler.class);
+    public static final Data<FilterHandler> FILTERS = new Data<>(Type.CHAT, "filters", FilterHandler.class);
+    public static final Data<MentionParser> MENTIONS = new Data<>(Type.CHAT, "emojis", MentionParser.class);
+    public static final Data<TagsParser> TAGS = new Data<>(Type.CHAT, "tags", TagsParser.class);
+    public static final Data<ChannelHandler> CHANNELS = new Data<>(Type.CHAT, "channels", ChannelHandler.class);
+    public static final Data<EmojiParser> EMOJIS = new Data<>(Type.CHAT, "emojis", EmojiParser.class);
+    public static final Data<CooldownHandler> COOLDOWNS = new Data<>(Type.CHAT, "cooldowns", CooldownHandler.class);
+    public static final Data<VanishHook> VANISH = new Data<>(Type.HOOK, "vanish", VanishHook.class);
+    public static final Data<LoginHook> LOGIN = new Data<>(Type.HOOK, "login", LoginHook.class);
+    public static final Data<DiscordHook> DISCORD = new Data<>(Type.HOOK, "discord", DiscordHook.class);
 
-    @SneakyThrows
-    protected SIRModule(ModuleName name) {
+    private enum Type {
+        DEFAULT(null),
+        CHAT("chat."),
+        HOOK("hook.");
+
+        private final String name;
+
+        Type(String name) {
+            this.name = name;
+        }
+    }
+
+    public static class Data<M extends SIRModule> {
+
+        private final String name;
+        private final Class<M> clazz;
+
+        private Data(Type type, String name, Class<M> clazz) {
+            this.clazz = clazz;
+
+            if (type != Type.DEFAULT)
+                name = type.name + name;
+
+            this.name = name;
+        }
+
+        private Data(String name, Class<M> clazz) {
+            this(Type.DEFAULT, name, clazz);
+        }
+
+        public M getData() {
+            SIRModule module = ModuleData.MODULE_MAP.getOrDefault(name, null);
+            try {
+                return module == null ? null : clazz.cast(module);
+            } catch (Exception e) {
+                return null;
+            }
+        }
+
+        public boolean isEnabled() {
+            return getData() != null && getData().isEnabled();
+        }
+    }
+
+    private final String name;
+    final ConfigurableFile file = YAMLData.Module.getMain();
+
+    protected SIRModule(String name) {
         this.name = name;
+        ModuleData.MODULE_MAP.put(name, this);
+
+        boolean enabled = file.get("modules." + name, false);
+        ModuleData.STATUS_MAP.put(name, enabled);
     }
 
-    /**
-     * Registers the module in the server.
-     */
-    public void register() {}
-
-    /**
-     * Checks if the module is enabled in the GUI.
-     *
-     * @return if the specified module is enabled.
-     */
-    protected boolean isEnabled() {
-        return name.isEnabled();
+    @NotNull
+    public File getDataFolder() {
+        throw new UnsupportedOperationException("File can't be got");
     }
 
+    @Override
+    public boolean isLoaded() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return ModuleData.STATUS_MAP.getOrDefault(name, false);
+    }
+
+    public boolean register() {
+        return true;
+    }
+
+    @Override
     public String toString() {
-        return "SIRModule{" + name + ", " + name.isEnabled() + "}";
+        return "SIRModule{name='" + name + '}';
+    }
+
+    public static void showGUI(Player player) {
+        ModuleData.modulesMenu.showGUI(Objects.requireNonNull(player));
     }
 }

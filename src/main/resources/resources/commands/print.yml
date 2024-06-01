@@ -1,0 +1,28 @@
+lang:
+  help:
+    main:
+      - '&7'
+      - ' &6>> &ePrint Help Menu'
+      - '  &7- &b/print&7: Shows this help menu.'
+      - '  &7- &b/print targets&7: Shows the targets info.'
+      - '  &7- &b/print ACTION-BAR&7: Help for Action Bar.'
+      - '  &7- &b/print CHAT&7: Help for Chat messages.'
+      - '  &7- &b/print TITLE&7: Help for titles messages.'
+      - '&7'
+    targets:
+      - '&7'
+      - ' &6>> &ePrint Targets Info'
+      - '  &7- &b<PLAYER>&7: Selects one player'
+      - '  &7- &b@a&7: Selects all online players'
+      - '  &7- &bWORLD:myWorld&7: Selects all players in a valid and existing world'
+      - '  &7- &bPERM:my.perm&7: Selects all players that has that permission'
+      - '  &7- &bGROUP:myGroup&7: Selects all players in a perms group (Only with Vault)'
+      - '&7'
+    action-bar: '<P> Usage: &b/print ACTION-BAR <target> <my message>'
+    chat: '<P> Usage: &b/print CHAT <target> <type> <my message>'
+    title: '<P> Usage: &b/print TITLE <target> <times> <my message>'
+  empty-message: '<P> &cYou can not send an empty message.'
+  # To remind if the sender sends a message via /print command.
+  reminder:
+    empty: '<P> This target or group of targets is/are invalid or empty.'
+    success: '<P> The message was send correctly to {TARGET}!'

@@ -1,0 +1,19 @@
+lang:
+  is-muted: '<P> &cYou are muted, and not allowed to send private messages.'
+  empty-message: '<P> &cYou can not send an empty message.'
+  need-player: '<P> &cYou need a player to use this command.'
+  not-player: '<P> &cThe player {target} does not exist.'
+  not-replied: '<P> &cYou did not send a message to a player before.'
+  not-yourself: '<P> &cYou can not send a message to yourself.'
+  for-sender:
+    message: ' &eME &8> &6{receiver}&7: &f{message}'
+    sound: ENTITY_PLAYER_LEVELUP # Disable the sound setting it like this: ''
+  for-receiver:
+    message: ' &6{sender} &8> &eME&7: &f{message}'
+    sound: ENTITY_PLAYER_LEVELUP # Disable the sound setting it like this: ''
+  vanish-messages:
+    enabled: false
+    message: '<P> &cYou can not send a message to a vanished player.'
+  console-formatting:
+    name: '&cConsole'
+    format: ' &6{sender} &8> &e{receiver}&7: &f{message}'

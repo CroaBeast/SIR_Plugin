@@ -2,8 +2,8 @@ package me.croabeast.sir.api.event.chat;
 
 import lombok.Getter;
 import lombok.Setter;
-import me.croabeast.sir.plugin.channel.ChatChannel;
 import me.croabeast.sir.api.event.SIRPlayerEvent;
+import me.croabeast.sir.plugin.channel.ChatChannel;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;

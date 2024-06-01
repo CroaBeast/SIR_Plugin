@@ -17,7 +17,7 @@ public abstract class PaneCreatable<P extends Pane> {
 
     @NotNull
     public PaneCreatable<P> modifyPane(Consumer<P> consumer) {
-        consumer.accept(pane);
+        Objects.requireNonNull(consumer).accept(pane);
         return this;
     }
 

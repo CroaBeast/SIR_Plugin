@@ -10,6 +10,7 @@ first-join:
     invulnerable: 3
     # teleports a player when join
     spawn:
+      enabled: false
       world: world
 join:
   # a random number or custom name
@@ -20,6 +21,7 @@ join:
       - '&8[&a+&8] &7Welcome &e{player} &7to the server!'
     invulnerable: 3
     spawn-location:
+      enabled: false
       # the world
       world: world
       # the coordinates

@@ -1,0 +1,4 @@
+lang:
+  help: "<P> &7Correct usage: &b/chat-view &3<local format name>"
+  'true': "<P> &7The messages of the channel &e{channel}&7 are&a visible&7."
+  'false': "<P> &7The messages of the channel &e{channel}&7 are&c not visible&7."

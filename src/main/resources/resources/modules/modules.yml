@@ -1,0 +1,18 @@
+update: true
+
+modules:
+  join-quit: true
+  announcements: true
+  motd: true
+  advancements: true
+  chat:
+    channels: true
+    tags: true
+    filters: true
+    emojis: true
+    cooldowns: true
+    mentions: true
+  hook:
+    discord: true
+    login: true
+    vanish: true

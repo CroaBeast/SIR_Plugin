@@ -1,0 +1,10 @@
+lang:
+  help:
+    - '&7'
+    - ' &6>> &e&lSIR &7v {version}'
+    - '  &7 &b/sir&7: The main command of the plugin.'
+    - '  &7 &b/print&7: Prints a raw message to a target.'
+    - '  &7 &b/announcer&7: Manage announcements task.'
+    - '&7'
+  support: '<P> Enter our Discord server: &b{link}'
+  reload: '<P> All the .yml files was reloaded successfully in {time} ms.'

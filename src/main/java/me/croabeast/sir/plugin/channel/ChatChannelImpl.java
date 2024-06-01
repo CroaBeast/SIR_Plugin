@@ -2,13 +2,13 @@ package me.croabeast.sir.plugin.channel;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
-import me.croabeast.sir.api.file.YAMLFile;
-import me.croabeast.sir.plugin.file.CacheManageable;
-import me.croabeast.sir.plugin.file.YAMLCache;
+import me.croabeast.sir.api.file.Configurable;
+import me.croabeast.sir.plugin.DataHandler;
+import me.croabeast.sir.plugin.file.YAMLData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
 
-final class ChatChannelImpl extends AbstractChatChannel implements CacheManageable {
+final class ChatChannelImpl extends AbstractChannel implements DataHandler {
 
     private static ChatChannel defs = null;
 
@@ -19,7 +19,7 @@ final class ChatChannelImpl extends AbstractChatChannel implements CacheManageab
         super(section, getDefaults());
 
         ConfigurationSection l = getSection().getConfigurationSection("local");
-        subChannel = (l == null || isLocal()) ? null : new AbstractChatChannel(l, this) {
+        subChannel = (l == null || isLocal()) ? null : new AbstractChannel(l, this) {
 
             public boolean isGlobal() {
                 return false;
@@ -32,15 +32,15 @@ final class ChatChannelImpl extends AbstractChatChannel implements CacheManageab
         };
     }
 
-    static YAMLFile config() {
-        return YAMLCache.fromChannels("config");
+    static Configurable config() {
+        return YAMLData.Module.Chat.CHANNELS.from();
     }
 
     @SneakyThrows
     static ChatChannel loadDefaults() {
         ConfigurationSection def = config().getSection("default-channel");
 
-        return def == null ? null : (defs = new AbstractChatChannel(def, null) {
+        return def == null ? null : (defs = new AbstractChannel(def, null) {
 
             public boolean isGlobal() {
                 return true;
@@ -54,7 +54,7 @@ final class ChatChannelImpl extends AbstractChatChannel implements CacheManageab
     }
 
     @Priority(1)
-    static void loadCache() {
+    static void loadData() {
         try {
             loadDefaults();
         } catch (Exception ignored) {}

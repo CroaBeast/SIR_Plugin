@@ -1,0 +1,88 @@
+# This section is for the default channel that applies to all custom
+# global and local channels.
+# This can be helpful and more efficient if you want to apply default
+# changes instead of doing it one by one.
+default-channel:
+  enabled: true
+  # prefix: ''
+  # suffix: ''
+  color:
+    normal: false
+    special: false
+    rgb: false
+  radius: 0
+  cooldown:
+    time: 5
+    message: '<P> &cYou can not send another message in {time} seconds.'
+  format: ' &7{player} &8: &7{message}'
+
+# example of a chat channel
+example-channel:
+  permission: custom.permission
+  priority: 3
+  group: CUSTOM_GROUP
+  global: true # or false
+  radius: 0
+  worlds: []
+  prefix: "&a&l USER &7"
+  suffix: " &8&l• &7"
+  color-string: "{#c0c0c0}"
+  color:
+    normal: true # or false
+    special: true # or false
+    rgb: true # or false
+  click-action: "SUGGEST:/msg {player} hello"
+  hover:
+    - "Click here to contact this player"
+  # These access options are ONLY for local channels "global: false".
+  access:
+    # This prefix needs to be BEFORE the chat message. It identifies
+    # what local channel will receive the message.
+    # Example: @this message is only for the sir private channel
+    prefix: "@"
+    # These commands work exactly like prefixes, but in commands.
+    # Example: /custom a local msg
+    commands:
+      - /admin
+      - /admin-chat
+  format: "{prefix} {player} {suffix}: {color}{message}"
+
+channels:
+  # a random number or custom name
+  default:
+    format: '&7 {player}&8: {#C0C0C0}{message}'
+  vip:
+    # can be DEFAULT, null or custom
+    permission: chat.vip
+    # the prefix
+    prefix: '&e&l VIP'
+    # if you want to use colors in this format
+    color:
+      # minecraft colors
+      normal: true
+    format: '{prefix} &7{player}&8: &#FFFF99{message}'
+  # this is an example local channel for staff
+  local-staff-channel:
+    global: false
+    permission: chat.staff
+    priority: 100
+    prefix: '&c&l STAFF'
+    color:
+      # minecraft colors
+      normal: true
+      # special formatting (bold, underlined, etc)
+      special: true
+      # rgb, gradient, etc
+      rgb: true
+    # These access options are ONLY for local channels.
+    access:
+      # This prefix needs to be BEFORE the chat message. It identifies
+      # what local channel will receive the message.
+      # Example: @this message is only for the sir private channel
+      prefix: "@"
+      # These commands work exactly like prefixes, but in commands.
+      # Example: /custom a local msg
+      commands:
+        - /admin
+        - /admin-chat
+    format: '[STAFF] {prefix} &7{player}&8: #FF9999{message}'

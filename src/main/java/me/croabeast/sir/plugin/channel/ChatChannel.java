@@ -1,13 +1,14 @@
 package me.croabeast.sir.plugin.channel;
 
 import lombok.SneakyThrows;
-import me.croabeast.beanslib.misc.CollectionBuilder;
-import me.croabeast.beanslib.utility.TextUtils;
-import me.croabeast.sir.api.file.YAMLFile;
-import me.croabeast.sir.api.misc.ConfigUnit;
-import me.croabeast.sir.plugin.file.YAMLCache;
-import me.croabeast.sir.plugin.command.object.ChatViewCommand;
-import me.croabeast.sir.plugin.utility.PlayerUtils;
+import me.croabeast.lib.CollectionBuilder;
+import me.croabeast.lib.util.TextUtils;
+import me.croabeast.sir.api.ConfigUnit;
+import me.croabeast.sir.api.file.Configurable;
+import me.croabeast.sir.plugin.command.ChatViewCommand;
+import me.croabeast.sir.plugin.command.ignore.IgnoreCommand;
+import me.croabeast.sir.plugin.file.YAMLData;
+import me.croabeast.sir.plugin.util.PlayerUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -79,20 +80,6 @@ public interface ChatChannel extends ConfigUnit {
     @Nullable String getSuffix();
 
     @Nullable String getColor();
-
-    /**
-     * Returns the channel's cooldown, to avoid spam in that channel.
-     * @return the cooldown
-     */
-    int getCooldown();
-
-    /**
-     * Returns the cooldown messages that can be displayed to the player that tries
-     * to chat when the channel is on cooldown.
-     *
-     * @return the cooldown messages
-     */
-    @NotNull List<String> getCdMessages();
 
     /**
      * Returns the radius (in blocks) where the receiver players should be located
@@ -167,12 +154,11 @@ public interface ChatChannel extends ConfigUnit {
             if (StringUtils.isNotBlank(getGroup()))
                 builder.filter(this::isInGroup);
 
-            builder.filter(this::hasPerm)
-                    .filter(p -> ChatViewCommand.isToggled(p, getName()));
+            builder.filter(this::hasPerm);
+            builder.filter(p -> ChatViewCommand.isToggled(p, getName()));
         }
 
-        builder.filter(p -> !PlayerUtils.isIgnoring(p, player, true));
-
+        builder.filter(p -> !IgnoreCommand.isIgnoring(p, player, true));
         return builder.add(player).toSet();
     }
 
@@ -181,8 +167,8 @@ public interface ChatChannel extends ConfigUnit {
     void setChatFormat(@NotNull String format);
 
     default String getLogFormat() {
-        YAMLFile config = YAMLCache.fromChannels("config");
-        String format = AbstractChatChannel.DEF_FORMAT;
+        Configurable config = YAMLData.Module.Chat.getMain();
+        String format = AbstractChannel.DEF_FORMAT;
 
         String log = !config.get("simple-logger.enabled", false) ?
                 getChatFormat() :
@@ -208,7 +194,7 @@ public interface ChatChannel extends ConfigUnit {
     }
 
     default String[] getChatKeys() {
-        return new String[] {"{prefix}", "{sir-prefix}", "{suffix}", "{sir-suffix}", "{color}", "{message}"};
+        return new String[] {"{prefix}", "{me.croabeast.sir-prefix}", "{suffix}", "{me.croabeast.sir-suffix}", "{color}", "{message}"};
     }
 
     default String[] getChatValues(String message) {

@@ -1,7 +1,7 @@
 package me.croabeast.sir.api.gui;
 
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
-import me.croabeast.beanslib.utility.ArrayUtils;
+import me.croabeast.lib.util.ArrayUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -70,5 +70,9 @@ public final class ItemCreator {
 
     public static ItemCreator of(Material material) {
         return new ItemCreator(material);
+    }
+
+    public static ItemCreator of(ItemStack stack) {
+        return new ItemCreator(stack);
     }
 }

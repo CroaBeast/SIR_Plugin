@@ -6,7 +6,7 @@
 
     <groupId>me.croabeast</groupId>
     <artifactId>SIR_Plugin</artifactId>
-    <version>3.1</version>
+    <version>4.0-SNAPSHOT-1</version>
     <packaging>jar</packaging>
 
     <name>SIR_Plugin</name> <!--Simple In-game Receptionist-->
@@ -47,10 +47,6 @@
                 <configuration>
                     <relocations>
                         <relocation>
-                            <pattern>com.tchristofferson.configupdater</pattern>
-                            <shadedPattern>me.croabeast.sir.api.file</shadedPattern>
-                        </relocation>
-                        <relocation>
                             <pattern>org.bstats</pattern>
                             <shadedPattern>me.croabeast.metrics</shadedPattern>
                         </relocation>
@@ -65,10 +61,11 @@
                             <artifact>*:*</artifact>
                             <excludes>
                                 <exclude>META-INF/**</exclude>
+                                <exclude>old/me/croabeast/**</exclude>
                                 <exclude>me/croabeast/sir/api/loot/**</exclude>
-                                <exclude>me/croabeast/sir/api/file/update/**</exclude>
                                 <exclude>fonts/**</exclude>
                                 <exclude>resources/plugin.yml</exclude>
+                                <exclude>old.resources/**</exclude>
                             </excludes>
                         </filter>
                     </filters>
@@ -80,6 +77,21 @@
                 <artifactId>maven-install-plugin</artifactId>
                 <version>2.5.2</version>
                 <executions>
+                    <execution>
+                        <id>BeansLib</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>me.croabeast</groupId>
+                            <artifactId>BeansLib</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                            <file>lib/BeansLib.jar</file>
+                        </configuration>
+                    </execution>
+
                     <execution>
                         <id>UserLogin</id>
                         <phase>initialize</phase>
@@ -171,12 +183,12 @@
             <url>https://repo.codemc.org/repository/maven-public/</url>
         </repository>
         <repository>
-            <id>nickuc-repo</id>
-            <url>https://repo.nickuc.com/maven-releases/</url>
+            <id>codemc-releases</id>
+            <url>https://repo.codemc.io/repository/maven-releases/</url>
         </repository>
         <repository>
-            <id>dmulloy2-repo</id>
-            <url>https://repo.dmulloy2.net/repository/public/</url>
+            <id>nickuc-repo</id>
+            <url>https://repo.nickuc.com/maven-releases/</url>
         </repository>
     </repositories>
 
@@ -190,7 +202,7 @@
 
         <dependency>
             <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
+            <artifactId>spigot</artifactId>
             <version>1.16.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
@@ -203,9 +215,9 @@
         </dependency>
 
         <dependency>
-            <groupId>io.github.croabeast</groupId>
+            <groupId>me.croabeast</groupId>
             <artifactId>BeansLib</artifactId>
-            <version>1.4-SNAPSHOT-157</version>
+            <version>1.0</version>
             <scope>compile</scope>
         </dependency>
 
@@ -217,22 +229,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.tchristofferson</groupId>
-            <artifactId>ConfigUpdater</artifactId>
-            <version>2.0-SNAPSHOT</version>
-            <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>com.comphenix.protocol</groupId>
-            <artifactId>ProtocolLib</artifactId>
-            <version>5.1.0</version>
+            <groupId>com.github.retrooper.packetevents</groupId>
+            <artifactId>spigot</artifactId>
+            <version>2.2.1</version>
             <scope>provided</scope>
         </dependency>
 
@@ -246,7 +245,7 @@
         <dependency>
             <groupId>com.github.CroaBeast</groupId>
             <artifactId>AdvancementInfo</artifactId>
-            <version>2.3</version>
+            <version>a54b86f558</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>

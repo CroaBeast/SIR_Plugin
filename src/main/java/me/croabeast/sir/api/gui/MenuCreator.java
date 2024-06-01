@@ -5,7 +5,7 @@ import com.github.stefvanschie.inventoryframework.gui.type.ChestGui;
 import com.github.stefvanschie.inventoryframework.pane.OutlinePane;
 import com.github.stefvanschie.inventoryframework.pane.PaginatedPane;
 import com.github.stefvanschie.inventoryframework.pane.Pane;
-import me.croabeast.beanslib.utility.ArrayUtils;
+import me.croabeast.lib.util.ArrayUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
 import org.bukkit.entity.HumanEntity;
 import org.jetbrains.annotations.NotNull;
@@ -28,7 +28,7 @@ public final class MenuCreator {
     }
 
     public MenuCreator modifyGUI(Consumer<ChestGui> consumer) {
-        consumer.accept(gui);
+        Objects.requireNonNull(consumer).accept(gui);
         return this;
     }
 
@@ -49,10 +49,8 @@ public final class MenuCreator {
     public final <P extends Pane> MenuCreator addPane(int index, PaneCreatable<P> creatable, Consumer<P>... consumers) {
         P pane = creatable.create();
 
-        if (!ArrayUtils.isArrayEmpty(consumers)) {
-            for (Consumer<P> c : ArrayUtils.toList(consumers))
-                if (c != null) c.accept(pane);
-        }
+        for (Consumer<P> c : ArrayUtils.toList(consumers))
+            if (c != null) c.accept(pane);
 
         paginatedPane.addPane(index, pane);
         return this;
@@ -62,13 +60,10 @@ public final class MenuCreator {
     public final MenuCreator addSingleItem(int index, int x, int y, GuiItem item, Consumer<OutlinePane>... consumers) {
         OutlinePane pane = new OutlinePane(x, y, 1, 1);
 
-        if (!ArrayUtils.isArrayEmpty(consumers)) {
-            for (Consumer<OutlinePane> c : ArrayUtils.toList(consumers))
-                if (c != null) c.accept(pane);
-        }
+        for (Consumer<OutlinePane> c : ArrayUtils.toList(consumers))
+            if (c != null) c.accept(pane);
 
         pane.addItem(item);
-
         return addPane(index, pane);
     }
 

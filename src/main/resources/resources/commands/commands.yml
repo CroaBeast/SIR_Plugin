@@ -1,0 +1,67 @@
+commands:
+  sir:
+    permissions:
+      main: sir.admin
+      subcommands:
+        - modules
+        - about
+        - reload
+        - help
+        - commands
+        - support
+  announcer:
+    permissions:
+      main: sir.announcer
+      subcommands:
+        - preview
+        - start
+        - cancel;stop
+        - reboot
+  print:
+    enabled: true
+    aliases: [ rawmsg, rm ]
+    permissions:
+      main: sir.print
+      subcommands:
+        - targets
+        - chat
+        - action-bar;action_bar
+        - title
+        - webhook
+  chat-view:
+    enabled: true
+    aliases: [ c-v ]
+    permissions:
+      main: sir.chat-view
+  msg:
+    enabled: true
+    aliases: [ m, tell ]
+    permissions:
+      main: sir.message
+  reply:
+    enabled: true
+    aliases: [ r ]
+    permissions:
+      main: sir.reply
+  ignore:
+    enabled: true
+    aliases: [ ig ]
+    permissions:
+      main: sir.ignore
+  mute:
+    enabled: true
+    permissions:
+      main: sir.mute.perm
+  tempmute:
+    enabled: true
+    aliases: [ temp-mute ]
+    permissions:
+      main: sir.mute.temp
+  unmute:
+    enabled: true
+    permissions:
+      main: sir.unmute
+
+lang:
+  no-permission: '<P> You do not have the permission &c{perm} &7to use this.'
+  wrong-arg: '<P> The argument &c{arg} &7is invalid or does not exist.'

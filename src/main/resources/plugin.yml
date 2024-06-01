@@ -11,7 +11,7 @@ softdepend:
   - ViaVersion
   - Vault
   - PlaceholderAPI
-  - ProtocolLib
+  - PacketEvents
   - InteractiveChat
   # Login plugins
   - UserLogin

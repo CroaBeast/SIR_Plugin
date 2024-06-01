@@ -1,0 +1,11 @@
+# If a login plugin is installed, this section will be activated.
+# Compatible login plugins: [ AuthMe, UserLogin ]
+
+# This will send messages after some in-game ticks.
+# You can set this to 0 if you don't want this option or deleting
+# this path completely.
+ticks-after: 10
+# Enabling this will teleport the player before log-in/register if
+# a message group has a "spawn:" section.
+# Disabling it will teleport AFTER the player log-in/register.
+spawn-before: true

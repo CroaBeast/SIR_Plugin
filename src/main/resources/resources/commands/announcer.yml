@@ -1,0 +1,17 @@
+lang:
+  help:
+    - '&7'
+    - ' &6>> &eAnnouncer command Help'
+    - '  &7- &b/announcer&7: Shows this help menu.'
+    - '  &7- &b/announcer start&7: Starts the task.'
+    - '  &7- &b/announcer cancel&7: Cancels the task.'
+    - '  &7- &b/announcer reboot&7: Reboots the task.'
+    - '  &7- &b/announcer preview <ID>&7:'
+    - '    &7Shows a preview of an announcement.'
+    - '&7'
+  cant-start: '<P> &cThe announcement task is already started.'
+  cant-stop: '<P> &cThe announcement task is already canceled.'
+  started: '<P> &cThe announcement task has been started.'
+  stopped: '<P> &cThe announcement task has been canceled.'
+  rebooted: '<P> &cThe announcement task has been reset.'
+  select: '<P> Please select a valid announce from&a announces.yml'

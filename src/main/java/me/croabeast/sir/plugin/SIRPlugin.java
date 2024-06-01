@@ -2,268 +2,149 @@ package me.croabeast.sir.plugin;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
-import me.croabeast.beanslib.message.MessageSender;
-import me.croabeast.beanslib.misc.CollectionBuilder;
-import me.croabeast.beanslib.misc.UpdateChecker;
-import me.croabeast.sir.api.file.YAMLFile;
-import me.croabeast.sir.plugin.file.YAMLCache;
-import me.croabeast.sir.plugin.hook.LoginHook;
-import me.croabeast.sir.plugin.module.ModuleName;
-import me.croabeast.sir.plugin.module.object.AnnounceHandler;
-import me.croabeast.sir.plugin.module.object.ChatTagsParser;
-import me.croabeast.sir.plugin.module.object.EmojisParser;
-import me.croabeast.sir.plugin.utility.CacheUtils;
-import me.croabeast.sir.plugin.utility.LangUtils;
-import me.croabeast.sir.plugin.utility.LogUtils;
-import me.croabeast.sir.plugin.utility.PlayerUtils;
-import org.apache.commons.lang.SystemUtils;
+import me.croabeast.beans.BeansLib;
+import me.croabeast.beans.builder.BossbarBuilder;
+import me.croabeast.beans.message.MessageSender;
+import me.croabeast.sir.api.ResourceIOUtils;
+import me.croabeast.sir.api.file.ConfigurableFile;
+import me.croabeast.sir.plugin.file.YAMLData;
+import me.croabeast.sir.plugin.logger.DelayLogger;
+import me.croabeast.sir.plugin.module.SIRModule;
+import me.croabeast.sir.plugin.module.hook.LoginHook;
+import me.croabeast.sir.plugin.util.DataUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
-import java.net.URLDecoder;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.jar.JarFile;
-import java.util.zip.ZipEntry;
 
 public final class SIRPlugin extends JavaPlugin {
 
-    static final List<Class<?>> JAR_ENTRIES = new ArrayList<>();
-    static final String EMPTY_LINE = "true::";
+    public static final DelayLogger DELAY_LOGGER = DelayLogger.simplified();
 
     @Getter
     private static SIRPlugin instance;
     @Getter
-    private static LangUtils utils;
-
-    @Getter
     private static String version, author;
 
-    static String[] pluginHeader() {
-        return new String[] {
-                "", "&0* *&e____ &0* &e___ &0* &e____",
-                "&0* &e(___&0 * * &e|&0* * &e|___)",
-                "&0* &e____) . _|_ . | &0* &e\\ . &f" + getVersion(), ""
-        };
+    static class SIRSender extends MessageSender {
+
+        private SIRSender() {
+            addFunctions(SIRModule.TAGS.getData()::parse, SIRModule.EMOJIS.getData()::parse);
+        }
+
+        @Override
+        public boolean isSensitive() {
+            return false;
+        }
+
+        @Override
+        public String getErrorPrefix() {
+            return null;
+        }
+
+        static ConfigurableFile config() {
+            return YAMLData.Main.CONFIG.from();
+        }
+
+        public boolean trimSpaces() {
+            return config().get("options.strip-spaces", false);
+        }
+
+        public boolean isLogger() {
+            return config().get("options.send-console", true);
+        }
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public void onEnable() {
         final long start = System.currentTimeMillis();
-        instance = this;
 
+        instance = this;
         author = getDescription().getAuthors().get(0);
         version = getDescription().getVersion();
 
-        utils = new LangUtils(this);
+        DELAY_LOGGER.setPlugin(this);
+        SIRLoader.loadAllJarEntries();
 
-        String path = getClass().getProtectionDomain()
-                .getCodeSource()
-                .getLocation().getPath();
+        DELAY_LOGGER.clear();
 
-        try (JarFile j = new JarFile(new File(URLDecoder.decode(path)))) {
-            final String prefix = "me/croabeast/sir/plugin";
-
-            JAR_ENTRIES.addAll(
-                    CollectionBuilder.of(j.entries())
-                            .map(ZipEntry::getName)
-                            .filter(s -> {
-                                if (s.contains("$")) return false;
-
-                                if (s.startsWith(prefix + "/hook"))
-                                    return false;
-
-                                if (!s.startsWith(prefix))
-                                    return false;
-
-                                return s.endsWith(".class");
-                            })
-                            .map(s -> {
-                                s = s.replace('/', '.')
-                                        .replace(".class", "");
-
-                                try {
-                                    return Class.forName(s);
-                                } catch (Exception ignored) {
-                                    return null;
-                                }
-                            })
-                            .filter(Objects::nonNull).toList()
-            );
-        } catch (Exception ignored) {}
-
-        try {
-            CacheUtils.load();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        final YAMLFile config = YAMLCache.getMainConfig();
-
-        MessageSender sender = new MessageSender() {
-            @Override
-            public boolean shouldTrimSpaces() {
-                return config.get("options.strip-spaces", false);
-            }
-        };
-
-        MessageSender.setLoaded(sender
-                .setLogger(config.get("options.send-console", true))
-                .setSensitive(false)
-                .addFunctions(ChatTagsParser::parse)
-                .addFunctions(EmojisParser::parse)
-        );
-
-        LogUtils.rawLog(pluginHeader());
-
-        LogUtils.rawLog(
-                "&0* &7Developer: " + author,
-                "&0* &7Software: " + Bukkit.getVersion(),
-                "&0* &7Java Version: " +
-                        SystemUtils.JAVA_VERSION, ""
+        DELAY_LOGGER.add(false,
+                "&0* *&e____ &0* &e___ &0* &e____",
+                "&0* &e(___&0 * * &e|&0* * &e|___)",
+                "&0* &e____) . _|_ . | &0* &e\\ . &f" +
+                        getVersion(), ""
         );
 
         SIRInitializer.startMetrics();
         SIRInitializer.setPluginHooks();
 
-        if (ModuleName.ANNOUNCEMENTS.isEnabled()) {
-            AnnounceHandler.startTask();
-            LogUtils.doLog("&7The announcement task has been started.");
-        }
-
-        LogUtils.mixLog("",
-                "&7SIR " + version + " was&a loaded&7 in &e" +
-                (System.currentTimeMillis() - start) + " ms.",
-                EMPTY_LINE
-        );
-
-        if (LoginHook.isEnabled())
-            Bukkit.getOnlinePlayers().forEach(LoginHook::addPlayer);
-
-        runTaskWhenLoaded(() -> checkUpdater(null));
-    }
-
-    @Override
-    public void onDisable() {
-        LogUtils.rawLog(pluginHeader());
-
         try {
-            CacheUtils.save();
+            DataUtils.load();
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        AnnounceHandler.cancelTask();
+        SIRLoader.initializeLangUtils(this);
 
-        LogUtils.mixLog(
-                "&7The announcement task has been stopped.", "",
-                "&7SIR &c" + version + "&7 was totally disabled.",
-                EMPTY_LINE
+        try {
+            MessageSender.setLoaded(new SIRSender());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        SIRModule.ANNOUNCEMENTS.getData().start();
+
+        if (LoginHook.isHookEnabled())
+            Bukkit.getOnlinePlayers().forEach(LoginHook::addPlayer);
+
+        DELAY_LOGGER.add(false, "");
+        DELAY_LOGGER.add(true,
+                "&7SIR " + version + " was&a loaded&7 in &e" +
+                        (System.currentTimeMillis() - start) + " ms."
+        );
+        DELAY_LOGGER.add(false, "");
+
+        DELAY_LOGGER.sendLines(false);
+    }
+
+    @Override
+    public void onDisable() {
+        Bukkit.getOnlinePlayers().forEach(p ->
+                BossbarBuilder.getBuilders(p).forEach(BossbarBuilder::unregister));
+
+        try {
+            DataUtils.save();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        SIRModule.ANNOUNCEMENTS.getData().stop();
+
+        BeansLib.logger().log(false,
+                "&0* *&e____ &0* &e___ &0* &e____",
+                "&0* &e(___&0 * * &e|&0* * &e|___)",
+                "&0* &e____) . _|_ . | &0* &e\\ . &f" +
+                        getVersion(), ""
         );
 
+        BeansLib.logger().log("&7SIR &c" + version + "&7 was totally disabled.");
+        BeansLib.logger().log(false, "");
+
         HandlerList.unregisterAll(this);
-
-        if (SIRInitializer.hasProtocolLib())
-            SIRInitializer
-                    .getProtocolManager()
-                    .removePacketListeners(this);
-
-        utils = null;
         instance = null;
     }
 
-    private static void updaterLog(Player player, String... strings) {
-        if (player != null) {
-            String[] array = new String[strings.length];
-
-            for (int i = 0; i < strings.length; i++) {
-                String s = strings[i];
-                array[i] = s.equals(EMPTY_LINE) ? " " : s;
-            }
-
-            LogUtils.playerLog(player, array);
-            return;
-        }
-
-        LogUtils.mixLog(strings);
+    public static File getFolder() {
+        return getInstance().getDataFolder();
     }
 
-    private static void runUpdater(@Nullable Player player) {
-        UpdateChecker.of(instance, 96378).requestUpdateCheck().whenComplete((result, e) -> {
-            String latest = result.getNewestVersion();
-
-            switch (result.getReason()) {
-                case NEW_UPDATE:
-                    updaterLog(player,
-                            EMPTY_LINE, "&4NEW UPDATE!",
-                            "&cYou don't have the latest version of S.I.R. installed.",
-                            "&cRemember, older versions won't receive any support.",
-                            "&7New Version: &a" + latest +
-                                    "&7 - Your Version: &e" + version,
-                            "&7Link:&b https://www.spigotmc.org/resources/96378/",
-                            EMPTY_LINE
-                    );
-                    break;
-
-                case UP_TO_DATE:
-                    updaterLog(player,
-                            EMPTY_LINE,
-                            "&eYou have the latest version of S.I.R. &7(" + latest + ")",
-                            "&7I would appreciate if you keep updating &c<3",
-                            EMPTY_LINE
-                    );
-                    break;
-
-                case UNRELEASED_VERSION:
-                    updaterLog(player,
-                            EMPTY_LINE, "&4DEVELOPMENT BUILD:",
-                            "&cYou have a newer version of S.I.R. installed.",
-                            "&cErrors might occur in this build.",
-                            "Spigot Version: &a" + result.getSpigotVersion() +
-                                    "&7 - Your Version: &e" + version,
-                            EMPTY_LINE
-                    );
-                    break;
-
-                default:
-                    updaterLog(player,
-                            EMPTY_LINE, "&4WARNING!",
-                            "&cCould not check for a new version of S.I.R.",
-                            "&7Please check your connection and restart the server.",
-                            "&7Possible reason: &e" + result.getReason(),
-                            EMPTY_LINE
-                    );
-                    break;
-            }
-        });
-    }
-
-    @SneakyThrows
-    public static void checkUpdater(@Nullable Player player) {
-        if (player == null) {
-            if (!YAMLCache.getMainConfig().get("updater.plugin.on-start", false))
-                return;
-            runUpdater(null);
-        }
-        else {
-            if (!YAMLCache.getMainConfig().get("updater.plugin.send-op", false) ||
-                    !PlayerUtils.hasPerm(player, "sir.admin.updater")) return;
-            runUpdater(player);
-        }
+    public static File fileFrom(String... childPaths) {
+        return ResourceIOUtils.fileFrom(getFolder(), childPaths);
     }
 
     @SneakyThrows
     public static void runTaskWhenLoaded(Runnable runnable) {
-        Bukkit.getScheduler().scheduleSyncDelayedTask(instance, runnable);
-    }
-
-    public static File getSIRFolder() {
-        return instance.getDataFolder();
+        Bukkit.getScheduler().scheduleSyncDelayedTask(getInstance(), runnable);
     }
 }

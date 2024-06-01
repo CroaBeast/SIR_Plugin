@@ -6,11 +6,7 @@ import java.util.function.Predicate;
 
 public final class SIRCollector {
 
-    private final List<Class<?>> classes = new ArrayList<>();
-
-    private SIRCollector() {
-        classes.addAll(SIRPlugin.JAR_ENTRIES);
-    }
+    private final List<Class<?>> classes = new ArrayList<>(SIRLoader.JAR_CLASSES);
 
     public SIRCollector filter(Predicate<Class<?>> predicate) {
         classes.removeIf(predicate.negate());

@@ -1,0 +1,24 @@
+lang:
+  help:
+    perm: "<P> &7Correct usage: &b/mute &3<player> <reason>"
+    temp: "<P> &7Correct usage: &b/tempmute &3<player> <time> <reason>"
+    un-mute: "<P> &7Correct usage: &b/unmute &3<player> <reason>"
+  default-reason:
+    mute: "Not following server rules."
+    un-mute: "Time ended."
+  is-muted:
+    perm: "&e&lMUTE &8> &b{target} is already muted permanently due to {reason}."
+    temp: "&e&lMUTE &8> &b{target} is already muted due to {reason}. Time left: {time}"
+    un-mute: "&e&lMUTE &8> &b{target} is not muted yet."
+  time:
+    seconds: "second(s)"
+    minutes: "minute(s)"
+    hours: "hour(s)"
+    days: "day(s)"
+    weeks: "week(s)"
+    months: "month(s)"
+    years: "year(s)"
+  action:
+    perm: "&e&lMUTE &8> &b{target} was muted permanently due to &b{reason}."
+    temp: "&e&lMUTE &8> &b{target} was muted for &3{time} due to &b{reason}."
+    un-mute: "&e&lMUTE &8> &b{player} was un-muted due to &b{reason}."

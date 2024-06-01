@@ -1,7 +1,8 @@
 package me.croabeast.sir.api.file;
 
-import com.google.common.base.Preconditions;
-import lombok.experimental.UtilityClass;
+import lombok.AllArgsConstructor;
+import me.croabeast.lib.util.ArrayUtils;
+import me.croabeast.lib.util.Exceptions;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -11,186 +12,139 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
 @SuppressWarnings("unchecked")
-@UtilityClass
-public class YAMLUpdater {
+public final class YAMLUpdater {
 
-    private final char SEP = '.';
+    private static final Charset UTF_8 = StandardCharsets.UTF_8;
+    private static final char SEP = '.';
 
-    public void updateFrom(InputStream resource, File file, String... ignored) throws IOException {
-        updateFrom(resource, file, Arrays.asList(ignored));
-    }
+    private final FileLoader loader;
+    private final String resourcePath;
 
-    public void updateFrom(InputStream resource, File file, List<String> ignored) throws IOException {
-        Preconditions.checkArgument(file.exists(), "The file doesn't exist!");
+    private final File file;
 
-        FileConfiguration def = YamlConfiguration.loadConfiguration(new InputStreamReader(resource, StandardCharsets.UTF_8));
-        FileConfiguration curConfig = YamlConfiguration.loadConfiguration(file);
+    private final FileConfiguration def;
+    private final FileConfiguration current;
 
-        Map<String, String> comments = parseComments(resource, def);
-        Map<String, String> ignoredValues = parseIgnored(file, comments, ignored == null ? Collections.emptyList() : ignored);
+    private final Map<String, String> comments;
+    private final Map<String, String> ignored;
 
-        StringWriter writer = new StringWriter();
-        write(def, curConfig, new BufferedWriter(writer), comments, ignoredValues);
+    private <T> YAMLUpdater(T loader, String resourcePath, File file, List<String> ignored) throws IOException {
+        this.loader = new FileLoader(loader);
 
-        String value = writer.toString();
-        Path filePath = file.toPath();
-
-        if (!value.equals(new String(Files.readAllBytes(filePath), StandardCharsets.UTF_8)))
-            Files.write(filePath, value.getBytes(StandardCharsets.UTF_8));
-    }
-
-    void write(FileConfiguration def, FileConfiguration current, BufferedWriter writer, Map<String, String> comments, Map<String, String> ignored) throws IOException {
-        FileConfiguration parser = new YamlConfiguration();
-
-        for (String key : def.getKeys(true)) {
-            String indents = getIndents(key);
-
-            if (!ignored.isEmpty() &&
-                    writeIgnoredIfExists(ignored, writer, key))
-                continue;
-
-            final String c = comments.get(key);
-            if (c != null) {
-                String temp = c.substring(0, c.length() - 1).replace("\n", "\n" + indents);
-                writer.write(indents + temp + "\n");
-            }
-
-            Object value = current.get(key);
-
-            if (value == null)
-                value = def.get(key);
-
-            String[] splitKey = key.split("[" + SEP + "]");
-            String lastKey = splitKey[splitKey.length - 1];
-
-            if (value instanceof ConfigurationSection) {
-                writer.write(indents + lastKey + ":");
-
-                if (!((ConfigurationSection) value).getKeys(false).isEmpty()) {
-                    writer.write("\n");
-                    continue;
-                }
-
-                writer.write(" {}\n");
-                continue;
-            }
-
-            parser.set(lastKey, value);
-
-            String s = parser.saveToString();
-            s = s.substring(0, s.length() - 1).replace("\n", "\n" + indents);
-
-            String toWrite = indents + s + "\n";
-            parser.set(lastKey, null);
-
-            writer.write(toWrite);
+        this.resourcePath = resourcePath;
+        try {
+            this.file = Exceptions.validate(f -> f != null && f.exists(), file);
+        } catch (Exception e) {
+            throw new IOException(e);
         }
 
-        String extraComments = comments.get(null);
-        if (extraComments != null) writer.write(extraComments);
+        this.def = YamlConfiguration.loadConfiguration(fromReader());
+        this.current = YamlConfiguration.loadConfiguration(file);
 
-        writer.close();
+        this.comments = parseComments();
+        this.ignored = parseIgnored(ignored == null ? Collections.emptyList() : ignored);
     }
 
-    Map<String, String> parseComments(InputStream resource, FileConfiguration def) throws IOException {
-        Objects.requireNonNull(def);
-        Objects.requireNonNull(resource);
-
+    private Map<String, String> parseComments() throws IOException {
         List<String> keys = new ArrayList<>(def.getKeys(true));
-        BufferedReader reader = new BufferedReader(new InputStreamReader(resource));
-
         Map<String, String> comments = new LinkedHashMap<>();
-        StringBuilder commentBuilder = new StringBuilder();
 
-        KeyBuilder keyBuilder = new KeyBuilder(def, SEP);
-        String validKey = null;
+        StringBuilder builder = new StringBuilder();
+        KeyBuilder kb = new KeyBuilder(def, SEP);
+
+        BufferedReader reader = new BufferedReader(fromReader());
+
+        String currentValidKey = null;
 
         String line;
         while ((line = reader.readLine()) != null) {
-            String trimmedLine = line.trim();
-            if (trimmedLine.startsWith("-")) continue;
+            String trim = line.trim();
+            if (trim.startsWith("-")) continue;
 
-            if (trimmedLine.isEmpty() || trimmedLine.startsWith("#")) {
-                commentBuilder.append(trimmedLine).append("\n");
+            if (trim.isEmpty() || trim.startsWith("#")) {
+                builder.append(trim).append("\n");
                 continue;
             }
 
             if (!line.startsWith(" ")) {
-                keyBuilder.clear();
-                validKey = trimmedLine;
+                kb.clear();
+                currentValidKey = trim;
             }
 
-            keyBuilder.parseLine(trimmedLine, true);
-            String key = keyBuilder.toString();
+            kb.parseLine(trim, true);
+            String key = kb.toString();
 
-            if (commentBuilder.length() > 0) {
-                comments.put(key, commentBuilder.toString());
-                commentBuilder.setLength(0);
+            if (builder.length() > 0) {
+                comments.put(key, builder.toString());
+                builder.setLength(0);
             }
 
-            int nextKeyIndex = keys.indexOf(keyBuilder.toString()) + 1;
-            if (nextKeyIndex >= keys.size()) continue;
+            int index = keys.indexOf(kb.toString()) + 1;
+            if (index >= keys.size()) continue;
 
-            String nextKey = keys.get(nextKeyIndex);
-            while (!keyBuilder.isEmpty() && !nextKey.startsWith(keyBuilder.toString()))
-                keyBuilder.removeLastKey();
+            String next = keys.get(index);
 
-            if (keyBuilder.isEmpty()) keyBuilder.parseLine(validKey, false);
+            while (!kb.isEmpty() && !next.startsWith(kb.toString()))
+                kb.removeLastKey();
+
+            if (kb.isEmpty()) kb.parseLine(currentValidKey, false);
         }
 
         reader.close();
-
-        if (commentBuilder.length() > 0)
-            comments.put(null, commentBuilder.toString());
+        if (builder.length() > 0) comments.put(null, builder.toString());
 
         return comments;
     }
 
-    Map<String, String> parseIgnored(File file, Map<String, String> comments, List<String> ignored) throws IOException {
-        Map<String, String> ignoredValues = new LinkedHashMap<>(ignored.size());
-
-        final DumperOptions options = new DumperOptions();
-        options.setLineBreak(DumperOptions.LineBreak.UNIX);
-        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-        Yaml yaml = new Yaml(new YamlConstructor(), new YamlRepresenter(), options);
-
-        Map<Object, Object> root = yaml.load(new FileReader(file));
-
-        ignored.forEach(section -> {
-            String[] split = section.split("[" + SEP + "]");
-            String key = split[split.length - 1];
-            Map<Object, Object> map = getSection(section, root);
-
-            StringBuilder keyBuilder = new StringBuilder();
-            for (int i = 0; i < split.length; i++) {
-                if (i != split.length - 1) {
-                    if (keyBuilder.length() > 0)
-                        keyBuilder.append(SEP);
-
-                    keyBuilder.append(split[i]);
-                }
-            }
-
-            ignoredValues.put(section, buildIgnored(key, map, comments, keyBuilder, new StringBuilder(), yaml));
-        });
-
-        return ignoredValues;
+    private InputStreamReader fromReader() {
+        return new InputStreamReader(Objects.requireNonNull(loader.getResource(resourcePath)), UTF_8);
     }
 
-    Map<Object, Object> getSection(String full, Map<Object, Object> root) {
+    private Object getKeyAsObject(String key, Map<Object, Object> context) {
+        if (context.containsKey(key)) return key;
+
+        try {
+            Float keyFloat = Float.parseFloat(key);
+            if (context.containsKey(keyFloat))
+                return keyFloat;
+        } catch (NumberFormatException ignored) {}
+
+        try {
+            Double keyDouble = Double.parseDouble(key);
+            if (context.containsKey(keyDouble))
+                return keyDouble;
+        } catch (NumberFormatException ignored) {}
+
+        try {
+            Integer keyInteger = Integer.parseInt(key);
+            if (context.containsKey(keyInteger))
+                return keyInteger;
+        } catch (NumberFormatException ignored) {}
+
+        try {
+            Long longKey = Long.parseLong(key);
+            if (context.containsKey(longKey))
+                return longKey;
+        } catch (NumberFormatException ignored) {}
+
+        return null;
+    }
+
+    private Map<Object, Object> getSection(String full, Map<Object, Object> root) {
         String[] keys = full.split("[" + SEP + "]", 2);
         String key = keys[0];
 
         Object value = root.get(getKeyAsObject(key, root));
-
         if (keys.length == 1) {
-            if (value instanceof Map) return root;
+            if (value instanceof Map)
+                return root;
             throw new IllegalArgumentException("Ignored sections must be a ConfigurationSection not a value!");
         }
 
@@ -200,196 +154,264 @@ public class YAMLUpdater {
         return getSection(keys[1], (Map<Object, Object>) value);
     }
 
-    String buildIgnored(String full, Map<Object, Object> map, Map<String, String> comments, StringBuilder builder, StringBuilder ignored, Yaml yaml) {
-        String[] keys = full.split("[" + SEP + "]", 2);
-        String key = keys[0];
-        Object originalKey = getKeyAsObject(key, map);
+    private static String getIndents(final String key) {
+        String[] splitKey = key.split("[" + SEP + "]");
 
-        if (builder.length() > 0)
-            builder.append(".");
+        StringBuilder builder = new StringBuilder();
+        for (int i = 1; i < splitKey.length; i++) builder.append("  ");
 
-        builder.append(key);
-
-        if (!map.containsKey(originalKey)) {
-            if (keys.length == 1)
-                throw new IllegalArgumentException("Invalid ignored section: " + builder);
-
-            throw new IllegalArgumentException("Invalid ignored section: " + builder + "." + keys[1]);
-        }
-
-        String comment = comments.get(builder.toString());
-        String indents = getIndents(builder.toString());
-
-        if (comment != null)
-            ignored.append(addIndentation(comment, indents)).append("\n");
-
-        ignored.append(addIndentation(key, indents)).append(":");
-        Object obj = map.get(originalKey);
-
-        if (obj instanceof Map) {
-            Map<Object, Object> m = (Map<Object, Object>) obj;
-            if (m.isEmpty()) {
-                ignored.append(" {}\n");
-            } else {
-                ignored.append("\n");
-            }
-
-            StringBuilder preLoopKey = new StringBuilder(builder);
-
-            for (Object o : m.keySet()) {
-                buildIgnored(o.toString(), m, comments, builder, ignored, yaml);
-                builder = new StringBuilder(preLoopKey);
-            }
-        }
-        else {
-            String yml = yaml.dump(obj);
-
-            if (obj instanceof Collection)
-                ignored.append("\n").append(addIndentation(yml, indents)).append("\n");
-            else ignored.append(" ").append(yml);
-        }
-
-        return ignored.toString();
+        return builder.toString();
     }
 
-    String addIndentation(String s, String indents) {
+    private static String addIndent(String s, String indents) {
         StringBuilder builder = new StringBuilder();
         String[] split = s.split("\n");
 
         for (String value : split) {
-            if (builder.length() > 0)
-                builder.append("\n");
-
+            if (builder.length() > 0) builder.append("\n");
             builder.append(indents).append(value);
         }
 
         return builder.toString();
     }
 
-    Object getKeyAsObject(String key, Map<Object, Object> map) {
-        if (map.containsKey(key)) return key;
+    @AllArgsConstructor
+    private class IgnoreBuilder {
 
-        try {
-            Float keyFloat = Float.parseFloat(key);
-            if (map.containsKey(keyFloat))
-                return keyFloat;
-        } catch (NumberFormatException ignored) {}
+        private final String full;
+        private final Map<Object, Object> map;
 
-        try {
-            Double keyDouble = Double.parseDouble(key);
-            if (map.containsKey(keyDouble))
-                return keyDouble;
-        } catch (NumberFormatException ignored) {}
+        private StringBuilder builder;
+        private final StringBuilder ignored;
 
-        try {
-            Integer keyInteger = Integer.parseInt(key);
-            if (map.containsKey(keyInteger))
-                return keyInteger;
-        } catch (NumberFormatException ignored) {}
+        private final Yaml yaml;
 
-        try {
-            Long longKey = Long.parseLong(key);
-            if (map.containsKey(longKey))
-                return longKey;
-        } catch (NumberFormatException ignored) {}
+        void writeIgnoredValue(Object o, String indents) {
+            final String yml = yaml.dump(o);
+            if (o instanceof Collection) {
+                ignored.append("\n").append(addIndent(yml, indents)).append("\n");
+                return;
+            }
 
-        return null;
-    }
-
-    boolean writeIgnoredIfExists(Map<String, String> ignoredValues, BufferedWriter writer, String key) throws IOException {
-        String ignored = ignoredValues.get(key);
-        if (ignored != null) {
-            writer.write(ignored);
-            return true;
+            ignored.append(" ").append(yml);
         }
 
-        for (Map.Entry<String, String> entry : ignoredValues.entrySet())
-            if (isSubKeyOf(entry.getKey(), key)) return true;
+        String build() {
+            String[] keys = full.split("[" + SEP + "]", 2);
+            String key = keys[0];
+            Object originalKey = getKeyAsObject(key, map);
 
-        return false;
+            if (builder.length() > 0) builder.append(".");
+            builder.append(key);
+
+            if (!map.containsKey(originalKey)) {
+                String temp = "Invalid ignored section: " + builder;
+                if (keys.length != 1)
+                    temp += '.' + keys[1];
+
+                throw new IllegalArgumentException(temp);
+            }
+
+            String comment = comments.get(builder.toString());
+            String indents = getIndents(builder.toString());
+
+            if (comment != null)
+                ignored.append(addIndent(comment, indents)).append("\n");
+
+            ignored.append(addIndent(key, indents)).append(":");
+
+            Object obj = map.get(originalKey);
+            if (obj instanceof Map) {
+                Map<Object, Object> m = (Map<Object, Object>) obj;
+
+                if (m.isEmpty()) ignored.append(" {}\n");
+                else ignored.append("\n");
+
+                StringBuilder preLoopKey = new StringBuilder(builder);
+
+                for (Object o : m.keySet()) {
+                    new IgnoreBuilder(o.toString(), m, builder, ignored, yaml).build();
+                    builder = new StringBuilder(preLoopKey);
+                }
+            }
+            else writeIgnoredValue(obj, indents);
+
+            return ignored.toString();
+        }
     }
 
-    boolean isSubKeyOf(String parentKey, String subKey) {
-        return !parentKey.isEmpty() && (subKey.startsWith(parentKey) && subKey.substring(parentKey.length()).startsWith(String.valueOf(SEP)));
-    }
+    private Map<String, String> parseIgnored(List<String> sections) throws IOException {
+        Map<String, String> values = new LinkedHashMap<>(sections.size());
+        DumperOptions options = new DumperOptions();
 
-    String getIndents(String key) {
-        String[] splitKey = key.split("[" + SEP + "]");
-        StringBuilder builder = new StringBuilder();
+        options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
+        options.setLineBreak(DumperOptions.LineBreak.UNIX);
 
-        for (int i = 1; i < splitKey.length; i++)
-            builder.append("  ");
+        Yaml yaml = new Yaml(new YamlConstructor(), new YamlRepresenter(), options);
+        Map<Object, Object> root = yaml.load(new FileReader(file));
 
-        return builder.toString();
+        sections.forEach(section -> {
+            String[] split = section.split("[" + SEP + "]");
+            String key = split[split.length - 1];
+
+            Map<Object, Object> map = getSection(section, root);
+
+            StringBuilder b = new StringBuilder();
+            for (int i = 0; i < split.length; i++) {
+                if (i == split.length - 1) continue;
+
+                if (b.length() > 0) b.append(SEP);
+                b.append(split[i]);
+            }
+
+            values.put(section, new IgnoreBuilder(key, map, b, new StringBuilder(), yaml).build());
+        });
+
+        return values;
     }
 
     static class KeyBuilder implements Cloneable {
 
-        private final FileConfiguration config;
-        private final char separator;
-        private final StringBuilder builder;
+        private final FileConfiguration c;
+        private final char sep;
+        private final StringBuilder b;
 
-        private KeyBuilder(FileConfiguration config, char separator) {
-            this.config = config;
-            this.separator = separator;
-            this.builder = new StringBuilder();
+        public KeyBuilder(FileConfiguration c, char sep) {
+            this.c = c;
+            this.sep = sep;
+            this.b = new StringBuilder();
         }
 
-        private KeyBuilder(KeyBuilder keyBuilder) {
-            this.config = keyBuilder.config;
-            this.separator = keyBuilder.separator;
-            this.builder = new StringBuilder(keyBuilder.toString());
+        private KeyBuilder(KeyBuilder key) {
+            this.c = key.c;
+            this.sep = key.sep;
+            this.b = new StringBuilder(key.toString());
         }
 
         public void parseLine(String line, boolean checkIfExists) {
+            String s = b.toString();
             line = line.trim();
 
-            String[] splitLine = line.split(":");
+            String[] current = line.split(":");
 
-            if (splitLine.length > 2)
-                splitLine = line.split(": ");
+            if (current.length > 2)
+                current = line.split(": ");
 
-            String key = splitLine[0].replace("'", "").replace("\"", "");
+            String key = current[0].replace("'", "").replace("\"", "");
 
             if (checkIfExists) {
-                while (builder.length() > 0 && !config.contains(builder.toString() + separator + key)) {
+                while (b.length() > 0 && !c.contains(s + sep + key))
                     removeLastKey();
-                }
             }
 
-            if (builder.length() > 0)
-                builder.append(separator);
-
-            builder.append(key);
-        }
-
-        public boolean isEmpty() {
-            return builder.length() == 0;
-        }
-
-        public void clear() {
-            builder.setLength(0);
+            if (b.length() > 0) b.append(sep);
+            b.append(key);
         }
 
         public void removeLastKey() {
-            if (builder.length() == 0)
-                return;
+            final int length = b.length();
 
-            String keyString = builder.toString();
-            String[] split = keyString.split("[" + separator + "]");
-            int minIndex = Math.max(0, builder.length() - split[split.length - 1].length() - 1);
-            builder.replace(minIndex, builder.length(), "");
+            if (length != 0) {
+                final String[] s = b.toString().split("[" + sep + "]");
+                b.replace(Math.max(0, length - s[s.length - 1].length() - 1), length, "");
+            }
+        }
+
+        public boolean isEmpty() {
+            return b.length() == 0;
+        }
+
+        public void clear() {
+            b.setLength(0);
         }
 
         @Override
         public String toString() {
-            return builder.toString();
+            return b.toString();
         }
 
         @SuppressWarnings("all")
-        @Override
         protected KeyBuilder clone() {
             return new KeyBuilder(this);
         }
+    }
+
+    public void update() throws IOException {
+        FileConfiguration parser = new YamlConfiguration();
+        final StringWriter writer = new StringWriter();
+
+        mainLoop: for (String full : def.getKeys(true)) {
+            final String indents = getIndents(full);
+
+            if (!ignored.isEmpty()) {
+                final String ig = ignored.get(full);
+                if (ig != null) {
+                    writer.write(ig);
+                    continue;
+                }
+
+                for (Map.Entry<String, String> entry : ignored.entrySet()) {
+                    String key = entry.getKey();
+
+                    if (!key.isEmpty() && (full.startsWith(key) &&
+                            full.substring(key.length()).startsWith(SEP + "")))
+                        continue mainLoop;
+                }
+            }
+
+            String comment = comments.get(full);
+            if (comment != null)
+                writer.write(
+                        indents + comment
+                                .substring(0, comment.length() - 1)
+                                .replace("\n", "\n" + indents)
+                                + "\n");
+
+            Object value = current.get(full);
+            if (value == null) value = def.get(full);
+
+            String[] split = full.split("[" + SEP + "]");
+            String trailingKey = split[split.length - 1];
+
+            if (value instanceof ConfigurationSection) {
+                ConfigurationSection c = (ConfigurationSection) value;
+                writer.write(indents + trailingKey + ":");
+
+                String temp = "\n";
+                if (c.getKeys(false).isEmpty()) temp = " {}" + temp;
+
+                writer.write(temp);
+                continue;
+            }
+
+            parser.set(trailingKey, value);
+
+            String yaml = parser.saveToString();
+            yaml = yaml
+                    .substring(0, yaml.length() - 1)
+                    .replace("\n", "\n" + indents);
+
+            parser.set(trailingKey, null);
+            writer.write(indents + yaml + "\n");
+        }
+
+        String danglingComments = comments.get(null);
+        if (danglingComments != null) writer.write(danglingComments);
+
+        writer.close();
+
+        String value = writer.toString();
+        Path path = file.toPath();
+
+        if (!value.equals(new String(Files.readAllBytes(path), UTF_8)))
+            Files.write(path, value.getBytes(UTF_8));
+    }
+
+    public static <T> YAMLUpdater of(T loader, String resourcePath, File file, List<String> ignored) throws IOException {
+        return new YAMLUpdater(loader, resourcePath, file, ignored);
+    }
+
+    public static <T> YAMLUpdater of(T loader, String resourcePath, File file, String... ignored) throws IOException {
+        return of(loader, resourcePath, file, ArrayUtils.toList(ignored));
     }
 }
