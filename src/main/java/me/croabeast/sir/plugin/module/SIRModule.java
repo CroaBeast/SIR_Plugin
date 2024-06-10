@@ -43,12 +43,12 @@ public abstract class SIRModule implements SIRExtension {
         }
     }
 
-    public static class Data<M extends SIRModule> {
+    public static class Data<T extends SIRModule> {
 
         private final String name;
-        private final Class<M> clazz;
+        private final Class<T> clazz;
 
-        private Data(Type type, String name, Class<M> clazz) {
+        private Data(Type type, String name, Class<T> clazz) {
             this.clazz = clazz;
 
             if (type != Type.DEFAULT)
@@ -57,15 +57,16 @@ public abstract class SIRModule implements SIRExtension {
             this.name = name;
         }
 
-        private Data(String name, Class<M> clazz) {
+        private Data(String name, Class<T> clazz) {
             this(Type.DEFAULT, name, clazz);
         }
 
-        public M getData() {
+        public T getData() {
             SIRModule module = ModuleData.MODULE_MAP.getOrDefault(name, null);
             try {
                 return module == null ? null : clazz.cast(module);
             } catch (Exception e) {
+                e.printStackTrace();
                 return null;
             }
         }
@@ -111,6 +112,6 @@ public abstract class SIRModule implements SIRExtension {
     }
 
     public static void showGUI(Player player) {
-        ModuleData.modulesMenu.showGUI(Objects.requireNonNull(player));
+        ModuleData.MODULES_MENU.showGUI(Objects.requireNonNull(player));
     }
 }

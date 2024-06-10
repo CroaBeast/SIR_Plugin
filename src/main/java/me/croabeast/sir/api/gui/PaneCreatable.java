@@ -38,6 +38,6 @@ public abstract class PaneCreatable<P extends Pane> {
     }
 
     public boolean compare(P pane) {
-        return Objects.equals(this.pane, pane);
+        return Objects.equals(this.pane.getUUID(), pane.getUUID());
     }
 }

@@ -25,7 +25,7 @@ public final class TagsParser extends ChatModule {
     }
 
     @NotNull
-    List<ChatTag> fromGroup(Player player, String group) {
+    static List<ChatTag> fromGroup(Player player, String group) {
         if (player == null)
             return Collections.emptyList();
 
@@ -40,7 +40,7 @@ public final class TagsParser extends ChatModule {
     }
 
     @Nullable
-    ChatTag fromPerm(Player player, String perm) {
+    static ChatTag fromPerm(Player player, String perm) {
         if (player == null) return null;
 
         Map<Integer, Set<ChatTag>> map = new TreeMap<>(Collections.reverseOrder());
@@ -119,8 +119,8 @@ public final class TagsParser extends ChatModule {
         }.register();
     }
 
-    public String parse(Player player, String string) {
-        if (player == null || StringUtils.isBlank(string) || !isEnabled())
+    public static String parse(Player player, String string) {
+        if (player == null || StringUtils.isBlank(string) || !TAGS.isEnabled())
             return string;
 
         Pattern pattern = Pattern.compile("(?i)\\{tag_(.+)}");

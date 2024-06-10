@@ -7,11 +7,10 @@ import com.nickuc.openlogin.bukkit.api.events.AsyncRegisterEvent;
 import fr.xephi.authme.events.LoginEvent;
 import lombok.Getter;
 import lombok.Setter;
-import me.croabeast.beans.BeansLib;
+import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.lib.util.Exceptions;
 import me.croabeast.sir.api.CustomListener;
 import me.croabeast.sir.api.event.hook.SIRLoginEvent;
-import me.croabeast.sir.plugin.file.YAMLData;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -91,7 +90,7 @@ public final class LoginHook extends JoinQuitRelated {
                 }.registerOnSIR();
             }
             catch (Exception e) {
-                BeansLib.logger().log("&cnLogin isn't updated, try v10.");
+                BeansLogger.getLogger().log("&cnLogin isn't updated, try v10.");
             }
 
         if (Exceptions.isPluginEnabled("OpeNLogin")) {
@@ -176,7 +175,7 @@ public final class LoginHook extends JoinQuitRelated {
     }
 
     public static boolean isHookEnabled() {
-        return ENABLED_HOOKS.size() == 1 && YAMLData.Module.getMain().get("commands.hook.login", false);
+        return ENABLED_HOOKS.size() == 1;
     }
 
     @Nullable

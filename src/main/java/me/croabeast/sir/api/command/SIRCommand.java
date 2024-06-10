@@ -130,7 +130,7 @@ public abstract class SIRCommand extends BukkitCommand {
         this.subCommands = new HashMap<>();
 
         options.getSubCommands().forEach(s -> {
-            final SubCommand sub = new AbstractSub(s);
+            SubCommand sub = new AbstractSub(s);
             subCommands.put(sub.getNames(), sub);
         });
 
@@ -224,8 +224,7 @@ public abstract class SIRCommand extends BukkitCommand {
     class CommandDisplayer extends MessageSender {
 
         private CommandDisplayer() {
-            super();
-            apply(MessageSender.loaded());
+            super(MessageSender.loaded());
         }
 
         @Override
@@ -664,6 +663,13 @@ public abstract class SIRCommand extends BukkitCommand {
         @Override
         public boolean execute(CommandSender sender, String[] args) {
             return Objects.requireNonNull(predicate, "Sub command is not properly set up").test(sender, args);
+        }
+
+        @Override
+        public String toString() {
+            return "SubCommand{name='" + name + '\'' +
+                    ", aliases=" + aliases +
+                    ", permission='" + permission + '\'' + '}';
         }
     }
 }

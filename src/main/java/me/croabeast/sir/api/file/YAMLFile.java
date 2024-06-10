@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
-import me.croabeast.beans.BeansLib;
+import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.lib.util.Exceptions;
 import me.croabeast.lib.util.ServerInfoUtils;
 import me.croabeast.sir.api.ResourceIOUtils;
@@ -146,7 +146,7 @@ public class YAMLFile {
     }
 
     private void log(String line, boolean debug) {
-        if (debug) BeansLib.logger().log(line);
+        if (debug) BeansLogger.getLogger().log(line);
     }
 
     private void log(String line, Exception e, boolean debug) {

@@ -6,7 +6,7 @@
 
     <groupId>me.croabeast</groupId>
     <artifactId>SIR_Plugin</artifactId>
-    <version>4.0-SNAPSHOT-1</version>
+    <version>4.0-SNAPSHOT-3</version>
     <packaging>jar</packaging>
 
     <name>SIR_Plugin</name> <!--Simple In-game Receptionist-->
@@ -61,11 +61,8 @@
                             <artifact>*:*</artifact>
                             <excludes>
                                 <exclude>META-INF/**</exclude>
-                                <exclude>old/me/croabeast/**</exclude>
-                                <exclude>me/croabeast/sir/api/loot/**</exclude>
                                 <exclude>fonts/**</exclude>
                                 <exclude>resources/plugin.yml</exclude>
-                                <exclude>old.resources/**</exclude>
                             </excludes>
                         </filter>
                     </filters>
@@ -201,6 +198,13 @@
         </dependency>
 
         <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.26</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot</artifactId>
             <version>1.16.5-R0.1-SNAPSHOT</version>
@@ -219,20 +223,6 @@
             <artifactId>BeansLib</artifactId>
             <version>1.0</version>
             <scope>compile</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.26</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.github.retrooper.packetevents</groupId>
-            <artifactId>spigot</artifactId>
-            <version>2.2.1</version>
-            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -271,7 +261,7 @@
         <dependency>
             <groupId>com.discordsrv</groupId>
             <artifactId>discordsrv</artifactId>
-            <version>1.26.0</version>
+            <version>1.27.0</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -350,7 +340,7 @@
         <dependency>
             <groupId>com.github.LeonMangler</groupId>
             <artifactId>SuperVanish</artifactId>
-            <version>6.2.6-4</version>
+            <version>6.2.18-3</version>
             <scope>provided</scope>
             <exclusions>
                 <exclusion>
@@ -377,7 +367,7 @@
         <dependency>
             <groupId>com.github.stefvanschie.inventoryframework</groupId>
             <artifactId>IF</artifactId>
-            <version>0.10.11</version>
+            <version>0.10.14</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

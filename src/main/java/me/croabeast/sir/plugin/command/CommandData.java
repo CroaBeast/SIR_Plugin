@@ -4,6 +4,7 @@ import lombok.experimental.UtilityClass;
 import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.lib.reflect.Reflector;
 import me.croabeast.sir.api.command.SIRCommand;
+import me.croabeast.sir.api.gui.MenuCreator;
 import me.croabeast.sir.plugin.DataHandler;
 import me.croabeast.sir.plugin.SIRCollector;
 
@@ -13,6 +14,7 @@ import java.util.Set;
 @UtilityClass
 class CommandData implements DataHandler {
 
+    final MenuCreator COMMANDS_MENU = MenuCreator.of(4, "");
     private boolean areCommandsLoaded = false;
 
     Set<SIRCommand> getCommands() {
@@ -42,14 +44,14 @@ class CommandData implements DataHandler {
                     });
 
             areCommandsLoaded = true;
-            BeansLogger.DEFAULT.log(true, "Loading commands...",
+            BeansLogger.getLogger().log("Loading commands...",
                     "Total: " + total.get() +
                             " [Loaded= " + loaded.get() +
                             ", Failed= " + failed.get() + "]"
             );
 
             if (loaded.get() < 1 || failed.get() > 0)
-                BeansLogger.DEFAULT.log(false,
+                BeansLogger.doLog(
                         "&cSome commands were not loaded correctly.",
                         "&cReport it to CreaBeast ASAP!"
                 );

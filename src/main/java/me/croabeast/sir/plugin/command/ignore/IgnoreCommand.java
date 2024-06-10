@@ -1,7 +1,7 @@
 package me.croabeast.sir.plugin.command.ignore;
 
 import lombok.Getter;
-import me.croabeast.beans.BeansLib;
+import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.sir.api.command.SIRCommand;
 import me.croabeast.sir.api.command.tab.TabBuilder;
 import me.croabeast.sir.api.file.ConfigurableFile;
@@ -87,7 +87,7 @@ public final class IgnoreCommand extends SIRCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
-            BeansLib.logger().log("&cYou can not ignore players in the console.");
+            BeansLogger.getLogger().log("&cYou can not ignore players in the console.");
             return true;
         }
 

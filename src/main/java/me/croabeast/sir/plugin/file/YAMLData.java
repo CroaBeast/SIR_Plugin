@@ -26,7 +26,7 @@ public class YAMLData implements DataHandler {
     private final Map<String, ConfigurableFile> FILE_MAP = new LinkedHashMap<>();
     private boolean areFilesLoaded = false;
 
-    private class SIRFile extends ConfigurableFile {
+    private static class SIRFile extends ConfigurableFile {
 
         SIRFile(String folder, String name) throws IOException {
             super(SIRPlugin.getInstance(), folder, name);
@@ -39,7 +39,7 @@ public class YAMLData implements DataHandler {
         }
     }
 
-    private List<String> getYamlPaths() {
+    private List<String> filePaths() {
         try {
             return Reflector.of("me.croabeast.sir.plugin.SIRLoader").get("JAR_FILE_PATHS");
         } catch (Exception e) {
@@ -68,7 +68,7 @@ public class YAMLData implements DataHandler {
 
     @Priority(5)
     void loadData() {
-        BeansLogger.DEFAULT.log("[SIR] Loading files...");
+        BeansLogger.doLog("[SIR] Loading files...");
 
         if (areFilesLoaded) {
             if (FILES_COUNTER.isModified())
@@ -82,44 +82,46 @@ public class YAMLData implements DataHandler {
                     FILES_COUNTER.updated++;
             }
 
-            BeansLogger.DEFAULT.log(
+            BeansLogger.doLog(
                     "[SIR] Reloaded: " + FILES_COUNTER.loaded +
                             ", Updated: " + FILES_COUNTER.updated +
                             ", Failed: " + FILES_COUNTER.failed
             );
 
             if (!FILES_COUNTER.isModified() || FILES_COUNTER.failed > 0)
-                BeansLogger.DEFAULT.log(
+                BeansLogger.doLog(
                         "[SIR] Files not loaded correctly! Report to CroaBeast."
                 );
 
             return;
         }
 
-        if (getYamlPaths() == null) return;
+        List<String> paths = filePaths();
+        if (paths == null) return;
 
         if (FILES_COUNTER.isModified())
             FILES_COUNTER.clear();
 
-        for (String path : getYamlPaths()) {
-            String[] pathParts = path.split(Pattern.quote(File.separator));
-            int length = pathParts.length;
+        for (String path : paths) {
+            String separator = Pattern.quote(File.separator);
+            String[] parts = path.split(separator);
 
-            String folder, name;
+            final String folder, name;
+            int length = parts.length;
 
             if (length > 1) {
                 StringBuilder builder = new StringBuilder();
                 int last = length - 1;
 
                 for (int i = 0; i < last; i++) {
-                    builder.append(pathParts[i]);
+                    builder.append(parts[i]);
 
                     if (i == last - 1) continue;
                     builder.append(File.separator);
                 }
 
                 folder = builder.toString();
-                name = pathParts[last];
+                name = parts[last];
             } else {
                 folder = null;
                 name = path;
@@ -141,14 +143,14 @@ public class YAMLData implements DataHandler {
             }
         }
 
-        BeansLogger.DEFAULT.log(
+        BeansLogger.doLog(
                 "[SIR] Loaded: " + FILES_COUNTER.loaded +
                         ", Updated: " + FILES_COUNTER.updated +
                         ", Failed: " + FILES_COUNTER.failed
         );
 
         if (!FILES_COUNTER.isModified())
-            BeansLogger.DEFAULT.log(
+            BeansLogger.doLog(
                     "[SIR] Files not loaded correctly! Report to CroaBeast."
             );
 

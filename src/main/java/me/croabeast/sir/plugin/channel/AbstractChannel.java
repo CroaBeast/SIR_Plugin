@@ -11,7 +11,9 @@ import me.croabeast.lib.applier.StringApplier;
 import me.croabeast.lib.util.ReplaceUtils;
 import me.croabeast.lib.util.TextUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
-import me.croabeast.sir.plugin.module.SIRModule;
+import me.croabeast.sir.plugin.module.chat.EmojiParser;
+import me.croabeast.sir.plugin.module.chat.MentionParser;
+import me.croabeast.sir.plugin.module.chat.TagsParser;
 import me.croabeast.sir.plugin.util.PlayerUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
@@ -120,9 +122,9 @@ abstract class AbstractChannel implements ChatChannel {
                     String[] values = getChatValues(colorChecker.check(p, message));
                     return ReplaceUtils.replaceEach(getChatKeys(), values, s);
                 })
-                .apply(s -> SIRModule.EMOJIS.getData().parse(p, s))
-                .apply(s -> SIRModule.TAGS.getData().parse(p, s))
-                .apply(s -> SIRModule.MENTIONS.getData().parse(p, this, s));
+                .apply(s -> EmojiParser.parse(p, s))
+                .apply(s -> TagsParser.parse(p, s))
+                .apply(s -> MentionParser.parse(p, this, s));
 
         if (isChat) applier.apply(BeansLib.getLib()::convertToSmallCaps);
 

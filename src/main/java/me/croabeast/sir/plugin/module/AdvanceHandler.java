@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import me.croabeast.advancementinfo.AdvancementInfo;
 import me.croabeast.advancementinfo.FrameType;
-import me.croabeast.beans.BeansLib;
+import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.beans.message.MessageSender;
 import me.croabeast.lib.CollectionBuilder;
 import me.croabeast.lib.reflect.Reflector;
@@ -149,8 +149,8 @@ public final class AdvanceHandler extends SIRModule implements CustomListener, D
             SIRPlugin.runTaskWhenLoaded(() -> {
                 checkAdvancements();
 
-                BeansLib.logger().log(false, "");
-                BeansLib.logger().log("&bRegistering all the advancement values in SIR...");
+                BeansLogger.doLog("");
+                BeansLogger.getLogger().log("&bRegistering all the advancement values in SIR...");
 
                 long t = System.currentTimeMillis();
                 final Set<Advancement> loadedKeys = new HashSet<>();
@@ -167,18 +167,18 @@ public final class AdvanceHandler extends SIRModule implements CustomListener, D
                         "&7 - Goals: &b" + GOALS.size() +
                         "&7 - &7Challenges: &d" + CHALLENGES.size();
 
-                BeansLib.logger().log(advancements);
+                BeansLogger.getLogger().log(advancements);
 
                 if (!UNKNOWNS.isEmpty())
-                    BeansLib.logger().log("&7Unknowns: &c" +
+                    BeansLogger.getLogger().log("&7Unknowns: &c" +
                             UNKNOWNS.size() +
                             "&7. Check your modules/advancements/lang.yml file!"
                     );
 
                 t = System.currentTimeMillis() - t;
 
-                BeansLib.logger().log("&7Loaded advancements in &e" + t + "&7 ms.");
-                BeansLib.logger().log(false, "");
+                BeansLogger.getLogger().log("&7Loaded advancements in &e" + t + "&7 ms.");
+                BeansLogger.doLog("");
 
                 areAdvancementsLoaded = true;
             });

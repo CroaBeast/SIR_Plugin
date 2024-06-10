@@ -12,7 +12,8 @@ import me.croabeast.sir.api.command.tab.TabBuilder;
 import me.croabeast.sir.api.file.ConfigurableFile;
 import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.file.YAMLData;
-import me.croabeast.sir.plugin.module.SIRModule;
+import me.croabeast.sir.plugin.module.chat.EmojiParser;
+import me.croabeast.sir.plugin.module.chat.TagsParser;
 import me.croabeast.sir.plugin.util.LangUtils;
 import me.croabeast.sir.plugin.util.PlayerUtils;
 import net.milkbowl.vault.permission.Permission;
@@ -221,8 +222,8 @@ final class PrintCommand extends SIRCommand {
                     }
 
                     for (String s : a) {
-                        s = SIRModule.TAGS.getData().parse(player, s);
-                        c.send(player, SIRModule.EMOJIS.getData().parse(player, s));
+                        s = TagsParser.parse(player, s);
+                        c.send(player, EmojiParser.parse(player, s));
                     }
                     continue;
                 }
@@ -236,18 +237,17 @@ final class PrintCommand extends SIRCommand {
                     } catch (Exception ignored) {}
 
                     time = time != null ? (":" + time) : "";
-
-                    message = SIRModule.TAGS.getData().parse(player, message);
+                    message = TagsParser.parse(player, message);
 
                     c.send(player,
                             d[0] + c.getName() + time + d[1] + " " +
-                                    SIRModule.EMOJIS.getData().parse(player, message)
+                                    EmojiParser.parse(player, message)
                     );
                     continue;
                 }
 
-                message = SIRModule.TAGS.getData().parse(player, message);
-                c.send(player, SIRModule.EMOJIS.getData().parse(player, message));
+                message = TagsParser.parse(player, message);
+                c.send(player, EmojiParser.parse(player, message));
             }
         }
     }

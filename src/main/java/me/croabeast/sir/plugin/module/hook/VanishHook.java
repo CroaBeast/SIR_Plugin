@@ -12,7 +12,6 @@ import me.croabeast.lib.util.Exceptions;
 import me.croabeast.lib.util.TextUtils;
 import me.croabeast.sir.api.CustomListener;
 import me.croabeast.sir.api.event.hook.SIRVanishEvent;
-import me.croabeast.sir.plugin.file.YAMLData;
 import net.ess3.api.IUser;
 import net.ess3.api.events.VanishStatusChangeEvent;
 import org.apache.commons.lang.StringUtils;
@@ -204,7 +203,7 @@ public final class VanishHook extends JoinQuitRelated {
     }
 
     public static boolean isHookEnabled() {
-        return ENABLED_HOOKS.size() == 1 && YAMLData.Module.getMain().get("commands.hook.vanish", false);
+        return ENABLED_HOOKS.size() == 1;
     }
 
     static class LoadedListener implements CustomListener {

@@ -2,10 +2,8 @@ package me.croabeast.sir.plugin.logger;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import me.croabeast.beans.BeansLib;
-import me.croabeast.beans.logger.LogLevel;
+import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.lib.CollectionBuilder;
 import me.croabeast.lib.util.ArrayUtils;
 import org.bukkit.Bukkit;
@@ -83,10 +81,13 @@ final class DequeLogger implements DelayLogger {
         if (deque.isEmpty()) return;
 
         Actionable actionable = () ->
-                deque.forEach(l -> BeansLib.logger().log(
-                        l.line,
-                        l.usePrefix, LogLevel.INFO
-                ));
+                deque.forEach(l -> {
+                    if (l.usePrefix) {
+                        BeansLogger.getLogger().log(l.line);
+                        return;
+                    }
+                    BeansLogger.doLog(l.line);
+                });
 
         if (!useScheduler) {
             actionable.act();

@@ -40,7 +40,7 @@ public class DataUtils {
                 });
 
         String prefix = isLoad ? "Loading" : "Saving";
-        BeansLogger.DEFAULT.log("[SIR] " + prefix + " data to cache...");
+        BeansLogger.getLogger().log("[SIR] " + prefix + " data to cache...");
 
         DataHandler.Counter fails = new DataHandler.Counter();
         String suffix = isLoad ? "loaded" : "saved";
@@ -61,12 +61,12 @@ public class DataUtils {
                     fails.add();
                 }
 
-                BeansLogger.DEFAULT.log(" • " + clazz + be + ' ' + suffix);
+                BeansLogger.getLogger().log(" • " + clazz + be + ' ' + suffix);
             });
         });
 
         if (fails.get() > 0)
-            BeansLogger.DEFAULT.log(
+            BeansLogger.getLogger().log(
                     "&c[SIR] Some classes weren't " + suffix + " correctly.",
                     "&c[SIR] Please report this ASAP to CroaBeast."
             );

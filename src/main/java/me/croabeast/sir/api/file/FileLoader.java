@@ -41,6 +41,7 @@ final class FileLoader {
         try {
             return (File) folderMethod.invoke(loader);
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }

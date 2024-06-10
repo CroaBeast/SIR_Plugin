@@ -1,7 +1,7 @@
 package me.croabeast.sir.plugin.command;
 
 import lombok.Getter;
-import me.croabeast.beans.BeansLib;
+import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.lib.CollectionBuilder;
 import me.croabeast.lib.reflect.Reflector;
 import me.croabeast.sir.api.SIRExtension;
@@ -16,7 +16,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -58,7 +57,7 @@ public final class ChatViewCommand extends SIRCommand {
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
         if (!(sender instanceof Player)) {
-            BeansLib.logger().log("&cYou can't toggle a local chat in console.");
+            BeansLogger.getLogger().log("&cYou can't toggle a local chat in console.");
             return true;
         }
 

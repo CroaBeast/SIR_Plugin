@@ -3,6 +3,7 @@ package me.croabeast.sir.plugin.module;
 import lombok.Getter;
 import lombok.Setter;
 import me.croabeast.beans.BeansLib;
+import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.beans.message.StringAligner;
 import me.croabeast.sir.api.CustomListener;
 import me.croabeast.sir.api.ResourceIOUtils;
@@ -67,7 +68,7 @@ public final class MotdHandler extends SIRModule implements CustomListener {
         try {
             event.setServerIcon(icon);
         } catch (Exception e) {
-            BeansLib.logger().log(
+            BeansLogger.getLogger().log(
                     "&cError when trying to set the server icon.",
                     "&7Your server doesn't support this feature.",
                     "&cAvoid this error upgrading your server jar!"
@@ -201,7 +202,7 @@ public final class MotdHandler extends SIRModule implements CustomListener {
                 String error = e.getLocalizedMessage();
                 initServerIcon(event, null);
 
-                BeansLib.logger().log("&7Error loading the icon: &c" + error);
+                BeansLogger.getLogger().log("&7Error loading the icon: &c" + error);
             }
 
             if (icon == null) {

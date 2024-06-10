@@ -3,7 +3,6 @@ package me.croabeast.sir.plugin.module.hook;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import me.croabeast.lib.reflect.Reflector;
 import me.croabeast.sir.api.CustomListener;
 import me.croabeast.sir.api.file.ConfigurableFile;
 import me.croabeast.sir.plugin.file.YAMLData;

@@ -1,6 +1,6 @@
 package me.croabeast.sir.api.addon;
 
-import me.croabeast.beans.BeansLib;
+import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.lib.CollectionBuilder;
 import me.croabeast.sir.plugin.SIRPlugin;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +19,7 @@ class AddonMngrImpl implements AddonManager {
     static AddonManager manager;
 
     static void log(String string) {
-        BeansLib.logger().log(string);
+        BeansLogger.getLogger().log(string);
     }
 
     AddonFile getDescription(File file) throws IOException {
@@ -92,7 +92,7 @@ class AddonMngrImpl implements AddonManager {
         if (addon.isEnabled()) return true;
 
         String name = addon.getFullName();
-        BeansLib.logger().log("Enabling " + name);
+        BeansLogger.getLogger().log("Enabling " + name);
 
         try {
             return addon.enabled = addon.enable();
@@ -109,7 +109,7 @@ class AddonMngrImpl implements AddonManager {
         if (!addon.isEnabled()) return true;
 
         String name = addon.getFullName();
-        BeansLib.logger().log("Disabling " + name);
+        BeansLogger.getLogger().log("Disabling " + name);
 
         try {
             return !(addon.enabled = !addon.disable());

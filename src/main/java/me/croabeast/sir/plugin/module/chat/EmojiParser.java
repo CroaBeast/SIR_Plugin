@@ -45,9 +45,9 @@ public final class EmojiParser extends ChatModule {
         return true;
     }
 
-    public String parse(Player player, String line) {
+    public static String parse(Player player, String line) {
         try {
-            if (!isEnabled() || EMOJI_LIST.isEmpty())
+            if (!EMOJIS.isEnabled() || EMOJI_LIST.isEmpty())
                 return line;
 
             for (Emoji e : EMOJI_LIST)

@@ -1,6 +1,6 @@
 package me.croabeast.sir.plugin.command;
 
-import me.croabeast.beans.BeansLib;
+import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.sir.api.command.SIRCommand;
 import me.croabeast.sir.api.command.tab.TabBuilder;
 import me.croabeast.sir.api.file.ConfigurableFile;
@@ -53,7 +53,7 @@ final class AnnouncerCommand extends SIRCommand {
 
         editSubCommand("preview", (sender, args) -> {
             if (!(sender instanceof Player)) {
-                BeansLib.logger().log("&cYou can't preview an announce in console.");
+                BeansLogger.getLogger().log("&cYou can't preview an announce in console.");
                 return true;
             }
 

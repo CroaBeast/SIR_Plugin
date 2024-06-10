@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import me.croabeast.beans.BeansLib;
 import me.croabeast.beans.builder.ChatBuilder;
+import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.beans.message.MessageChannel;
 import me.croabeast.beans.message.MessageSender;
 import me.croabeast.lib.util.Exceptions;
@@ -135,10 +136,10 @@ public final class ChannelHandler extends ChatModule implements CustomListener {
 
         String message = event.getMessage();
 
-        if (!main.get("allow-empty", false) && StringUtils.isBlank(message))
+        if (!main.get("allow-empty.enabled", false) && StringUtils.isBlank(message))
         {
             MessageSender.loaded().setTargets(player)
-                    .send(main.toStringList("chat.empty-message"));
+                    .send(main.toStringList("allow-empty.message"));
 
             event.setCancelled(true);
             return;
@@ -191,7 +192,6 @@ public final class ChannelHandler extends ChatModule implements CustomListener {
         if (StringUtils.isBlank(message)) return;
 
         boolean b = event.isAsynchronous();
-
         new SIRChatEvent(player, local, message, b).call();
     }
 
@@ -212,7 +212,7 @@ public final class ChannelHandler extends ChatModule implements CustomListener {
             DiscordHook.send(name, player, keys, channel.getChatValues(m));
         }
 
-        BeansLib.logger().log(channel.formatOutput(player, message, false));
+        BeansLogger.getLogger().log(channel.formatOutput(player, message, false));
         String[] values = channel.getChatValues(message);
 
         List<String> hover = channel.getHoverList();

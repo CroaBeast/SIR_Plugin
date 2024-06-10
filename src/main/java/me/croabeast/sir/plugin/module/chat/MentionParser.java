@@ -45,8 +45,10 @@ public final class MentionParser extends ChatModule {
 
     static final String[] KEYS = {"{prefix}", "{sender}", "{receiver}"};
 
-    public String parse(Player player, ChatChannel channel, String string) {
-        if (player == null || StringUtils.isBlank(string) || !isEnabled())
+    public static String parse(Player player, ChatChannel channel, String string) {
+        if (player == null ||
+                StringUtils.isBlank(string) ||
+                !MENTIONS.isEnabled())
             return string;
 
         UnaryOperator<String> operator = null;

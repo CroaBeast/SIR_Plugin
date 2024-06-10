@@ -2,21 +2,27 @@ package me.croabeast.sir.plugin;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
-import me.croabeast.beans.BeansLib;
 import me.croabeast.beans.builder.BossbarBuilder;
+import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.beans.message.MessageSender;
+import me.croabeast.lib.util.ServerInfoUtils;
 import me.croabeast.sir.api.ResourceIOUtils;
 import me.croabeast.sir.api.file.ConfigurableFile;
 import me.croabeast.sir.plugin.file.YAMLData;
 import me.croabeast.sir.plugin.logger.DelayLogger;
 import me.croabeast.sir.plugin.module.SIRModule;
+import me.croabeast.sir.plugin.module.chat.EmojiParser;
+import me.croabeast.sir.plugin.module.chat.TagsParser;
 import me.croabeast.sir.plugin.module.hook.LoginHook;
 import me.croabeast.sir.plugin.util.DataUtils;
+import org.apache.commons.lang.SystemUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.logging.Logger;
 
 public final class SIRPlugin extends JavaPlugin {
 
@@ -30,7 +36,7 @@ public final class SIRPlugin extends JavaPlugin {
     static class SIRSender extends MessageSender {
 
         private SIRSender() {
-            addFunctions(SIRModule.TAGS.getData()::parse, SIRModule.EMOJIS.getData()::parse);
+            addFunctions(TagsParser::parse, EmojiParser::parse);
         }
 
         @Override
@@ -70,14 +76,16 @@ public final class SIRPlugin extends JavaPlugin {
         DELAY_LOGGER.clear();
 
         DELAY_LOGGER.add(false,
-                "&0* *&e____ &0* &e___ &0* &e____",
+                "&0 * &e____ &0* &e___ &0* &e____",
                 "&0* &e(___&0 * * &e|&0* * &e|___)",
                 "&0* &e____) . _|_ . | &0* &e\\ . &f" +
-                        getVersion(), ""
+                        getVersion(), "",
+                "&0 * &e• Server: " + ServerInfoUtils.SERVER_FORK,
+                "&0 * &e• Java Version: " + SystemUtils.JAVA_VERSION,
+                "&0 * &e• Developer: " + author, ""
         );
 
         SIRInitializer.startMetrics();
-        SIRInitializer.setPluginHooks();
 
         try {
             DataUtils.load();
@@ -85,6 +93,7 @@ public final class SIRPlugin extends JavaPlugin {
             e.printStackTrace();
         }
 
+        SIRInitializer.setPluginHooks();
         SIRLoader.initializeLangUtils(this);
 
         try {
@@ -108,6 +117,11 @@ public final class SIRPlugin extends JavaPlugin {
         DELAY_LOGGER.sendLines(false);
     }
 
+    @NotNull
+    public Logger getLogger() {
+        return BeansLogger.getLogger();
+    }
+
     @Override
     public void onDisable() {
         Bukkit.getOnlinePlayers().forEach(p ->
@@ -121,15 +135,15 @@ public final class SIRPlugin extends JavaPlugin {
 
         SIRModule.ANNOUNCEMENTS.getData().stop();
 
-        BeansLib.logger().log(false,
+        BeansLogger.doLog(
                 "&0* *&e____ &0* &e___ &0* &e____",
                 "&0* &e(___&0 * * &e|&0* * &e|___)",
                 "&0* &e____) . _|_ . | &0* &e\\ . &f" +
                         getVersion(), ""
         );
 
-        BeansLib.logger().log("&7SIR &c" + version + "&7 was totally disabled.");
-        BeansLib.logger().log(false, "");
+        BeansLogger.getLogger().log("&7SIR &c" + version + "&7 was totally disabled.");
+        BeansLogger.doLog("");
 
         HandlerList.unregisterAll(this);
         instance = null;

@@ -16,7 +16,7 @@ public final class ButtonCreator extends PaneCreatable<ToggleButton> {
     }
 
     private ButtonCreator(int x, int y, boolean value) {
-        super(new ToggleButton(x, y, 1, 1, value));
+        this(Slot.fromXY(x, y), value);
     }
 
     @NotNull

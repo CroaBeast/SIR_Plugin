@@ -33,8 +33,9 @@ class ModuleData implements DataHandler {
 
     final MapBuilder<String, ButtonCreator> ENTRIES = new MapBuilder<>();
 
-    MenuCreator modulesMenu;
     private boolean modulesLoaded = false, entriesLoaded = false;
+    final MenuCreator MODULES_MENU = MenuCreator.of(5,
+            "&8" + SmallCaps.toSmallCaps("Loaded SIR Modules:"));
 
     GuiItem createMainButton(Material material, String name, String... lore) {
         return ItemCreator.of(material).modifyName(name)
@@ -79,6 +80,8 @@ class ModuleData implements DataHandler {
         );
     }
 
+    boolean menuLoaded = false;
+
     @Priority(2)
     void loadData() {
         if (!modulesLoaded) {
@@ -100,14 +103,14 @@ class ModuleData implements DataHandler {
                         total.add();
                     });
 
-            BeansLogger.DEFAULT.log(true, "Loading modules...",
+            BeansLogger.getLogger().log("Loading modules...",
                     "Total: " + total.get() +
                             " [Loaded= " + loaded.get() +
                             ", Failed= " + failed.get() + "]"
             );
 
             if (loaded.get() < 1 || failed.get() > 0)
-                BeansLogger.DEFAULT.log(false,
+                BeansLogger.doLog(
                         "&cSome modules were not loaded correctly.",
                         "&cReport it to CreaBeast ASAP!"
                 );
@@ -115,11 +118,9 @@ class ModuleData implements DataHandler {
             modulesLoaded = true;
         }
 
-        MODULE_MAP.values().forEach(m -> {
-            System.out.println(m.getName() + " - " + m.register());
-        });
+        MODULE_MAP.values().forEach(SIRModule::register);
 
-        if (ServerInfoUtils.SERVER_VERSION < 14.0 || modulesMenu != null)
+        if (ServerInfoUtils.SERVER_VERSION < 14.0 || menuLoaded)
             return;
 
         if (!entriesLoaded) {
@@ -199,15 +200,12 @@ class ModuleData implements DataHandler {
             entriesLoaded = true;
         }
 
-        MenuCreator menu = MenuCreator.of(5,
-                "&8" + SmallCaps.toSmallCaps("Loaded SIR Modules:"));
-
         for (ButtonCreator button : ENTRIES.values())
-            menu.addPane(0, button.create());
+            MODULES_MENU.addPane(0, button.create());
 
         String caps = SmallCaps.toSmallCaps("[Paid Version]");
 
-        menu.addSingleItem(0, 1, 1, ItemCreator.of(Material.BARREL)
+        MODULES_MENU.addSingleItem(0, 1, 1, ItemCreator.of(Material.BARREL)
                 .modifyLore(
                         "&7Opens a new menu with all the available",
                         "&7options from each module.",
@@ -218,7 +216,7 @@ class ModuleData implements DataHandler {
                 b -> b.setPriority(Pane.Priority.LOW)
         );
 
-        menu.addSingleItem(0, 6, 3, ItemCreator.of(Material.BARRIER)
+        MODULES_MENU.addSingleItem(0, 6, 3, ItemCreator.of(Material.BARRIER)
                 .modifyName("&c&lCOMING SOON...")
                 .modifyLore("&8More modules will be added soon.")
                 .setAction(e -> e.setCancelled(true)),
@@ -227,7 +225,7 @@ class ModuleData implements DataHandler {
 
         final String message = "able all available modules.";
 
-        menu.addPane(0, ButtonCreator.of(1, 2, false)
+        MODULES_MENU.addPane(0, ButtonCreator.of(1, 2, false)
                 .setItem(
                         ItemCreator.of(Material.LIME_DYE)
                                 .modifyLore("&f➤ &7En" + message)
@@ -244,28 +242,30 @@ class ModuleData implements DataHandler {
                     final boolean is = b.isEnabled();
 
                     for (ToggleButton button : CollectionBuilder
-                            .of(menu.getPanes(0))
+                            .of(MODULES_MENU.getPanes(0))
                             .filter(p -> p.getPriority() == Pane.Priority.HIGHEST)
                             .map(p -> (ToggleButton) p)
                     ) {
                         if (is != button.isEnabled()) continue;
                         button.toggle();
 
-                        for (Entry<String, ButtonCreator> en : ENTRIES.entries())
-                            if (en.getValue().compare(button)) {
-                                String name = en.getKey();
-                                STATUS_MAP.put(name, !is);
+                        for (Entry<String, ButtonCreator> en : ENTRIES.entries()) {
+                            if (!en.getValue().compare(button))
+                                continue;
 
-                                String n = "modules." + name;
+                            String name = en.getKey();
+                            STATUS_MAP.put(name, !is);
 
-                                YAMLData.Module.getMain().set(n, !is);
-                                YAMLData.Module.getMain().save();
-                                break;
-                            }
+                            String n = "modules." + name;
+
+                            YAMLData.Module.getMain().set(n, !is);
+                            YAMLData.Module.getMain().save();
+                            break;
+                        }
                     }
                 }));
 
-        modulesMenu = menu;
+        menuLoaded = true;
     }
 
     @Priority(2)
