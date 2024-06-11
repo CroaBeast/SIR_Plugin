@@ -6,7 +6,7 @@ import me.croabeast.beans.BeansLib;
 import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.beans.message.StringAligner;
 import me.croabeast.sir.api.CustomListener;
-import me.croabeast.sir.api.ResourceIOUtils;
+import me.croabeast.sir.api.ResourceUtils;
 import me.croabeast.sir.api.file.ConfigurableFile;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.YAMLData;
@@ -55,7 +55,7 @@ public final class MotdHandler extends SIRModule implements CustomListener {
         String s = ("resources" + SP + icon).replace(SP, '/');
 
         try {
-            ResourceIOUtils.saveResource(
+            ResourceUtils.saveResource(
                     SIRPlugin.getInstance().getResource(s),
                     SIRPlugin.getFolder(), icon, false
             );

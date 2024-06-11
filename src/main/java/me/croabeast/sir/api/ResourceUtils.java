@@ -11,10 +11,10 @@ import java.nio.file.Files;
 import java.util.Objects;
 
 /**
- * The ResourceIOUtils class provides utility methods for handling resources and files.
+ * The ResourceUtils class provides utility methods for handling resources and files.
  */
 @UtilityClass
-public class ResourceIOUtils {
+public class ResourceUtils {
 
     /**
      * Saves the specified resource to the given file path within the data folder.

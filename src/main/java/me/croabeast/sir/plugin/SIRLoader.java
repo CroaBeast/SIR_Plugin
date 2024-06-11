@@ -49,6 +49,7 @@ class SIRLoader {
                     .filter(s -> !s.contains("$") &&
                             s.startsWith("me/croabeast/sir/plugin") &&
                             s.endsWith(".class"))
+                    .filter(s -> !s.contains("sir/plugin/util"))
                     .apply(s -> s.replace('/', '.').replace(".class", "")))
             {
                 try {

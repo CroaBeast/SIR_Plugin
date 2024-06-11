@@ -18,7 +18,7 @@ public class DataUtils {
     }
 
     void loadMethodFromClasses(boolean isLoad) {
-        Map<Integer, LinkedHashSet<Method>> map = new TreeMap<>(Comparator.reverseOrder());
+        Map<Integer, Set<Method>> map = new TreeMap<>(Comparator.reverseOrder());
         String name = isLoad ? "loadData" : "saveData";
 
         SIRCollector.from()
@@ -31,16 +31,15 @@ public class DataUtils {
                         Method m = c.getDeclaredMethod(name);
                         int level = getLevel(m);
 
-                        LinkedHashSet<Method> set = map.getOrDefault(level, new LinkedHashSet<>());
+                        Set<Method> set = map.getOrDefault(level, new LinkedHashSet<>());
                         set.add(m);
 
                         map.put(level, set);
-                    }
-                    catch (Exception ignored) {}
+                    } catch (Exception ignored) {}
                 });
 
         String prefix = isLoad ? "Loading" : "Saving";
-        BeansLogger.getLogger().log("[SIR] " + prefix + " data to cache...");
+        BeansLogger.doLog("[SIR] " + prefix + " data to cache...");
 
         DataHandler.Counter fails = new DataHandler.Counter();
         String suffix = isLoad ? "loaded" : "saved";
@@ -61,12 +60,12 @@ public class DataUtils {
                     fails.add();
                 }
 
-                BeansLogger.getLogger().log(" • " + clazz + be + ' ' + suffix);
+                BeansLogger.doLog(" • " + clazz + be + ' ' + suffix);
             });
         });
 
         if (fails.get() > 0)
-            BeansLogger.getLogger().log(
+            BeansLogger.doLog(
                     "&c[SIR] Some classes weren't " + suffix + " correctly.",
                     "&c[SIR] Please report this ASAP to CroaBeast."
             );

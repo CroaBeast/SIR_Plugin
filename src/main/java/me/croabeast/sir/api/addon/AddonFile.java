@@ -1,5 +1,6 @@
 package me.croabeast.sir.api.addon;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import me.croabeast.lib.util.ArrayUtils;
 import me.croabeast.lib.util.Exceptions;
@@ -25,7 +26,7 @@ import java.util.jar.JarFile;
 @Getter
 public final class AddonFile implements Configurable {
 
-    @Getter
+    @Getter(AccessLevel.NONE)
     private final FileConfiguration configuration;
 
     /**
@@ -73,7 +74,7 @@ public final class AddonFile implements Configurable {
         InputStreamReader reader = new InputStreamReader(stream);
         configuration = YamlConfiguration.loadConfiguration(reader);
 
-        final String m = get("main", String.class);
+        final String m = get("main", "");
         try {
             main = Exceptions.validate(StringUtils::isNotBlank, m);
         } catch (Exception e) {
@@ -83,7 +84,7 @@ public final class AddonFile implements Configurable {
         name = get("name", "SIRAddon-" + Objects.hashCode(main));
 
         this.version = get("version", "1.0");
-        this.description = get("description", String.class);
+        this.description = get("description", "");
 
         List<String> list = TextUtils.toList(configuration, "authors");
         authors = list.isEmpty() ? ArrayUtils.toList("CroaBeast") : list;
@@ -96,6 +97,28 @@ public final class AddonFile implements Configurable {
      */
     public String getAuthor() {
         return authors.get(0);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @throws UnsupportedOperationException Since this file can not be edited.
+     */
+    @NotNull
+    public FileConfiguration getConfiguration() {
+        throw new UnsupportedOperationException("This file can't be edited");
+    }
+
+    public <T> T get(String path, Class<T> clazz) {
+        try {
+            return clazz.cast(configuration.get(path));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T get(String path, T def) {
+        return (T) configuration.get(path, def);
     }
 
     /**

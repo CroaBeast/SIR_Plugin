@@ -31,7 +31,6 @@ public interface SIRExtension {
      *
      * @return True if the extension is loaded, false otherwise.
      */
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     boolean isLoaded();
 
     /**

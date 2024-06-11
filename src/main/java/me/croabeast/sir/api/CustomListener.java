@@ -43,16 +43,15 @@ public interface CustomListener extends Listener {
      */
     @SneakyThrows
     default void registerOnSIR() {
-        Plugin plugin = null;
-
+        Plugin plugin = null, sir = SIRPlugin.getInstance();
         try {
             plugin = JavaPlugin.getProvidingPlugin(getClass());
         } catch (Exception ignored) {}
 
-        if (!Objects.equals(plugin, SIRPlugin.getInstance()))
+        if (!Objects.equals(plugin, sir))
             throw new IllegalAccessException();
 
-        register(SIRPlugin.getInstance());
+        register(sir);
     }
 
     /**

@@ -6,7 +6,7 @@ import me.croabeast.beans.builder.BossbarBuilder;
 import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.beans.message.MessageSender;
 import me.croabeast.lib.util.ServerInfoUtils;
-import me.croabeast.sir.api.ResourceIOUtils;
+import me.croabeast.sir.api.ResourceUtils;
 import me.croabeast.sir.api.file.ConfigurableFile;
 import me.croabeast.sir.plugin.file.YAMLData;
 import me.croabeast.sir.plugin.logger.DelayLogger;
@@ -19,10 +19,8 @@ import org.apache.commons.lang.SystemUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.logging.Logger;
 
 public final class SIRPlugin extends JavaPlugin {
 
@@ -107,19 +105,13 @@ public final class SIRPlugin extends JavaPlugin {
         if (LoginHook.isHookEnabled())
             Bukkit.getOnlinePlayers().forEach(LoginHook::addPlayer);
 
-        DELAY_LOGGER.add(false, "");
-        DELAY_LOGGER.add(true,
-                "&7SIR " + version + " was&a loaded&7 in &e" +
-                        (System.currentTimeMillis() - start) + " ms."
-        );
-        DELAY_LOGGER.add(false, "");
-
-        DELAY_LOGGER.sendLines(false);
-    }
-
-    @NotNull
-    public Logger getLogger() {
-        return BeansLogger.getLogger();
+        DELAY_LOGGER.add(false, "")
+                .add(true,
+                    "&7SIR " + version + " was&a loaded&7 in &e" +
+                            (System.currentTimeMillis() - start) + " ms."
+                )
+                .add(false, "")
+                .sendLines(false);
     }
 
     @Override
@@ -154,7 +146,7 @@ public final class SIRPlugin extends JavaPlugin {
     }
 
     public static File fileFrom(String... childPaths) {
-        return ResourceIOUtils.fileFrom(getFolder(), childPaths);
+        return ResourceUtils.fileFrom(getFolder(), childPaths);
     }
 
     @SneakyThrows

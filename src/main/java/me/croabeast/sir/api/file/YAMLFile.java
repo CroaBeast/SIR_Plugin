@@ -7,7 +7,7 @@ import lombok.experimental.Accessors;
 import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.lib.util.Exceptions;
 import me.croabeast.lib.util.ServerInfoUtils;
-import me.croabeast.sir.api.ResourceIOUtils;
+import me.croabeast.sir.api.ResourceUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -168,7 +168,7 @@ public class YAMLFile {
         if (getFile().exists()) return true;
 
         try {
-            ResourceIOUtils.saveResource(getResource(), loader.getDataFolder(), getLocation());
+            ResourceUtils.saveResource(getResource(), loader.getDataFolder(), getLocation());
         } catch (Exception e) {
             log("File couldn't be loaded.", e, debug);
             return false;
