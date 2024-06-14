@@ -1,6 +1,7 @@
 package me.croabeast.sir.plugin.command;
 
 import me.croabeast.beans.logger.BeansLogger;
+import me.croabeast.sir.api.SIRExtension;
 import me.croabeast.sir.api.command.SIRCommand;
 import me.croabeast.sir.api.command.tab.TabBuilder;
 import me.croabeast.sir.api.file.ConfigurableFile;
@@ -17,9 +18,9 @@ final class AnnouncerCommand extends SIRCommand {
     private final ConfigurableFile announces = YAMLData.Module.ANNOUNCEMENT.fromName("announces");
 
     AnnouncerCommand() {
-        super("announcer");
+        super("announcer", false);
 
-        final AnnounceHandler handler = getParent();
+        AnnounceHandler handler = SIRModule.ANNOUNCEMENTS.getData();
 
         editSubCommand("start", (sender, args) -> {
             if (args.length > 0)
@@ -63,8 +64,8 @@ final class AnnouncerCommand extends SIRCommand {
     }
 
     @NotNull
-    protected AnnounceHandler getParent() {
-        return SIRModule.ANNOUNCEMENTS.getData();
+    protected SIRExtension getParent() {
+        return SIRModule.ANNOUNCEMENTS.getModule();
     }
 
     @NotNull

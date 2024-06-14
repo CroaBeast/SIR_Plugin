@@ -6,7 +6,7 @@
 
     <groupId>me.croabeast</groupId>
     <artifactId>SIR_Plugin</artifactId>
-    <version>4.0-SNAPSHOT-7</version>
+    <version>4.0-SNAPSHOT-12</version>
     <packaging>jar</packaging>
 
     <name>SIR_Plugin</name> <!--Simple In-game Receptionist-->
@@ -235,7 +235,7 @@
         <dependency>
             <groupId>com.github.CroaBeast</groupId>
             <artifactId>AdvancementInfo</artifactId>
-            <version>a54b86f558</version>
+            <version>6feb52da47</version>
             <scope>compile</scope>
             <exclusions>
                 <exclusion>

@@ -17,6 +17,7 @@ import me.croabeast.sir.api.ConfigUnit;
 import me.croabeast.sir.api.CustomListener;
 import me.croabeast.sir.api.event.chat.SIRChatEvent;
 import me.croabeast.sir.api.file.ConfigurableFile;
+import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.channel.ChatChannel;
 import me.croabeast.sir.plugin.command.mute.MuteCommand;
 import me.croabeast.sir.plugin.file.YAMLData;
@@ -59,7 +60,7 @@ public final class ChannelHandler extends ChatModule implements CustomListener {
     @Override
     public boolean register() {
         if (!isEnabled()) return false;
-        registerOnSIR();
+        register(SIRPlugin.getInstance());
 
         LOCAL_MAP.clear();
         GLOBAL_MAP.clear();

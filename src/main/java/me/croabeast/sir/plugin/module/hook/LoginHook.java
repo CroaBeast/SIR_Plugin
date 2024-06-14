@@ -11,6 +11,7 @@ import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.lib.util.Exceptions;
 import me.croabeast.sir.api.CustomListener;
 import me.croabeast.sir.api.event.hook.SIRLoginEvent;
+import me.croabeast.sir.plugin.SIRPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
@@ -69,7 +70,7 @@ public final class LoginHook extends JoinQuitRelated {
                 private void onLogin(LoginEvent event) {
                     createLoginEventCall(event);
                 }
-            }.registerOnSIR();
+            }.register(SIRPlugin.getInstance());
 
         if (Exceptions.isPluginEnabled("UserLogin"))
             new LoadedListener() {
@@ -77,7 +78,7 @@ public final class LoginHook extends JoinQuitRelated {
                 private void onLogin(AuthenticationEvent event) {
                     createLoginEventCall(event);
                 }
-            }.registerOnSIR();
+            }.register(SIRPlugin.getInstance());
 
         if (Exceptions.isPluginEnabled("nLogin"))
             try {
@@ -87,7 +88,7 @@ public final class LoginHook extends JoinQuitRelated {
                     private void onLogin(AuthenticateEvent event) {
                         createLoginEventCall(event);
                     }
-                }.registerOnSIR();
+                }.register(SIRPlugin.getInstance());
             }
             catch (Exception e) {
                 BeansLogger.getLogger().log("&cnLogin isn't updated, try v10.");
@@ -103,7 +104,7 @@ public final class LoginHook extends JoinQuitRelated {
                 private void onRegister(AsyncRegisterEvent event) {
                     createLoginEventCall(event);
                 }
-            }.registerOnSIR();
+            }.register(SIRPlugin.getInstance());
         }
 
         if (Exceptions.isPluginEnabled("NexAuth")) {
@@ -116,7 +117,7 @@ public final class LoginHook extends JoinQuitRelated {
                 private void onRegister(AuthPlayerRegisterEvent event) {
                     createLoginEventCall(event);
                 }
-            }.registerOnSIR();
+            }.register(SIRPlugin.getInstance());
         }
     }
 

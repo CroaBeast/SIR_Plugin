@@ -8,6 +8,7 @@ import me.croabeast.lib.util.TextUtils;
 import me.croabeast.sir.api.ConfigUnit;
 import me.croabeast.sir.api.CustomListener;
 import me.croabeast.sir.api.file.ConfigurableFile;
+import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.command.message.PrivateMessageCommand;
 import me.croabeast.sir.plugin.file.YAMLData;
 import me.croabeast.sir.plugin.module.hook.DiscordHook;
@@ -62,7 +63,7 @@ public final class JoinQuitHandler extends SIRModule implements CustomListener {
     }
 
     public boolean register() {
-        registerOnSIR();
+        register(SIRPlugin.getInstance());
         UNIT_MAP.clear();
 
         for (Type type : Type.values()) {

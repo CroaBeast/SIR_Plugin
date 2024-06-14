@@ -36,25 +36,6 @@ public interface CustomListener extends Listener {
     }
 
     /**
-     * Registers this listener for the SIR plugin.
-     * This method requires access permission from the SIR plugin to operate.
-     *
-     * @return this listener instance.
-     */
-    @SneakyThrows
-    default void registerOnSIR() {
-        Plugin plugin = null, sir = SIRPlugin.getInstance();
-        try {
-            plugin = JavaPlugin.getProvidingPlugin(getClass());
-        } catch (Exception ignored) {}
-
-        if (!Objects.equals(plugin, sir))
-            throw new IllegalAccessException();
-
-        register(sir);
-    }
-
-    /**
      * Unregisters this listener from all registered events.
      */
     default void unregister() {

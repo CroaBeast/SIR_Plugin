@@ -2,8 +2,6 @@ package me.croabeast.sir.plugin;
 
 import lombok.experimental.UtilityClass;
 import me.croabeast.lib.CollectionBuilder;
-import me.croabeast.lib.reflect.Reflector;
-import me.croabeast.sir.plugin.util.LangUtils;
 
 import java.io.File;
 import java.net.URLDecoder;
@@ -21,14 +19,6 @@ class SIRLoader {
     final List<String> JAR_FILE_PATHS = new ArrayList<>();
 
     JarFile pluginJar = null;
-
-    void initializeLangUtils(SIRPlugin plugin) {
-        try {
-            Reflector.of(LangUtils.class).create(plugin);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     @SuppressWarnings("deprecation")
     void loadAllJarEntries() {

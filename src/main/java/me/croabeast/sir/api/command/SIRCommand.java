@@ -61,7 +61,7 @@ public abstract class SIRCommand extends BukkitCommand {
     private boolean registered = false;
     private boolean permsLoaded = false;
 
-    private final boolean alwaysActive;
+    private final boolean modifiable;
 
     private CommandExecutor executor;
 
@@ -125,7 +125,7 @@ public abstract class SIRCommand extends BukkitCommand {
         this.plugin = SIRPlugin.getInstance();
 
         this.options = new Options(name);
-        this.alwaysActive = !modifiable;
+        this.modifiable = modifiable;
 
         this.subCommands = new HashMap<>();
 
@@ -155,7 +155,7 @@ public abstract class SIRCommand extends BukkitCommand {
     }
 
     private void loadCommandOptionsFromFile() {
-        if (!alwaysActive) options = new Options(getName());
+        if (modifiable) options = new Options(getName());
     }
 
     /**
@@ -199,7 +199,7 @@ public abstract class SIRCommand extends BukkitCommand {
      * @return true if the command is enabled, otherwise false
      */
     public boolean isEnabled() {
-        return alwaysActive || (getParent() != null && getParent().isEnabled()) || options.isEnabled();
+        return !modifiable || (getParent() != null && getParent().isEnabled()) || options.isEnabled();
     }
 
     /**
@@ -503,7 +503,9 @@ public abstract class SIRCommand extends BukkitCommand {
      */
     public boolean register() {
         loadCommandOptionsFromFile();
+
         if (registered) return true;
+        if (!isEnabled()) return false;
 
         String name = plugin.getName().toLowerCase();
 
@@ -545,7 +547,13 @@ public abstract class SIRCommand extends BukkitCommand {
      * @return true if un-registration was successful, otherwise false
      */
     public boolean unregister() {
-        if (alwaysActive || !registered) return false;
+        loadCommandOptionsFromFile();
+        if (!modifiable)
+            return !registered;
+
+        if (!registered) return true;
+
+        if (isEnabled()) return false;
 
         try {
             unregister(Craft.Server.getCommandMap());
@@ -567,11 +575,6 @@ public abstract class SIRCommand extends BukkitCommand {
             e.printStackTrace();
             return false;
         }
-    }
-
-    @Override
-    public String toString() {
-        return "SIRCommand{name=" + getName() + '}';
     }
 
     /**

@@ -33,7 +33,7 @@ import java.util.Set;
 final class PrintCommand extends SIRCommand {
 
     PrintCommand() {
-        super("print");
+        super("print", false);
 
         editSubCommand("targets", (sender, args) -> args.length <= 0 ?
                 fromSender(sender).send("help.targets") :

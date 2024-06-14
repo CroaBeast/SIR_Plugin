@@ -14,7 +14,6 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,7 +37,7 @@ public final class LangUtils extends BeansLib {
     }
 
     static Configurable config() {
-        return Objects.requireNonNull(YAMLData.Main.CONFIG.from());
+        return YAMLData.Main.CONFIG.from();
     }
 
     public @NotNull String getLangPrefixKey() {

@@ -77,26 +77,15 @@ final class DequeLogger implements DelayLogger {
     }
 
     @Override
-    public void sendLines(boolean useScheduler) {
+    public void sendLines() {
         if (deque.isEmpty()) return;
 
-        Actionable actionable = () ->
-                deque.forEach(l -> {
-                    if (l.usePrefix) {
-                        BeansLogger.getLogger().log(l.line);
-                        return;
-                    }
-                    BeansLogger.doLog(l.line);
-                });
-
-        if (!useScheduler) {
-            actionable.act();
-            return;
-        }
-
-        Bukkit.getScheduler().scheduleSyncDelayedTask(
-                Objects.requireNonNull(plugin),
-                actionable.toRunnable()
-        );
+        deque.forEach(l -> {
+            if (l.usePrefix) {
+                BeansLogger.getLogger().log(l.line);
+                return;
+            }
+            BeansLogger.doLog(l.line);
+        });
     }
 }

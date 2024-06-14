@@ -64,27 +64,15 @@ final class SimpleLogger implements DelayLogger {
     }
 
     @Override
-    public void sendLines(boolean useScheduler) {
-        Objects.requireNonNull(plugin);
+    public void sendLines() {
         if (list.isEmpty()) return;
 
-        Actionable actionable = () ->
-                list.forEach(l -> {
-                    if (l.usePrefix) {
-                        BeansLogger.getLogger().log(l.line);
-                        return;
-                    }
-                    BeansLogger.doLog(l.line);
-                });
-
-        if (!useScheduler) {
-            actionable.act();
-            return;
-        }
-
-        Bukkit.getScheduler().scheduleSyncDelayedTask(
-                Objects.requireNonNull(plugin),
-                actionable.toRunnable()
-        );
+        list.forEach(l -> {
+            if (l.usePrefix) {
+                BeansLogger.getLogger().log(l.line);
+                return;
+            }
+            BeansLogger.doLog(l.line);
+        });
     }
 }

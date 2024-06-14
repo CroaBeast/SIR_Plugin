@@ -108,7 +108,7 @@ public final class MotdHandler extends SIRModule implements CustomListener {
     @Override
     public boolean register() {
         try {
-            registerOnSIR();
+            register(SIRPlugin.getInstance());
             return true;
         } catch (Exception e) {
             return false;

@@ -5,6 +5,7 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 import me.croabeast.sir.api.CustomListener;
 import me.croabeast.sir.api.file.ConfigurableFile;
+import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.YAMLData;
 import me.croabeast.sir.plugin.module.JoinQuitHandler;
 import org.bukkit.entity.Player;
@@ -101,7 +102,7 @@ abstract class JoinQuitRelated extends HookModule implements CustomListener {
     @Override
     public boolean register() {
         try {
-            registerOnSIR();
+            register(SIRPlugin.getInstance());
             return true;
         } catch (Exception e) {
             return false;

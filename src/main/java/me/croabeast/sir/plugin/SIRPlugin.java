@@ -92,7 +92,6 @@ public final class SIRPlugin extends JavaPlugin {
         }
 
         SIRInitializer.setPluginHooks();
-        SIRLoader.initializeLangUtils(this);
 
         try {
             MessageSender.setLoaded(new SIRSender());
@@ -110,8 +109,7 @@ public final class SIRPlugin extends JavaPlugin {
                     "&7SIR " + version + " was&a loaded&7 in &e" +
                             (System.currentTimeMillis() - start) + " ms."
                 )
-                .add(false, "")
-                .sendLines(false);
+                .add(false, "").sendLines();
     }
 
     @Override

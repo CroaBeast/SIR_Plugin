@@ -12,6 +12,7 @@ import me.croabeast.lib.util.Exceptions;
 import me.croabeast.lib.util.TextUtils;
 import me.croabeast.sir.api.CustomListener;
 import me.croabeast.sir.api.event.hook.SIRVanishEvent;
+import me.croabeast.sir.plugin.SIRPlugin;
 import net.ess3.api.IUser;
 import net.ess3.api.events.VanishStatusChangeEvent;
 import org.apache.commons.lang.StringUtils;
@@ -61,7 +62,7 @@ public final class VanishHook extends JoinQuitRelated {
                     IUser user = event.getAffected();
                     new SIRVanishEvent(user.getBase(), user.isVanished()).call();
                 }
-            }.registerOnSIR();
+            }.register(SIRPlugin.getInstance());
 
         if (Exceptions.isPluginEnabled("CMI")) {
             new LoadedListener() {
@@ -73,7 +74,7 @@ public final class VanishHook extends JoinQuitRelated {
                 private void onUnVanish(CMIPlayerUnVanishEvent event) {
                     new SIRVanishEvent(event.getPlayer(), true).call();
                 }
-            }.registerOnSIR();
+            }.register(SIRPlugin.getInstance());
         }
 
         if (Exceptions.arePluginsEnabled(false, "SuperVanish", "PremiumVanish"))
@@ -83,7 +84,7 @@ public final class VanishHook extends JoinQuitRelated {
                     Player player = Bukkit.getPlayer(event.getUUID());
                     new SIRVanishEvent(player, !event.isVanishing()).call();
                 }
-            }.registerOnSIR();
+            }.register(SIRPlugin.getInstance());
     }
 
     static void unloadHook() {

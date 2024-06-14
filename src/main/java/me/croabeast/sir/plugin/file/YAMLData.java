@@ -9,6 +9,8 @@ import me.croabeast.sir.api.file.ConfigurableFile;
 import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.plugin.DataHandler;
 import me.croabeast.sir.plugin.SIRPlugin;
+import me.croabeast.sir.plugin.logger.DelayLogger;
+import me.croabeast.sir.plugin.util.LangUtils;
 import org.apache.commons.lang.StringUtils;
 import org.jetbrains.annotations.NotNull;
 
@@ -68,7 +70,8 @@ public class YAMLData implements DataHandler {
 
     @Priority(5)
     void loadData() {
-        BeansLogger.doLog("[SIR] Loading files...");
+        DelayLogger logger = DelayLogger.simplified();
+        logger.add(true, "Loading files...");
 
         if (areFilesLoaded) {
             if (FILES_COUNTER.isModified())
@@ -82,17 +85,18 @@ public class YAMLData implements DataHandler {
                     FILES_COUNTER.updated++;
             }
 
-            BeansLogger.doLog(
-                    "[SIR] Reloaded: " + FILES_COUNTER.loaded +
+            logger.add(true,
+                    "Reloaded: " + FILES_COUNTER.loaded +
                             ", Updated: " + FILES_COUNTER.updated +
                             ", Failed: " + FILES_COUNTER.failed
             );
 
             if (!FILES_COUNTER.isModified() || FILES_COUNTER.failed > 0)
-                BeansLogger.doLog(
-                        "[SIR] Files not loaded correctly! Report to CroaBeast."
+                logger.add(true,
+                        "Files not loaded correctly! Report to CroaBeast."
                 );
 
+            logger.sendLines();
             return;
         }
 
@@ -143,34 +147,34 @@ public class YAMLData implements DataHandler {
             }
         }
 
-        BeansLogger.doLog(
-                "[SIR] Loaded: " + FILES_COUNTER.loaded +
+        logger.add(true,
+                "Loaded: " + FILES_COUNTER.loaded +
                         ", Updated: " + FILES_COUNTER.updated +
                         ", Failed: " + FILES_COUNTER.failed
         );
 
         if (!FILES_COUNTER.isModified())
-            BeansLogger.doLog(
-                    "[SIR] Files not loaded correctly! Report to CroaBeast."
+            logger.add(true,
+                    "Files not loaded correctly! Report to CroaBeast."
             );
+
+        try {
+            Reflector.of(LangUtils.class).create(SIRPlugin.getInstance());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         BeansLib.getLib().setLogger(new BeansLogger(BeansLib.getLib()) {
             public boolean isColored() {
-                try {
-                    return !Main.CONFIG.from().get("options.fix-logger", false);
-                } catch (Exception e) {
-                    return false;
-                }
+                return !Main.CONFIG.from().get("options.fix-logger", false);
             }
 
             public boolean isStripPrefix() {
-                try {
-                    return !Main.CONFIG.from().get("options.show-prefix", false);
-                } catch (Exception e) {
-                    return false;
-                }
+                return !Main.CONFIG.from().get("options.show-prefix", false);
             }
         });
+
+        logger.sendLines();
         areFilesLoaded = true;
     }
 

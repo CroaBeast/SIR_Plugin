@@ -4,7 +4,6 @@ import lombok.Getter;
 import lombok.Setter;
 import me.croabeast.advancementinfo.AdvancementInfo;
 import me.croabeast.advancementinfo.FrameType;
-import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.beans.message.MessageSender;
 import me.croabeast.lib.CollectionBuilder;
 import me.croabeast.lib.reflect.Reflector;
@@ -15,6 +14,7 @@ import me.croabeast.sir.api.file.ConfigurableFile;
 import me.croabeast.sir.plugin.DataHandler;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.YAMLData;
+import me.croabeast.sir.plugin.logger.DelayLogger;
 import me.croabeast.sir.plugin.module.hook.DiscordHook;
 import me.croabeast.sir.plugin.module.hook.VanishHook;
 import me.croabeast.sir.plugin.util.LangUtils;
@@ -78,7 +78,9 @@ public final class AdvanceHandler extends SIRModule implements CustomListener, D
                     AdvancementInfo info = null;
                     try {
                         info = new AdvancementInfo(a);
-                    } catch (Exception ignored) {}
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     return info;
                 })
                 .filter(Objects::nonNull)
@@ -147,10 +149,11 @@ public final class AdvanceHandler extends SIRModule implements CustomListener, D
 
         try {
             SIRPlugin.runTaskWhenLoaded(() -> {
+                DelayLogger logger = DelayLogger.simplified();
                 checkAdvancements();
 
-                BeansLogger.doLog("");
-                BeansLogger.getLogger().log("&bRegistering all the advancement values in SIR...");
+                logger.add(false, "")
+                        .add(true, "&bRegistering advancements in SIR...");
 
                 long t = System.currentTimeMillis();
                 final Set<Advancement> loadedKeys = new HashSet<>();
@@ -167,18 +170,18 @@ public final class AdvanceHandler extends SIRModule implements CustomListener, D
                         "&7 - Goals: &b" + GOALS.size() +
                         "&7 - &7Challenges: &d" + CHALLENGES.size();
 
-                BeansLogger.getLogger().log(advancements);
+                logger.add(true, advancements);
 
                 if (!UNKNOWNS.isEmpty())
-                    BeansLogger.getLogger().log("&7Unknowns: &c" +
+                    logger.add(true, "&7Unknowns: &c" +
                             UNKNOWNS.size() +
                             "&7. Check your modules/advancements/lang.yml file!"
                     );
 
                 t = System.currentTimeMillis() - t;
 
-                BeansLogger.getLogger().log("&7Loaded advancements in &e" + t + "&7 ms.");
-                BeansLogger.doLog("");
+                logger.add(true, "&7Loaded advancements in &e" + t + "&7 ms.")
+                        .add(false, "").sendLines();
 
                 areAdvancementsLoaded = true;
             });
@@ -213,7 +216,7 @@ public final class AdvanceHandler extends SIRModule implements CustomListener, D
     @Override
     public boolean register() {
         try {
-            registerOnSIR();
+            register(SIRPlugin.getInstance());
             return true;
         } catch (Exception e) {
             return false;

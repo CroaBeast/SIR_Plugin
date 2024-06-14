@@ -3,6 +3,7 @@ package me.croabeast.sir.plugin.module.hook;
 import github.scarsz.discordsrv.DiscordSRV;
 import github.scarsz.discordsrv.dependencies.jda.api.EmbedBuilder;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.Guild;
+import github.scarsz.discordsrv.dependencies.jda.api.entities.MessageEmbed;
 import github.scarsz.discordsrv.dependencies.jda.api.entities.TextChannel;
 import github.scarsz.discordsrv.util.DiscordUtil;
 import me.croabeast.beans.BeansLib;
@@ -23,7 +24,6 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 public final class DiscordHook extends HookModule {
@@ -75,7 +75,7 @@ public final class DiscordHook extends HookModule {
         private final String thumbnail;
 
         private final String titleText;
-        private final String titleUrl;
+        private final String tUrl;
 
         private final String description;
 
@@ -92,7 +92,7 @@ public final class DiscordHook extends HookModule {
             this.thumbnail = section.getString("thumbnail");
 
             this.titleText = section.getString("title.text");
-            this.titleUrl = section.getString("title.url");
+            this.tUrl = section.getString("title.url");
 
             this.description = section.getString("description");
 
@@ -103,8 +103,12 @@ public final class DiscordHook extends HookModule {
             return StringUtils.isNotBlank(string) && string.startsWith("https");
         }
 
+        DiscordSRV getDiscord() {
+            return DiscordSRV.getPlugin();
+        }
+
         private Guild getGuild(String guildName) {
-            final DiscordSRV srv = DiscordSRV.getPlugin();
+            final DiscordSRV srv = getDiscord();
 
             Guild guild = srv.getMainGuild();
             String def = config.get("default-server", "");
@@ -120,9 +124,61 @@ public final class DiscordHook extends HookModule {
             return guild;
         }
 
-        boolean send(List<String> ids, UnaryOperator<String> operator) {
-            if (ids.isEmpty()) return false;
+        EmbedBuilder createEmbed(UnaryOperator<String> operator) {
+            final EmbedBuilder embed = new EmbedBuilder();
 
+            int colorInt = Color.BLACK.asRGB();
+            String c = this.color;
+
+            if (StringUtils.isNotBlank(c))
+                try {
+                    try {
+                        colorInt = java.awt.Color.decode(c).getRGB();
+                    } catch (Exception e) {
+                        Field color = Class
+                                .forName("org.bukkit.Color")
+                                .getField(c);
+
+                        colorInt = ((Color) color.get(null)).asRGB();
+                    }
+                } catch (Exception ignored) {}
+
+            embed.setColor(colorInt);
+
+            embed.setAuthor(operator.apply(authorName),
+                    isUrl(authorUrl) ? operator.apply(authorUrl) : null,
+                    isUrl(authorIcon) ? operator.apply(authorIcon) : null
+            );
+
+            if (StringUtils.isNotBlank(titleText)) {
+                String url = isUrl(tUrl) ? operator.apply(tUrl) : null;
+                embed.setTitle(operator.apply(titleText), url);
+            }
+
+            if (StringUtils.isNotBlank(description))
+                embed.setDescription(description);
+
+            if (isUrl(thumbnail))
+                embed.setThumbnail(operator.apply(thumbnail));
+
+            if (timeStamp) embed.setTimestamp(Instant.now());
+            return embed;
+        }
+
+        boolean send(List<String> ids, UnaryOperator<String> operator) {
+            TextChannel main = getDiscord().getMainTextChannel();
+            if (main != null) {
+                if (StringUtils.isNotBlank(text)) {
+                    main.sendMessage(operator.apply(text)).queue();
+                    return true;
+                }
+
+                MessageEmbed embed = createEmbed(operator).build();
+                main.sendMessageEmbeds(embed).queue();
+                return true;
+            }
+
+            if (ids.isEmpty()) return false;
             boolean atLeastOneMessage = false;
 
             for (String id : ids) {
@@ -137,59 +193,23 @@ public final class DiscordHook extends HookModule {
 
                 Guild guild = getGuild(guildId);
 
-                TextChannel channel;
+                TextChannel channel = null;
                 try {
                     channel = guild.getTextChannelById(channelId);
-                    Objects.requireNonNull(channel);
-                } catch (Exception e) {
-                    continue;
-                }
+                } catch (Exception ignored) {}
+
+                if (channel == null) continue;
 
                 if (StringUtils.isNotBlank(text)) {
                     channel.sendMessage(operator.apply(text)).queue();
-
                     if (!atLeastOneMessage) atLeastOneMessage = true;
                     continue;
                 }
 
-                final EmbedBuilder embed = new EmbedBuilder();
+                MessageEmbed embed = createEmbed(operator).build();
+                channel.sendMessageEmbeds(embed).queue();
 
-                int colorInt = Color.BLACK.asRGB();
-                String c = this.color;
-
-                if (StringUtils.isNotBlank(c))
-                    try {
-                        try {
-                            colorInt = java.awt.Color.decode(c).getRGB();
-                        } catch (Exception e) {
-                            Field color = Class.forName("org.bukkit.Color").getField(c);
-                            colorInt = ((Color) color.get(null)).asRGB();
-                        }
-                    } catch (Exception ignored) {}
-
-                embed.setColor(colorInt);
-
-                embed.setAuthor(operator.apply(authorName),
-                        isUrl(authorUrl) ? operator.apply(authorUrl) : null,
-                        isUrl(authorIcon) ? operator.apply(authorIcon) : null
-                );
-
-                if (StringUtils.isNotBlank(titleText)) {
-                    String url = isUrl(titleUrl) ? operator.apply(titleUrl) : null;
-                    embed.setTitle(operator.apply(titleText), url);
-                }
-
-                if (StringUtils.isNotBlank(description))
-                    embed.setDescription(description);
-
-                if (isUrl(thumbnail))
-                    embed.setThumbnail(operator.apply(thumbnail));
-
-                if (timeStamp) embed.setTimestamp(Instant.now());
-
-                channel.sendMessageEmbeds(embed.build()).queue();
-                if (!atLeastOneMessage)
-                    atLeastOneMessage = true;
+                if (!atLeastOneMessage) atLeastOneMessage = true;
             }
 
             return atLeastOneMessage;

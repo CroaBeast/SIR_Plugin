@@ -22,7 +22,7 @@ public abstract class SIRModule implements SIRExtension {
     public static final Data<MotdHandler> MOTD = new Data<>("motd", MotdHandler.class);
     public static final Data<AnnounceHandler> ANNOUNCEMENTS = new Data<>("announcements", AnnounceHandler.class);
     public static final Data<FilterHandler> FILTERS = new Data<>(Type.CHAT, "filters", FilterHandler.class);
-    public static final Data<MentionParser> MENTIONS = new Data<>(Type.CHAT, "emojis", MentionParser.class);
+    public static final Data<MentionParser> MENTIONS = new Data<>(Type.CHAT, "mentions", MentionParser.class);
     public static final Data<TagsParser> TAGS = new Data<>(Type.CHAT, "tags", TagsParser.class);
     public static final Data<ChannelHandler> CHANNELS = new Data<>(Type.CHAT, "channels", ChannelHandler.class);
     public static final Data<EmojiParser> EMOJIS = new Data<>(Type.CHAT, "emojis", EmojiParser.class);
@@ -61,10 +61,13 @@ public abstract class SIRModule implements SIRExtension {
             this(Type.DEFAULT, name, clazz);
         }
 
+        public SIRModule getModule() {
+            return ModuleData.MODULE_MAP.getOrDefault(name, null);
+        }
+
         public T getData() {
-            SIRModule module = ModuleData.MODULE_MAP.getOrDefault(name, null);
             try {
-                return module == null ? null : clazz.cast(module);
+                return getModule() == null ? null : clazz.cast(getModule());
             } catch (Exception e) {
                 e.printStackTrace();
                 return null;
@@ -72,7 +75,7 @@ public abstract class SIRModule implements SIRExtension {
         }
 
         public boolean isEnabled() {
-            return getData() != null && getData().isEnabled();
+            return getModule() != null && getModule().isEnabled();
         }
     }
 

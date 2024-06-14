@@ -124,12 +124,15 @@ public final class AnnounceHandler extends SIRModule {
 
     private static class Announce {
 
-        private final List<String> lines, commands;
         private final ConfigurationSection id;
+
+        private final String sound;
+        private final List<String> lines, commands;
 
         private Announce(ConfigurationSection id) {
             this.id = id;
 
+            this.sound = id.getString("sound");
             this.commands = TextUtils.toList(id, "commands");
             this.lines = TextUtils.toList(id, "lines");
         }
@@ -137,9 +140,9 @@ public final class AnnounceHandler extends SIRModule {
         void display(Set<Player> players) {
             if (players.isEmpty()) return;
 
+            players.forEach(p -> PlayerUtils.playSound(p, sound));
             LangUtils.executeCommands(null, commands);
-            MessageSender.loaded()
-                    .setTargets(players).send(lines);
+            MessageSender.loaded().setTargets(players).send(lines);
         }
     }
 }

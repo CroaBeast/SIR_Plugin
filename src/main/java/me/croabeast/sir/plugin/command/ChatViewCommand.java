@@ -35,7 +35,7 @@ public final class ChatViewCommand extends SIRCommand {
 
     @NotNull
     protected SIRExtension getParent() {
-        return SIRModule.CHANNELS.getData();
+        return SIRModule.CHANNELS.getModule();
     }
 
     static List<String> getKeys(Player player) {

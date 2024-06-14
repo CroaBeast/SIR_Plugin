@@ -26,11 +26,7 @@ public interface DelayLogger {
 
     boolean isEmpty();
 
-    void sendLines(boolean useScheduler) throws NullPointerException;
-
-    default void sendLines() {
-        sendLines(false);
-    }
+    void sendLines();
 
     static DelayLogger simplified(Plugin plugin) {
         return new SimpleLogger(plugin);
