@@ -14,6 +14,7 @@ import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.file.YAMLData;
 import me.croabeast.sir.plugin.module.chat.EmojiParser;
 import me.croabeast.sir.plugin.module.chat.TagsParser;
+import me.croabeast.sir.plugin.module.hook.VanishHook;
 import me.croabeast.sir.plugin.util.LangUtils;
 import me.croabeast.sir.plugin.util.PlayerUtils;
 import net.milkbowl.vault.permission.Permission;
@@ -21,6 +22,7 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,7 +35,7 @@ import java.util.Set;
 final class PrintCommand extends SIRCommand {
 
     PrintCommand() {
-        super("print", false);
+        super("print");
 
         editSubCommand("targets", (sender, args) -> args.length <= 0 ?
                 fromSender(sender).send("help.targets") :
@@ -91,12 +93,43 @@ final class PrintCommand extends SIRCommand {
 
     @Override
     protected boolean execute(CommandSender sender, String[] args) {
-        return false;
+        return fromSender(sender).send("help.main");
     }
 
     @Override
     protected @Nullable TabBuilder completer() {
-        return null;
+        TabBuilder builder = TabBuilder.of()
+                .addArgument("sir.print.targets", "targets")
+                .addArgument("sir.print.chat", "chat")
+                .addArgument("sir.print.action-bar", "action-bar")
+                .addArgument("sir.print.title", "title")
+                .addArguments(1, "@a", "perm:", "world:")
+                .addArguments(1,
+                        CollectionBuilder.of(Bukkit.getOnlinePlayers())
+                                .filter(VanishHook::isVisible)
+                                .map(HumanEntity::getName).toList());
+
+        if (SIRInitializer.hasVault())
+            builder.addArgument(1, "group:");
+
+        builder.setIndex(2)
+                .addArgument(
+                        (s, a) -> a[0].matches("(?i)action-bar"),
+                        "<message>"
+                )
+                .addArguments(
+                        (s, a) -> a[0].matches("(?i)chat"),
+                        "default", "centered", "mixed"
+                )
+                .addArguments(
+                        (s, a) -> a[0].matches("(?i)title"),
+                        "default", "10,50,10"
+                );
+
+        return builder.addArgument(3,
+                (s, a) -> a[0].matches("(?i)chat|title"),
+                "<message>"
+        );
     }
 
     private class TargetCatcher {

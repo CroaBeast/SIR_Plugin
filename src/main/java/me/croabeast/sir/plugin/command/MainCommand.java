@@ -77,6 +77,11 @@ final class MainCommand extends SIRCommand {
                         .send("support"));
     }
 
+    @Override
+    public boolean isOverriding() {
+        return true;
+    }
+
     @NotNull
     protected ConfigurableFile getLang() {
         return YAMLData.Command.Single.SIR.from();

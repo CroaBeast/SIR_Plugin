@@ -5,7 +5,9 @@ import lombok.SneakyThrows;
 import me.croabeast.beans.builder.BossbarBuilder;
 import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.beans.message.MessageSender;
+import me.croabeast.lib.reflect.Craft;
 import me.croabeast.lib.util.ServerInfoUtils;
+import me.croabeast.lib.util.TextUtils;
 import me.croabeast.sir.api.ResourceUtils;
 import me.croabeast.sir.api.file.ConfigurableFile;
 import me.croabeast.sir.plugin.file.YAMLData;
@@ -17,10 +19,13 @@ import me.croabeast.sir.plugin.module.hook.LoginHook;
 import me.croabeast.sir.plugin.util.DataUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.util.List;
 
 public final class SIRPlugin extends JavaPlugin {
 
@@ -115,12 +120,37 @@ public final class SIRPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         Bukkit.getOnlinePlayers().forEach(p ->
-                BossbarBuilder.getBuilders(p).forEach(BossbarBuilder::unregister));
+                BossbarBuilder.getBuilders(p)
+                        .forEach(BossbarBuilder::unregister));
 
         try {
             DataUtils.save();
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        FileConfiguration commands = Craft.Server.createCommandsConfiguration();
+
+        ConfigurationSection aliases = commands.getConfigurationSection("aliases");
+        if (aliases != null) {
+            boolean changed = false;
+
+            for (String key : aliases.getKeys(false)) {
+                List<String> l = TextUtils.toList(aliases, key);
+                if (l.size() != 1 ||
+                        !l.get(0).contains("sir:")) continue;
+
+                commands.set("aliases." + key, null);
+                if (!changed) changed = true;
+            }
+
+            if (changed)
+                try {
+                    commands.save(Craft.Server.getCommands());
+                    Craft.Server.reloadCommandsFile();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
         }
 
         SIRModule.ANNOUNCEMENTS.getData().stop();

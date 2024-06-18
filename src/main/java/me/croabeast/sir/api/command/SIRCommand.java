@@ -25,6 +25,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.command.defaults.BukkitCommand;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.Permission;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +53,7 @@ public abstract class SIRCommand extends BukkitCommand {
     private final SIRPlugin plugin;
     private Options options;
 
-    private final String wildCardPermission;
+    private final String wildcard;
 
     /**
      * Indicates whether this command is registered.
@@ -64,8 +65,12 @@ public abstract class SIRCommand extends BukkitCommand {
     private final boolean modifiable;
 
     private CommandExecutor executor;
-
     protected final Map<List<String>, SubCommand> subCommands;
+
+    private final List<String> mainAlias;
+    private final Map<String, List<String>> aliasesMap;
+
+
 
     @UtilityClass
     static class CommandFile {
@@ -96,6 +101,8 @@ public abstract class SIRCommand extends BukkitCommand {
         private final boolean enabled;
         private final List<String> aliases;
 
+        private final boolean override;
+
         Options(String name) throws IllegalStateException {
             ConfigurationSection s = CommandFile.getCommandSection(name);
             Objects.requireNonNull(s);
@@ -109,6 +116,7 @@ public abstract class SIRCommand extends BukkitCommand {
             aliases = TextUtils.toList(s, "aliases");
 
             subCommands = TextUtils.toList(s, path + "subcommands");
+            override = s.getBoolean("override-existing");
         }
     }
 
@@ -134,8 +142,18 @@ public abstract class SIRCommand extends BukkitCommand {
             subCommands.put(sub.getNames(), sub);
         });
 
-        wildCardPermission = subCommands.isEmpty() ?
-                null : getPermission() + ".*";
+        wildcard = subCommands.isEmpty() ?
+                null :
+                getPermission() + ".*";
+
+        mainAlias = Collections.singletonList("sir:" + name + " $1-");
+        aliasesMap = new HashMap<>();
+
+        getAliases().forEach(s ->
+                aliasesMap.put(
+                        s,
+                        Collections.singletonList("sir:" + s + " $1-")
+                ));
 
         COMMAND_SET.add(this);
     }
@@ -202,6 +220,10 @@ public abstract class SIRCommand extends BukkitCommand {
         return !modifiable || (getParent() != null && getParent().isEnabled()) || options.isEnabled();
     }
 
+    public boolean isOverriding() {
+        return options.isOverride();
+    }
+
     /**
      * Gets the permission required to execute this command.
      *
@@ -244,7 +266,7 @@ public abstract class SIRCommand extends BukkitCommand {
      */
     public boolean testPermissionSilent(@NotNull CommandSender target) {
         return PlayerUtils.hasPerm(target, getPermission()) ||
-                PlayerUtils.hasPerm(target, wildCardPermission);
+                PlayerUtils.hasPerm(target, wildcard);
     }
 
     /**
@@ -339,7 +361,7 @@ public abstract class SIRCommand extends BukkitCommand {
                 subCommands.values().forEach(s ->
                         removePerm(s.getPermission()));
 
-                removePerm(cmd.wildCardPermission);
+                removePerm(cmd.wildcard);
             }
 
             cmd.permsLoaded = false;
@@ -351,7 +373,7 @@ public abstract class SIRCommand extends BukkitCommand {
             subCommands.values().forEach(s ->
                     addPerm(s.getPermission()));
 
-            addPerm(cmd.wildCardPermission);
+            addPerm(cmd.wildcard);
         }
 
         cmd.permsLoaded = true;
@@ -491,9 +513,12 @@ public abstract class SIRCommand extends BukkitCommand {
         SubCommand subCommand = findSubCommandByNameOrAlias(name);
         if (subCommand == null) return false;
 
-        AbstractSub sub = (AbstractSub) subCommand;
-        sub.setPredicate(predicate);
+        ((AbstractSub) subCommand).setPredicate(predicate);
         return true;
+    }
+
+    static FileConfiguration commandsConfig() {
+        return Craft.Server.createCommandsConfiguration();
     }
 
     /**
@@ -501,7 +526,7 @@ public abstract class SIRCommand extends BukkitCommand {
      *
      * @return true if registration was successful, otherwise false
      */
-    public boolean register() {
+    public final boolean register() {
         loadCommandOptionsFromFile();
 
         if (registered) return true;
@@ -511,17 +536,31 @@ public abstract class SIRCommand extends BukkitCommand {
 
         try {
             Map<String, Command> map = Craft.Server.getKnownCommands();
+            boolean changed = false;
 
-            if (!map.containsKey(getName())) {
-                map.put(getName(), this);
-                map.put(name + ":" + getName(), this);
+            if (!map.containsKey(getName())) map.put(getName(), this);
+            map.put(name + ":" + getName(), this);
+
+            FileConfiguration config = commandsConfig();
+
+            if (isOverriding() &&
+                    !(map.get(getName()) instanceof SIRCommand)) {
+                config.set("aliases." + getName(), mainAlias);
+                changed = true;
             }
 
             for (String alias : getAliases()) {
-                if (map.containsKey(alias)) continue;
-
-                map.put(alias, this);
+                if (!map.containsKey(alias)) map.put(alias, this);
                 map.put(name + ":" + alias, this);
+
+                if (isOverriding() &&
+                        !(map.get(getName()) instanceof SIRCommand)) {
+                    List<String> list = aliasesMap.get(alias);
+                    if (list == null) continue;
+
+                    config.set("aliases." + alias, list);
+                    if (!changed) changed = true;
+                }
             }
 
             try {
@@ -533,6 +572,15 @@ public abstract class SIRCommand extends BukkitCommand {
             register(Craft.Server.getCommandMap());
             loadCommandPermissions(this);
 
+            if (changed)
+                try {
+                    config.save(Craft.Server.getCommands());
+                    Craft.Server.reloadCommandsFile();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            Craft.Server.INSTANCE.call("syncCommands");
             return registered = true;
         }
         catch (Exception e) {
@@ -546,30 +594,53 @@ public abstract class SIRCommand extends BukkitCommand {
      *
      * @return true if un-registration was successful, otherwise false
      */
-    public boolean unregister() {
+    @SuppressWarnings("all")
+    public final boolean unregister() {
         loadCommandOptionsFromFile();
-        if (!modifiable)
-            return !registered;
+        if (!modifiable) return !registered;
 
         if (!registered) return true;
-
         if (isEnabled()) return false;
 
         try {
             unregister(Craft.Server.getCommandMap());
 
-            Craft.Server.getKnownCommands().values().removeIf(c -> {
+            Map<String, Command> map = Craft.Server.getKnownCommands();
+            map.values().removeIf(c -> {
                 SIRCommand cmd = c instanceof SIRCommand ? (SIRCommand) c : null;
-                if (cmd == null) return false;
+                if (cmd != null) {
+                    loadCommandPermissions(cmd);
+                    return cmd.getUuid().equals(getUuid());
+                }
 
-                loadCommandPermissions(cmd);
-                return cmd.getUuid().equals(getUuid());
+                return false;
             });
 
-            Craft.Server.INSTANCE.call("syncCommands");
+            FileConfiguration config = commandsConfig();
+            boolean changed = false;
 
-            registered = false;
-            return true;
+            if (config.contains("aliases." + getName())) {
+                config.set("aliases." + getName(), null);
+                changed = true;
+
+                for (String alias : getAliases()) {
+                    if (!config.contains("aliases." + alias))
+                        continue;
+
+                    config.set("aliases." + alias, null);
+                }
+            }
+
+            if (changed)
+                try {
+                    config.save(Craft.Server.getCommands());
+                    Craft.Server.reloadCommandsFile();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            Craft.Server.INSTANCE.call("syncCommands");
+            return !(registered = false);
         }
         catch (Exception e) {
             e.printStackTrace();
@@ -584,7 +655,6 @@ public abstract class SIRCommand extends BukkitCommand {
 
         /**
          * Gets the permission required to execute this subcommand.
-         *
          * @return the permission required
          */
         @NotNull String getPermission();
@@ -599,21 +669,18 @@ public abstract class SIRCommand extends BukkitCommand {
 
         /**
          * Gets the name of this subcommand.
-         *
          * @return the name of this subcommand
          */
         @NotNull String getName();
 
         /**
          * Gets the aliases of this subcommand.
-         *
          * @return the aliases of this subcommand
          */
         @NotNull List<String> getAliases();
 
         /**
          * Gets the names, including aliases, of this subcommand.
-         *
          * @return the names of this subcommand
          */
         @NotNull List<String> getNames();
@@ -659,7 +726,7 @@ public abstract class SIRCommand extends BukkitCommand {
         }
 
         public boolean isPermitted(CommandSender sender) {
-            return PlayerUtils.hasPerm(sender, SIRCommand.this.wildCardPermission) ||
+            return PlayerUtils.hasPerm(sender, SIRCommand.this.wildcard) ||
                     PlayerUtils.hasPerm(sender, permission);
         }
 

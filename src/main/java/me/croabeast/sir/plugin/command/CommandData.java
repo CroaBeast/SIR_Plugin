@@ -15,7 +15,7 @@ import java.util.Set;
 class CommandData implements DataHandler {
 
     final MenuCreator COMMANDS_MENU = MenuCreator.of(4, "");
-    private boolean areCommandsLoaded = false;
+    private boolean loaded = false, registered = false;
 
     Set<SIRCommand> getCommands() {
         try {
@@ -25,8 +25,9 @@ class CommandData implements DataHandler {
         }
     }
 
+    @Priority(1)
     void loadData() {
-        if (!areCommandsLoaded) {
+        if (!loaded) {
             Counter loaded = new Counter(), failed = new Counter();
             final Counter total = new Counter();
 
@@ -43,7 +44,7 @@ class CommandData implements DataHandler {
                         total.add();
                     });
 
-            areCommandsLoaded = true;
+            CommandData.loaded = true;
             BeansLogger.getLogger().log("Loading commands...",
                     "Total: " + total.get() +
                             " [Loaded= " + loaded.get() +
@@ -53,16 +54,20 @@ class CommandData implements DataHandler {
             if (loaded.get() < 1 || failed.get() > 0)
                 BeansLogger.doLog(
                         "&cSome commands were not loaded correctly.",
-                        "&cReport it to CreaBeast ASAP!"
+                        "&cReport it to CroaBeast ASAP!"
                 );
         }
 
         Set<SIRCommand> commands = getCommands();
-        if (commands != null) commands.forEach(SIRCommand::register);
-    }
+        if (commands == null) return;
 
-    void saveData() {
-        Set<SIRCommand> commands = getCommands();
-        if (commands != null) commands.forEach(SIRCommand::unregister);
+        if (registered) {
+            commands.forEach(SIRCommand::unregister);
+            registered = false;
+            return;
+        }
+
+        commands.forEach(SIRCommand::register);
+        registered = true;
     }
 }

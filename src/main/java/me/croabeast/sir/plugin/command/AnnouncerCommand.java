@@ -63,6 +63,11 @@ final class AnnouncerCommand extends SIRCommand {
         });
     }
 
+    @Override
+    public boolean isOverriding() {
+        return true;
+    }
+
     @NotNull
     protected SIRExtension getParent() {
         return SIRModule.ANNOUNCEMENTS.getModule();

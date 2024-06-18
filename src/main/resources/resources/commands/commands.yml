@@ -18,6 +18,7 @@ commands:
         - cancel;stop
         - reboot
   print:
+    override-existing: true
     enabled: true
     aliases: [ rawmsg, rm ]
     permissions:
@@ -29,35 +30,42 @@ commands:
         - title
         - webhook
   chat-view:
+    override-existing: true
     enabled: true
     aliases: [ c-v ]
     permissions:
       main: sir.chat-view
   msg:
+    override-existing: true
     enabled: true
     aliases: [ m, tell ]
     permissions:
       main: sir.message
   reply:
+    override-existing: true
     enabled: true
     aliases: [ r ]
     permissions:
       main: sir.reply
   ignore:
+    override-existing: true
     enabled: true
     aliases: [ ig ]
     permissions:
       main: sir.ignore
   mute:
+    override-existing: true
     enabled: true
     permissions:
       main: sir.mute.perm
   tempmute:
+    override-existing: true
     enabled: true
     aliases: [ temp-mute ]
     permissions:
       main: sir.mute.temp
   unmute:
+    override-existing: true
     enabled: true
     permissions:
       main: sir.unmute
