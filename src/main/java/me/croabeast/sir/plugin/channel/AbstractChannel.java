@@ -6,7 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import me.croabeast.beans.BeansLib;
 import me.croabeast.beans.message.StringAligner;
-import me.croabeast.lib.PlayerReplacer;
+import me.croabeast.lib.bukkit.PlayerReplacer;
 import me.croabeast.lib.applier.StringApplier;
 import me.croabeast.lib.util.ReplaceUtils;
 import me.croabeast.lib.util.TextUtils;

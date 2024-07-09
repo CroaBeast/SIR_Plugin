@@ -6,6 +6,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 public interface DataHandler {
+
     /**
      * Indicates if the "load" and/or "save" methods have higher or lower priority.
      */

@@ -1,6 +1,6 @@
 package me.croabeast.sir.api.addon;
 
-import me.croabeast.sir.api.ResourceUtils;
+import me.croabeast.lib.file.ResourceUtils;
 import me.croabeast.sir.api.SIRExtension;
 import me.croabeast.sir.plugin.SIRPlugin;
 import org.apache.commons.lang.StringUtils;
@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.logging.Logger;
 
 public abstract class SIRAddon implements SIRExtension {
 
@@ -81,10 +80,6 @@ public abstract class SIRAddon implements SIRExtension {
      */
     public final boolean isEnabled() {
         return enabled;
-    }
-
-    public final Logger getLogger() {
-        return SIRPlugin.getInstance().getLogger();
     }
 
     protected abstract boolean enable();

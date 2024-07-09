@@ -98,11 +98,11 @@ public class SIRInitializer {
     }
 
     void setPluginHooks() {
-        SIRPlugin.DELAY_LOGGER.add(true, "&bLoading all available hooks...");
+        SIRPlugin.mainDelayLogger.add("&bLoading all available hooks...", true);
         int logLines = 0;
 
         if (hasPAPI()) {
-            SIRPlugin.DELAY_LOGGER.add(true, "&7PlaceholderAPI: &e" + pluginVersion("PlaceholderAPI"));
+            SIRPlugin.mainDelayLogger.add("&7PlaceholderAPI: &e" + pluginVersion("PlaceholderAPI"), true);
             logLines++;
         }
 
@@ -119,7 +119,7 @@ public class SIRInitializer {
         }
 
         if (hasDiscord()) {
-            SIRPlugin.DELAY_LOGGER.add(true, "&7DiscordSRV: " + "&e" + pluginVersion("DiscordSRV"));
+            SIRPlugin.mainDelayLogger.add("&7DiscordSRV: " + "&e" + pluginVersion("DiscordSRV"), true);
             logLines++;
         }
 
@@ -131,7 +131,7 @@ public class SIRInitializer {
                     .append(' ')
                     .append(pluginVersion(p));
 
-            SIRPlugin.DELAY_LOGGER.add(true, builder.toString());
+            SIRPlugin.mainDelayLogger.add(builder.toString(), true);
             logLines++;
         }
 
@@ -143,11 +143,11 @@ public class SIRInitializer {
                     .append(' ')
                     .append(pluginVersion(p));
 
-            SIRPlugin.DELAY_LOGGER.add(true, builder.toString());
+            SIRPlugin.mainDelayLogger.add(builder.toString(), true);
             logLines++;
         }
 
         if (logLines == 0)
-            SIRPlugin.DELAY_LOGGER.add(true, "&cThere is no compatible hooks available.");
+            SIRPlugin.mainDelayLogger.add("&cThere is no compatible hooks available.", true);
     }
 }

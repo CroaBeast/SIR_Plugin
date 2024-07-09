@@ -1,10 +1,10 @@
 package me.croabeast.sir.plugin.util;
 
 import me.croabeast.beans.BeansLib;
-import me.croabeast.lib.PlayerReplacer;
+import me.croabeast.lib.bukkit.PlayerReplacer;
 import me.croabeast.lib.applier.StringApplier;
+import me.croabeast.lib.file.Configurable;
 import me.croabeast.lib.util.TextUtils;
-import me.croabeast.sir.api.file.Configurable;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.YAMLData;
 import org.apache.commons.lang.StringUtils;

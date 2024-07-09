@@ -1,29 +1,15 @@
 package me.croabeast.sir.plugin.module;
 
-import lombok.Getter;
-import lombok.Setter;
-import me.croabeast.advancementinfo.AdvancementInfo;
-import me.croabeast.advancementinfo.FrameType;
 import me.croabeast.beans.message.MessageSender;
-import me.croabeast.lib.CollectionBuilder;
-import me.croabeast.lib.reflect.Reflector;
-import me.croabeast.lib.util.ServerInfoUtils;
 import me.croabeast.lib.util.TextUtils;
-import me.croabeast.sir.api.CustomListener;
-import me.croabeast.sir.api.file.ConfigurableFile;
-import me.croabeast.sir.plugin.DataHandler;
-import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.YAMLData;
-import me.croabeast.sir.plugin.logger.DelayLogger;
 import me.croabeast.sir.plugin.module.hook.DiscordHook;
 import me.croabeast.sir.plugin.module.hook.VanishHook;
 import me.croabeast.sir.plugin.util.LangUtils;
-import me.croabeast.sir.plugin.world.WorldRule;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
-import org.bukkit.World;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.configuration.ConfigurationSection;
@@ -34,193 +20,15 @@ import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public final class AdvanceHandler extends SIRModule implements CustomListener, DataHandler {
+public final class AdvanceHandler extends ListenerModule {
 
     private static final YAMLData.Module DATA = YAMLData.Module.ADVANCEMENT;
 
-    private static final Map<FrameType, Set<AdvancementInfo>> ADV_INFO_MAP = new HashMap<>();
-
-    private static final Set<Advancement> ADV_SET =
-            CollectionBuilder.of(Bukkit.advancementIterator())
-                    .filter(a -> {
-                        String k = a.getKey().toString();
-                        return !k.contains("recipes") && !k.contains("root");
-                    })
-                    .collect(new LinkedHashSet<>());
-
-    private static final Set<String> ADV_KEYS = CollectionBuilder.of(ADV_SET)
-            .map(a -> a.getKey().toString())
-            .collect(new LinkedHashSet<>());
-
-    private static boolean areAdvancementsLoaded = false;
-
-    private static void forList(Set<AdvancementInfo> set, FrameType frame) {
-        CollectionBuilder.of(set)
-                .filter(info -> info.getType() == frame)
-                .toSet()
-                .forEach(info -> {
-                    Set<AdvancementInfo> s = ADV_INFO_MAP.get(frame);
-                    if (s == null) s = new LinkedHashSet<>();
-
-                    s.add(info);
-                    ADV_INFO_MAP.put(frame, s);
-                });
-    }
-
-    static {
-        Set<AdvancementInfo> infoSet = CollectionBuilder
-                .of(ADV_SET)
-                .map(a -> {
-                    AdvancementInfo info = null;
-                    try {
-                        info = new AdvancementInfo(a);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    return info;
-                })
-                .filter(Objects::nonNull)
-                .toSet();
-
-        forList(infoSet, FrameType.TASK);
-        forList(infoSet, FrameType.GOAL);
-        forList(infoSet, FrameType.CHALLENGE);
-        forList(infoSet, FrameType.UNKNOWN);
-    }
-
-    private static Set<AdvancementInfo> toTypeSet(FrameType frame) {
-        return new LinkedHashSet<>(ADV_INFO_MAP.getOrDefault(frame, new LinkedHashSet<>()));
-    }
-
-    private static final Set<AdvancementInfo> TASKS = toTypeSet(FrameType.TASK);
-    private static final Set<AdvancementInfo> GOALS = toTypeSet(FrameType.GOAL);
-    private static final Set<AdvancementInfo> CHALLENGES = toTypeSet(FrameType.CHALLENGE);
-    private static final Set<AdvancementInfo> UNKNOWNS = toTypeSet(FrameType.UNKNOWN);
-
-    private static Consumer<AdvancementInfo> fromInfo(Set<Advancement> keys, String type) {
-        return info -> {
-            ConfigurableFile advances = DATA.fromName("lang");
-            Advancement adv = info.getBukkit();
-
-            final String k = adv.getKey().toString();
-            String key = k.replaceAll("[/:]", ".");
-
-            if (advances.getKeys(null, false).contains(key)) return;
-
-            String title = info.getTitle();
-
-            advances.set(key + ".path", "type." + type);
-
-            advances.set(key + ".frame", info.getType().toString());
-            advances.set(key + ".name", title);
-            advances.set(key + ".description", info.getDescription());
-
-            final ItemStack item = info.getIcon();
-            advances.set(key + ".item",
-                    item == null ? null : item.getType().toString());
-
-            keys.add(adv);
-        };
-    }
-
-    static void checkAdvancements() {
-        if (!ADVANCEMENTS.isEnabled()) return;
-
-        for (World w : Bukkit.getWorlds()) {
-            WorldRule<Boolean> announcesEnabled = WorldRule.ANNOUNCE_ADVANCEMENTS;
-            if (advList("worlds").contains(w.getName())) continue;
-
-            if (Boolean.TRUE.equals(announcesEnabled.getValue(w)))
-                announcesEnabled.setValue(w, false);
-        }
-    }
-
-    static void loadData() {
-        if (ServerInfoUtils.SERVER_VERSION < 12) return;
-
-        if (Reflector.of("me.croabeast.sir.plugin.world.WorldData").get("areWorldsLoaded"))
-            checkAdvancements();
-
-        if (areAdvancementsLoaded) return;
-
-        try {
-            SIRPlugin.runTaskWhenLoaded(() -> {
-                DelayLogger logger = DelayLogger.simplified();
-                checkAdvancements();
-
-                logger.add(false, "")
-                        .add(true, "&bRegistering advancements in SIR...");
-
-                long t = System.currentTimeMillis();
-                final Set<Advancement> loadedKeys = new HashSet<>();
-
-                TASKS.forEach(fromInfo(loadedKeys, "task"));
-                GOALS.forEach(fromInfo(loadedKeys, "goal"));
-                CHALLENGES.forEach(fromInfo(loadedKeys, "challenge"));
-                UNKNOWNS.forEach(fromInfo(loadedKeys, "custom"));
-
-                if (loadedKeys.size() > 0)
-                    DATA.fromName("lang").save();
-
-                String advancements = "&7Tasks: &a" + TASKS.size() +
-                        "&7 - Goals: &b" + GOALS.size() +
-                        "&7 - &7Challenges: &d" + CHALLENGES.size();
-
-                logger.add(true, advancements);
-
-                if (!UNKNOWNS.isEmpty())
-                    logger.add(true, "&7Unknowns: &c" +
-                            UNKNOWNS.size() +
-                            "&7. Check your modules/advancements/lang.yml file!"
-                    );
-
-                t = System.currentTimeMillis() - t;
-
-                logger.add(true, "&7Loaded advancements in &e" + t + "&7 ms.")
-                        .add(false, "").sendLines();
-
-                areAdvancementsLoaded = true;
-            });
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    static void saveData() {
-        if (ServerInfoUtils.SERVER_VERSION < 12) return;
-
-        for (World w : Bukkit.getWorlds()) {
-            WorldRule<Boolean> announces = WorldRule.ANNOUNCE_ADVANCEMENTS;
-            if (advList("worlds").contains(w.getName()))
-                return;
-
-            String d = WorldRule.valueFromLoaded(w, announces);
-            boolean v = Boolean.TRUE.equals(announces.getValue(w));
-
-            if (Boolean.parseBoolean(d) && !v)
-                announces.setValue(w, true);
-        }
-    }
-
-    @Getter @Setter
-    private boolean registered = false;
-
     AdvanceHandler() {
         super("advancements");
-    }
-
-    @Override
-    public boolean register() {
-        try {
-            register(SIRPlugin.getInstance());
-            return true;
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     private static List<String> advList(String path) {
@@ -247,7 +55,8 @@ public final class AdvanceHandler extends SIRModule implements CustomListener, D
         final Advancement adv = event.getAdvancement();
 
         String key = adv.getKey().toString();
-        if (!ADV_KEYS.contains(key) || advList("advs").contains(key)) return;
+        if (!AdvanceLoader.ADVANCEMENT_KEYS.contains(key) ||
+                advList("advs").contains(key)) return;
 
         List<String> norms = new ArrayList<>(adv.getCriteria());
         if (norms.isEmpty()) return;
@@ -291,8 +100,11 @@ public final class AdvanceHandler extends SIRModule implements CustomListener, D
             mList.add(s);
         }
 
+        Set<Player> players = new HashSet<>(Bukkit.getOnlinePlayers());
+        players.add(player);
+
         MessageSender.loaded()
-                .setTargets(Bukkit.getOnlinePlayers())
+                .setTargets(players)
                 .setParser(player)
                 .addKeysValues(keys, values).send(mList);
 

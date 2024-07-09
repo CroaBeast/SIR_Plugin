@@ -3,12 +3,9 @@ package me.croabeast.sir.plugin;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import me.croabeast.beans.builder.BossbarBuilder;
-import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.beans.message.MessageSender;
-import me.croabeast.lib.reflect.Craft;
+import me.croabeast.lib.file.ResourceUtils;
 import me.croabeast.lib.util.ServerInfoUtils;
-import me.croabeast.lib.util.TextUtils;
-import me.croabeast.sir.api.ResourceUtils;
 import me.croabeast.sir.api.file.ConfigurableFile;
 import me.croabeast.sir.plugin.file.YAMLData;
 import me.croabeast.sir.plugin.logger.DelayLogger;
@@ -19,17 +16,14 @@ import me.croabeast.sir.plugin.module.hook.LoginHook;
 import me.croabeast.sir.plugin.util.DataUtils;
 import org.apache.commons.lang.SystemUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.HandlerList;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.util.List;
 
 public final class SIRPlugin extends JavaPlugin {
 
-    public static final DelayLogger DELAY_LOGGER = DelayLogger.simplified();
+    public static DelayLogger mainDelayLogger;
 
     @Getter
     private static SIRPlugin instance;
@@ -40,16 +34,9 @@ public final class SIRPlugin extends JavaPlugin {
 
         private SIRSender() {
             addFunctions(TagsParser::parse, EmojiParser::parse);
-        }
 
-        @Override
-        public boolean isSensitive() {
-            return false;
-        }
-
-        @Override
-        public String getErrorPrefix() {
-            return null;
+            setSensitive(false);
+            setErrorPrefix(null);
         }
 
         static ConfigurableFile config() {
@@ -68,17 +55,15 @@ public final class SIRPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         final long start = System.currentTimeMillis();
+        mainDelayLogger = DelayLogger.simplified();
 
         instance = this;
         author = getDescription().getAuthors().get(0);
         version = getDescription().getVersion();
 
-        DELAY_LOGGER.setPlugin(this);
         SIRLoader.loadAllJarEntries();
 
-        DELAY_LOGGER.clear();
-
-        DELAY_LOGGER.add(false,
+        mainDelayLogger.add(false,
                 "&0 * &e____ &0* &e___ &0* &e____",
                 "&0* &e(___&0 * * &e|&0* * &e|___)",
                 "&0* &e____) . _|_ . | &0* &e\\ . &f" +
@@ -109,16 +94,20 @@ public final class SIRPlugin extends JavaPlugin {
         if (LoginHook.isHookEnabled())
             Bukkit.getOnlinePlayers().forEach(LoginHook::addPlayer);
 
-        DELAY_LOGGER.add(false, "")
-                .add(true,
-                    "&7SIR " + version + " was&a loaded&7 in &e" +
-                            (System.currentTimeMillis() - start) + " ms."
+        mainDelayLogger.add("", false)
+                .add(
+                    "&7SIR " + version + " was&a enabled&7 in &e" +
+                            (System.currentTimeMillis() - start) + " ms.",
+                        true
                 )
-                .add(false, "").sendLines();
+                .add("", false).sendLines();
     }
 
     @Override
     public void onDisable() {
+        final long time = System.currentTimeMillis();
+        DelayLogger logger = DelayLogger.simplified();
+
         Bukkit.getOnlinePlayers().forEach(p ->
                 BossbarBuilder.getBuilders(p)
                         .forEach(BossbarBuilder::unregister));
@@ -129,43 +118,21 @@ public final class SIRPlugin extends JavaPlugin {
             e.printStackTrace();
         }
 
-        FileConfiguration commands = Craft.Server.createCommandsConfiguration();
-
-        ConfigurationSection aliases = commands.getConfigurationSection("aliases");
-        if (aliases != null) {
-            boolean changed = false;
-
-            for (String key : aliases.getKeys(false)) {
-                List<String> l = TextUtils.toList(aliases, key);
-                if (l.size() != 1 ||
-                        !l.get(0).contains("sir:")) continue;
-
-                commands.set("aliases." + key, null);
-                if (!changed) changed = true;
-            }
-
-            if (changed)
-                try {
-                    commands.save(Craft.Server.getCommands());
-                    Craft.Server.reloadCommandsFile();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-        }
-
         SIRModule.ANNOUNCEMENTS.getData().stop();
+        HandlerList.unregisterAll(this);
 
-        BeansLogger.doLog(
+        logger.add(false,
                 "&0* *&e____ &0* &e___ &0* &e____",
                 "&0* &e(___&0 * * &e|&0* * &e|___)",
                 "&0* &e____) . _|_ . | &0* &e\\ . &f" +
-                        getVersion(), ""
-        );
+                        getVersion(), "")
+                .add(
+                        "&7SIR " + version + " was&a disabled&7 in &e" +
+                                (System.currentTimeMillis() - time) + " ms.",
+                        true
+                )
+                .add("", false).sendLines();
 
-        BeansLogger.getLogger().log("&7SIR &c" + version + "&7 was totally disabled.");
-        BeansLogger.doLog("");
-
-        HandlerList.unregisterAll(this);
         instance = null;
     }
 
@@ -178,7 +145,7 @@ public final class SIRPlugin extends JavaPlugin {
     }
 
     @SneakyThrows
-    public static void runTaskWhenLoaded(Runnable runnable) {
+    public static void runWhenLoaded(Runnable runnable) {
         Bukkit.getScheduler().scheduleSyncDelayedTask(getInstance(), runnable);
     }
 }

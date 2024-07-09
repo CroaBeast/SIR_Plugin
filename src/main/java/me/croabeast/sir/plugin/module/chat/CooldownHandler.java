@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import me.croabeast.beans.message.MessageSender;
 import me.croabeast.lib.util.TextUtils;
-import me.croabeast.sir.api.ConfigUnit;
+import me.croabeast.sir.api.file.ConfigUnit;
 import me.croabeast.sir.api.CustomListener;
 import me.croabeast.sir.api.event.chat.SIRChatEvent;
 import me.croabeast.sir.plugin.SIRPlugin;
@@ -19,6 +19,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 import java.util.*;
 
+@Setter @Getter
 public final class CooldownHandler extends ChatModule implements CustomListener {
 
     private static final Map<Integer, Set<CooldownUnit>> UNIT_MAP = new TreeMap<>(Collections.reverseOrder());
@@ -26,7 +27,6 @@ public final class CooldownHandler extends ChatModule implements CustomListener 
     private static final Map<Player, Integer> CHECK_MAP = new HashMap<>();
     private static final Map<Player, Long> GLOBAL_TIMERS = new HashMap<>(), LOCAL_TIMERS = new HashMap<>();
 
-    @Getter @Setter
     private boolean registered = false;
 
     CooldownHandler() {
@@ -58,6 +58,11 @@ public final class CooldownHandler extends ChatModule implements CustomListener 
         }
 
         return true;
+    }
+
+    @Override
+    public boolean unregister() {
+        return CustomListener.super.unregister();
     }
 
     private static CooldownUnit get(Player player) {

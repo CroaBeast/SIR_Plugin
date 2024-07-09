@@ -6,7 +6,7 @@ import me.croabeast.beans.message.MessageSender;
 import me.croabeast.lib.util.ReplaceUtils;
 import me.croabeast.lib.util.TextUtils;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
-import me.croabeast.sir.api.ConfigUnit;
+import me.croabeast.sir.api.file.ConfigUnit;
 import me.croabeast.sir.plugin.channel.ChatChannel;
 import me.croabeast.sir.plugin.command.ignore.IgnoreCommand;
 import me.croabeast.sir.plugin.file.YAMLData;

@@ -1,12 +1,9 @@
 package me.croabeast.sir.api;
 
-import lombok.SneakyThrows;
-import me.croabeast.sir.plugin.SIRPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Objects;
 
@@ -25,23 +22,27 @@ public interface CustomListener extends Listener {
      *
      * @param plugin The plugin to register this listener for.
      *
-     * @return this listener instance.
+     * @return true if was registered, false otherwise.
      * @throws NullPointerException if the plugin is null.
      */
-    default void register(Plugin plugin) {
-        if (isRegistered()) return;
+    default boolean register(Plugin plugin) {
+        if (isRegistered()) return false;
 
         Bukkit.getPluginManager().registerEvents(this, Objects.requireNonNull(plugin));
         setRegistered(true);
+
+        return true;
     }
 
     /**
      * Unregisters this listener from all registered events.
      */
-    default void unregister() {
-        if (!isRegistered()) return;
+    default boolean unregister() {
+        if (!isRegistered())
+            return false;
 
         HandlerList.unregisterAll(this);
         setRegistered(false);
+        return true;
     }
 }

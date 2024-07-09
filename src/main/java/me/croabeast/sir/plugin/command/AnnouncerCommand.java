@@ -1,17 +1,22 @@
 package me.croabeast.sir.plugin.command;
 
 import me.croabeast.beans.logger.BeansLogger;
+import me.croabeast.lib.command.BaseCommand;
+import me.croabeast.lib.command.Executable;
+import me.croabeast.lib.command.TabBuilder;
 import me.croabeast.sir.api.SIRExtension;
 import me.croabeast.sir.api.command.SIRCommand;
-import me.croabeast.sir.api.command.tab.TabBuilder;
 import me.croabeast.sir.api.file.ConfigurableFile;
 import me.croabeast.sir.plugin.file.YAMLData;
 import me.croabeast.sir.plugin.module.AnnounceHandler;
 import me.croabeast.sir.plugin.module.SIRModule;
-import org.bukkit.command.CommandSender;
+import me.croabeast.sir.plugin.util.PlayerUtils;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Deque;
+import java.util.LinkedList;
 
 final class AnnouncerCommand extends SIRCommand {
 
@@ -27,10 +32,10 @@ final class AnnouncerCommand extends SIRCommand {
                 return isWrongArgument(sender, args[args.length - 1]);
 
             if (handler.isRunning())
-                return fromSender(sender).send("cant-start");
+                return createSender(sender).send("cant-start");
 
             handler.start();
-            return fromSender(sender).send("started");
+            return createSender(sender).send("started");
         });
 
         editSubCommand("cancel", (sender, args) -> {
@@ -38,10 +43,10 @@ final class AnnouncerCommand extends SIRCommand {
                 return isWrongArgument(sender, args[args.length - 1]);
 
             if (!handler.isRunning())
-                return fromSender(sender).send("cant-stop");
+                return createSender(sender).send("cant-stop");
 
             handler.stop();
-            return fromSender(sender).send("stopped");
+            return createSender(sender).send("stopped");
         });
 
         editSubCommand("reboot", (sender, args) -> {
@@ -49,7 +54,7 @@ final class AnnouncerCommand extends SIRCommand {
                 return isWrongArgument(sender, args[args.length - 1]);
 
             if (!handler.isRunning()) handler.start();
-            return fromSender(sender).send("rebooted");
+            return createSender(sender).send("rebooted");
         });
 
         editSubCommand("preview", (sender, args) -> {
@@ -59,7 +64,7 @@ final class AnnouncerCommand extends SIRCommand {
             }
 
             return (args.length == 1 && handler.displayAnnounce(args[0])) ||
-                    fromSender(sender).send("select");
+                    createSender(sender).send("select");
         });
     }
 
@@ -78,17 +83,21 @@ final class AnnouncerCommand extends SIRCommand {
         return YAMLData.Command.Single.ANNOUNCER.from();
     }
 
-    @Override
-    protected boolean execute(CommandSender sender, String[] args) {
-        return fromSender(sender).send("help");
+    @NotNull
+    public Executable getExecutable() {
+        return Executable.from((sender, args) -> createSender(sender).send("help"));
     }
 
     @NotNull
-    protected TabBuilder completer() {
-        final TabBuilder builder = TabBuilder.of();
+    public TabBuilder getCompletionBuilder() {
+        final TabBuilder builder = PlayerUtils.createBuilder();
 
-        for (SubCommand sub : subCommands.values())
-            builder.addArguments((s, a) -> sub.isPermitted(s), sub.getNames());
+        for (BaseCommand sub : getSubCommands()) {
+            Deque<String> list = new LinkedList<>(sub.getAliases());
+            list.addFirst(sub.getName());
+
+            builder.addArguments(0, (s, a) -> sub.isPermitted(s), list);
+        }
 
         ConfigurationSection id = announces.getSection("announces");
         return id != null ?

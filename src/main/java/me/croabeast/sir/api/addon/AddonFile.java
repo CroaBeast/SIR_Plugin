@@ -2,10 +2,10 @@ package me.croabeast.sir.api.addon;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import me.croabeast.lib.file.Configurable;
 import me.croabeast.lib.util.ArrayUtils;
 import me.croabeast.lib.util.Exceptions;
 import me.croabeast.lib.util.TextUtils;
-import me.croabeast.sir.api.file.Configurable;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -92,7 +92,6 @@ public final class AddonFile implements Configurable {
 
     /**
      * Gets the main and primary author of the addon.
-     *
      * @return The main author.
      */
     public String getAuthor() {

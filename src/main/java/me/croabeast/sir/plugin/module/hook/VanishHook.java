@@ -52,6 +52,15 @@ public final class VanishHook extends JoinQuitRelated {
         super(false);
     }
 
+    public static boolean isHookEnabled() {
+        return ENABLED_HOOKS.size() == 1;
+    }
+
+    @Nullable
+    public static Plugin getHook() {
+        return isHookEnabled() ? ENABLED_HOOKS.get(0) : null;
+    }
+
     static void loadHook() {
         if (!isHookEnabled()) return;
 
@@ -104,8 +113,6 @@ public final class VanishHook extends JoinQuitRelated {
 
         Player player = event.getPlayer();
         UUID uuid = player.getUniqueId();
-
-        if (!isEnabled()) return;
 
         if (LOGIN.isEnabled())
             if (isVanished) LoginHook.addPlayer(player);
@@ -198,27 +205,18 @@ public final class VanishHook extends JoinQuitRelated {
         return !isVanished(player);
     }
 
-    @Nullable
-    public static Plugin getHook() {
-        return isHookEnabled() ? ENABLED_HOOKS.get(0) : null;
-    }
-
-    public static boolean isHookEnabled() {
-        return ENABLED_HOOKS.size() == 1;
-    }
-
+    @Setter @Getter
     static class LoadedListener implements CustomListener {
 
-        @Getter @Setter
         private boolean registered = false;
 
         LoadedListener() {
             LISTENER_SET.add(this);
         }
 
-        public void unregister() {
-            CustomListener.super.unregister();
+        public boolean unregister() {
             LISTENER_SET.remove(this);
+            return CustomListener.super.unregister();
         }
     }
 }

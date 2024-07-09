@@ -3,10 +3,10 @@ package me.croabeast.sir.plugin.file;
 import lombok.experimental.UtilityClass;
 import me.croabeast.beans.BeansLib;
 import me.croabeast.beans.logger.BeansLogger;
+import me.croabeast.lib.file.YAMLFile;
 import me.croabeast.lib.reflect.Reflector;
 import me.croabeast.lib.util.Exceptions;
 import me.croabeast.sir.api.file.ConfigurableFile;
-import me.croabeast.sir.api.file.YAMLFile;
 import me.croabeast.sir.plugin.DataHandler;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.logger.DelayLogger;
@@ -33,6 +33,7 @@ public class YAMLData implements DataHandler {
         SIRFile(String folder, String name) throws IOException {
             super(SIRPlugin.getInstance(), folder, name);
             setResourcePath("resources" + File.separator + getLocation());
+            setLoggerAction(s -> BeansLogger.getLogger().log(s));
         }
 
         @Override
@@ -70,41 +71,15 @@ public class YAMLData implements DataHandler {
 
     @Priority(5)
     void loadData() {
-        DelayLogger logger = DelayLogger.simplified();
-        logger.add(true, "Loading files...");
+        if (areFilesLoaded) return;
 
-        if (areFilesLoaded) {
-            if (FILES_COUNTER.isModified())
-                FILES_COUNTER.clear();
-
-            for (YAMLFile file : FILE_MAP.values()) {
-                file.reload();
-                FILES_COUNTER.loaded++;
-
-                if (file.update())
-                    FILES_COUNTER.updated++;
-            }
-
-            logger.add(true,
-                    "Reloaded: " + FILES_COUNTER.loaded +
-                            ", Updated: " + FILES_COUNTER.updated +
-                            ", Failed: " + FILES_COUNTER.failed
-            );
-
-            if (!FILES_COUNTER.isModified() || FILES_COUNTER.failed > 0)
-                logger.add(true,
-                        "Files not loaded correctly! Report to CroaBeast."
-                );
-
-            logger.sendLines();
-            return;
-        }
+        final DelayLogger logger = DelayLogger.simplified()
+                .add("Loading files...", true);
 
         List<String> paths = filePaths();
         if (paths == null) return;
 
-        if (FILES_COUNTER.isModified())
-            FILES_COUNTER.clear();
+        if (FILES_COUNTER.isModified()) FILES_COUNTER.clear();
 
         for (String path : paths) {
             String separator = Pattern.quote(File.separator);
@@ -131,31 +106,38 @@ public class YAMLData implements DataHandler {
                 name = path;
             }
 
+            ConfigurableFile file;
             try {
-                ConfigurableFile file = new SIRFile(folder, name);
-                if (file.saveDefaults()) {
-                    FILE_MAP.put(path, file);
-                    FILES_COUNTER.loaded++;
-
-                    if (file.update())
-                        FILES_COUNTER.updated++;
-                }
-                else FILES_COUNTER.failed++;
+                file = new SIRFile(folder, name);
             } catch (Exception e) {
                 FILES_COUNTER.failed++;
                 e.printStackTrace();
+                continue;
             }
+
+            if (file.saveDefaults()) {
+                FILE_MAP.put(path, file);
+                FILES_COUNTER.loaded++;
+
+                if (file.update()) FILES_COUNTER.updated++;
+                continue;
+            }
+
+            FILES_COUNTER.failed++;
         }
 
-        logger.add(true,
+        logger.add(
                 "Loaded: " + FILES_COUNTER.loaded +
                         ", Updated: " + FILES_COUNTER.updated +
-                        ", Failed: " + FILES_COUNTER.failed
+                        ", Failed: " + FILES_COUNTER.failed,
+                true
         );
 
         if (!FILES_COUNTER.isModified())
-            logger.add(true,
-                    "Files not loaded correctly! Report to CroaBeast."
+            logger.add(
+                    "Files not loaded correctly! " +
+                            "Report to CroaBeast.",
+                    true
             );
 
         try {
@@ -176,6 +158,45 @@ public class YAMLData implements DataHandler {
 
         logger.sendLines();
         areFilesLoaded = true;
+    }
+
+    @Priority(5)
+    void saveData() {
+        if (!areFilesLoaded) return;
+
+        DelayLogger logger = DelayLogger.simplified();
+        logger.add("Loading files...", true);
+
+        if (FILES_COUNTER.isModified())
+            FILES_COUNTER.clear();
+
+        for (YAMLFile file : FILE_MAP.values()) {
+            file.reload();
+            FILES_COUNTER.loaded++;
+
+            if (file.update()) FILES_COUNTER.updated++;
+        }
+
+        logger.add(
+                "Reloaded: " +
+                        FILES_COUNTER.loaded +
+                        ", Updated: " +
+                        FILES_COUNTER.updated +
+                        ", Failed: " +
+                        FILES_COUNTER.failed,
+                true
+        );
+
+        if (!FILES_COUNTER.isModified()
+                || FILES_COUNTER.failed > 0)
+            logger.add(
+                    "Files not loaded correctly! " +
+                            "Report to CroaBeast.",
+                    true
+            );
+
+        logger.sendLines();
+        areFilesLoaded = false;
     }
 
     private ConfigurableFile folderPath(String... args) {

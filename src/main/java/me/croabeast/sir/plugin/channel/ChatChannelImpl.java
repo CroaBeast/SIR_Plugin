@@ -2,17 +2,18 @@ package me.croabeast.sir.plugin.channel;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
-import me.croabeast.sir.api.file.Configurable;
+import me.croabeast.lib.file.Configurable;
 import me.croabeast.sir.plugin.DataHandler;
 import me.croabeast.sir.plugin.file.YAMLData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.jetbrains.annotations.Nullable;
 
+@Getter
 final class ChatChannelImpl extends AbstractChannel implements DataHandler {
 
     private static ChatChannel defs = null;
 
-    @Nullable @Getter
+    @Nullable
     private final ChatChannel subChannel;
 
     ChatChannelImpl(ConfigurationSection section) throws IllegalAccessException {

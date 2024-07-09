@@ -6,7 +6,7 @@
 
     <groupId>me.croabeast</groupId>
     <artifactId>SIR_Plugin</artifactId>
-    <version>4.0-SNAPSHOT-12</version>
+    <version>4.0-SNAPSHOT-19</version>
     <packaging>jar</packaging>
 
     <name>SIR_Plugin</name> <!--Simple In-game Receptionist-->
@@ -62,6 +62,7 @@
                             <excludes>
                                 <exclude>META-INF/**</exclude>
                                 <exclude>fonts/**</exclude>
+                                <exclude>me/croabeast/sir/api/addon/**</exclude>
                                 <exclude>resources/plugin.yml</exclude>
                             </excludes>
                         </filter>
@@ -86,6 +87,51 @@
                             <version>1.0</version>
                             <packaging>jar</packaging>
                             <file>lib/BeansLib.jar</file>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>command</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>me.croabeast.lib</groupId>
+                            <artifactId>command</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                            <file>lib/command.jar</file>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>file</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>me.croabeast.lib</groupId>
+                            <artifactId>file</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                            <file>lib/file.jar</file>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>AdvancementInfo</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>install-file</goal>
+                        </goals>
+                        <configuration>
+                            <groupId>me.croabeast.lib</groupId>
+                            <artifactId>AdvancementInfo</artifactId>
+                            <version>1.0</version>
+                            <packaging>jar</packaging>
+                            <file>lib/AdvancementInfo.jar</file>
                         </configuration>
                     </execution>
 
@@ -210,7 +256,7 @@
 
         <dependency>
             <groupId>org.spigotmc</groupId>
-            <artifactId>spigot</artifactId>
+            <artifactId>spigot-api</artifactId>
             <version>1.16.5-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
@@ -218,7 +264,7 @@
         <dependency>
             <groupId>me.clip</groupId>
             <artifactId>placeholderapi</artifactId>
-            <version>2.11.5</version>
+            <version>2.11.6</version>
             <scope>provided</scope>
         </dependency>
 
@@ -230,23 +276,31 @@
         </dependency>
 
         <dependency>
-            <groupId>org.bstats</groupId>
-            <artifactId>bstats-bukkit</artifactId>
-            <version>3.0.2</version>
+            <groupId>me.croabeast.lib</groupId>
+            <artifactId>command</artifactId>
+            <version>1.0</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
-            <groupId>com.github.CroaBeast</groupId>
-            <artifactId>AdvancementInfo</artifactId>
-            <version>6feb52da47</version>
+            <groupId>me.croabeast.lib</groupId>
+            <artifactId>file</artifactId>
+            <version>1.0</version>
             <scope>compile</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>me.croabeast.lib</groupId>
+            <artifactId>AdvancementInfo</artifactId>
+            <version>1.0</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.bstats</groupId>
+            <artifactId>bstats-bukkit</artifactId>
+            <version>3.0.2</version>
+            <scope>compile</scope>
         </dependency>
 
         <dependency>
@@ -371,7 +425,7 @@
         <dependency>
             <groupId>com.github.stefvanschie.inventoryframework</groupId>
             <artifactId>IF</artifactId>
-            <version>0.10.14</version>
+            <version>0.10.15</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

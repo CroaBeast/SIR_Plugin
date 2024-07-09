@@ -46,6 +46,8 @@ abstract class JoinQuitRelated extends HookModule implements CustomListener {
     Object getUnit(String joined, Player player) {
         try {
             Method typeM = TYPE_CLASS.getMethod("valueOf", String.class);
+            typeM.setAccessible(true);
+
             Object type = typeM.invoke(null, joined);
 
             Method method = MAIN_CLASS.getDeclaredMethod("get", TYPE_CLASS, Player.class);
@@ -53,6 +55,7 @@ abstract class JoinQuitRelated extends HookModule implements CustomListener {
 
             return method.invoke(getInstance(), type, player);
         } catch (Exception e) {
+            e.printStackTrace();
             return null;
         }
     }
@@ -63,7 +66,9 @@ abstract class JoinQuitRelated extends HookModule implements CustomListener {
             method.setAccessible(true);
 
             method.invoke(unit, player);
-        } catch (Exception ignored) {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     Map<UUID, Long> getJoinMap() {

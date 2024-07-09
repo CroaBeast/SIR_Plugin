@@ -1,19 +1,18 @@
 package me.croabeast.sir.plugin.command.mute;
 
 import me.croabeast.beans.message.MessageSender;
-import me.croabeast.lib.CollectionBuilder;
-import me.croabeast.sir.api.command.tab.TabBuilder;
+import me.croabeast.lib.command.Executable;
+import me.croabeast.lib.command.TabBuilder;
 import me.croabeast.sir.plugin.util.LangUtils;
 import me.croabeast.sir.plugin.util.PlayerUtils;
 import org.bukkit.Bukkit;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-class TempMuteCommand extends MuteCommand {
+final class TempMuteCommand extends MuteCommand {
 
     TempMuteCommand() {
         super("tempmute");
@@ -54,51 +53,53 @@ class TempMuteCommand extends MuteCommand {
         return number;
     }
 
-    @Override
-    protected boolean execute(CommandSender sender, String[] args) {
-        if (isProhibited(sender)) return true;
+    @NotNull
+    public Executable getExecutable() {
+        return Executable.from((sender, args) -> {
+            if (!isPermitted(sender)) return true;
 
-        if (args.length < 2)
-            return fromSender(sender).send("help.temp");
+            if (args.length < 2)
+                return createSender(sender).send("help.temp");
 
-        Player target = PlayerUtils.getClosest(args[0]);
-        if (target == null)
-            return fromSender(sender).send("not-player");
+            Player target = PlayerUtils.getClosest(args[0]);
+            if (target == null)
+                return createSender(sender).send("not-player");
 
-        String reason = getLang().get("lang.default-reason.mute", "Not following server rules.");
+            String reason = getLang().get("lang.default-reason.mute", "Not following server rules.");
 
-        if (args.length > 2) {
-            String temp = LangUtils.stringFromArray(args, 2);
-            if (temp != null) reason = temp;
-        }
-
-        MessageSender message = fromSender(sender)
-                .addKeyValue("{reason}", reason)
-                .addKeyValue("{target}", target.getName());
-
-        if (isMuted(target)) {
-            TempMuteTask task = MUTED_MAP.get(target.getUniqueId());
-            String path = "perm";
-
-            if (task.isTemporary()) {
-                message.addKeyValue("{time}", task.getParsedTime());
-                path = "temp";
+            if (args.length > 2) {
+                String temp = LangUtils.stringFromArray(args, 2);
+                if (temp != null) reason = temp;
             }
 
-            return message.send("is-muted." + path);
-        }
+            MessageSender message = createSender(sender)
+                    .addKeyValue("{reason}", reason)
+                    .addKeyValue("{target}", target.getName());
 
-        int time = convertToSeconds(args[1]);
-        invoke(target.getUniqueId(), time);
+            if (isMuted(target)) {
+                TempMuteTask task = MUTED_MAP.get(target.getUniqueId());
+                String path = "perm";
 
-        return message.addKeyValue("{time}", getParsedTime(time))
-                .setTargets(Bukkit.getOnlinePlayers()).send("action.temp");
+                if (task.isTemporary()) {
+                    message.addKeyValue("{time}", task.getParsedTime());
+                    path = "temp";
+                }
+
+                return message.send("is-muted." + path);
+            }
+
+            int time = convertToSeconds(args[1]);
+            invoke(target.getUniqueId(), time);
+
+            return message.addKeyValue("{time}", getParsedTime(time))
+                    .setTargets(Bukkit.getOnlinePlayers()).send("action.temp");
+        });
     }
 
     @Override
-    protected @Nullable TabBuilder completer() {
-        return TabBuilder.of()
-                .addArguments(CollectionBuilder.of(Bukkit.getOnlinePlayers()).map(Player::getName).toList())
+    public TabBuilder getCompletionBuilder() {
+        return PlayerUtils.createBuilder()
+                .addArguments(0, getOnlineNames())
                 .addArgument(1, "<time>")
                 .addArgument(2, "<reason>");
     }

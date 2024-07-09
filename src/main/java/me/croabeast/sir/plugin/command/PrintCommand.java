@@ -7,8 +7,9 @@ import lombok.RequiredArgsConstructor;
 import me.croabeast.beans.BeansLib;
 import me.croabeast.beans.message.MessageChannel;
 import me.croabeast.lib.CollectionBuilder;
+import me.croabeast.lib.command.Executable;
+import me.croabeast.lib.command.TabBuilder;
 import me.croabeast.sir.api.command.SIRCommand;
-import me.croabeast.sir.api.command.tab.TabBuilder;
 import me.croabeast.sir.api.file.ConfigurableFile;
 import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.file.YAMLData;
@@ -25,7 +26,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
 import java.util.Locale;
@@ -38,16 +38,16 @@ final class PrintCommand extends SIRCommand {
         super("print");
 
         editSubCommand("targets", (sender, args) -> args.length <= 0 ?
-                fromSender(sender).send("help.targets") :
+                createSender(sender).send("help.targets") :
                 isWrongArgument(sender, args[args.length - 1]));
 
         editSubCommand("chat", (sender, args) -> {
             TargetCatcher catcher = new TargetCatcher(sender, args.length > 0 ? args[0] : null);
 
             if (args.length == 0)
-                return fromSender(sender).send("help.chat");
+                return createSender(sender).send("help.chat");
             if (args.length < 3)
-                return fromSender(sender).send("empty-message");
+                return createSender(sender).send("empty-message");
 
             catcher.sendConfirmation();
 
@@ -61,9 +61,9 @@ final class PrintCommand extends SIRCommand {
             TargetCatcher catcher = new TargetCatcher(sender, args.length > 0 ? args[0] : null);
 
             if (args.length == 0)
-                return fromSender(sender).send("help.action-bar");
+                return createSender(sender).send("help.action-bar");
             if (args.length < 2)
-                return fromSender(sender).send("empty-message");
+                return createSender(sender).send("empty-message");
 
             catcher.sendConfirmation();
             new Printer(catcher, args, 1).print("ACTION-BAR");
@@ -75,9 +75,9 @@ final class PrintCommand extends SIRCommand {
             TargetCatcher catcher = new TargetCatcher(sender, args.length > 0 ? args[0] : null);
 
             if (args.length == 0)
-                return fromSender(sender).send("help.title");
+                return createSender(sender).send("help.title");
             if (args.length < 2)
-                return fromSender(sender).send("empty-message");
+                return createSender(sender).send("empty-message");
 
             catcher.sendConfirmation();
             new Printer(catcher, args, 2).print("TITLE");
@@ -91,18 +91,18 @@ final class PrintCommand extends SIRCommand {
         return YAMLData.Command.Single.PRINT.from();
     }
 
-    @Override
-    protected boolean execute(CommandSender sender, String[] args) {
-        return fromSender(sender).send("help.main");
+    @NotNull
+    public Executable getExecutable() {
+        return Executable.from((sender, args) -> createSender(sender).send("help.main"));
     }
 
     @Override
-    protected @Nullable TabBuilder completer() {
-        TabBuilder builder = TabBuilder.of()
-                .addArgument("sir.print.targets", "targets")
-                .addArgument("sir.print.chat", "chat")
-                .addArgument("sir.print.action-bar", "action-bar")
-                .addArgument("sir.print.title", "title")
+    public TabBuilder getCompletionBuilder() {
+        TabBuilder builder = PlayerUtils.createBuilder()
+                .addArgument(0, "sir.print.targets", "targets")
+                .addArgument(0, "sir.print.chat", "chat")
+                .addArgument(0, "sir.print.action-bar", "action-bar")
+                .addArgument(0, "sir.print.title", "title")
                 .addArguments(1, "@a", "perm:", "world:")
                 .addArguments(1,
                         CollectionBuilder.of(Bukkit.getOnlinePlayers())
@@ -112,16 +112,16 @@ final class PrintCommand extends SIRCommand {
         if (SIRInitializer.hasVault())
             builder.addArgument(1, "group:");
 
-        builder.setIndex(2)
-                .addArgument(
+        builder
+                .addArgument(2,
                         (s, a) -> a[0].matches("(?i)action-bar"),
                         "<message>"
                 )
-                .addArguments(
+                .addArguments(2,
                         (s, a) -> a[0].matches("(?i)chat"),
                         "default", "centered", "mixed"
                 )
-                .addArguments(
+                .addArguments(2,
                         (s, a) -> a[0].matches("(?i)title"),
                         "default", "10,50,10"
                 );
@@ -209,7 +209,7 @@ final class PrintCommand extends SIRCommand {
 
         private boolean sendConfirmation() {
             if (targets.isEmpty()) {
-                fromSender(sender).addKeyValue("{target}", input).send("reminder.empty");
+                createSender(sender).addKeyValue("{target}", input).send("reminder.empty");
                 return false;
             }
 
@@ -217,12 +217,12 @@ final class PrintCommand extends SIRCommand {
                 String target = Lists.newArrayList(targets).get(0).getName();
 
                 return (!(sender instanceof Player) || !targets.contains(sender)) &&
-                        fromSender(sender)
+                        createSender(sender)
                                 .addKeyValue("{target}", target)
                                 .send("reminder.success");
             }
 
-            return fromSender(sender).addKeyValue("{target}", input).send("reminder.success");
+            return createSender(sender).addKeyValue("{target}", input).send("reminder.success");
         }
     }
 

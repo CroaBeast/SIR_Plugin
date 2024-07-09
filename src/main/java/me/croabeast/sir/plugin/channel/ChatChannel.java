@@ -2,9 +2,9 @@ package me.croabeast.sir.plugin.channel;
 
 import lombok.SneakyThrows;
 import me.croabeast.lib.CollectionBuilder;
+import me.croabeast.lib.file.Configurable;
 import me.croabeast.lib.util.TextUtils;
-import me.croabeast.sir.api.ConfigUnit;
-import me.croabeast.sir.api.file.Configurable;
+import me.croabeast.sir.api.file.ConfigUnit;
 import me.croabeast.sir.plugin.command.ChatViewCommand;
 import me.croabeast.sir.plugin.command.ignore.IgnoreCommand;
 import me.croabeast.sir.plugin.file.YAMLData;
@@ -194,7 +194,7 @@ public interface ChatChannel extends ConfigUnit {
     }
 
     default String[] getChatKeys() {
-        return new String[] {"{prefix}", "{me.croabeast.sir-prefix}", "{suffix}", "{me.croabeast.sir-suffix}", "{color}", "{message}"};
+        return new String[] {"{prefix}", "{sir-prefix}", "{suffix}", "{sir-suffix}", "{color}", "{message}"};
     }
 
     default String[] getChatValues(String message) {

@@ -1,12 +1,9 @@
 package me.croabeast.sir.plugin.module;
 
-import lombok.Getter;
-import lombok.Setter;
 import me.croabeast.beans.BeansLib;
 import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.beans.message.StringAligner;
-import me.croabeast.sir.api.CustomListener;
-import me.croabeast.sir.api.ResourceUtils;
+import me.croabeast.lib.file.ResourceUtils;
 import me.croabeast.sir.api.file.ConfigurableFile;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.YAMLData;
@@ -22,18 +19,13 @@ import org.bukkit.util.Consumer;
 
 import java.io.File;
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Random;
+import java.util.*;
 import java.util.function.UnaryOperator;
 
-public final class MotdHandler extends SIRModule implements CustomListener {
+public final class MotdHandler extends ListenerModule {
 
     private static final char SP = File.separatorChar;
 
-    @Getter @Setter
-    private boolean registered = false;
     private int motdIndex = 0, iconIndex = 0;
 
     private final ConfigurableFile config;
@@ -56,7 +48,7 @@ public final class MotdHandler extends SIRModule implements CustomListener {
 
         try {
             ResourceUtils.saveResource(
-                    SIRPlugin.getInstance().getResource(s),
+                    Objects.requireNonNull(SIRPlugin.getInstance().getResource(s)),
                     SIRPlugin.getFolder(), icon, false
             );
         } catch (Exception e) {
@@ -102,16 +94,6 @@ public final class MotdHandler extends SIRModule implements CustomListener {
             return IconInput.valueOf(input.toUpperCase(Locale.ENGLISH));
         } catch (Exception e) {
             return IconInput.DISABLED;
-        }
-    }
-
-    @Override
-    public boolean register() {
-        try {
-            register(SIRPlugin.getInstance());
-            return true;
-        } catch (Exception e) {
-            return false;
         }
     }
 

@@ -3,7 +3,7 @@ package me.croabeast.sir.plugin.module.chat;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import me.croabeast.neoprismatic.NeoPrismaticAPI;
-import me.croabeast.sir.api.ConfigUnit;
+import me.croabeast.sir.api.file.ConfigUnit;
 import me.croabeast.sir.plugin.file.YAMLData;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.configuration.ConfigurationSection;

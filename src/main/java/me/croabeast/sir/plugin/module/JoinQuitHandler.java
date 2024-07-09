@@ -5,11 +5,10 @@ import lombok.Setter;
 import me.croabeast.beans.builder.BossbarBuilder;
 import me.croabeast.beans.message.MessageSender;
 import me.croabeast.lib.util.TextUtils;
-import me.croabeast.sir.api.ConfigUnit;
-import me.croabeast.sir.api.CustomListener;
+import me.croabeast.sir.api.file.ConfigUnit;
 import me.croabeast.sir.api.file.ConfigurableFile;
 import me.croabeast.sir.plugin.SIRPlugin;
-import me.croabeast.sir.plugin.command.message.PrivateMessageCommand;
+import me.croabeast.sir.plugin.command.message.Conversation;
 import me.croabeast.sir.plugin.file.YAMLData;
 import me.croabeast.sir.plugin.module.hook.DiscordHook;
 import me.croabeast.sir.plugin.module.hook.LoginHook;
@@ -25,7 +24,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 import java.util.*;
 
-public final class JoinQuitHandler extends SIRModule implements CustomListener {
+public final class JoinQuitHandler extends ListenerModule {
 
     private static final Map<UUID, Long> JOIN_MAP, QUIT_MAP, PLAY_MAP;
     private static final Map<Type, Map<Integer, Set<ConnectionUnit>>> UNIT_MAP;
@@ -67,17 +66,17 @@ public final class JoinQuitHandler extends SIRModule implements CustomListener {
         UNIT_MAP.clear();
 
         for (Type type : Type.values()) {
-            Map<Integer, Set<ConfigUnit>> first = messages.getUnitsByPriority(type.name);
+            Map<Integer, Set<ConfigurationSection>> first = messages.getUnitsByPriority(type.name);
             if (first.isEmpty()) return false;
 
             Map<Integer, Set<ConnectionUnit>> loaded = UNIT_MAP.getOrDefault(type, new LinkedHashMap<>());
 
-            for (Map.Entry<Integer, Set<ConfigUnit>> entry : first.entrySet()) {
+            for (Map.Entry<Integer, Set<ConfigurationSection>> entry : first.entrySet()) {
                 final int i = entry.getKey();
 
                 Set<ConnectionUnit> before = loaded.getOrDefault(i, new LinkedHashSet<>());
                 entry.getValue().forEach(c ->
-                        before.add(new ConnectionUnit(c.getSection(), type)));
+                        before.add(new ConnectionUnit(c, type)));
 
                 loaded.put(i, before);
             }
@@ -145,10 +144,10 @@ public final class JoinQuitHandler extends SIRModule implements CustomListener {
 
         if (PlayerUtils.isImmune(player)) {
             player.setInvulnerable(false);
-            PlayerUtils.removeFromImmunePlayers(player);
+            PlayerUtils.removeFromImmune(player);
         }
 
-        PrivateMessageCommand.removeFromData(player, Bukkit.getConsoleSender());
+        Conversation.remove(player);
         if (!isEnabled()) return;
 
         ConnectionUnit unit = get(Type.QUIT, player);

@@ -2,15 +2,21 @@ package me.croabeast.sir.plugin.command.ignore;
 
 import lombok.Getter;
 import me.croabeast.lib.CollectionBuilder;
+import me.croabeast.sir.api.file.ConfigurableFile;
 import me.croabeast.sir.plugin.DataHandler;
+import me.croabeast.sir.plugin.file.YAMLData;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.serialization.ConfigurationSerializable;
 import org.bukkit.configuration.serialization.ConfigurationSerialization;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.*;
 
-@SuppressWarnings("unchecked")
+@ApiStatus.ScheduledForRemoval(inVersion = "4.0")
+@Deprecated
+@SuppressWarnings("all")
 public class IgnoreSettings implements ConfigurationSerializable, DataHandler {
 
     private final Entry msgCache = new Entry();
@@ -18,9 +24,66 @@ public class IgnoreSettings implements ConfigurationSerializable, DataHandler {
 
     private final UUID uuid;
 
+    private static boolean alreadyUpdated = false;
+    private static boolean registered = false;
+
     @Priority(4)
     static void loadData() {
-        ConfigurationSerialization.registerClass(IgnoreSettings.class);
+        if (!registered) {
+            ConfigurationSerialization.registerClass(IgnoreSettings.class);
+            registered = true;
+        }
+
+        if (alreadyUpdated) return;
+
+        ConfigurableFile file = YAMLData.Command.Multi.IGNORE.from(false);
+
+        ConfigurationSection data = file.getSection("data");
+        if (data == null) {
+            alreadyUpdated = true;
+            return;
+        }
+
+        Set<String> keys = data.getKeys(false);
+        if (keys.isEmpty() || keys.stream()
+                .noneMatch(s ->
+                        data.get(s, null) instanceof IgnoreSettings)
+        ) {
+            alreadyUpdated = true;
+            return;
+        }
+
+        int saveCount = 0;
+        for (final String key : keys) {
+            Object loaded = data.get(key, null);
+
+            if (!(loaded instanceof IgnoreSettings))
+                continue;
+
+            data.set(key, null);
+            IgnoreSettings settings = (IgnoreSettings) loaded;
+
+            List<String> msg = settings.msgCache.serialize();
+            List<String> chat = settings.chatCache.serialize();
+
+            boolean msgAll = settings.msgCache.forAll;
+            boolean chatAll = settings.chatCache.forAll;
+
+            ConfigurationSection s = data.createSection(key);
+
+            s.set("msg.list", msg);
+            s.set("msg.for-all", msgAll);
+
+            s.set("chat.list", chat);
+            s.set("chat.for-all", chatAll);
+
+            saveCount++;
+        }
+
+        if (saveCount > 0) {
+            file.save();
+            alreadyUpdated = true;
+        }
     }
 
     public IgnoreSettings(Map<String, Object> args) {

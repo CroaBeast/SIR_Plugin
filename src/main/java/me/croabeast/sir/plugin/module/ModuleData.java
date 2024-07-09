@@ -112,7 +112,7 @@ class ModuleData implements DataHandler {
             if (loaded.get() < 1 || failed.get() > 0)
                 BeansLogger.doLog(
                         "&cSome modules were not loaded correctly.",
-                        "&cReport it to CreaBeast ASAP!"
+                        "&cReport it to CroaBeast ASAP!"
                 );
 
             modulesLoaded = true;
@@ -128,7 +128,7 @@ class ModuleData implements DataHandler {
                     "Join & Quit:",
                     "Handles if custom join and quit messages are",
                     "enabled. Works with multiple messages types",
-                    "like chat, title, action bar, bossbar, json, etc."
+                    "like chat, title, action bar, boss bar, json, etc."
             );
             putModuleButton("motd", 4, 1,
                     "MOTD:",
@@ -270,10 +270,10 @@ class ModuleData implements DataHandler {
 
     @Priority(2)
     void saveData() {
+        MODULE_MAP.values().forEach(SIRModule::unregister);
         if (!modulesLoaded) return;
 
         ConfigurableFile file = YAMLData.Module.getMain();
-
         STATUS_MAP.forEach((k, v) -> file.set("modules." + k, v));
         file.save();
     }

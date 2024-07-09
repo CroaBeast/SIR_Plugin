@@ -109,6 +109,10 @@ public abstract class SIRModule implements SIRExtension {
         return true;
     }
 
+    public boolean unregister() {
+        return true;
+    }
+
     @Override
     public String toString() {
         return "SIRModule{name='" + name + '}';

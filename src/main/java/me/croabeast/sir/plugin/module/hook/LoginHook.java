@@ -184,18 +184,18 @@ public final class LoginHook extends JoinQuitRelated {
         return isHookEnabled() ? ENABLED_HOOKS.get(0) : null;
     }
 
+    @Setter @Getter
     static class LoadedListener implements CustomListener {
 
-        @Getter @Setter
         private boolean registered = false;
 
         LoadedListener() {
             LISTENER_SET.add(this);
         }
 
-        public void unregister() {
-            CustomListener.super.unregister();
+        public boolean unregister() {
             LISTENER_SET.remove(this);
+            return CustomListener.super.unregister();
         }
     }
 }

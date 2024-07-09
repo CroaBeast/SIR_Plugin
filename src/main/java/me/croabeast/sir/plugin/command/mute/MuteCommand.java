@@ -16,11 +16,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
+@Getter
 public abstract class MuteCommand extends SIRCommand {
 
     static final Map<UUID, TempMuteTask> MUTED_MAP = new HashMap<>();
 
-    @NotNull @Getter
+    @NotNull
     private final ConfigurableFile lang, data;
 
     protected MuteCommand(String name) {

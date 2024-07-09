@@ -35,11 +35,6 @@ public final class AnnounceHandler extends SIRModule {
     }
 
     public boolean register() {
-        if (running && !isEnabled()) {
-            stop();
-            return false;
-        }
-
         ConfigurationSection section = announces.getSection("announces");
         if (section == null) return false;
 
@@ -52,6 +47,12 @@ public final class AnnounceHandler extends SIRModule {
         }
 
         start();
+        return true;
+    }
+
+    @Override
+    public boolean unregister() {
+        stop();
         return true;
     }
 

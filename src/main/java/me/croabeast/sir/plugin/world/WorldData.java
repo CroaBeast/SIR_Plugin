@@ -19,23 +19,22 @@ class WorldData implements DataHandler {
     void loadData() {
         if (areWorldsLoaded) return;
 
-        SIRPlugin.runTaskWhenLoaded(() -> {
-            for (World world : Bukkit.getWorlds()) {
+        SIRPlugin.runWhenLoaded(() -> {
+            Bukkit.getWorlds().forEach(world -> {
                 Map<WorldRule<?>, String> v =
                         LOADED_RULES_MAP.getOrDefault(
                                 world,
                                 new HashMap<>()
                         );
 
-                for (WorldRule<?> rule : WorldRule.values()) {
+                WorldRule.values().forEach(rule -> {
                     Object value = rule.getValue(world);
                     if (value != null)
                         v.put(rule, value.toString());
-                }
+                });
 
                 LOADED_RULES_MAP.put(world, v);
-            }
-
+            });
             areWorldsLoaded = true;
         });
     }

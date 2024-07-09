@@ -49,6 +49,7 @@ public interface AddonManager {
      *
      * @param clazz the class of the addon to retrieve
      * @param <A>   the type of the addon
+     *
      * @return the addon instance of the specified class, or null if not found
      */
     @Nullable <A extends SIRAddon> A getAddon(Class<A> clazz);
@@ -63,21 +64,18 @@ public interface AddonManager {
 
     /**
      * Gets a list of only available addons.
-     *
      * @return a list of available addons
      */
     @NotNull List<SIRAddon> getAvailableAddons();
 
     /**
      * Gets a list of all loaded addons.
-     *
      * @return a list of loaded addons
      */
     @NotNull List<SIRAddon> getAddons();
 
     /**
      * Gets the singleton instance of the AddonManager.
-     *
      * @return the AddonManager instance
      */
     @NotNull

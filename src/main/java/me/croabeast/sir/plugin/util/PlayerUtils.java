@@ -2,6 +2,7 @@ package me.croabeast.sir.plugin.util;
 
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
+import me.croabeast.lib.command.TabBuilder;
 import me.croabeast.lib.util.ServerInfoUtils;
 import me.croabeast.sir.plugin.SIRInitializer;
 import me.croabeast.sir.plugin.SIRPlugin;
@@ -132,11 +133,11 @@ public class PlayerUtils {
         return GOD_PLAYERS.contains(player);
     }
 
-    public boolean addToImmunePlayers(Player player) {
+    public boolean addToImmune(Player player) {
         return GOD_PLAYERS.add(player);
     }
 
-    public boolean removeFromImmunePlayers(Player player) {
+    public boolean removeFromImmune(Player player) {
         return GOD_PLAYERS.remove(player);
     }
 
@@ -144,7 +145,7 @@ public class PlayerUtils {
         if (ServerInfoUtils.SERVER_VERSION <= 8 | time <= 0)
             return;
 
-        addToImmunePlayers(player);
+        addToImmune(player);
         player.setInvulnerable(true);
 
         Bukkit.getScheduler().runTaskLater(
@@ -188,5 +189,9 @@ public class PlayerUtils {
 
     public Set<Player> getNearbyPlayers(Player player, double range) {
         return getNearbyPlayers(player.getLocation(), range);
+    }
+
+    public TabBuilder createBuilder() {
+        return new TabBuilder().setPermissionPredicate(PlayerUtils::hasPerm);
     }
 }

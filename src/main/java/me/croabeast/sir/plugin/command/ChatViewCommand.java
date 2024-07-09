@@ -3,16 +3,17 @@ package me.croabeast.sir.plugin.command;
 import lombok.Getter;
 import me.croabeast.beans.logger.BeansLogger;
 import me.croabeast.lib.CollectionBuilder;
+import me.croabeast.lib.command.Executable;
+import me.croabeast.lib.command.TabBuilder;
 import me.croabeast.lib.reflect.Reflector;
 import me.croabeast.sir.api.SIRExtension;
 import me.croabeast.sir.api.command.SIRCommand;
-import me.croabeast.sir.api.command.tab.TabBuilder;
 import me.croabeast.sir.api.file.ConfigurableFile;
 import me.croabeast.sir.plugin.channel.ChatChannel;
 import me.croabeast.sir.plugin.file.YAMLData;
 import me.croabeast.sir.plugin.module.SIRModule;
 import me.croabeast.sir.plugin.module.chat.ChannelHandler;
-import org.bukkit.command.CommandSender;
+import me.croabeast.sir.plugin.util.PlayerUtils;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,39 +55,41 @@ public final class ChatViewCommand extends SIRCommand {
         return CollectionBuilder.of(channels).map(ChatChannel::getName).toList();
     }
 
-    @Override
-    protected boolean execute(CommandSender sender, String[] args) {
-        if (!(sender instanceof Player)) {
-            BeansLogger.getLogger().log("&cYou can't toggle a local chat in console.");
-            return true;
-        }
+    @NotNull
+    public Executable getExecutable() {
+        return Executable.from((sender, args) -> {
+            if (!(sender instanceof Player)) {
+                BeansLogger.getLogger().log("&cYou can't toggle a local chat in console.");
+                return true;
+            }
 
-        if (isProhibited(sender)) return true;
+            if (!isPermitted(sender)) return true;
 
-        if (args.length == 0) return fromSender(sender).send("help");
+            if (args.length == 0) return createSender(sender).send("help");
 
-        if (args.length != 1)
-            return isWrongArgument(sender, args[args.length - 1]);
+            if (args.length != 1)
+                return isWrongArgument(sender, args[args.length - 1]);
 
-        Player p = (Player) sender;
+            Player p = (Player) sender;
 
-        String key = null;
-        for (String k : getKeys(p)) if (k.matches("(?i)" + args[0])) key = k;
+            String key = null;
+            for (String k : getKeys(p)) if (k.matches("(?i)" + args[0])) key = k;
 
-        if (key == null) return isWrongArgument(p, args[0]);
+            if (key == null) return isWrongArgument(p, args[0]);
 
-        String path = "data." + p.getUniqueId() + "." + key;
-        boolean isToggled = getData().get(path, false);
+            String path = "data." + p.getUniqueId() + "." + key;
+            boolean notToggled = !getData().get(path, false);
 
-        getData().set(path, !isToggled);
-        getData().save();
+            getData().set(path, notToggled);
+            getData().save();
 
-        return fromSender(p).addKeyValue("{channel}", key).send(String.valueOf(!isToggled));
+            return createSender(p).addKeyValue("{channel}", key).send((notToggled) + "");
+        });
     }
 
     @Override
-    protected TabBuilder completer() {
-        return TabBuilder.of().addArguments((s, a) -> getKeys((Player) s));
+    public TabBuilder getCompletionBuilder() {
+        return PlayerUtils.createBuilder().addArguments(0, (s, a) -> getKeys((Player) s));
     }
 
     public static boolean isToggled(Player player, String key) {

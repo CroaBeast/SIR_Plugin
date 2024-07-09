@@ -13,7 +13,6 @@ import me.croabeast.beans.message.MessageSender;
 import me.croabeast.lib.util.Exceptions;
 import me.croabeast.lib.util.ReplaceUtils;
 import me.croabeast.lib.util.TextUtils;
-import me.croabeast.sir.api.ConfigUnit;
 import me.croabeast.sir.api.CustomListener;
 import me.croabeast.sir.api.event.chat.SIRChatEvent;
 import me.croabeast.sir.api.file.ConfigurableFile;
@@ -28,6 +27,7 @@ import me.croabeast.sir.plugin.util.PlayerUtils;
 import me.leoko.advancedban.manager.PunishmentManager;
 import me.leoko.advancedban.manager.UUIDManager;
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -69,7 +69,7 @@ public final class ChannelHandler extends ChatModule implements CustomListener {
         Set<ChatChannel> defs = def != null ?
                 Sets.newHashSet(def) : new HashSet<>();
 
-        Map<Integer, Set<ConfigUnit>> channels;
+        Map<Integer, Set<ConfigurationSection>> channels;
         try {
             channels = config.getUnitsByPriority("channels");
             if (channels.isEmpty()) {
@@ -81,16 +81,16 @@ public final class ChannelHandler extends ChatModule implements CustomListener {
             return true;
         }
 
-        for (Map.Entry<Integer, Set<ConfigUnit>> entry : channels.entrySet()) {
+        for (Map.Entry<Integer, Set<ConfigurationSection>> entry : channels.entrySet()) {
             Set<ChatChannel> globals = new LinkedHashSet<>();
             Set<ChatChannel> locals = new LinkedHashSet<>();
 
             final int i = entry.getKey();
 
-            for (ConfigUnit id : entry.getValue()) {
+            for (ConfigurationSection id : entry.getValue()) {
                 ChatChannel c;
                 try {
-                    c = ChatChannel.of(id.getSection());
+                    c = ChatChannel.of(id);
                 } catch (Exception e) {
                     continue;
                 }

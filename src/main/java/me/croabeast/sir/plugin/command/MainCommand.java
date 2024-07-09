@@ -1,18 +1,24 @@
 package me.croabeast.sir.plugin.command;
 
 import me.croabeast.beans.message.MessageSender;
+import me.croabeast.lib.command.BaseCommand;
+import me.croabeast.lib.command.Executable;
+import me.croabeast.lib.command.TabBuilder;
 import me.croabeast.lib.util.ServerInfoUtils;
 import me.croabeast.sir.api.command.SIRCommand;
-import me.croabeast.sir.api.command.tab.TabBuilder;
 import me.croabeast.sir.api.file.ConfigurableFile;
 import me.croabeast.sir.plugin.SIRPlugin;
 import me.croabeast.sir.plugin.file.YAMLData;
 import me.croabeast.sir.plugin.module.SIRModule;
 import me.croabeast.sir.plugin.util.DataUtils;
+import me.croabeast.sir.plugin.util.PlayerUtils;
 import org.apache.commons.lang.SystemUtils;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Deque;
+import java.util.LinkedList;
+import java.util.Objects;
 
 final class MainCommand extends SIRCommand {
 
@@ -34,7 +40,7 @@ final class MainCommand extends SIRCommand {
                 e.printStackTrace();
             }
 
-            return fromSender(s)
+            return createSender(s)
                     .addKeyValue("{time}", System.currentTimeMillis() - start)
                     .send("reload");
         });
@@ -58,7 +64,7 @@ final class MainCommand extends SIRCommand {
         editSubCommand("about", (s, strings) -> {
             Player player = s instanceof Player ? (Player) s : null;
 
-            return sender.setTargets(player).send(
+            return sender.setErrorPrefix(null).setTargets(player).send(
                             "", " &eSIR &7- &f" + SIRPlugin.getVersion() + "&7:",
                             "   &8• &7Server Software: &f" + ServerInfoUtils.SERVER_FORK,
                             "   &8• &7Developer: &f" + SIRPlugin.getAuthor(),
@@ -67,12 +73,12 @@ final class MainCommand extends SIRCommand {
         });
 
         editSubCommand("help", (s, strings) ->
-                fromSender(s)
+                createSender(s)
                         .addKeyValue("{version}", SIRPlugin.getVersion())
                         .send("help"));
 
         editSubCommand("support", (s, strings) ->
-                fromSender(s)
+                createSender(s)
                         .addKeyValue("{link}", "https://discord.gg/s9YFGMrjyF")
                         .send("support"));
     }
@@ -87,17 +93,21 @@ final class MainCommand extends SIRCommand {
         return YAMLData.Command.Single.SIR.from();
     }
 
-    @Override
-    protected boolean execute(CommandSender sender, String[] args) {
-        return findSubCommandByNameOrAlias("help").execute(sender, args);
+    @NotNull
+    public Executable getExecutable() {
+        return Objects.requireNonNull(getSubCommand("help")).getExecutable();
     }
 
     @Override
-    protected TabBuilder completer() {
-        TabBuilder builder = TabBuilder.of();
+    public TabBuilder getCompletionBuilder() {
+        TabBuilder builder = PlayerUtils.createBuilder();
 
-        for (SubCommand sub : subCommands.values())
-            builder.addArguments((s, a) -> sub.isPermitted(s), sub.getNames());
+        for (BaseCommand sub : getSubCommands()) {
+            Deque<String> list = new LinkedList<>(sub.getAliases());
+            list.addFirst(sub.getName());
+
+            builder.addArguments(0, (s, a) -> sub.isPermitted(s), list);
+        }
 
         return builder;
     }
